@@ -92,6 +92,9 @@ include = [
   { path = "kreuzberg/pdfium.dll", format = "wheel" },
   { path = "kreuzberg/libpdfium.dylib", format = "wheel" },
   { path = "kreuzberg/libpdfium.so", format = "wheel" },
+  # Ensure IDE/type-checker discoverability for the extension module.
+  { path = "kreuzberg/_internal_bindings.pyi", format = "wheel" },
+  { path = "kreuzberg/py.typed", format = "wheel" },
   # Include the CLI binary (must be built with --features all)
   { path = "kreuzberg/kreuzberg-cli", format = "wheel" },
   { path = "kreuzberg/kreuzberg-cli.exe", format = "wheel" },
