@@ -111,7 +111,7 @@ tasks:
   rust:test:
     desc: Run all Rust tests
     cmds:
-      - cargo test --workspace --release --all-features
+      - bash scripts/ci/rust/run-unit-tests.sh
   rust:lint:
     desc: Lint Rust code with auto-fix (cargo fmt + clippy)
     cmds:

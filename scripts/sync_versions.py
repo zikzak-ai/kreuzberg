@@ -266,6 +266,11 @@ def main():
             rf"\g<1>{version}\g<2>",
         ),
         (
+            repo_root / "crates/kreuzberg-cli/Cargo.toml",
+            r'^(kreuzberg\s*=\s*\{\s*path\s*=\s*"../kreuzberg"\s*,\s*version\s*=\s*")[^"]+(".*\}\s*)$',
+            rf"\g<1>{version}\g<2>",
+        ),
+        (
             repo_root / "crates/kreuzberg-ffi/kreuzberg-ffi-install.pc",
             r"^Version:\s*([0-9A-Za-z\.\-]+)\s*$",
             f"Version: {version}",
@@ -319,6 +324,11 @@ def main():
             repo_root / "packages/csharp/Kreuzberg/Kreuzberg.csproj",
             r"<Version>[^<]+</Version>",
             f"<Version>{version}</Version>",
+        ),
+        (
+            repo_root / "packages/csharp/README.md",
+            r'(PackageReference Include="Kreuzberg" Version=")([^"]+)(")',
+            rf"\g<1>{version}\g<3>",
         ),
     ]
 

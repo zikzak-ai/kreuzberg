@@ -40,11 +40,11 @@ dotnet add package Kreuzberg
 ```
 Published under the `kreuzberg.dev` organization.
 
-```xml
-<ItemGroup>
-	    <PackageReference Include="Kreuzberg" Version="4.0.0-rc.6" />
-</ItemGroup>
-```
+	```xml
+	<ItemGroup>
+		    <PackageReference Include="Kreuzberg" Version="4.0.0-rc.9" />
+	</ItemGroup>
+	```
 
 ## Requirements
 

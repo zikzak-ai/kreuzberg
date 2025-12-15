@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Platform-specific system library linking (pthread, dl on Linux)
 
 ### Fixed
+- **Python: published wheels now include typing metadata**
+  - Added `kreuzberg/_internal_bindings.pyi` and `kreuzberg/py.typed` to the wheel so IDEs and type checkers can discover types (Issue #238)
 - **Java: Maven publish now bundles native libraries** (including Windows DLLs)
   - Fixed Maven Central publish step to stage `java-natives-*` into the JAR and fail early if missing
 - **Node: npm optional native packages now contain the `.node` binary**
