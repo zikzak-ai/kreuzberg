@@ -5,6 +5,29 @@ All notable changes to Kreuzberg will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0-rc.14] - Unreleased
+
+### Added
+
+- **Comprehensive test suites for all language bindings**:
+  - Python: 34 tests covering type verification, batch APIs, byte extraction, MIME detection, OCR, all file types
+  - Node.js: 79 tests for type verification, batch APIs, MIME detection, configuration, error handling
+  - Ruby: 55 RSpec tests for batch APIs, byte extraction, type verification, configuration handling
+  - Java: 85 JUnit 5 tests with FFM API memory management, concurrency, all file format support
+  - WASM: 79 tests with performance validation, large document handling, concurrent operations
+  - Go: 63 table-driven tests with context support, error wrapping with `errors.Is()`, all file types
+  - All test suites verify batch extraction APIs (sync/async), type safety, result structure validation
+
+### Fixed
+
+- **Python IDE type completions**: Fixed missing type hints in IDE autocomplete
+  - Root cause: `_internal_bindings.pyi` stub file was not being included in wheel distribution
+  - Solution: Added `ensure_stub_file()` function in `packages/python/build.py` to verify and include stub file in all build outputs
+  - Impact: Full autocomplete now works for all 67 public APIs, type checkers can find definitions, mypy strict mode compatible
+- **Ruby gem native extension compilation**: Fixed vendoring of Rust crates during build
+  - Added automatic vendoring task to `packages/ruby/Rakefile` that runs before compilation
+  - Ensures `vendor/kreuzberg`, `vendor/kreuzberg-ffi`, and `vendor/kreuzberg-tesseract` are properly copied and version-updated before building native extension
+
 ## [4.0.0-rc.13] - 2025-12-19
 
 ### Fixed
