@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **LibreOffice installation in Docker full image**: Updated LibreOffice from 25.8.2 to 25.8.4
+  - Version 25.8.2 download URLs were no longer available on DocumentFoundation servers
+  - Updated to latest stable release 25.8.4 (released Dec 18, 2025)
+  - Verified working for Office document extraction (DOCX, XLSX, ODT)
+  - Tested on both x86_64 and aarch64 architectures
 - **Python IDE type completions**: Fixed missing type hints in IDE autocomplete
   - Root cause: `_internal_bindings.pyi` stub file was not being included in wheel distribution
   - Solution: Added `ensure_stub_file()` function in `packages/python/build.py` to verify and include stub file in all build outputs

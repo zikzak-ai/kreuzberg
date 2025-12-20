@@ -70,7 +70,7 @@ FROM debian:trixie-slim
 WORKDIR /app
 
 # Download and install dependencies
-ARG LIBREOFFICE_VERSION=25.8.2
+ARG LIBREOFFICE_VERSION=25.8.4
 ARG TARGETARCH
 
 # Install runtime dependencies and download binaries
@@ -112,7 +112,7 @@ RUN apt-get update && \
         -o /tmp/libreoffice.tar.gz && \
     mkdir -p /tmp/libreoffice && \
     tar -xzf /tmp/libreoffice.tar.gz -C /tmp/libreoffice --strip-components=1 && \
-    dpkg -i /tmp/libreoffice/DEBS/*.deb || apt-get install -f -y && \
+    (dpkg -i /tmp/libreoffice/DEBS/*.deb || apt-get install -f -y) && \
     rm -rf /tmp/libreoffice* && \
     # Clean up
     apt-get clean && \
