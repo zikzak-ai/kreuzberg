@@ -1,5 +1,6 @@
 #![deny(clippy::all)]
 
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use html_to_markdown_rs::options::{
     CodeBlockStyle, ConversionOptions, HeadingStyle, HighlightStyle, ListIndentType, NewlineStyle,
     PreprocessingOptions as HtmlPreprocessingOptions, PreprocessingPreset, WhitespaceMode,
@@ -1910,7 +1911,6 @@ pub async fn batch_extract_bytes(
 }
 
 use async_trait::async_trait;
-use base64::Engine;
 use kreuzberg::plugins::{Plugin, PostProcessor as RustPostProcessor, ProcessingStage};
 use napi::bindgen_prelude::Promise;
 use napi::threadsafe_function::ThreadsafeFunction;
@@ -1971,14 +1971,15 @@ impl RustPostProcessor for JsPostProcessor {
                 message: format!("Failed to convert result for JavaScript PostProcessor: {}", e),
                 plugin_name: self.name.clone(),
             })?;
-        let json_input = serde_json::to_string(&js_result).map_err(|e| kreuzberg::KreuzbergError::Plugin {
-            message: format!("Failed to serialize result for JavaScript PostProcessor: {}", e),
+        let encoded = rmp_serde::to_vec(&js_result).map_err(|e| kreuzberg::KreuzbergError::Plugin {
+            message: format!("Failed to encode result for JavaScript PostProcessor: {}", e),
             plugin_name: self.name.clone(),
         })?;
+        let encoded_b64 = BASE64.encode(&encoded);
 
-        let json_output = self
+        let output_b64 = self
             .process_fn
-            .call_async(json_input)
+            .call_async(encoded_b64)
             .await
             .map_err(|e| kreuzberg::KreuzbergError::Plugin {
                 message: format!("JavaScript PostProcessor '{}' call failed: {}", self.name, e),
@@ -1990,8 +1991,14 @@ impl RustPostProcessor for JsPostProcessor {
                 plugin_name: self.name.clone(),
             })?;
 
+        let decoded = BASE64
+            .decode(output_b64.as_bytes())
+            .map_err(|e| kreuzberg::KreuzbergError::Plugin {
+                message: format!("Failed to decode result from JavaScript PostProcessor: {}", e),
+                plugin_name: self.name.clone(),
+            })?;
         let updated: JsExtractionResult =
-            serde_json::from_str(&json_output).map_err(|e| kreuzberg::KreuzbergError::Plugin {
+            rmp_serde::from_slice(&decoded).map_err(|e| kreuzberg::KreuzbergError::Plugin {
                 message: format!(
                     "Failed to deserialize result from JavaScript PostProcessor '{}': {}",
                     self.name, e
@@ -2210,13 +2217,14 @@ impl RustValidator for JsValidator {
                 message: format!("Failed to convert result for JavaScript Validator: {}", e),
                 plugin_name: self.name.clone(),
             })?;
-        let json_input = serde_json::to_string(&js_result).map_err(|e| kreuzberg::KreuzbergError::Plugin {
-            message: format!("Failed to serialize result for JavaScript Validator: {}", e),
+        let encoded = rmp_serde::to_vec(&js_result).map_err(|e| kreuzberg::KreuzbergError::Plugin {
+            message: format!("Failed to encode result for JavaScript Validator: {}", e),
             plugin_name: self.name.clone(),
         })?;
+        let encoded_b64 = BASE64.encode(&encoded);
 
         self.validate_fn
-            .call_async(json_input)
+            .call_async(encoded_b64)
             .await
             .map_err(|e| {
                 let err_msg = e.to_string();
@@ -2451,7 +2459,7 @@ impl RustOcrBackend for JsOcrBackend {
         let language = config.language.clone();
         let backend_name = self.name.clone();
 
-        let json_output = self
+        let output_b64 = self
             .process_image_fn
             .call_async((encoded, language))
             .await
@@ -2465,8 +2473,17 @@ impl RustOcrBackend for JsOcrBackend {
                 source: Some(Box::new(e)),
             })?;
 
+        let decoded = BASE64
+            .decode(output_b64.as_bytes())
+            .map_err(|e| kreuzberg::KreuzbergError::Ocr {
+                message: format!(
+                    "Failed to decode result from JavaScript OCR backend '{}': {}",
+                    backend_name, e
+                ),
+                source: Some(Box::new(e)),
+            })?;
         let wire_result: serde_json::Value =
-            serde_json::from_str(&json_output).map_err(|e| kreuzberg::KreuzbergError::Ocr {
+            rmp_serde::from_slice(&decoded).map_err(|e| kreuzberg::KreuzbergError::Ocr {
                 message: format!(
                     "Failed to deserialize result from JavaScript OCR backend '{}': {}",
                     backend_name, e
