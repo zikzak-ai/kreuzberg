@@ -30,14 +30,15 @@
 	},
 	"overrides": [
 		{
-			"includes": ["**/tests/**", "**/*.spec.ts"],
+			"includes": ["**/tests/**", "**/*.spec.ts", "e2e/wasm-deno/**", "e2e/wasm-workers/**"],
 			"linter": {
 				"rules": {
 					"suspicious": {
 						"noExplicitAny": "off"
 					},
 					"correctness": {
-						"noUnusedFunctionParameters": "off"
+						"noUnusedFunctionParameters": "off",
+						"noUnusedImports": "off"
 					}
 				}
 			}
