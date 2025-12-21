@@ -71,8 +71,8 @@
 //!
 //! All functions are thread-safe and have no runtime overhead (compile-time constants).
 
-use std::os::raw::c_char;
 use std::ffi::CString;
+use std::os::raw::c_char;
 use std::ptr;
 
 #[cfg(test)]
@@ -341,27 +341,17 @@ pub extern "C" fn kreuzberg_error_code_name(code: u32) -> *const c_char {
                     // SAFETY: byte string literal is guaranteed to be null-terminated
                     unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"validation\0").as_ptr() }
                 }
-                ErrorCode::Parsing => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"parsing\0").as_ptr() }
-                }
-                ErrorCode::Ocr => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"ocr\0").as_ptr() }
-                }
-                ErrorCode::MissingDependency => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"missing_dependency\0").as_ptr() }
-                }
-                ErrorCode::Io => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"io\0").as_ptr() }
-                }
-                ErrorCode::Plugin => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"plugin\0").as_ptr() }
-                }
-                ErrorCode::UnsupportedFormat => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"unsupported_format\0").as_ptr() }
-                }
-                ErrorCode::Internal => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"internal\0").as_ptr() }
-                }
+                ErrorCode::Parsing => unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"parsing\0").as_ptr() },
+                ErrorCode::Ocr => unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"ocr\0").as_ptr() },
+                ErrorCode::MissingDependency => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"missing_dependency\0").as_ptr()
+                },
+                ErrorCode::Io => unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"io\0").as_ptr() },
+                ErrorCode::Plugin => unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"plugin\0").as_ptr() },
+                ErrorCode::UnsupportedFormat => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"unsupported_format\0").as_ptr()
+                },
+                ErrorCode::Internal => unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"internal\0").as_ptr() },
             }
         }
         None => {
@@ -398,27 +388,27 @@ pub extern "C" fn kreuzberg_error_code_description(code: u32) -> *const c_char {
                     // SAFETY: byte string literal is guaranteed to be null-terminated
                     unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Input validation error\0").as_ptr() }
                 }
-                ErrorCode::Parsing => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Document parsing error\0").as_ptr() }
-                }
-                ErrorCode::Ocr => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"OCR processing error\0").as_ptr() }
-                }
-                ErrorCode::MissingDependency => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Missing system dependency\0").as_ptr() }
-                }
-                ErrorCode::Io => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"File system I/O error\0").as_ptr() }
-                }
-                ErrorCode::Plugin => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Plugin error\0").as_ptr() }
-                }
-                ErrorCode::UnsupportedFormat => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Unsupported format\0").as_ptr() }
-                }
-                ErrorCode::Internal => {
-                    unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Internal library error\0").as_ptr() }
-                }
+                ErrorCode::Parsing => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"Document parsing error\0").as_ptr()
+                },
+                ErrorCode::Ocr => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"OCR processing error\0").as_ptr()
+                },
+                ErrorCode::MissingDependency => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"Missing system dependency\0").as_ptr()
+                },
+                ErrorCode::Io => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"File system I/O error\0").as_ptr()
+                },
+                ErrorCode::Plugin => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"Plugin error\0").as_ptr()
+                },
+                ErrorCode::UnsupportedFormat => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"Unsupported format\0").as_ptr()
+                },
+                ErrorCode::Internal => unsafe {
+                    std::ffi::CStr::from_bytes_with_nul_unchecked(b"Internal library error\0").as_ptr()
+                },
             }
         }
         None => {
@@ -512,7 +502,11 @@ pub extern "C" fn kreuzberg_get_error_details() -> CErrorDetails {
     let message = panic_shield::get_last_error_message().unwrap_or_else(|| "No error".to_string());
     let error_code_enum = panic_shield::get_last_error_code();
     let error_code = error_code_enum as u32;
-    let is_panic = if error_code_enum == panic_shield::ErrorCode::Panic { 1 } else { 0 };
+    let is_panic = if error_code_enum == panic_shield::ErrorCode::Panic {
+        1
+    } else {
+        0
+    };
 
     // Determine error type name based on code
     let error_type = match error_code_enum {
@@ -536,19 +530,15 @@ pub extern "C" fn kreuzberg_get_error_details() -> CErrorDetails {
     // SAFETY: All strings are created from owned String values and converted to C strings.
     // CString::into_raw() is safe as long as the caller uses kreuzberg_free_string() to deallocate.
     CErrorDetails {
-        message: CString::new(message)
-            .map(CString::into_raw)
-            .unwrap_or_else(|_| {
-                // SAFETY: fallback to static string if CString creation fails
-                "Error message creation failed".as_ptr() as *mut c_char
-            }),
+        message: CString::new(message).map(CString::into_raw).unwrap_or_else(|_| {
+            // SAFETY: fallback to static string if CString creation fails
+            "Error message creation failed".as_ptr() as *mut c_char
+        }),
         error_code,
-        error_type: CString::new(error_type)
-            .map(CString::into_raw)
-            .unwrap_or_else(|_| {
-                // SAFETY: fallback to static string if CString creation fails
-                "unknown".as_ptr() as *mut c_char
-            }),
+        error_type: CString::new(error_type).map(CString::into_raw).unwrap_or_else(|_| {
+            // SAFETY: fallback to static string if CString creation fails
+            "unknown".as_ptr() as *mut c_char
+        }),
         source_file: source_file
             .and_then(|f| CString::new(f).ok())
             .map(CString::into_raw)
@@ -657,7 +647,10 @@ pub unsafe extern "C" fn kreuzberg_classify_error(error_message: *const c_char) 
     }
 
     // Check for OCR errors (after missing dependency to avoid "missing tesseract" matching OCR)
-    if lower.contains("ocr") || lower.contains("tesseract") || lower.contains("recognition") || lower.contains("optical")
+    if lower.contains("ocr")
+        || lower.contains("tesseract")
+        || lower.contains("recognition")
+        || lower.contains("optical")
     {
         return ErrorCode::Ocr as u32;
     }
@@ -682,8 +675,7 @@ pub unsafe extern "C" fn kreuzberg_classify_error(error_message: *const c_char) 
     }
 
     // Check for unsupported format errors
-    if lower.contains("unsupported") || lower.contains("unknown format") || lower.contains("mime type")
-    {
+    if lower.contains("unsupported") || lower.contains("unknown format") || lower.contains("mime type") {
         return ErrorCode::UnsupportedFormat as u32;
     }
 

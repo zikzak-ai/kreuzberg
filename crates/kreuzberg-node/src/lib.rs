@@ -314,10 +314,7 @@ pub fn get_error_code_name(code: u32) -> String {
         if ptr.is_null() {
             "unknown".to_string()
         } else {
-            CStr::from_ptr(ptr)
-                .to_str()
-                .unwrap_or("unknown")
-                .to_string()
+            CStr::from_ptr(ptr).to_str().unwrap_or("unknown").to_string()
         }
     }
 }
@@ -348,10 +345,7 @@ pub fn get_error_code_description(code: u32) -> String {
         if ptr.is_null() {
             "Unknown error code".to_string()
         } else {
-            CStr::from_ptr(ptr)
-                .to_str()
-                .unwrap_or("Unknown error code")
-                .to_string()
+            CStr::from_ptr(ptr).to_str().unwrap_or("Unknown error code").to_string()
         }
     }
 }

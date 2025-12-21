@@ -11,11 +11,10 @@ mod validation;
 
 pub use error::ErrorCode as KreuzbergErrorCode;
 pub use error::{
-    kreuzberg_classify_error, kreuzberg_error_code_count, kreuzberg_error_code_description,
+    CErrorDetails, kreuzberg_classify_error, kreuzberg_error_code_count, kreuzberg_error_code_description,
     kreuzberg_error_code_internal, kreuzberg_error_code_io, kreuzberg_error_code_missing_dependency,
-    kreuzberg_error_code_name, kreuzberg_error_code_ocr, kreuzberg_error_code_parsing,
-    kreuzberg_error_code_plugin, kreuzberg_error_code_unsupported_format, kreuzberg_error_code_validation,
-    kreuzberg_get_error_details, CErrorDetails,
+    kreuzberg_error_code_name, kreuzberg_error_code_ocr, kreuzberg_error_code_parsing, kreuzberg_error_code_plugin,
+    kreuzberg_error_code_unsupported_format, kreuzberg_error_code_validation, kreuzberg_get_error_details,
 };
 pub use panic_shield::{
     ErrorCode, StructuredError, clear_structured_error, get_last_error_code, get_last_error_message,

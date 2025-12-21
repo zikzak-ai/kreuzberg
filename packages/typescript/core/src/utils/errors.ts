@@ -19,7 +19,7 @@ import {
 	getErrorCodeDescription as get_error_code_description,
 	classifyError as classify_error,
 	type ErrorClassification,
-} from '@kreuzberg/node';
+} from "@kreuzberg/node";
 
 /**
  * Standard error codes for all Kreuzberg bindings.

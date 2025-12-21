@@ -3151,8 +3151,8 @@ fn get_valid_token_reduction_levels(ruby: &Ruby) -> Result<String, Error> {
 /// @param config_json [String] JSON string representing the config
 /// @return [String] Serialized JSON config
 fn config_to_json_wrapper(_ruby: &Ruby, config_json: String) -> Result<String, Error> {
-    let c_json = std::ffi::CString::new(config_json)
-        .map_err(|e| runtime_error(format!("Invalid config JSON: {}", e)))?;
+    let c_json =
+        std::ffi::CString::new(config_json).map_err(|e| runtime_error(format!("Invalid config JSON: {}", e)))?;
 
     let config_ptr = unsafe { kreuzberg_config_from_json(c_json.as_ptr()) };
     if config_ptr.is_null() {
@@ -3169,12 +3169,16 @@ fn config_to_json_wrapper(_ruby: &Ruby, config_json: String) -> Result<String, E
             .to_str()
             .map_err(|_| runtime_error("Invalid UTF-8 in serialized config"))?
             .to_string();
-        unsafe { kreuzberg_free_string(json_ptr as *mut c_char); }
+        unsafe {
+            kreuzberg_free_string(json_ptr as *mut c_char);
+        }
         Ok(json)
     };
 
     // Free the config
-    unsafe { kreuzberg_config_free(config_ptr); }
+    unsafe {
+        kreuzberg_config_free(config_ptr);
+    }
     result
 }
 
@@ -3183,10 +3187,10 @@ fn config_to_json_wrapper(_ruby: &Ruby, config_json: String) -> Result<String, E
 /// @param field_name [String] Field name (supports dot notation)
 /// @return [Object] Parsed JSON value, or nil if field doesn't exist
 fn config_get_field_wrapper(ruby: &Ruby, config_json: String, field_name: String) -> Result<Value, Error> {
-    let c_json = std::ffi::CString::new(config_json)
-        .map_err(|e| runtime_error(format!("Invalid config JSON: {}", e)))?;
-    let c_field = std::ffi::CString::new(field_name)
-        .map_err(|e| runtime_error(format!("Invalid field name: {}", e)))?;
+    let c_json =
+        std::ffi::CString::new(config_json).map_err(|e| runtime_error(format!("Invalid config JSON: {}", e)))?;
+    let c_field =
+        std::ffi::CString::new(field_name).map_err(|e| runtime_error(format!("Invalid field name: {}", e)))?;
 
     let config_ptr = unsafe { kreuzberg_config_from_json(c_json.as_ptr()) };
     if config_ptr.is_null() {
@@ -3202,14 +3206,18 @@ fn config_get_field_wrapper(ruby: &Ruby, config_json: String, field_name: String
         let json_str = c_str
             .to_str()
             .map_err(|_| runtime_error("Invalid UTF-8 in field value"))?;
-        let json_value: serde_json::Value = serde_json::from_str(json_str)
-            .map_err(|e| runtime_error(format!("Failed to parse field value: {}", e)))?;
-        unsafe { kreuzberg_free_string(field_ptr as *mut c_char); }
+        let json_value: serde_json::Value =
+            serde_json::from_str(json_str).map_err(|e| runtime_error(format!("Failed to parse field value: {}", e)))?;
+        unsafe {
+            kreuzberg_free_string(field_ptr as *mut c_char);
+        }
         json_value_to_ruby(ruby, &json_value)
     };
 
     // Free the config
-    unsafe { kreuzberg_config_free(config_ptr); }
+    unsafe {
+        kreuzberg_config_free(config_ptr);
+    }
     result
 }
 
@@ -3218,8 +3226,8 @@ fn config_get_field_wrapper(ruby: &Ruby, config_json: String, field_name: String
 /// @param override_json [String] Override config JSON
 /// @return [String] Merged config JSON
 fn config_merge_wrapper(_ruby: &Ruby, base_json: String, override_json: String) -> Result<String, Error> {
-    let c_base = std::ffi::CString::new(base_json)
-        .map_err(|e| runtime_error(format!("Invalid base config JSON: {}", e)))?;
+    let c_base =
+        std::ffi::CString::new(base_json).map_err(|e| runtime_error(format!("Invalid base config JSON: {}", e)))?;
     let c_override = std::ffi::CString::new(override_json)
         .map_err(|e| runtime_error(format!("Invalid override config JSON: {}", e)))?;
 
@@ -3230,7 +3238,9 @@ fn config_merge_wrapper(_ruby: &Ruby, base_json: String, override_json: String) 
 
     let override_ptr = unsafe { kreuzberg_config_from_json(c_override.as_ptr()) };
     if override_ptr.is_null() {
-        unsafe { kreuzberg_config_free(base_ptr); }
+        unsafe {
+            kreuzberg_config_free(base_ptr);
+        }
         return Err(runtime_error("Failed to parse override config from JSON"));
     }
 
@@ -3250,7 +3260,9 @@ fn config_merge_wrapper(_ruby: &Ruby, base_json: String, override_json: String) 
                 .to_str()
                 .map_err(|_| runtime_error("Invalid UTF-8 in merged config"))?
                 .to_string();
-            unsafe { kreuzberg_free_string(json_ptr as *mut c_char); }
+            unsafe {
+                kreuzberg_free_string(json_ptr as *mut c_char);
+            }
             Ok(json)
         }
     };
@@ -3272,9 +3284,7 @@ fn result_page_count(_ruby: &Ruby, result_ptr: i64) -> Result<i32, Error> {
     }
 
     // SAFETY: caller must ensure result_ptr is valid
-    let page_count = unsafe {
-        kreuzberg_result_get_page_count(result_ptr as *const std::ffi::c_void)
-    };
+    let page_count = unsafe { kreuzberg_result_get_page_count(result_ptr as *const std::ffi::c_void) };
 
     Ok(page_count)
 }
@@ -3288,9 +3298,7 @@ fn result_chunk_count(_ruby: &Ruby, result_ptr: i64) -> Result<i32, Error> {
     }
 
     // SAFETY: caller must ensure result_ptr is valid
-    let chunk_count = unsafe {
-        kreuzberg_result_get_chunk_count(result_ptr as *const std::ffi::c_void)
-    };
+    let chunk_count = unsafe { kreuzberg_result_get_chunk_count(result_ptr as *const std::ffi::c_void) };
 
     Ok(chunk_count)
 }
@@ -3304,9 +3312,7 @@ fn result_detected_language(_ruby: &Ruby, result_ptr: i64) -> Result<Value, Erro
     }
 
     // SAFETY: caller must ensure result_ptr is valid
-    let lang_ptr = unsafe {
-        kreuzberg_result_get_detected_language(result_ptr as *const std::ffi::c_void)
-    };
+    let lang_ptr = unsafe { kreuzberg_result_get_detected_language(result_ptr as *const std::ffi::c_void) };
 
     if lang_ptr.is_null() {
         return Ok(_ruby.qnil().as_value());
@@ -3319,7 +3325,9 @@ fn result_detected_language(_ruby: &Ruby, result_ptr: i64) -> Result<Value, Erro
         .to_string();
 
     // Free the string
-    unsafe { kreuzberg_free_string(lang_ptr as *mut c_char); }
+    unsafe {
+        kreuzberg_free_string(lang_ptr as *mut c_char);
+    }
 
     Ok(_ruby.str_new(&lang).into_value_with(_ruby))
 }
@@ -3333,13 +3341,11 @@ fn result_metadata_field(ruby: &Ruby, result_ptr: i64, field_name: String) -> Re
         return Err(runtime_error("Invalid result pointer"));
     }
 
-    let c_field = std::ffi::CString::new(field_name)
-        .map_err(|e| runtime_error(format!("Invalid field name: {}", e)))?;
+    let c_field =
+        std::ffi::CString::new(field_name).map_err(|e| runtime_error(format!("Invalid field name: {}", e)))?;
 
     // SAFETY: caller must ensure result_ptr is valid
-    let field = unsafe {
-        kreuzberg_result_get_metadata_field(result_ptr as *const std::ffi::c_void, c_field.as_ptr())
-    };
+    let field = unsafe { kreuzberg_result_get_metadata_field(result_ptr as *const std::ffi::c_void, c_field.as_ptr()) };
 
     if field.is_null != 0 {
         return Ok(ruby.qnil().as_value());
@@ -3353,11 +3359,13 @@ fn result_metadata_field(ruby: &Ruby, result_ptr: i64, field_name: String) -> Re
     let json_str = c_str
         .to_str()
         .map_err(|_| runtime_error("Invalid UTF-8 in field value"))?;
-    let json_value: serde_json::Value = serde_json::from_str(json_str)
-        .map_err(|e| runtime_error(format!("Failed to parse field value: {}", e)))?;
+    let json_value: serde_json::Value =
+        serde_json::from_str(json_str).map_err(|e| runtime_error(format!("Failed to parse field value: {}", e)))?;
 
     // Free the string
-    unsafe { kreuzberg_free_string(field.json_value); }
+    unsafe {
+        kreuzberg_free_string(field.json_value);
+    }
 
     json_value_to_ruby(ruby, &json_value)
 }
@@ -3456,7 +3464,10 @@ fn init(ruby: &Ruby) -> Result<(), Error> {
     module.define_module_function("_config_merge_native", function!(config_merge_wrapper, 2))?;
     module.define_module_function("_result_page_count_native", function!(result_page_count, 1))?;
     module.define_module_function("_result_chunk_count_native", function!(result_chunk_count, 1))?;
-    module.define_module_function("_result_detected_language_native", function!(result_detected_language, 1))?;
+    module.define_module_function(
+        "_result_detected_language_native",
+        function!(result_detected_language, 1),
+    )?;
     module.define_module_function("_result_metadata_field_native", function!(result_metadata_field, 2))?;
 
     Ok(())

@@ -50,13 +50,13 @@ const (
 
 // Legacy error codes for backward compatibility (deprecated)
 const (
-	ErrorCodeSuccess           ErrorCode = 99
-	ErrorCodeGenericError      ErrorCode = 99
-	ErrorCodePanic             ErrorCode = 99
-	ErrorCodeInvalidArgument   ErrorCode = 99
-	ErrorCodeIoError           ErrorCode = 99
-	ErrorCodeParsingError      ErrorCode = 99
-	ErrorCodeOcrError          ErrorCode = 99
+	ErrorCodeSuccess         ErrorCode = 99
+	ErrorCodeGenericError    ErrorCode = 99
+	ErrorCodePanic           ErrorCode = 99
+	ErrorCodeInvalidArgument ErrorCode = 99
+	ErrorCodeIoError         ErrorCode = 99
+	ErrorCodeParsingError    ErrorCode = 99
+	ErrorCodeOcrError        ErrorCode = 99
 )
 
 // String returns the string representation of an ErrorCode.

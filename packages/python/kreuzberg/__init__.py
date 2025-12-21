@@ -66,6 +66,9 @@ from kreuzberg._internal_bindings import (
     clear_ocr_backends,
     clear_post_processors,
     clear_validators,
+    config_get_field,
+    config_merge,
+    config_to_json,
     detect_mime_type_from_bytes,
     get_embedding_preset,
     get_extensions_for_mime,
@@ -99,9 +102,6 @@ from kreuzberg._internal_bindings import (
     batch_extract_bytes as batch_extract_bytes_impl,
 )
 from kreuzberg._internal_bindings import (
-    classify_error as _classify_error_impl,
-)
-from kreuzberg._internal_bindings import (
     batch_extract_bytes_sync as batch_extract_bytes_sync_impl,
 )
 from kreuzberg._internal_bindings import (
@@ -111,12 +111,13 @@ from kreuzberg._internal_bindings import (
     batch_extract_files_sync as batch_extract_files_sync_impl,
 )
 from kreuzberg._internal_bindings import (
-    config_get_field,
-    config_merge,
-    config_to_json,
+    classify_error as _classify_error_impl,
 )
 from kreuzberg._internal_bindings import (
     detect_mime_type_from_path as _detect_mime_type_from_path_impl,
+)
+from kreuzberg._internal_bindings import (
+    error_code_name as _error_code_name_impl,
 )
 from kreuzberg._internal_bindings import (
     extract_bytes as extract_bytes_impl,
@@ -129,9 +130,6 @@ from kreuzberg._internal_bindings import (
 )
 from kreuzberg._internal_bindings import (
     extract_file_sync as extract_file_sync_impl,
-)
-from kreuzberg._internal_bindings import (
-    error_code_name as _error_code_name_impl,
 )
 from kreuzberg._internal_bindings import (
     get_error_details as _get_error_details_impl,
@@ -809,7 +807,7 @@ def get_error_details() -> dict[str, Any]:
         >>> from kreuzberg import get_error_details
         >>> details = get_error_details()
         >>> print(f"Error: {details['message']} (code={details['error_code']})")
-        >>> if details['source_file']:
+        >>> if details["source_file"]:
         ...     print(f"  at {details['source_file']}:{details['source_line']}")
     """
     return _get_error_details_impl()
