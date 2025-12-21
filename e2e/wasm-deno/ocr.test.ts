@@ -1,13 +1,18 @@
 // Auto-generated tests for ocr fixtures.
 // Run with: deno test --allow-read
 
-import { assertions, buildConfig, extractBytes, initWasm, resolveDocument, shouldSkipFixture } from "./helpers.ts";
+import {
+	assertions,
+	buildConfig,
+	ensureWasmInitialized,
+	extractBytes,
+	resolveDocument,
+	shouldSkipFixture,
+} from "./helpers.ts";
 import type { ExtractionResult } from "./helpers.ts";
 
-// Initialize WASM module once at module load time
-await initWasm();
-
 Deno.test("ocr_image_hello_world", { permissions: { read: true } }, async () => {
+	await ensureWasmInitialized();
 	const documentBytes = await resolveDocument("images/test_hello_world.png");
 	const config = buildConfig({ force_ocr: true, ocr: { backend: "tesseract", language: "eng" } });
 	let result: ExtractionResult | null = null;
@@ -35,6 +40,7 @@ Deno.test("ocr_image_hello_world", { permissions: { read: true } }, async () => 
 });
 
 Deno.test("ocr_image_no_text", { permissions: { read: true } }, async () => {
+	await ensureWasmInitialized();
 	const documentBytes = await resolveDocument("images/flower_no_text.jpg");
 	const config = buildConfig({ force_ocr: true, ocr: { backend: "tesseract", language: "eng" } });
 	let result: ExtractionResult | null = null;
@@ -54,6 +60,7 @@ Deno.test("ocr_image_no_text", { permissions: { read: true } }, async () => {
 });
 
 Deno.test("ocr_pdf_image_only_german", { permissions: { read: true } }, async () => {
+	await ensureWasmInitialized();
 	const documentBytes = await resolveDocument("pdfs/image_only_german_pdf.pdf");
 	const config = buildConfig({ force_ocr: true, ocr: { backend: "tesseract", language: "eng" } });
 	let result: ExtractionResult | null = null;
@@ -74,6 +81,7 @@ Deno.test("ocr_pdf_image_only_german", { permissions: { read: true } }, async ()
 });
 
 Deno.test("ocr_pdf_rotated_90", { permissions: { read: true } }, async () => {
+	await ensureWasmInitialized();
 	const documentBytes = await resolveDocument("pdfs/ocr_test_rotated_90.pdf");
 	const config = buildConfig({ force_ocr: true, ocr: { backend: "tesseract", language: "eng" } });
 	let result: ExtractionResult | null = null;
@@ -95,6 +103,7 @@ Deno.test("ocr_pdf_rotated_90", { permissions: { read: true } }, async () => {
 });
 
 Deno.test("ocr_pdf_tesseract", { permissions: { read: true } }, async () => {
+	await ensureWasmInitialized();
 	const documentBytes = await resolveDocument("pdfs/ocr_test.pdf");
 	const config = buildConfig({ force_ocr: true, ocr: { backend: "tesseract", language: "eng" } });
 	let result: ExtractionResult | null = null;
