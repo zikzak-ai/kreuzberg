@@ -248,6 +248,7 @@ pub mod noop {
 
     impl ProfileGuard {
         /// Create a no-op profiler (always succeeds)
+        #[inline(always)]
         pub fn new(frequency: i32) -> Result<Self> {
             Ok(ProfileGuard {
                 sampling_frequency: frequency.clamp(100, 10000),
@@ -255,16 +256,19 @@ pub mod noop {
         }
 
         /// Get the configured sampling frequency in Hz
+        #[inline(always)]
         pub fn sampling_frequency(&self) -> i32 {
             self.sampling_frequency
         }
 
         /// Calculate expected sample count (always returns 0 for no-op)
+        #[inline(always)]
         pub fn estimated_sample_count(&self) -> usize {
             0
         }
 
         /// Finish no-op profiling
+        #[inline(always)]
         pub fn finish(self) -> Result<ProfilingResult> {
             Ok(ProfilingResult {
                 duration: std::time::Duration::ZERO,
@@ -281,6 +285,7 @@ pub mod noop {
 
     impl ProfilingResult {
         /// No-op flamegraph generation
+        #[inline(always)]
         pub fn generate_flamegraph(&self, _output_path: &Path) -> Result<()> {
             eprintln!("Profiling is not available on this platform or feature is disabled");
             Ok(())
@@ -344,6 +349,7 @@ pub fn dump_heap_profile(path: &Path) -> Result<()> {
 
 /// No-op heap dump when memory profiling is disabled
 #[cfg(not(feature = "memory-profiling"))]
+#[inline(always)]
 pub fn dump_heap_profile(_path: &Path) -> Result<()> {
     eprintln!("Memory profiling is not enabled (feature 'memory-profiling' required)");
     Ok(())

@@ -2915,6 +2915,7 @@ dependencies = [
  "criterion 0.5.1",
  "html-to-markdown-rs",
  "kreuzberg",
+ "rayon",
  "serde",
  "serde_json",
  "tempfile",

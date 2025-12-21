@@ -730,6 +730,14 @@ jobs:
         with:
           ruby-version: "3.2"
 
+      - name: Install Bundler
+        shell: bash
+        run: scripts/ci/ruby/install-bundler.sh
+
+      - name: Install Ruby deps
+        shell: bash
+        run: scripts/ci/ruby/install-ruby-deps.sh
+
       - name: Setup ONNX Runtime
         uses: ./.github/actions/setup-onnx-runtime
         with:
@@ -742,6 +750,14 @@ jobs:
         env:
           PLATFORM: x86_64-linux
         run: scripts/benchmarks/build-ruby-gem.sh
+
+      - name: Compile Ruby native extension
+        shell: bash
+        run: scripts/ci/ruby/compile-extension.sh
+
+      - name: Build kreuzberg CLI
+        shell: bash
+        run: cargo build --release --package kreuzberg-cli
 
       - name: Run benchmark
         env:
@@ -811,6 +827,14 @@ jobs:
         with:
           ruby-version: "3.2"
 
+      - name: Install Bundler
+        shell: bash
+        run: scripts/ci/ruby/install-bundler.sh
+
+      - name: Install Ruby deps
+        shell: bash
+        run: scripts/ci/ruby/install-ruby-deps.sh
+
       - name: Setup ONNX Runtime
         uses: ./.github/actions/setup-onnx-runtime
         with:
@@ -823,6 +847,14 @@ jobs:
         env:
           PLATFORM: x86_64-linux
         run: scripts/benchmarks/build-ruby-gem.sh
+
+      - name: Compile Ruby native extension
+        shell: bash
+        run: scripts/ci/ruby/compile-extension.sh
+
+      - name: Build kreuzberg CLI
+        shell: bash
+        run: cargo build --release --package kreuzberg-cli
 
       - name: Run benchmark
         env:
@@ -1056,6 +1088,20 @@ jobs:
         with:
           distribution: temurin
           java-version: "25"
+
+      - name: Setup Maven 4
+        shell: bash
+        run: |
+          MAVEN_VERSION="4.0.0-rc-4"
+          MAVEN_URL="https://archive.apache.org/dist/maven/maven-4/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+          MAVEN_HOME="${RUNNER_TEMP}/apache-maven-${MAVEN_VERSION}"
+
+          curl -fsSL "$MAVEN_URL" -o "${RUNNER_TEMP}/maven.tar.gz"
+          tar -xzf "${RUNNER_TEMP}/maven.tar.gz" -C "${RUNNER_TEMP}"
+          echo "${MAVEN_HOME}/bin" >> "$GITHUB_PATH"
+
+          # Verify Maven version
+          "${MAVEN_HOME}/bin/mvn" --version
 
       - name: Setup ONNX Runtime
         uses: ./.github/actions/setup-onnx-runtime

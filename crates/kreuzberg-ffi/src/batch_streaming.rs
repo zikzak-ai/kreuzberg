@@ -352,14 +352,14 @@ pub unsafe extern "C" fn kreuzberg_extract_batch_parallel(
         }
     }
 
-    // Cancellation flag
-    let cancelled = Arc::new(AtomicBool::new(false));
-    let config = Arc::new(config);
-
     // Process files in parallel using rayon
     #[cfg(feature = "rayon")]
     {
         use rayon::prelude::*;
+
+        // Cancellation flag
+        let cancelled = Arc::new(AtomicBool::new(false));
+        let config = Arc::new(config);
 
         // Configure thread pool
         let pool = if max_parallel > 0 {
@@ -376,6 +376,9 @@ pub unsafe extern "C" fn kreuzberg_extract_batch_parallel(
             }
         };
 
+        // Convert user_data to usize for thread-safe capture in closure
+        let user_data_ptr = user_data as usize;
+
         pool.install(|| {
             file_paths.par_iter().for_each(|(index, path)| {
                 if cancelled.load(Ordering::Relaxed) {
@@ -386,8 +389,10 @@ pub unsafe extern "C" fn kreuzberg_extract_batch_parallel(
                     Ok(result) => {
                         let view = create_result_view(&result);
 
-                        // SAFETY: Callback must be thread-safe
-                        let should_cancel = unsafe { result_callback(&view as *const _, *index, user_data) };
+                        // SAFETY: Callback must be thread-safe. user_data was converted to usize
+                        // and back to preserve the original pointer value for the callback.
+                        let should_cancel =
+                            unsafe { result_callback(&view as *const _, *index, user_data_ptr as *mut c_void) };
 
                         if should_cancel != 0 {
                             cancelled.store(true, Ordering::Relaxed);
@@ -396,7 +401,7 @@ pub unsafe extern "C" fn kreuzberg_extract_batch_parallel(
                     Err(e) => {
                         if let Some(err_cb) = error_callback {
                             if let Ok(err_msg) = CString::new(e) {
-                                unsafe { err_cb(*index, err_msg.as_ptr(), user_data) };
+                                unsafe { err_cb(*index, err_msg.as_ptr(), user_data_ptr as *mut c_void) };
                             }
                         }
                     }

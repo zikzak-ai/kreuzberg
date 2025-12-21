@@ -43,7 +43,7 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::ptr;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 /// Statistics for string interning efficiency tracking.
 #[repr(C)]
