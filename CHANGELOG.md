@@ -5,1013 +5,327 @@ All notable changes to Kreuzberg will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0-rc.18] - 2025-12-23
-
-### Fixed
-
-- **Ruby gem packaging**: Fixed missing kreuzberg-ffi crate in vendored dependencies causing linker failures during gem installation
-- **Ruby publish workflow**: Added kreuzberg-ffi build step before gem packaging to ensure static library is available
-
-## [4.0.0-rc.17] - 2025-12-22
-
-### Fixed
-
-- **Python wheels on macOS**: Fixed ImportError when installing from wheel due to hardcoded dylib paths
-- **Ruby gems on macOS**: Fixed linker errors during gem build and installation
-- **TypeScript plugin registration**: Fixed TypeError when registering JavaScript-style plugins
-
-### Added
-
-- **Docker ARM64 support**: Multi-architecture Docker images now support linux/arm64 platform
-
-### Performance
-
-- **Go bindings**: Improved ConfigMerge performance with native field copying
-
 ## [Unreleased]
 
 ## [4.0.0-rc.19] - 2025-12-24
 
 ### Added
 
-- **Homebrew bottle support** - Pre-built macOS bottles for faster installation (arm64_sequoia, arm64_sonoma, ventura)
-- **Go binary download script** - Automatic binary download from GitHub releases with source build fallback (tools/scripts/go/download-binaries.go)
-- **Comprehensive E2E tests for large file handling** - Tests covering 2MB, 5MB, 10MB, 50MB, and 90MB files to validate multi-part streaming and memory efficiency
-- **Font configuration API** - New `FontConfig` struct in `PdfConfig` to control font provider behavior
-  - `enabled` flag to enable/disable custom font provider (default: true)
-  - `custom_font_dirs` to add font directories beyond system fonts
-  - Automatic path expansion (tilde, relative paths)
-  - Security hardening (symlink resolution, canonicalization)
-  - Available in all bindings: Rust, Python, TypeScript, Java, Go, Ruby, C#
-  - Performance: ~12-13% faster PDF processing with font caching
-  - See migration guide: docs/migration/v4.0-rc2-fonts.md
-- **Config file caching** - DashMap-based cache with mtime-based invalidation for TOML/YAML/JSON config files (2-3% improvement on server workloads)
-- **Processor config pre-computation** - HashSet-based O(1) lookups for enabled/disabled post-processors (1-2% improvement)
-- **Environment variable configuration for API size limits** - `KREUZBERG_MAX_REQUEST_BODY_BYTES` and `KREUZBERG_MAX_MULTIPART_FIELD_BYTES` for fine-grained server configuration
+- **Font configuration API** - Configurable font provider with custom directory support and automatic path expansion
+- **Homebrew bottle support** - Pre-built macOS bottles for faster installation
+- **Environment variable configuration** - `KREUZBERG_MAX_REQUEST_BODY_BYTES` and `KREUZBERG_MAX_MULTIPART_FIELD_BYTES` for API size limits
+- **Config file caching** - Improved performance for TOML/YAML/JSON config file loading
 
 ### Fixed
 
-- **CI Node workflow** - Fixed PowerShell variable escaping in system information dump step causing Windows builds to fail
+- **Large file uploads** (issue #248) - Files larger than 2MB are now accepted (configurable up to 100MB)
+- **Browser package Vite compatibility** (issue #249) - Fixed missing `pdfium.js` in dist bundle
+- **Node.js missing binaries** (issue #241) - Fixed resolution in Docker and pnpm monorepo environments
+- **Ruby gem native extension build** - Simplified build system with proper linker path resolution
+- **Java E2E test compatibility** - Regenerated tests for Java 25
+- **Docker ONNX Runtime** - Pinned to version 1.23 for compatibility
+- **Font provider thread safety** - Fixed race condition and graceful lock poisoning handling
+- **Custom font path validation** - Added security hardening with symlink resolution and canonicalization
 
 ### Changed
 
-- **Default API size limits set to 100MB** - Configurable via `KREUZBERG_MAX_UPLOAD_SIZE_MB` environment variable
-- **BREAKING**: Custom font provider now enabled by default
-  - Previous: Font provider always enabled, not configurable
-  - Current: Font provider enabled by default, configurable via `FontConfig`
-  - Migration: Set `font_config.enabled = false` to use pdfium defaults
-  - Performance improvement: 12-13% faster PDF extraction
-  - Global configuration: Must be set before first PDF extraction
-- **TypeScript serialization** - Replaced MessagePack + Base64 double-encoding with direct JSON serialization (5-8% improvement on plugin workloads)
-- **Batch semaphore tuning** - Reduced concurrency multiplier from 2.0x to 1.5x CPU count to reduce contention on external libraries (15-20% improvement on multi-format batches)
+- **BREAKING**: Custom font provider now enabled by default (set `enabled = false` to disable)
+- **Default API size limit** - Increased to 100MB (configurable via `KREUZBERG_MAX_UPLOAD_SIZE_MB`)
+- **TypeScript serialization** - Replaced MessagePack + Base64 with direct JSON serialization
 
 ### Performance
 
-- **Multi-session optimization campaign** - 15-25% overall execution improvement, 30-45% memory reduction
-  - **String allocations** - Enhanced StringPool, capacity pre-allocation, Copy-on-Write optimization (-2.57% CPU, -0.81% memory, 40-60% fewer allocations)
-  - **Memory pools** - Lazy initialization, dynamic sizing, improved reuse (-35-50% memory baseline: 60-135 MB → 30-80 MB)
-    - PDF: -40% (200M → 120M), Office: -45% (100M → 55M), HTML: -50% (134M → 67M)
-  - **HTML/Markdown/Image** - Optimized HTML processing, Markdown AST reduction, conditional image decompression, pipeline early exits (-1.01% CPU)
-  - **Binding & parallelization** - Dynamic TypeScript thread pool (4 → num_cpus workers), JSON serialization, config caching, batch semaphore tuning (+10-15% improvement on binding workloads)
-    - TypeScript: +8-12% on multi-core systems
-    - Plugin overhead: -5-8% (removed double serialization)
-    - Server workloads: +2-3% (config caching)
-  - **Post-processing pipeline** - Removed duplicate quality processing, lazy metadata conversion, single-pass quality scanning (+10-17% CPU improvement)
-    - Quality processing: 5-7% gain (eliminated redundant calculation)
-    - Metadata conversion: 1-2% gain (avoided HashMap clone + string conversion)
-    - Quality scanning: 3-5% gain (combined 5 regex patterns into single pass)
+- 15-25% overall execution improvement, 30-45% memory reduction
+- String allocation optimization (-2.57% CPU, -0.81% memory)
+- Memory pool improvements (35-50% reduction: 60-135 MB → 30-80 MB)
+- Post-processing pipeline optimizations (10-17% CPU improvement)
+- TypeScript thread pool dynamically sized by CPU count
 
 ### Removed
 
-- **Legacy code cleanup** - Comprehensive removal of deprecated backward compatibility code (27 files, -494 net lines)
-  - TypeScript: `KREUZBERG_LEGACY_SERIALIZATION` environment variable and MessagePack + Base64 serialization branches
-  - Go: 7 legacy error codes and 11 deprecated error wrapper functions (updated 77 call sites to context-aware constructors)
-  - Ruby: `Ocr = OCR` backward compatibility alias
-  - Rust: Deprecated `Metadata.date` field (use `created_at`/`modified_at` instead)
-  - Build: Unused legacy EMSDK download function (226 lines)
-  - Cargo: 3 legacy feature aliases (`pdf-static`, `pdf-bundled`, `pdf-system`)
-
-### Fixed
-
-- **Large file upload limit** (issue #248) - Files larger than 2MB were being rejected due to Axum's internal multipart field limit. Added `DefaultBodyLimit::max()` configuration to allow files up to the configured size limit (default 100MB, configurable via `KREUZBERG_MAX_UPLOAD_SIZE_MB` environment variable).
-- **Browser package Vite compatibility** (issue #249) - Fixed missing `pdfium.js` in dist bundle, added `@vite-ignore` comments for dynamic imports, externalized Node.js modules for browser builds to ensure proper bundling.
-- **Node.js missing binaries in Docker/pnpm monorepo** (issue #241) - Fixed by adding optionalDependencies for all 27 platform-specific binary packages, ensuring proper resolution across environments.
-- **Ruby gem native extension build** - Simplified build system to use Cargo workspace coordination with explicit kreuzberg-ffi dependency, fixing linker path resolution.
-- **Java E2E tests compatibility with Java 25** - Regenerated tests to match current API signatures and ensure compatibility with latest JDK.
-- **Docker**: Pin ONNX Runtime to version 1.23 to match ort crate compatibility (fixes incompatibility with libonnxruntime1.21)
-- Lock poisoning in font provider now handled gracefully (no panics)
-- Path traversal vulnerability in custom font directories (security hardening)
-- Race condition in font provider registration (thread-safety)
-- Silent error suppression in font configuration initialization
-- Duplicate quality processing calculation running twice per extraction
-- O(n) processor name lookups (now O(1) with HashSet pre-computation)
+- **Legacy code cleanup** - Removed deprecated backward compatibility
+  - TypeScript: `KREUZBERG_LEGACY_SERIALIZATION` environment variable
+  - Go: 7 legacy error codes
+  - Ruby: `Ocr = OCR` alias
+  - Rust: Deprecated `Metadata.date` field
+  - Cargo: 3 legacy feature aliases
 
 ### Security
 
-- Custom font directories now validated with canonicalization
+- Custom font directories validated with canonicalization
 - Symlinks resolved to prevent path traversal attacks
 - All custom paths validated before use
+
+## [4.0.0-rc.18] - 2025-12-23
+
+### Fixed
+
+- **Ruby gem packaging** - Fixed missing kreuzberg-ffi crate in vendored dependencies
+- **Ruby gem macOS** - Fixed linker errors during gem build and installation
+- **Python wheels macOS** - Fixed ImportError from hardcoded dylib paths
+
+## [4.0.0-rc.17] - 2025-12-22
+
+### Added
+
+- **Docker ARM64 support** - Multi-architecture Docker images now support linux/arm64
+
+### Fixed
+
+- **Python wheels macOS** - Fixed ImportError when installing from wheel
+- **Ruby gems macOS** - Fixed linker errors during gem installation
+- **TypeScript plugin registration** - Fixed TypeError with JavaScript-style plugins
+
+### Performance
+
+- **Go bindings** - Improved ConfigMerge performance with native field copying
 
 ## [4.0.0-rc.16] - 2025-12-21
 
 ### Added
 
-- **Batch processing APIs**: 4-6x throughput improvement for high-volume document extraction across all language bindings
-- **CPU profiling infrastructure**: Automated flamegraph generation for performance analysis on pull requests
-
-### Performance
-
-- **Batch operations**: Implemented batch streaming APIs in FFI for amortized overhead; Ruby and Java can now process multiple documents per FFI call
-- **C# optimizations**: JSON serialization with source generation, GC handle pooling, and custom serializer context
-- **Core improvements**: PDF text extraction, token reduction, OCR language registry, and string pooling for 2-3x batch throughput gains
-- **TypeScript/Node.js**: Config validation and batch operation integration optimizations
+- **Batch processing APIs** - 4-6x throughput improvement for high-volume document extraction
 
 ### Fixed
 
-- **Python IDE support**: Type stub files (`.pyi`) now included in wheel distributions for proper IDE autocomplete
-- **Java Maven compatibility**: Fixed CI builds with Maven 4.0.0-rc-4+ support
-- **Go Windows linking**: Resolved duplicate linker flags causing compilation failures
-- **Ruby gem compilation**: Fixed missing link search paths on Linux and Windows
-- **Windows CI stability**: LibreOffice tests now skip on Windows to prevent timeouts
-- **Ruby gem publishing**: Fixed artifact corruption during publication process
+- **Python IDE support** - Type stub files (`.pyi`) now included in wheel distributions
+- **Java Maven compatibility** - Fixed CI builds with Maven 4.0.0-rc-4+ support
+- **Go Windows linking** - Resolved duplicate linker flags causing compilation failures
+- **Ruby gem compilation** - Fixed missing link search paths on Linux and Windows
+- **Ruby gem publishing** - Fixed artifact corruption during publication process
+
+### Performance
+
+- **Batch operations** - 2-3x batch throughput gains with FFI streaming
+- **C# optimizations** - JSON serialization with source generation
+- **TypeScript/Node.js** - Config validation and batch operation integration
 
 ## [4.0.0-rc.15] - 2025-12-20
 
 ### Fixed
 
-- **Node.js Windows publishing**: Windows x64 platform packages (`@kreuzberg/node-win32-x64-msvc`) now publish correctly to npm
+- **Node.js Windows publishing** - Windows x64 platform packages now publish correctly to npm
 
 ## [4.0.0-rc.14] - 2025-12-20
 
 ### Added
 
-- **Comprehensive test suites**: End-to-end tests for all language bindings (Python, Node.js, Ruby, Java, Go, WASM) covering batch APIs, file format support, and type safety
+- **Comprehensive test suites** - End-to-end tests for all language bindings
 
 ### Fixed
 
-- **C# NuGet publishing**: Switched from OIDC authentication to direct API key authentication for more reliable package publishing
-- **LibreOffice in Docker**: Updated to version 25.8.4 for Office document extraction (DOCX, XLSX, ODT)
-- **Python IDE type hints**: Type stub files now included in wheels, enabling full IDE autocomplete for all public APIs
-- **Ruby gem compilation**: Fixed Rust crate vendoring during native extension build
-- **Python ExtractionResult**: Fixed missing `pages` field type hints in IDE autocomplete
+- **C# NuGet publishing** - Switched to direct API key authentication
+- **LibreOffice in Docker** - Updated to version 25.8.4
+- **Python IDE type hints** - Type stub files now included in wheels
+- **Ruby gem compilation** - Fixed Rust crate vendoring
+- **Python ExtractionResult** - Fixed missing `pages` field in IDE autocomplete
 
 ## [4.0.0-rc.13] - 2025-12-19
 
 ### Fixed
 
-- **PDF bundled feature flag**: Corrected conditional compilation flag from `pdf-bundled` to `bundled-pdfium` (affects Python wheels, Ruby gems, WASM, Java)
-- **Python CLI binary discovery**: Restored timeout behavior for benchmark tests
-- **Go Windows linking**: Fixed missing system libraries in cgo linking
-- **Ruby gem packaging**: Added missing TOML dependency for workspace generation
-- **Docker caching**: Improved build performance with GitHub Actions Cache backend
-- **Ruby gem publishing**: Enhanced validation before pushing to registry
-- **WASM distribution**: Added compiled binaries to git for proper NPM publishing
-
-## [4.0.0-rc.10] - 2025-12-16
-
-### Breaking Changes
-
-- **PDFium feature names changed**: `pdf-static`→`static-pdfium`, `pdf-bundled`→`bundled-pdfium`, `pdf-system`→`system-pdfium`. Feature `full-bundled` removed (use `full` + `bundled-pdfium`).
-- **Default PDFium linking**: `pdf` feature now defaults to `bundled-pdfium` (auto-downloads and embeds PDFium).
-- **Go module path**: Moved from `github.com/kreuzberg-dev/kreuzberg/packages/go/kreuzberg` to `github.com/kreuzberg-dev/kreuzberg/packages/go/v4`. Update your imports and run `go mod tidy`.
-
-### Fixed
-
-- **Windows CLI**: Now includes bundled PDFium runtime
-- **WASM Node.js/Deno**: PDFium support for native targets (edge runtimes continue using lopdf)
-- **Go bindings**: Added `ExtractFileWithContext()` and batch variants for context cancellation support
-- **Node/TypeScript**: Replaced `any` types with proper definitions. Fixed data loss in page metadata.
-- **Ruby bindings**: Complete YARD documentation for all API methods
-- **C# bindings**: Complete XML documentation for all public methods
+- **PDF bundled feature flag** - Corrected flag to `bundled-pdfium`
+- **Go Windows linking** - Fixed missing system libraries
+- **Ruby gem packaging** - Added missing TOML dependency
+- **WASM distribution** - Added compiled binaries for proper NPM publishing
 
 ## [4.0.0-rc.12] - 2025-12-19
 
 ### Fixed
 
-- **Python wheels PDFium bundling**: Corrected conditional compilation feature flag to enable bundled PDFium
-- **C# bindings**: Fixed MSBuild target to preserve CI-downloaded native assets across all platforms
-- **Ruby bindings**: Added missing `unsafe` keyword for Rust 2024 edition compatibility
-- **WASM**: Fixed unused import warning in PDF extractor
-- **Docker**: Corrected ONNX Runtime package name for Debian Trixie
-- **Homebrew CLI**: Bundled PDFium feature now included in CLI binary distribution
-- **LibreOffice tests**: Disabled on Windows CI to prevent test timeout issues
+- **Python wheels PDFium bundling** - Corrected conditional compilation feature flag
+- **C# bindings** - Fixed MSBuild target for CI-downloaded native assets
+- **Ruby bindings** - Added missing `unsafe` keyword for Rust 2024 edition
+- **Docker** - Corrected ONNX Runtime package name for Debian Trixie
 
 ## [4.0.0-rc.11] - 2025-12-18
 
 ### Fixed
 
-- **PDFium bundling**: Now correctly included in all language bindings (Python, Node.js, Ruby, Java, Go, C#) for PDF extraction support
-- **C# native libraries**: Build target now properly copies platform-specific native libraries to all supported platforms (Windows, macOS, Linux)
-- **Ruby gem publishing**: Fixed validation errors caused by double-compression in publish workflow
-- **Go Windows linking**: Removed duplicate CGO linker flags causing compilation failures
-- **Java ONNX Runtime**: Added system library path fallback for users with system-installed ONNX Runtime
-- **WASM PDF support**: Added PDF extraction support for browser and Node.js WASM targets
-- **WASM MIME types**: Fixed test generator to use correct MIME types for all document formats
-
-## [Unreleased]
-
-### Breaking Changes
-
-- **Embeddings now require ONNX Runtime installation**
-  - Switched from `ort-download-binaries` to `ort-load-dynamic` for runtime detection
-  - Users must install ONNX Runtime separately to use embeddings functionality
-  - Benefit: ~150-200MB package size reduction per platform
-  - Windows MSVC support enabled for embeddings (NEW)
-  - Installation: `brew install onnxruntime` (macOS), `apt install libonnxruntime libonnxruntime-dev` (Linux), `scoop install onnxruntime` (Windows)
-
-### Removed
-
-- `embeddings-dynamic` feature flag (embeddings now always uses dynamic loading)
+- **PDFium bundling** - Now correctly included in all language bindings
+- **C# native libraries** - Build target properly copies platform-specific libraries
+- **Ruby gem publishing** - Fixed validation errors from double-compression
+- **Go Windows linking** - Removed duplicate CGO linker flags
+- **WASM** - Added PDF extraction support for browser and Node.js
 
 ## [4.0.0-rc.10] - 2025-12-16
 
 ### Breaking Changes
 
-- **PDFium feature names changed**: `pdf-static`→`static-pdfium`, `pdf-bundled`→`bundled-pdfium`, `pdf-system`→`system-pdfium`. Feature `full-bundled` removed (use `full` + `bundled-pdfium`).
-- **Default PDFium linking**: `pdf` feature now defaults to `bundled-pdfium` (auto-downloads and embeds PDFium).
-- **Go module path**: Moved from `github.com/kreuzberg-dev/kreuzberg/packages/go/kreuzberg` to `github.com/kreuzberg-dev/kreuzberg/packages/go/v4`. Update your imports and run `go mod tidy`.
+- **PDFium feature names** - `pdf-static` → `static-pdfium`, `pdf-bundled` → `bundled-pdfium`, `pdf-system` → `system-pdfium`
+- **Default PDFium linking** - `pdf` feature now defaults to `bundled-pdfium`
+- **Go module path** - Moved to `github.com/kreuzberg-dev/kreuzberg/packages/go/v4` (update imports and run `go mod tidy`)
 
 ### Fixed
 
-- **Windows CLI**: Now includes bundled PDFium runtime
-- **WASM Node.js/Deno**: PDFium support for native targets (edge runtimes continue using lopdf)
-- **Go bindings**: Added `ExtractFileWithContext()` and batch variants for context cancellation support
-- **Node/TypeScript**: Replaced `any` types with proper definitions. Fixed data loss in page metadata.
-- **Ruby bindings**: Complete YARD documentation for all API methods
-- **C# bindings**: Complete XML documentation for all public methods
+- **Windows CLI** - Now includes bundled PDFium runtime
+- **WASM** - PDFium support for native targets
+- **Go bindings** - Added `ExtractFileWithContext()` and batch variants
+- **TypeScript** - Replaced `any` types with proper definitions
+- **Ruby bindings** - Complete YARD documentation
+- **C# bindings** - Complete XML documentation
 
 ## [4.0.0-rc.9] - 2025-12-15
 
 ### Added
 
-- **`PDFIUM_STATIC_LIB_PATH` environment variable**: Enables custom static PDFium paths for Docker builds and static binaries
+- **`PDFIUM_STATIC_LIB_PATH` environment variable** - Enables custom static PDFium paths for Docker builds
 
 ### Fixed
 
-- **Python**: Wheels now include typing metadata (`.pyi` stubs) for IDE support
-- **Java**: Maven packages now bundle platform-specific native libraries (including Windows DLLs)
-- **Node**: npm platform packages now contain compiled `.node` binaries
-- **WASM**: Node.js runtime no longer crashes with `self is not defined`
-- **PDFium static linking**: Fixed to correctly search for `libpdfium.a` (was searching for dynamic library). Added macOS fallback to dynamic when static unavailable.
+- **Python** - Wheels now include typing metadata (`.pyi` stubs) for IDE support
+- **Java** - Maven packages now bundle platform-specific native libraries
+- **Node** - npm platform packages now contain compiled `.node` binaries
+- **WASM** - Node.js runtime no longer crashes with `self is not defined`
+- **PDFium static linking** - Fixed to correctly search for `libpdfium.a`
 
 ## [4.0.0-rc.8] - 2025-12-14
 
 ### Added
-- **MCP HTTP Stream transport** (GitHub #207)
-  - HTTP Stream transport for MCP server using rmcp's built-in support
-  - SSE (Server-Sent Events) for bidirectional communication per MCP spec
-  - Session management with secure session IDs handled by rmcp
-  - CLI flag to select transport: `kreuzberg mcp --transport http --host 127.0.0.1 --port 8001`
-  - Enable with `mcp-http` feature flag
-  - Production-ready for cloud deployments, Docker, and serverless
+
+- **MCP HTTP Stream transport** - HTTP Stream transport for MCP server with SSE support
 
 ### Fixed
 
-- **CI/CD reliability**: Improved publish workflows, increased test timeouts, and fixed disk space issues
-- **Go bindings**: Fixed CGO library path configuration for Linux and macOS
-- **Python wheels**: Now built with correct manylinux compatibility (`manylinux: auto`)
-- **Ruby gems**: Removed embedding model cache from distribution (was adding 567MB of bloat)
-- **Maven Central**: Updated publishing to use modern Sonatype Central API
-- **Docker publishing**: Added checks to skip redundant builds for already-released versions
+- **Go bindings** - Fixed CGO library path configuration for Linux and macOS
+- **Python wheels** - Now built with correct manylinux compatibility
+- **Ruby gems** - Removed embedding model cache from distribution
+- **Maven Central** - Updated publishing to use modern Sonatype Central API
 
 ## [4.0.0-rc.7] - 2025-12-12
 
 ### Added
-- **Configurable PDFium linking for Rust crate** via Cargo features
-  - `pdf-static`: Download and statically link PDFium (no runtime dependency)
-  - `pdf-bundled`: Embed library in binary (self-contained executables)
-  - `pdf-system`: Use system-installed PDFium via pkg-config
-  - System installation scripts for Linux and macOS with pkg-config support
-  - Runtime extraction module for bundled PDFium libraries
-  - Comprehensive documentation in `docs/guides/pdfium-linking.md`
-  - CI testing for system PDFium installation on Linux and macOS
-  - Default behavior unchanged (backward compatible)
-  - Language bindings continue to bundle PDFium automatically
-- **WebAssembly bindings** (`@kreuzberg/wasm` npm package) for browser, Cloudflare Workers, Deno, and Bun
-  - Full TypeScript API with sync and async extraction methods
-  - Multi-threading support via `wasm-bindgen-rayon` and SharedArrayBuffer
-  - Batch processing with `batchExtractBytes()` and `batchExtractBytesSync()`
-  - Plugin system for custom post-processors, validators, and OCR backends
-  - MIME type detection and configuration management
-  - Comprehensive unit tests (95%+ coverage on core modules)
-  - Production-ready error handling with detailed error messages
-- RTF extractor now builds structured tables (markdown + cells) and parses RTF `\info` metadata (authors, dates, counts), bringing parity with DOCX/ODT fixtures.
-- New pandoc-generated RTF fixtures with embedded metadata for `word_sample`, `lorem_ipsum`, and `extraction_test` to validate cross-format extraction.
-- **Page tracking and metadata redesign** (#226)
-  - Per-page content extraction with `PageContent` type
-  - Byte-accurate page boundaries with `PageBoundary` type for O(1) lookups
-  - Detailed per-page metadata with `PageInfo` type (dimensions, counts, visibility)
-  - Unified page structure tracking with `PageStructure` type
-  - `PageConfig` for controlling page extraction behavior
-  - Automatic chunk-to-page mapping with `first_page`/`last_page` in `ChunkMetadata`
-  - Format-specific support:
-    - PDF: Full byte-accurate tracking with O(1) performance
-    - PPTX: Slide boundary tracking
-    - DOCX: Best-effort page break detection
-  - Page markers in combined text for LLM context awareness
+
+- **Configurable PDFium linking** - `pdf-static`, `pdf-bundled`, `pdf-system` Cargo features
+- **WebAssembly bindings** - Full TypeScript API with sync/async extraction for browser, Cloudflare Workers, Deno
+- **RTF extractor improvements** - Structured table extraction and metadata support
+- **Page tracking redesign** - Byte-accurate page boundaries and per-page metadata
 
 ### Changed
-- **BREAKING**: `ChunkMetadata` field renames for byte-accurate tracking (#226)
-  - `char_start` → `byte_start` (UTF-8 byte offset)
-  - `char_end` → `byte_end` (UTF-8 byte offset)
-  - Existing code using `char_start`/`char_end` must be updated
-  - See [migration guide](migration/v3-to-v4.md#field-renames-character-to-byte-offsets) for details
+
+- **BREAKING**: `ChunkMetadata` field renames (#226)
+  - `char_start` → `byte_start`
+  - `char_end` → `byte_end`
+  - See migration guide for details
 
 ### Fixed
-- Comprehensive lint cleanup across the crate and tests (clippy warnings resolved).
-- Publish workflow now tolerates apt-managed RubyGems installations by skipping unsupported `gem update --system` during gem rebuild and installs a fallback .NET SDK when the runner lacks `dotnet`.
-- Docker publish now skips pushing when the target version tag already exists, avoiding redundant builds for released images.
-- Docker tag existence is checked upfront before any publish work, and per-variant publish jobs are skipped early when the version is already present.
-- Added preflight checks for CLI, Go, and Rust crates to skip build/publish when the release artifacts already exist.
-- Maven publishing now uses Sonatype Central's `central-publishing-maven-plugin` with auto-publish/wait and Central user-token credentials, replacing the legacy OSSRH endpoint.
-- Maven Central publish timeout increased from 30 minutes to 2 hours to accommodate slower validation/publishing process.
-- Python wheels are now built with `manylinux: auto` parameter (was incorrectly set to `manylinux2014` which is not a valid maturin-action value), fixing PyPI upload rejection of `linux_x86_64` platform tags.
-- manylinux wheel builds now detect container type (CentOS vs Debian) and set correct `OPENSSL_LIB_DIR` paths (`/usr/lib64` for CentOS, `/usr/lib/x86_64-linux-gnu` for Debian) to avoid openssl-sys build failures in maturin builds.
-- Ruby Gemfile.lock now includes x86_64-linux platform for CI compatibility on Linux runners.
-- Ruby gem corruption fixed by excluding .fastembed_cache (567MB of embedding models) and target directories from gemspec fallback path.
-- Java Panama FFM SIGSEGV crashes on macOS ARM64 fixed by adding explicit padding fields to FFI structs (CExtractionResult and CBatchResult) to ensure struct alignment matches between Rust and Java.
-- TypeScript E2E test type error fixed in smoke.spec.ts by using proper expectation object format.
-- Node.js benchmarks now have tsx as workspace dev dependency and root-level typecheck script.
-- C# compilation errors (CS0136, CS0128, CS0165) resolved by fixing variable shadowing in e2e/csharp/Helpers.cs.
-- Python CI timeout issues resolved by marking slow office document tests with @pytest.mark.slow and skipping them in CI.
-- Go CI tests enhanced with comprehensive verbose logging and platform-specific diagnostics for better debugging.
+
+- **Ruby gem corruption** - Excluded embedding model cache from distribution
+- **Java FFM SIGSEGV** - Fixed struct alignment on macOS ARM64
+- **C# compilation errors** - Fixed variable shadowing
+- **Python CI timeouts** - Marked slow office document tests for proper test selection
 
 ## [4.0.0-rc.6] - 2025-12-10
 
-### Release Candidate 6 - FFI Core Feature & CI/Build Improvements
+### Added
 
-#### New Features
+- **`core` feature** - Lightweight FFI build without ONNX Runtime (enables Windows MinGW compatibility)
 
-**FFI Bindings**:
-- Added `core` feature for kreuzberg-ffi without embeddings support
-  - Provides lightweight FFI build option excluding ONNX Runtime dependency
-  - Enables Windows MinGW compatibility for Go bindings
-  - Includes HTML processing and all document extraction features
-  - Use `--no-default-features --features core` for MinGW builds
+### Fixed
 
-#### Bug Fixes
-
-**ODT Extraction**:
-- Fixed ODT table extraction producing duplicate content
-  - Table cells were being extracted twice: once as markdown tables (correct) and again as raw paragraphs (incorrect)
-  - Root cause: XML traversal using `.descendants()` included nested table cell content as document-level text
-  - Solution: Changed to only process direct children of `<office:text>` element, isolating table content
-  - Impact: ODT extraction now produces clean output without cell duplication
-- Enhanced ODT metadata extraction to match Office Open XML capabilities
-  - Added comprehensive metadata extraction from `meta.xml` (OpenDocument standard)
-  - New `OdtProperties` struct supports all OpenDocument metadata fields
-  - Extracts: title, subject, creator, initial-creator, keywords, description, dates, language
-  - Document statistics: page count, word count, character count, paragraph count, table count, image count
-  - Metadata extraction now consistent between ODT, DOCX, XLSX, and PPTX formats
-  - Impact: ODT files now provide rich metadata comparable to other Office formats
-
-**Go Bindings**:
-- Fixed Windows MinGW builds by disabling embeddings feature
-  - Windows ONNX Runtime only provides MSVC .lib files incompatible with MinGW
-  - Go bindings on Windows now use `core` feature (no embeddings)
-  - Full features (including embeddings) remain available on Linux, macOS, and Windows MSVC
-- Fixed test execution to use `test_documents` instead of `.kreuzberg` cache
-  - Ensures reproducible test runs without relying on user cache directory
-  - Improves CI/CD reliability and test isolation
-
-**CI/CD Infrastructure**:
-- Upgraded `upload-artifact` from v4 to v5 for compatibility with `download-artifact@v6`
-  - Fixes artifact version mismatch causing benchmark and CI failures
-  - Affects 10 workflow files with 42 total changes
-  - Resolves "artifact not found" errors in multi-job workflows
-- Fixed RUSTFLAGS handling in `setup-onnx-runtime` action
-  - Now appends to existing RUSTFLAGS instead of overwriting
-  - Preserves `-C target-feature=+crt-static` for Windows GNU builds
-- Fixed Go Windows CI artifact download path causing linker failures
-  - Changed download path from `target` to `.` to prevent double-nesting (target/target/...)
-  - Linker can now find libkreuzberg_ffi.dll at correct location
-  - Added debug logging to show directory structure after artifact download
-- Aligned all workflows to Java 25
-  - Updated from Java 24 to 25 across all CI and publish workflows
-  - Resolves "release version 25 not supported" compilation errors
-  - Affects ci-validate, ci-java, publish, and benchmarks workflows
-
-**Ruby Bindings**:
-- Fixed rb-sys links conflict in gem build
-  - Removed rb-sys vendoring, now uses version 0.9.119 from crates.io
-  - Resolves Cargo error: "package rb-sys links to native library rb, but it conflicts with previous package"
-  - Allows Cargo to unify rb-sys dependency across magnus and kreuzberg-rb
-
-**C# E2E Tests**:
-- Fixed OCR tests failing with empty content
-  - Added render_config_expression function to C# E2E generator
-  - Tests now pass proper OCR config JSON instead of null
-  - Regenerated all C# tests with tesseract backend configuration
-- Fixed metadata array contains assertion for single value in array
-  - Extended ValueContains method to handle value-in-array case
-  - Fixes sheet_names metadata assertions in Excel tests
-
-**Python Bindings**:
-- Fixed missing format_type in text extraction metadata
-  - TypstExtractor and LatexExtractor incorrectly claimed text/plain MIME type
-  - Removed text/plain from both extractors' supported types
-  - PlainTextExtractor now correctly handles text/plain with proper TextMetadata
-  - Metadata now includes format_type, line_count, word_count, character_count
-  - Added unit test for Metadata serialization to verify format field flattening
+- **ODT table extraction** - Fixed duplicate content extraction
+- **ODT metadata extraction** - Enhanced to match Office Open XML capabilities
+- **Go Windows MinGW builds** - Disabled embeddings feature for Windows compatibility
+- **Ruby rb-sys conflict** - Removed vendoring, now uses crates.io version
+- **Python text extraction metadata** - Fixed missing `format_type` field
+- **C# E2E tests** - Fixed OCR tests with empty content
 
 ## [4.0.0-rc.5] - 2025-12-01
 
-### Release Candidate 5 - macOS Binary Fix & Complete Pandoc Removal
+### Breaking Changes
 
-#### Breaking Changes
+- **Removed all Pandoc dependencies** - Native Rust extractors now handle all 12 previously Pandoc-supported formats
+  - LaTeX, EPUB, BibTeX, Typst, Jupyter, FictionBook, DocBook, JATS, OPML, Org-mode, reStructuredText, RTF
+  - Benefits: No system dependencies, smaller Docker images, pure Rust codebase
 
-**Complete Pandoc Removal**:
-- **Removed all Pandoc dependencies** from v4 codebase (100% native Rust extractors)
-  - Deleted 7 Pandoc code files (3,006 lines)
-  - Removed `pandoc-fallback` feature flag from Cargo.toml
-  - Removed Pandoc installation from all CI/CD workflows (Linux, macOS, Windows)
-  - Removed Pandoc from Docker images (saving ~500MB-1GB per image)
-  - Updated all documentation to reflect native-only approach
-  - Deleted 160+ Pandoc baseline test files
-- **Native Rust extractors** now handle all 12 previously Pandoc-supported formats:
-  - LaTeX, EPUB, BibTeX, Typst, Jupyter, FictionBook, DocBook, JATS, OPML
-  - Org-mode, reStructuredText, RTF, Markdown variants
-- **Benefits**: Simpler installation (no system dependencies), faster CI builds (~2-5 min improvement), smaller Docker images, pure Rust codebase
-- **Migration**: No action required - native extractors are drop-in replacements with equivalent or better quality
+### Fixed
 
-#### Bug Fixes
-
-**Build System**:
-- Fixed macOS CLI binary missing libpdfium.dylib (dyld error at runtime)
-  - Build script now correctly copies libpdfium.dylib to target-specific directory when using --target flag
-  - Resolves: `dyld: Library not loaded: @rpath/libpdfium.dylib`
-  - Impact: macOS CLI binary now functional in releases
-
-**Windows Go Builds**:
-- Fixed persistent Windows Go CI failures where `ring` crate failed with MSVC toolchain detection
-  - Set GNU as default Rust toolchain on Windows: `rustup default stable-x86_64-pc-windows-gnu`
-  - Updated Rust build cache keys to include target architecture, preventing MSVC cache reuse
-  - Added MSYS2 UCRT64 setup with comprehensive GNU toolchain configuration
-  - Resolves: `TARGET = Some(x86_64-pc-windows-msvc)` error in build scripts
-  - Impact: Windows Go bindings now build successfully with proper GNU toolchain isolation
-
-**Ruby CI Bundler 4.0 Compatibility**:
-- Fixed gem installation failures on macOS and Linux caused by empty environment variables
-  - Removed job-level `GEM_HOME=""` and `BUNDLE_PATH=""` that broke non-Windows builds
-  - These variables are now only set on Windows with proper short paths for MAX_PATH mitigation
-  - Updated to `bundle update --all` (deprecated `bundle update` removed in Bundler 4.0)
-  - Resolves: `ERROR: While executing gem ... (Errno::ENOENT) No such file or directory @ dir_s_mkdir`
-  - Impact: Ruby gem builds now succeed on all platforms with Bundler 4.0.0
-
-**Note**: rc.4 workflow fixes for Python, Node, Ruby, and Maven were committed after rc.4 tag, causing those packages not to publish. All fixes are now present for rc.5.
-
-## [4.0.0-rc.3] - 2025-12-01
-
-### Release Candidate 3 - Publishing & Testing Fixes
-
-#### Bug Fixes
-
-**Publishing Workflow**:
-- Fixed crates.io publishing order (crates-io publishing now properly sequenced)
-- Fixed NuGet publishing to use API key authentication
-- Resolved all remaining publish workflow failures across CI/CD pipeline
-- Fixed Maven Central publishing to use NEXUS_USERNAME/PASSWORD credentials
-
-**Language Bindings**:
-- Fixed C# tests cloning JsonNode values to avoid parent assignment violations
-- Resolved test failures across Ruby and Java bindings
-- Updated Node binding dependencies and lockfile
-- Fixed import paths in Node binding tests from src/ to dist/
-- Removed incorrect dependencies from Node package.json
-
-**Core Library**:
-- Prevented ONNX Runtime mutex errors during process cleanup
-- Fixed embeddings model initialization to prevent deadlocks
-- Prevented OCR backend clearing from affecting other tests
-- Switched from ort-load-dynamic to ort-download-binaries for better compatibility
-
-**CLI & Binaries**:
-- Included libpdfium shared library in CLI binary packages for proper runtime linking
-
-**Documentation & Theme**:
-- Updated documentation theme colors to align with new design system
-- Added CONTRIBUTING.md symlink to fix broken GitHub documentation links
-
-**CI/CD Infrastructure**:
-- Restructured publish workflow for independent package publishing across languages
-- Fixed dependency updates for kreuzberg-tesseract to 4.0.0-rc.2
-- Updated pnpm filters for consistent @kreuzberg/node package handling
-- Applied rustfmt to benchmarks and tests for code consistency
-
----
+- **macOS CLI binary** - Fixed missing libpdfium.dylib at runtime
+- **Windows Go builds** - Fixed GNU toolchain detection issues
+- **Ruby Bundler 4.0** - Fixed gem installation failures
 
 ## [4.0.0-rc.4] - 2025-12-01
 
-### Release Candidate 4 - Critical CI/CD and Build Fixes
+### Fixed
 
-#### Bug Fixes
+- **Publishing workflow** - Fixed crates.io and Maven Central authentication
+- **Language bindings** - Resolved test failures across Ruby, Java, C#, and Node
+- **ONNX Runtime** - Fixed mutex errors and deadlocks
 
-**CI/CD Workflow Fixes**:
-- Fixed RubyGems action version (v2 doesn't exist, now using v1.0.0)
-- Fixed pnpm workspace configuration (replaced invalid `--cwd` flag with `-C`)
-- Fixed Docker environment variables (undefined `$LD_LIBRARY_PATH` in Dockerfiles)
-- Fixed Maven credentials timing (env vars now available when setup-java generates settings.xml)
-- Fixed Maven GPG configuration (modernized arguments to `--pinentry-mode=loopback` format)
-- Removed release notes update job from publish workflow (not needed)
+## [4.0.0-rc.3] - 2025-12-01
 
-**Core Library Fixes**:
-- Fixed Tesseract OCR test failure (corrected API call ordering: set_image before set_source_resolution)
-- Fixed Go Windows CGO linking (build Rust FFI with x86_64-pc-windows-gnu target for MinGW compatibility)
+### Fixed
 
-**Testing**:
-- All 24 Tesseract tests now pass (was 23/24 in rc.3)
-- Go bindings now build successfully on Windows
-
----
+- **NuGet publishing** - Switched to API key authentication
+- **CLI binary packages** - Included libpdfium shared library
 
 ## [4.0.0-rc.2] - 2025-11-30
 
-### Release Candidate 2 - C# Support & Infrastructure Improvements
+### Breaking Changes
 
-#### Breaking Changes
+- **TypeScript/Node.js package** - Renamed from `kreuzberg` to `@kreuzberg/node` (scoped package)
+- **TypeScript migration** - Replace `import { ... } from 'kreuzberg'` with `import { ... } from '@kreuzberg/node'`
 
-**TypeScript/Node.js Package Restructuring**:
-- NPM package renamed from `kreuzberg` to `@kreuzberg/node` (scoped package)
-- Platform-specific packages now use `@kreuzberg/{platform}` naming scheme
-- TypeScript source consolidated into `crates/kreuzberg-node` (merged with native bindings)
-- Migration: Replace `import { ... } from 'kreuzberg'` with `import { ... } from '@kreuzberg/node'`
-- See [Migration Guide](migration/v3-to-v4.md) for details
+### Added
 
-#### New Features
+- **C#/.NET bindings** - Complete C# bindings using .NET 9+ FFM API
+- **MkDocs documentation site** - Multi-language examples and API reference
 
-**C#/.NET Bindings**:
-- Complete C# bindings using .NET 9+ Foreign Function & Memory API
-- Native FFI bridge via `kreuzberg-ffi` C library
-- Supports .NET 9+ on Linux, macOS, and Windows
-- Package: `Kreuzberg` on NuGet (pending publication)
-- Full feature parity with other language bindings
+### Fixed
 
-**Documentation Improvements**:
-- New v3 documentation site with MkDocs
-- Comprehensive multi-language code examples for all 7 supported languages
-- API reference documentation for all bindings
-- Migration guides and tutorials
-
-#### Bug Fixes
-
-**CI/CD Fixes**:
-- Fixed all CI workflow failures (ONNX Runtime, Maven dependencies, path triggers)
-- Fixed benchmark harness configuration validation (single-file mode)
-- Added ONNX Runtime installation to all relevant CI workflows
-- Updated Maven plugins to latest compatible versions with enforcer plugin
-
-**Core Library Fixes**:
-- Added lock poisoning recovery to embeddings model cache
-- Improved Tesseract tessdata path detection for Linux systems
-- Fixed Python async test configuration (pytest-asyncio)
-- Resolved Rust formatting issues with edition 2024 let-chain syntax
-
-**Benchmark Harness Improvements**:
-- Added comprehensive adapter registration diagnostics
-- Fixed Tesseract benchmark path resolution
-- Improved Python async benchmark output with performance metrics
-- Added missing `--max-concurrent` parameter validation
-
-**Code Quality**:
-- Fixed Python linting issues (ruff complexity, mypy type parameters)
-- Resolved all clippy warnings
-- Fixed C# generated file formatting
-- Improved error handling across all bindings
-
-#### Developer Experience
-
-**Build System**:
-- Go FFI library and Ruby native extension build fixes
-- Improved build reproducibility
-- Better error messages during compilation
-
-**Testing**:
-- 268+ Rust tests passing
-- 13/13 Java tests passing
-- 32/32 benchmark harness tests passing
-- Fixed 27 Python async test failures
-- Unblocked 250+ tests across all language bindings
-
----
+- **Tesseract OCR** - Corrected API call ordering
+- **Go Windows CGO linking** - Fixed MinGW compatibility
+- **Python async tests** - Fixed pytest-asyncio configuration
+- **Embeddings model cache** - Added lock poisoning recovery
 
 ## [4.0.0-rc.1] - 2025-11-23
 
-### Major Release - Complete Architecture Rewrite
+### Major Release - Complete Rewrite
 
-Kreuzberg v4 represents a complete architectural rewrite, transforming from a Python-only library into a multi-language document intelligence framework with a high-performance Rust core.
+Complete architectural rewrite from Python-only to Rust-core with polyglot bindings.
 
-### Architecture Changes
+### Architecture
 
-#### Rust-First Design
-- **Complete Rust Core Rewrite** (`crates/kreuzberg`): All extraction logic now implemented in Rust for maximum performance
-- **Standalone Rust Crate**: Can be used directly in Rust projects without Python dependencies
-- **10-50x Performance Improvements**: Text processing, streaming parsers, and I/O operations significantly faster
-- **Memory Efficiency**: Streaming parsers for multi-GB XML/text files with constant memory usage
-- **Type Safety**: Strong typing throughout the extraction pipeline
+- **Rust core** - All extraction logic implemented in Rust for performance
+- **Polyglot bindings** - Python (PyO3), TypeScript/Node.js (NAPI-RS), Ruby (Magnus), Java (FFM API), Go (CGO)
+- **10-50x performance improvements** - Streaming parsers for multi-GB files with constant memory
 
-#### Multi-Language Support
-- **Python**: PyO3 bindings (`crates/kreuzberg-py`) with native Python extensions
-- **TypeScript/Node.js**: NAPI-RS bindings (`crates/kreuzberg-node`) for native Node modules
-- **Ruby**: Magnus bindings (`packages/ruby/ext/kreuzberg_rb/native`) with native Ruby extensions
-- **Java**: Panama/FFM bindings (`packages/java`, `crates/kreuzberg-ffi`) delivering native access for JVM applications
-- **Rust**: Direct usage of `kreuzberg` crate in Rust applications
-- **CLI**: Rust-based CLI (`crates/kreuzberg-cli`) with improved performance
+### Added
 
-### New Features
+- **Plugin system** - PostProcessor, Validator, Custom OCR, Custom Document Extractors
+- **Language detection** - Automatic multi-language detection
+- **RAG & embeddings** - Automatic embedding generation with 4 presets (fast/balanced/quality/multilingual)
+- **Image extraction** - Native extraction from PDFs and PowerPoint with metadata
+- **Stopwords system** - 64 language support, compile-time embedded
+- **Comprehensive metadata** - Format-specific extraction for PDF, Office, Email, Images, XML, HTML
+- **MCP server** - Model Context Protocol integration for Claude
+- **Docker support** - Multi-variant images with OCR backends
+- **CLI improvements** - Rust-based CLI with better performance
 
-#### Plugin System
-- **PostProcessor Plugins**: Transform extraction results (Python, TypeScript, Rust)
-- **Validator Plugins**: Enforce quality requirements with fail-fast validation (Python, TypeScript, Rust)
-- **Custom OCR Backends**: Integrate cloud OCR or custom ML models (Python, TypeScript, Rust)
-  - **NEW: TypeScript/JavaScript OCR Backend Support**: Complete NAPI-RS ThreadsafeFunction bridge for JavaScript OCR backends
-  - **Guten OCR Backend**: First-class TypeScript OCR implementation using @gutenye/ocr-node (PaddleOCR + ONNX Runtime)
-  - **JSON Serialization Bridge**: Efficient data transfer between TypeScript and Rust across FFI boundaries
-- **Custom Document Extractors**: Add support for new file formats (Rust)
-- **Cross-Language Plugin Architecture**: Plugins can call between languages via FFI
+### Changed
 
-#### Language Detection
-- **Automatic Language Detection**: Fast language detection using `fast-langdetect`
-- **Multi-Language Support**: Detect multiple languages in a single document
-- **Configurable Confidence Thresholds**: Control detection sensitivity
-- **Available in**: `ExtractionResult.detected_languages`
+- **Async-first API** - Primary extraction functions are async (sync variants have `_sync` suffix)
+- **Strongly-typed config** - All configuration uses typed structs/classes
+- **Strongly-typed metadata** - Format-specific TypedDict/struct metadata
+- **New API** - `extract()` → `extract_file()`, added `extract_bytes()`, `batch_extract_files()`
 
-#### RAG & Embeddings Support
-- **Automatic Embedding Generation**: Generate embeddings for text chunks using ONNX models via fastembed-rs
-- **RAG-Optimized Presets**: 4 pre-configured presets (fast, balanced, quality, multilingual)
-  - `fast`: 384-dim AllMiniLML6V2Q (~22M params) - Quick prototyping
-  - `balanced`: 768-dim BGEBaseENV15 (~109M params) - Production default
-  - `quality`: 1024-dim BGELargeENV15 (~335M params) - Maximum accuracy
-  - `multilingual`: 768-dim MultilingualE5Base (100+ languages)
-- **Model Caching**: Thread-safe model cache with automatic download management
-- **Batch Processing**: Efficient batch embedding generation with configurable batch size
-- **Embedding Normalization**: Optional L2 normalization for similarity search
-- **Custom Model Paths**: Configure custom cache directories for model storage
-- **Chunk Integration**: Embeddings automatically generated and attached to chunks via `Chunk.embedding`
-- **Available in**: All languages (Rust, Python, TypeScript)
+### Removed
 
-#### Image Extraction
-- **Native Image Extraction**: Extract embedded images from PDFs and PowerPoint presentations
-- **Rich Metadata**: Format, dimensions, colorspace, bits per component, page number
-- **Cross-Language Raw Bytes**: Returns raw image bytes (not PIL objects) for maximum compatibility
-- **Nested OCR Support**: Each extracted image can have an optional nested `ocr_result` field
-- **Clean API Design**: Images stored in `ExtractionResult.images` list with all metadata inline
-- **No Backward Compatibility Required**: New v4-only feature with clean, forward-looking design
-- **Supported Formats**: PDF (via `lopdf`), PowerPoint (via Python `python-pptx`)
+- **Pure-Python API** - No longer available
+- **Pandoc** - Native Rust extractors for all formats
+- **GMFT** - Vision-based table extraction (replaced with Tesseract-based)
+- **spaCy entity extraction** - Use external NER with postprocessors
+- **KeyBERT** - Use external keyword extraction with postprocessors
+- **Document classification** - Use external classifiers with postprocessors
 
-#### Enhanced Extraction
+### Breaking Changes
 
-**XML Extraction**:
-- Streaming XML parser using `quick-xml`
-- Memory-efficient processing of multi-GB XML files
-- Element counting and unique element tracking
-- Preserves text content while filtering XML structure
+- Python 3.10+, Node.js 18+, Rust 1.75+ required
+- Binary wheels only (no pure-Python installation)
+- TypeScript/Node.js package renamed to `@kreuzberg/node`
+- `char_start`/`char_end` → `byte_start`/`byte_end`
 
-**Plain Text & Markdown**:
-- Streaming line-by-line parser for multi-GB text files
-- Markdown metadata extraction: headers, links, code blocks
-- Word count, line count, character count tracking
-- CRLF line ending support
-
-**PowerPoint (PPTX) Extraction**:
-- Custom XML parser using `roxmltree` for Office Open XML format
-- Position-based text sorting (Y-primary, X-secondary) for accurate reading order
-- Table detection and extraction
-- List formatting (bulleted and numbered lists)
-- Image extraction with optional OCR integration
-- Text formatting preservation (bold, italic, underline)
-- Hyperlink detection and extraction
-- Speaker notes extraction
-- Comprehensive slide processing (30+ test cases covering complex scenarios)
-
-**Stopwords System**:
-- **64 Language Support**: Comprehensive stopword collections for Afrikaans, Arabic, Bulgarian, Bengali, Breton, Catalan, Czech, Danish, German, Greek, English, Esperanto, Spanish, Estonian, Basque, Persian, Finnish, French, Irish, Galician, Gujarati, Hausa, Hebrew, Hindi, Croatian, Hungarian, Armenian, Indonesian, Italian, Japanese, Kannada, Korean, Kurdish, Latin, Lithuanian, Latvian, Malayalam, Marathi, Malay, Nepali, Dutch, Norwegian, Polish, Portuguese, Romanian, Russian, Sinhala, Slovak, Slovenian, Somali, Sesotho, Swedish, Swahili, Tamil, Telugu, Thai, Tagalog, Turkish, Ukrainian, Urdu, Vietnamese, Yoruba, Chinese, Zulu
-- **Compile-Time Embedding**: All stopword lists embedded in Rust binary using `include_str!()` macro
-- **Zero Runtime I/O**: No file system access required, eliminating deployment dependencies
-- **Automatic Integration**: Used by keyword extraction (YAKE/RAKE) and token reduction features
-
-**Comprehensive Metadata Extraction**:
-
-v4 introduces native metadata extraction across all major document formats:
-
-**PDF** (native Rust extraction via `lopdf`):
-- Title, subject, authors, keywords
-- Created/modified dates, creator, producer
-- Page count, page dimensions, PDF version
-- Encryption status
-- Auto-generated document summary
-
-**Office Documents** (native Office Open XML parsing):
-- **DOCX**: Core properties (Dublin Core metadata), app properties (page/word/character/line/paragraph counts, template, editing time), custom properties
-- **XLSX**: Core properties, app properties (worksheet names, sheet count), custom properties
-- **PPTX**: Core properties, app properties (slide count, notes, hidden slides, slide titles), custom properties
-- Non-blocking extraction (falls back gracefully if metadata unavailable)
-
-**Email** (via `mail-parser`):
-- From, to, cc, bcc addresses
-- Message ID, subject, date
-- Attachment filenames
-
-**Images** (via `image` crate + `kamadak-exif`):
-- Width, height, format
-- Comprehensive EXIF data (camera settings, GPS, timestamps, etc.)
-
-**XML** (via Rust streaming parser):
-- Element count
-- Unique element names
-
-**Plain Text / Markdown** (via Rust streaming parser):
-- Line count, word count, character count
-- **Markdown only**: Headers, links, code blocks
-
-**Structured Data** (JSON/YAML/TOML):
-- Field count
-- Format type
-
-**HTML** (via `html-to-markdown-rs`):
-- Comprehensive structured metadata extraction enabled by default
-- Parses YAML frontmatter and populates `HtmlMetadata` struct:
-  - Standard meta tags: title, description, keywords, author
-  - Open Graph: og:title, og:description, og:image, og:url, og:type, og:site_name
-  - Twitter Card: twitter:card, twitter:title, twitter:description, twitter:image, twitter:site, twitter:creator
-  - Navigation: base_href, canonical URL
-  - Link relations: link_author, link_license, link_alternate
-- YAML frontmatter automatically stripped from markdown content
-- Accessible via `ExtractionResult.metadata.html`
-
-
-**Key Improvements from v3**:
-- PDF: Pure Rust `lopdf` instead of Python `playa-pdf` for better performance
-- Office: Comprehensive native metadata extraction via Office Open XML parsing
-- All metadata extraction is non-blocking and gracefully handles failures
-- **Python Type Safety**: All metadata types now have proper `TypedDict` definitions with comprehensive field typing
-  - `PdfMetadata`, `ExcelMetadata`, `EmailMetadata`, `PptxMetadata`, `ArchiveMetadata`
-  - `ImageMetadata`, `XmlMetadata`, `TextMetadata`, `HtmlMetadata`
-  - `OcrMetadata`, `ImagePreprocessingMetadata`, `ErrorMetadata`
-  - IDE autocomplete and type checking for all metadata fields
-
-**Legacy MS Office Support**:
-- LibreOffice conversion for `.doc` and `.ppt` files
-- Automatic fallback to modern format extractors after LibreOffice conversion
-- Optional system dependency (graceful degradation if unavailable)
-
-**PDF Improvements**:
-- Better text extraction with pdfium-render
-- Improved image extraction
-- Force OCR mode for text-based PDFs
-- Password-protected PDF support (with `crypto` extra)
-
-**OCR Enhancements**:
-- Table detection and reconstruction
-- Configurable Tesseract PSM modes
-- Custom OCR backend support
-- Image preprocessing and DPI adjustment
-- OCR result caching
-
-### API Changes
-
-#### Core Extraction Functions
-
-**Async-First Design**:
-```python title="Python"
-# Asynchronous extraction (recommended for I/O-bound operations)
-result = await extract_file("document.pdf")
-result = await extract_bytes(data, "application/pdf")
-results = await batch_extract_files(["doc1.pdf", "doc2.pdf"])
-
-# Synchronous variants (for simple scripts or non-async contexts)
-result = extract_file_sync("document.pdf")
-result = extract_bytes_sync(data, "application/pdf")
-results = batch_extract_files_sync(["doc1.pdf", "doc2.pdf"])
-```
-
-**New TypeScript/Node.js API**:
-```typescript title="TypeScript"
-import { extractFile, extractFileSync, ExtractionConfig } from 'kreuzberg';
-
-// Asynchronous extraction
-const result = await extractFile('document.pdf');
-
-// Synchronous extraction
-const result = extractFileSync('document.pdf');
-
-// Extraction with custom configuration (quality processing enabled)
-const config = new ExtractionConfig({ enableQualityProcessing: true });
-const result = await extractFile('document.pdf', null, config);
-```
-
-**Rust API**:
-```rust title="Rust"
-use kreuzberg::{extract_file, ExtractionConfig};
-
-#[tokio::main]
-async fn main() -> kreuzberg::Result<()> {
-    // Initialize configuration with default settings
-    let config = ExtractionConfig::default();
-    // Perform asynchronous file extraction
-    let result = extract_file("document.pdf", None, &config).await?;
-    // Display extracted content
-    println!("Extracted: {}", result.content);
-    Ok(())
-}
-```
-
-#### Configuration
-
-**Strongly-Typed Configuration**:
-- All configuration uses typed structs/classes (no more dictionaries)
-- `ExtractionConfig`, `OcrConfig`, `ChunkingConfig`, etc.
-- Compile-time validation of configuration options
-- Better IDE autocomplete and type checking
-
-**Configuration File Support**:
-- TOML, YAML, and JSON configuration files
-- Automatic discovery from current/parent directories
-- `kreuzberg.toml`, `kreuzberg.yaml`, or `kreuzberg.json`
-- CLI, API server, and MCP server all support config files
-
-#### Result Types
-
-**Enhanced ExtractionResult**:
-```python title="Python"
-@dataclass
-class ExtractionResult:
-    content: str
-    mime_type: str
-    metadata: Metadata  # Format-specific strongly-typed metadata
-    tables: List[ExtractedTable]
-    detected_languages: Optional[List[str]]  # Language detection results (v4 feature)
-    chunks: Optional[List[str]]
-```
-
-**Strongly-Typed Metadata**:
-- `PdfMetadata`, `ExcelMetadata`, `EmailMetadata`, `ImageMetadata`, etc.
-- Type-safe access to format-specific metadata
-- No more dictionary casting or key errors
-
-### Plugin System
-
-#### PostProcessors
-```python title="Python"
-from kreuzberg import register_post_processor, ExtractionResult
-
-class MyPostProcessor:
-    def name(self) -> str:
-        return "my_processor"
-
-    def process(self, result: ExtractionResult) -> ExtractionResult:
-        # Apply custom transformations to extraction result
-        return result
-
-register_post_processor(MyPostProcessor())
-```
-
-#### Validators
-```python title="Python"
-from kreuzberg import register_validator, ExtractionResult
-
-class MyValidator:
-    def name(self) -> str:
-        return "my_validator"
-
-    def validate(self, result: ExtractionResult) -> None:
-        # Enforce minimum content length requirement
-        if len(result.content) < 10:
-            raise ValidationError("Content too short")
-
-register_validator(MyValidator())
-```
-
-#### Custom OCR Backends
-```python title="Python"
-from kreuzberg import register_ocr_backend
-
-class CloudOCR:
-    def name(self) -> str:
-        return "cloud_ocr"
-
-    def extract_text(self, image_bytes: bytes, language: str) -> str:
-        # Send image to cloud OCR service and return extracted text
-        return extracted_text
-
-register_ocr_backend(CloudOCR())
-```
-
-### Performance
-
-- **10-50x faster** text processing operations (streaming parsers)
-- **Memory-efficient** streaming for multi-GB files
-- **Parallel batch processing** with configurable concurrency
-- **SIMD optimizations** for text processing hot paths
-- **Zero-copy operations** where possible
-
-### Docker Images
-
-All Docker images include LibreOffice and Tesseract by default:
-
-- `kreuzberg-dev/kreuzberg:4.0.0-rc.1` - Core image with Tesseract OCR
-- `kreuzberg-dev/kreuzberg:4.0.0-rc.1-easyocr` - Core + EasyOCR
-- `kreuzberg-dev/kreuzberg:4.0.0-rc.1-paddle` - Core + PaddleOCR
-- `kreuzberg-dev/kreuzberg:4.0.0-rc.1-vision-tables` - Core + vision-based table extraction
-- `kreuzberg-dev/kreuzberg:4.0.0-rc.1-all` - All features included
-
-### Installation
-
-**Python**:
-```bash title="Terminal"
-pip install kreuzberg               # Core functionality
-pip install "kreuzberg[api]"        # With API server
-pip install "kreuzberg[easyocr]"    # With EasyOCR
-pip install "kreuzberg[all]"        # All features
-```
-
-**TypeScript/Node.js**:
-```bash title="Terminal"
-npm install @kreuzberg/node
-# or
-pnpm add @kreuzberg/node
-```
-
-**Rust**:
-```toml title="Cargo.toml"
-[dependencies]
-kreuzberg = "4.0"
-```
-
-**CLI** (Homebrew):
-```bash title="Terminal"
-brew install kreuzberg-dev/tap/kreuzberg
-```
-
-**CLI** (Cargo):
-```bash title="Terminal"
-cargo install kreuzberg-cli
-```
-
-### Breaking Changes from v3
-
-#### Architecture
-- **Rust core required**: Python package now includes Rust binaries (PyO3 bindings)
-- **Binary wheels only**: No more pure-Python installation
-- **Minimum versions**: Python 3.10+, Node.js 18+, Rust 1.75+
-
-#### API Changes
-- **Async-first API**: Primary API is now async, sync variants have `_sync` suffix
-- **Configuration**: All config uses typed classes, not dictionaries
-- **Metadata**: Strongly-typed metadata replaces free-form dictionaries
-- **Function renames**: `extract()` → `extract_file()`, `extract_bytes()` is new
-- **Batch API**: `batch_extract()` → `batch_extract_files()` with async support
-
-#### Removed Features
-- **Pure-Python API**: No longer available (use v3 for pure Python)
-- **Old configuration format**: Dictionary-based config no longer supported
-- **Legacy extractors**: Some Python-only extractors migrated to Rust
-- **GMFT (Give Me Formatted Tables)**: Vision-based table extraction using TATR (Table Transformer) models removed
-  - v3's GMFT used deep learning models for sophisticated table detection and parsing
-  - Provided polars DataFrames, PIL Images, and multi-level header support
-  - v4 replaces this with **native Tesseract-based table detection** (OCR-based, faster, simpler)
-  - Configure via `TesseractConfig.enable_table_detection=True`
-  - Returns `ExtractedTable` objects with cells (2D list) and markdown output
-  - For advanced vision-based table extraction, use v3.x or specialized libraries
-- **Entity Extraction (spaCy)**: Named entity recognition removed - use external NER libraries with postprocessors
-- **Keyword Extraction (KeyBERT)**: Automatic keyword extraction removed - use external keyword extractors with postprocessors
-- **Document Classification**: Automatic document type detection removed - use external classifiers with postprocessors
-
-#### Migration Path
-See [Migration Guide](https://docs.kreuzberg.dev/migration/v3-to-v4/) for detailed migration instructions.
-
-### Documentation
-
-- **New Documentation Site**: https://docs.kreuzberg.dev
-- **Multi-Language Examples**: Python, TypeScript, and Rust examples
-- **Plugin Development Guides**: Comprehensive guides for each language
-- **API Reference**: Auto-generated from docstrings
-- **Architecture Documentation**: Detailed system architecture explanations
-
-### Testing
-
-- **95%+ Test Coverage**: Comprehensive test suite in Python, TypeScript, and Rust
-- **Integration Tests**: Real-world document testing
-- **Benchmark Suite**: Performance comparison with other extraction libraries
-- **CI/CD**: Automated testing on Linux, macOS, and Windows
-
-### Bug Fixes
-
-- Fixed memory leaks in PDF extraction
-- Improved error handling and error messages
-- Better Unicode support in text extraction
-- Fixed table extraction edge cases
-- Resolved deadlocks in plugin system
-
-### Security
-
-- All dependencies audited and updated
-- No known security vulnerabilities
-- Sandboxed subprocess execution (LibreOffice)
-- Input validation on all user-provided data
-
-### Contributors
-
-Kreuzberg v4 was a major undertaking. Thank you to all contributors!
+See [Migration Guide](https://docs.kreuzberg.dev/migration/v3-to-v4/) for details.
 
 ---
 
