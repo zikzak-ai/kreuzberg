@@ -1,44 +1,6 @@
 name: CI Validate
 
 on:
-  push:
-    branches-ignore:
-      - 'benchmarking-*'
-      - 'profiling-*'
-      - 'feat/profiling-flamegraphs'
-    paths:
-      # All Rust crates
-      - 'crates/kreuzberg/**'
-      - 'crates/kreuzberg-cli/**'
-      - 'crates/kreuzberg-py/**'
-      - 'crates/kreuzberg-node/**'
-      - 'crates/kreuzberg-ffi/**'
-      - 'crates/kreuzberg-tesseract/**'
-      - 'crates/kreuzberg-wasm/**'
-      # All language packages
-      - 'packages/python/**'
-      - 'packages/typescript/**'
-      - 'packages/ruby/**'
-      - 'packages/java/**'
-      - 'packages/go/v4/**'
-      - 'packages/csharp/**'
-      - 'packages/wasm/**'
-      # All tools
-      - 'tools/benchmark-harness/**'
-      - 'tools/e2e-generator/**'
-      # All scripts
-      - 'scripts/**'
-      # CI infrastructure
-      - '.github/actions/**'
-      # Config files
-      - '.cargo/config.toml'
-      - '.pre-commit-config.yaml'
-      - '.golangci.yml'
-      - 'pyproject.toml'
-      - 'pnpm-lock.yaml'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/ci-validate.yaml'
   pull_request:
     branches: [main]
     paths:
