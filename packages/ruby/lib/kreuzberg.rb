@@ -21,6 +21,13 @@ module Kreuzberg
   autoload :ValidatorProtocol, 'kreuzberg/validator_protocol'
   autoload :OcrBackendProtocol, 'kreuzberg/ocr_backend_protocol'
 
+  # Type definitions for structured metadata
+  autoload :HtmlMetadata, 'kreuzberg/types'
+  autoload :HeaderMetadata, 'kreuzberg/types'
+  autoload :LinkMetadata, 'kreuzberg/types'
+  autoload :ImageMetadata, 'kreuzberg/types'
+  autoload :StructuredData, 'kreuzberg/types'
+
   # Alias for API consistency with other language bindings
   ExtractionConfig = Config::Extraction
   PageConfig = Config::PageConfig

@@ -322,44 +322,88 @@ type HtmlMetadata struct {
 	Title *string `json:"title,omitempty"`
 	// Description is the meta description tag content.
 	Description *string `json:"description,omitempty"`
-	// Keywords is the meta keywords tag content.
-	Keywords *string `json:"keywords,omitempty"`
+	// Keywords is an array of meta keywords from the keywords tag.
+	Keywords []string `json:"keywords,omitempty"`
 	// Author is the meta author tag content.
 	Author *string `json:"author,omitempty"`
-	// Canonical is the canonical URL for the page.
-	Canonical *string `json:"canonical,omitempty"`
+	// CanonicalURL is the canonical URL for the page.
+	CanonicalURL *string `json:"canonical_url,omitempty"`
 	// BaseHref is the base URL for relative links.
 	BaseHref *string `json:"base_href,omitempty"`
-	// OGTitle is the Open Graph title tag.
-	OGTitle *string `json:"og_title,omitempty"`
-	// OGDescription is the Open Graph description tag.
-	OGDescription *string `json:"og_description,omitempty"`
-	// OGImage is the Open Graph image URL.
-	OGImage *string `json:"og_image,omitempty"`
-	// OGURL is the Open Graph URL tag.
-	OGURL *string `json:"og_url,omitempty"`
-	// OGType is the Open Graph content type.
-	OGType *string `json:"og_type,omitempty"`
-	// OGSiteName is the Open Graph site name.
-	OGSiteName *string `json:"og_site_name,omitempty"`
-	// TwitterCard is the Twitter card type.
-	TwitterCard *string `json:"twitter_card,omitempty"`
-	// TwitterTitle is the Twitter card title.
-	TwitterTitle *string `json:"twitter_title,omitempty"`
-	// TwitterDescription is the Twitter card description.
-	TwitterDescription *string `json:"twitter_description,omitempty"`
-	// TwitterImage is the Twitter card image URL.
-	TwitterImage *string `json:"twitter_image,omitempty"`
-	// TwitterSite is the Twitter handle for the site.
-	TwitterSite *string `json:"twitter_site,omitempty"`
-	// TwitterCreator is the Twitter handle for the content creator.
-	TwitterCreator *string `json:"twitter_creator,omitempty"`
-	// LinkAuthor is the link author tag content.
-	LinkAuthor *string `json:"link_author,omitempty"`
-	// LinkLicense is the link license tag content.
-	LinkLicense *string `json:"link_license,omitempty"`
-	// LinkAlternate is the alternate language link tag.
-	LinkAlternate *string `json:"link_alternate,omitempty"`
+	// Language is the language code of the page.
+	Language *string `json:"language,omitempty"`
+	// TextDirection is the text direction (e.g., "ltr", "rtl").
+	TextDirection *string `json:"text_direction,omitempty"`
+	// OpenGraph contains Open Graph meta tags as key-value pairs.
+	OpenGraph map[string]string `json:"open_graph,omitempty"`
+	// TwitterCard contains Twitter card meta tags as key-value pairs.
+	TwitterCard map[string]string `json:"twitter_card,omitempty"`
+	// MetaTags contains additional meta tags as key-value pairs.
+	MetaTags map[string]string `json:"meta_tags,omitempty"`
+	// Headers lists all headings found in the HTML document.
+	Headers []HeaderMetadata `json:"headers,omitempty"`
+	// Links lists all links found in the HTML document.
+	Links []LinkMetadata `json:"links,omitempty"`
+	// Images lists all images found in the HTML document.
+	Images []HTMLImageMetadata `json:"images,omitempty"`
+	// StructuredData contains structured data found in the HTML document.
+	StructuredData []StructuredData `json:"structured_data,omitempty"`
+}
+
+// HeaderMetadata represents a heading element in HTML.
+type HeaderMetadata struct {
+	// Level is the heading level (1-6 for h1-h6).
+	Level uint8 `json:"level"`
+	// Text is the heading text content.
+	Text string `json:"text"`
+	// ID is the heading element ID attribute (if present).
+	ID *string `json:"id,omitempty"`
+	// Depth is the nesting depth of the heading.
+	Depth int `json:"depth"`
+	// HTMLOffset is the byte offset of the heading in the HTML source.
+	HTMLOffset int `json:"html_offset"`
+}
+
+// LinkMetadata represents a hyperlink in HTML.
+type LinkMetadata struct {
+	// Href is the target URL of the link.
+	Href string `json:"href"`
+	// Text is the link text content.
+	Text string `json:"text"`
+	// Title is the link title attribute (if present).
+	Title *string `json:"title,omitempty"`
+	// LinkType is the type of link (e.g., "internal", "external").
+	LinkType string `json:"link_type"`
+	// Rel contains the rel attribute values as an array.
+	Rel []string `json:"rel,omitempty"`
+	// Attributes contains additional link attributes.
+	Attributes map[string]string `json:"attributes,omitempty"`
+}
+
+// HTMLImageMetadata represents an image element in HTML.
+type HTMLImageMetadata struct {
+	// Src is the image source URL.
+	Src string `json:"src"`
+	// Alt is the image alt text (if present).
+	Alt *string `json:"alt,omitempty"`
+	// Title is the image title attribute (if present).
+	Title *string `json:"title,omitempty"`
+	// Dimensions is the [width, height] of the image (if available).
+	Dimensions *[2]int `json:"dimensions,omitempty"`
+	// ImageType is the type of image (e.g., "jpg", "png").
+	ImageType string `json:"image_type"`
+	// Attributes contains additional image attributes.
+	Attributes map[string]string `json:"attributes,omitempty"`
+}
+
+// StructuredData represents structured data (JSON-LD, microdata, etc.) in HTML.
+type StructuredData struct {
+	// DataType is the type of structured data (e.g., "json_ld", "microdata").
+	DataType string `json:"data_type"`
+	// RawJSON is the raw JSON representation of the structured data.
+	RawJSON string `json:"raw_json"`
+	// SchemaType is the schema type (e.g., "Article", "Product") if applicable.
+	SchemaType *string `json:"schema_type,omitempty"`
 }
 
 // PptxMetadata summarizes slide decks.
