@@ -1642,7 +1642,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "10.x"
+          dotnet-version: "8.x"
 
       - name: Ensure dotnet is available
         run: scripts/publish/csharp/ensure-dotnet.sh
@@ -2547,7 +2547,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "10.x"
+          dotnet-version: "8.x"
 
       - name: Ensure dotnet is available
         run: scripts/publish/csharp/ensure-dotnet.sh

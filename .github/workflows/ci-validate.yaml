@@ -110,7 +110,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0'
+          dotnet-version: '8.0'
 
       - name: Check disk space before tool installations
         run: scripts/ci/validate/show-disk-space.sh "Disk space before tool installations"

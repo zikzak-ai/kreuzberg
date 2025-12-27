@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0-rc.22]
+
 ### Added
 
 - **PHP bindings** - New PHP extension with comprehensive FFI bindings
@@ -21,6 +23,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Smoke tests (7 formats)
   - Structured data tests (JSON/YAML)
   - XML extraction tests
+- **Root composer.json** - Added composer.json at repository root for Packagist publishing
+
+### Fixed
+
+- **C# target framework** - Changed from net10.0 (preview) to net8.0 LTS
+  - .NET 10 preview caused NuGet restore hangs
+  - .NET 8 is latest stable LTS version with FFM API support
+- **Homebrew check timeout** - Added timeouts to prevent 55+ minute hangs
+  - Job timeout: 5 minutes
+  - Step timeout: 3 minutes
+  - Command timeout: 120 seconds
+- **Documentation** - Standardized all README badges and removed AI-generated content
+  - Consistent blue badge colors across all language bindings
+  - Added Packagist badge to PHP README
+  - Removed emojis and marketing language
+  - Converted all relative links to absolute GitHub URLs
+
+### Changed
+
+- **Version sync** - Updated scripts/sync_versions.py to include root composer.json
 
 ## [4.0.0-rc.21] - 2025-12-26
 
