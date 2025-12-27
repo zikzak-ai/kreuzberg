@@ -199,11 +199,26 @@ jobs:
         with:
           ort-version: ${{ env.ORT_VERSION }}
 
-      - name: Install Task
-        uses: ./.github/actions/install-task
+      - name: Build or restore FFI from cache
+        id: ffi
+        uses: ./.github/actions/build-and-cache-ffi
+        with:
+          platform: ${{ runner.os }}
+          ffi-crate: kreuzberg-ffi
+          cache-version: v1
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+          ort-version: ${{ env.ORT_VERSION }}
 
-      - name: Build FFI library
-        run: task rust:ffi:build:ci
+      - name: Set library paths for .NET
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "DYLD_LIBRARY_PATH=${{ github.workspace }}/target/release:$DYLD_LIBRARY_PATH" >> "$GITHUB_ENV"
+          elif [[ "${{ runner.os }}" == "Linux" ]]; then
+            echo "LD_LIBRARY_PATH=${{ github.workspace }}/target/release:$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
+          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+            echo "${{ github.workspace }}/target/release" >> "$GITHUB_PATH"
+          fi
 
       - name: Build C# bindings
         run: task csharp:build:ci

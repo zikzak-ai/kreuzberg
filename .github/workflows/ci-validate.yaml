@@ -136,6 +136,12 @@ jobs:
         with:
           dotnet-version: '8.0'
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
       - name: Check disk space before tool installations
         run: scripts/ci/validate/show-disk-space.sh "Disk space before tool installations"
         shell: bash

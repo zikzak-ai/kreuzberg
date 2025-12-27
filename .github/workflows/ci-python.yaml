@@ -198,22 +198,37 @@ jobs:
         shell: bash
         run: scripts/ci/python/clean-artifacts.sh
 
-      - name: Build Rust FFI for Python (PyO3)
-        uses: ./.github/actions/build-rust-ffi
+      - name: Build or restore FFI from cache
+        id: ffi
+        uses: ./.github/actions/build-and-cache-ffi
         with:
-          crate-name: kreuzberg-py
-          features: extension-module
-          build-profile: release
-          verbose: true
+          platform: ${{ matrix.platform }}
+          ffi-crate: kreuzberg-py
+          cache-version: v1
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+          ort-version: ${{ env.ORT_VERSION }}
 
       - name: Install Task
         uses: ./.github/actions/install-task
 
-      - name: Build and cache Python wheels
-        shell: bash
-        env:
-          TARGET: ${{ matrix.target }}
-        run: task python:build:ci
+      - name: Build or restore Python wheels from cache
+        id: wheels
+        uses: ./.github/actions/build-and-cache-binding
+        with:
+          binding-name: python
+          platform: ${{ matrix.platform }}
+          task-command: python:build:ci
+          cache-paths: |
+            target/wheels/
+            packages/python/dist/
+          cache-version: v1
+          rust-hash: ${{ steps.ffi.outputs.rust-hash }}
+          binding-files: |
+            crates/kreuzberg-py/**
+            packages/python/**
+          dep-files: |
+            Cargo.lock
+            uv.lock
 
       - name: Report cache statistics
         if: always()

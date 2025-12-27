@@ -185,9 +185,25 @@ jobs:
       - name: Install Task
         uses: ./.github/actions/install-task
 
-      - name: Build Rust FFI library (C API)
+      - name: Build or restore FFI from cache
+        id: ffi
+        uses: ./.github/actions/build-and-cache-ffi
+        with:
+          platform: ${{ matrix.os }}
+          ffi-crate: kreuzberg-ffi
+          cache-version: v1
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+          ort-version: ${{ env.ORT_VERSION }}
+
+      - name: Set library paths for JNI
         shell: bash
-        run: task rust:ffi:build:ci
+        run: |
+          echo "PKG_CONFIG_PATH=${{ github.workspace }}/crates/kreuzberg-ffi:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "DYLD_LIBRARY_PATH=${{ github.workspace }}/target/release:${DYLD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+          elif [[ "${{ runner.os }}" == "Linux" ]]; then
+            echo "LD_LIBRARY_PATH=${{ github.workspace }}/target/release:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+          fi
 
       - name: Log platform information
         shell: bash
@@ -306,9 +322,25 @@ jobs:
         shell: bash
         run: mkdir -p packages/java/target/jvm-crash
 
-      - name: Build native FFI library
+      - name: Build or restore FFI from cache
+        id: ffi
+        uses: ./.github/actions/build-and-cache-ffi
+        with:
+          platform: ${{ matrix.os }}
+          ffi-crate: kreuzberg-ffi
+          cache-version: v1
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+          ort-version: ${{ env.ORT_VERSION }}
+
+      - name: Set library paths for JNI
         shell: bash
-        run: task rust:ffi:build:ci
+        run: |
+          echo "PKG_CONFIG_PATH=${{ github.workspace }}/crates/kreuzberg-ffi:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "DYLD_LIBRARY_PATH=${{ github.workspace }}/target/release:${DYLD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+          elif [[ "${{ runner.os }}" == "Linux" ]]; then
+            echo "LD_LIBRARY_PATH=${{ github.workspace }}/target/release:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+          fi
 
       - name: Log test environment (pre-test diagnostics)
         shell: bash

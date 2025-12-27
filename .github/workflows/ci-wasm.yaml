@@ -149,37 +149,26 @@ jobs:
       - name: Install Task
         uses: ./.github/actions/install-task
 
-      - name: Build WASM for all targets
-        shell: bash
-        run: task wasm:build:all
-        env:
-          RUSTFLAGS: ${{ env.WASM_RUSTFLAGS }}
-
-      - name: Download PDFium WASM
-        shell: bash
-        run: |
-          curl -fL --retry 5 -o /tmp/pdfium-wasm.tgz \
-            "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/${{ env.PDFIUM_VERSION }}/pdfium-wasm.tgz"
-          mkdir -p wasm-libs
-          tar -xzf /tmp/pdfium-wasm.tgz -C wasm-libs
-
-      - name: Build WASM with PDFium (native target)
-        shell: bash
-        run: task wasm:build:nodejs
-        env:
-          PDFIUM_WASM_LIB: ${{ github.workspace }}/wasm-libs
-          RUSTFLAGS: ${{ env.WASM_RUSTFLAGS }}
-
-      - name: Validate build artifacts (Web)
-        shell: bash
-        run: scripts/ci/wasm/validate-web-artifact.sh
-
-      - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v6
+      - name: Build or restore WASM bindings from cache
+        id: wasm
+        uses: ./.github/actions/build-and-cache-binding
         with:
-          name: wasm-${{ matrix.target }}
-          path: crates/kreuzberg-wasm/pkg**/
-          retention-days: 7
+          binding-name: wasm
+          platform: ${{ matrix.os }}
+          task-command: wasm:build:ci
+          cache-paths: |
+            crates/kreuzberg-wasm/pkg/
+            crates/kreuzberg-wasm/dist/
+            crates/kreuzberg-wasm/*.wasm
+          cache-version: v1
+          rust-hash: "n/a"
+          binding-files: |
+            crates/kreuzberg-wasm/**
+          dep-files: |
+            Cargo.lock
+            crates/kreuzberg-wasm/Cargo.toml
+        env:
+          RUSTFLAGS: ${{ env.WASM_RUSTFLAGS }}
 
       - name: Cleanup Rust cache
         if: always()

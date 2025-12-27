@@ -288,17 +288,15 @@ jobs:
             cat .cargo/config.toml
           fi
 
-      - name: Build Rust FFI for Ruby (Magnus)
-        uses: ./.github/actions/build-rust-ffi
+      - name: Build or restore FFI from cache
+        id: ffi
+        uses: ./.github/actions/build-and-cache-ffi
         with:
-          crate-name: kreuzberg-rb
-          target: ${{ runner.os == 'Windows' && 'x86_64-pc-windows-gnu' || '' }}
-          build-profile: release
-          verbose: true
-        env:
-          RB_SYS_CARGO_PROFILE: release
-          RB_SYS_VERBOSE: "1"
-          CARGO_BUILD_JOBS: "1"
+          platform: ${{ matrix.platform }}
+          ffi-crate: kreuzberg-rb
+          cache-version: v1
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+          ort-version: ${{ env.ORT_VERSION }}
 
       - name: Install Task
         uses: ./.github/actions/install-task
@@ -359,6 +357,27 @@ jobs:
           name: gem-${{ matrix.platform }}-${{ matrix.ruby-version }}
           path: packages/ruby/pkg/*.gem
           retention-days: 7
+
+      - name: Report FFI cache statistics
+        if: always()
+        shell: bash
+        run: |
+          echo ""
+          echo "=== FFI Cache Statistics ==="
+          echo "Platform: ${{ matrix.platform }}"
+          echo "Cache hit: ${{ steps.ffi.outputs.cache-hit }}"
+          echo "Cache key: ${{ steps.ffi.outputs.cache-key }}"
+          echo "Rust hash: ${{ steps.ffi.outputs.rust-hash }}"
+          echo ""
+          echo "FFI artifacts:"
+          echo "  target/release/:"
+          ls -lh target/release/libkreuzberg_ffi* 2>/dev/null || echo "    (none found)"
+          if [[ -d "target/x86_64-pc-windows-gnu/release" ]]; then
+            echo "  target/x86_64-pc-windows-gnu/release/:"
+            ls -lh target/x86_64-pc-windows-gnu/release/libkreuzberg_ffi* 2>/dev/null || echo "    (none found)"
+          fi
+          echo "  pkg-config file:"
+          ls -lh crates/kreuzberg-ffi/kreuzberg-ffi.pc 2>/dev/null || echo "    (not found)"
 
       - name: Cleanup Rust cache
         if: always()

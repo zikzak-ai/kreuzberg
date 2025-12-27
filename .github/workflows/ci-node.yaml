@@ -214,36 +214,25 @@ jobs:
         with:
           ort-version: ${{ env.ORT_VERSION }}
 
-      - name: Build Rust FFI for Node.js (NAPI-RS)
-        uses: ./.github/actions/build-rust-ffi
+      - name: Build or restore Node bindings from cache
+        id: node
+        uses: ./.github/actions/build-and-cache-binding
         with:
-          crate-name: kreuzberg-node
-          target: ${{ matrix.target }}
-          build-profile: release
-          verbose: true
-
-      - name: Install Task
-        uses: ./.github/actions/install-task
-
-      - name: Report Rust build artifacts size
-        shell: bash
-        run: |
-          echo "=== Rust Build Artifacts ==="
-          if [ -d "target/release" ]; then
-            du -sh target/release
-            find target/release -maxdepth 1 -type f -exec ls -lh {} \; | awk '{print $9, $5}'
-          fi
-
-      - name: Build Node bindings
-        shell: bash
-        env:
-          VERBOSE: "1"
-          CARGO_BUILD_VERBOSE: "true"
-          TARGET: ${{ matrix.target }}
-        run: |
-          set -x
-          task node:build:ci
-          set +x
+          binding-name: node
+          platform: ${{ matrix.platform }}
+          task-command: node:build:ci
+          cache-paths: |
+            crates/kreuzberg-node/npm/
+            crates/kreuzberg-node/*.node
+            crates/kreuzberg-node/dist/
+          cache-version: v1
+          rust-hash: "n/a"
+          binding-files: |
+            crates/kreuzberg-node/**
+          dep-files: |
+            Cargo.lock
+            crates/kreuzberg-node/package.json
+            crates/kreuzberg-node/pnpm-lock.yaml
 
       - name: Report Node binding artifacts size
         shell: bash

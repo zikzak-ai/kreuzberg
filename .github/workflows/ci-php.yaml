@@ -200,12 +200,15 @@ jobs:
             echo "RUSTFLAGS=${EXTRA_FLAGS}" >> "$GITHUB_ENV"
           fi
 
-      - name: Build Rust FFI for PHP
-        uses: ./.github/actions/build-rust-ffi
+      - name: Build or restore FFI from cache
+        id: ffi
+        uses: ./.github/actions/build-and-cache-ffi
         with:
-          crate-name: kreuzberg-php
-          build-profile: release
-          verbose: true
+          platform: ${{ matrix.platform }}
+          ffi-crate: kreuzberg-php
+          cache-version: v1
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+          ort-version: ${{ env.ORT_VERSION }}
 
       - name: Install Task
         uses: ./.github/actions/install-task
@@ -267,12 +270,15 @@ jobs:
         with:
           ort-version: ${{ env.ORT_VERSION }}
 
-      - name: Build Rust FFI for PHP
-        uses: ./.github/actions/build-rust-ffi
+      - name: Build or restore FFI from cache
+        id: ffi
+        uses: ./.github/actions/build-and-cache-ffi
         with:
-          crate-name: kreuzberg-php
-          build-profile: release
-          verbose: true
+          platform: ${{ matrix.platform }}
+          ffi-crate: kreuzberg-php
+          cache-version: v1
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+          ort-version: ${{ env.ORT_VERSION }}
 
       - name: Install Task
         uses: ./.github/actions/install-task
