@@ -85,7 +85,7 @@ if ! {
 		--exclude kreuzberg-e2e-generator \
 		--exclude kreuzberg-py \
 		--exclude kreuzberg-node \
-		"${extra_excludes[@]}" \
+		${extra_excludes[@]+"${extra_excludes[@]}"} \
 		--all-features \
 		--verbose
 } 2>&1 | tee "$TEST_LOG"; then

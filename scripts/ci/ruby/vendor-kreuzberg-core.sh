@@ -15,11 +15,11 @@ validate_repo_root "$REPO_ROOT" || exit 1
 
 echo "=== Vendoring kreuzberg core crate ==="
 
-# Remove and recreate vendor directory
-rm -rf "$REPO_ROOT/packages/ruby/vendor/kreuzberg"
-rm -rf "$REPO_ROOT/packages/ruby/vendor/kreuzberg-tesseract"
-rm -rf "$REPO_ROOT/packages/ruby/vendor/kreuzberg-ffi"
-rm -rf "$REPO_ROOT/packages/ruby/vendor/rb-sys"
+# Remove and recreate vendor directory (force recursively, ignore errors)
+rm -rf "$REPO_ROOT/packages/ruby/vendor/kreuzberg" 2>/dev/null || true
+rm -rf "$REPO_ROOT/packages/ruby/vendor/kreuzberg-tesseract" 2>/dev/null || true
+rm -rf "$REPO_ROOT/packages/ruby/vendor/kreuzberg-ffi" 2>/dev/null || true
+rm -rf "$REPO_ROOT/packages/ruby/vendor/rb-sys" 2>/dev/null || true
 mkdir -p "$REPO_ROOT/packages/ruby/vendor"
 
 # Copy core crate and rb-sys (patched for Windows compatibility)
@@ -87,6 +87,8 @@ for crate_dir in kreuzberg kreuzberg-tesseract; do
 	sed -i.bak 's/^image = { workspace = true, /image = { version = "0.25.9", /' "$REPO_ROOT/packages/ruby/vendor/$crate_dir/Cargo.toml"
 	sed -i.bak 's/^html-to-markdown-rs = { workspace = true/html-to-markdown-rs = { version = "2.14.11", default-features = false/' "$REPO_ROOT/packages/ruby/vendor/$crate_dir/Cargo.toml"
 	sed -i.bak 's/^once_cell = { workspace = true }/once_cell = "1.21.3"/' "$REPO_ROOT/packages/ruby/vendor/$crate_dir/Cargo.toml"
+	sed -i.bak 's/^lzma-rust2 = { workspace = true, optional = true }/lzma-rust2 = { version = "0.15.4", optional = true }/' "$REPO_ROOT/packages/ruby/vendor/$crate_dir/Cargo.toml"
+	sed -i.bak 's/^parking_lot = { workspace = true }/parking_lot = "0.12.3"/' "$REPO_ROOT/packages/ruby/vendor/$crate_dir/Cargo.toml"
 
 	# Inline dev-dependencies
 	sed -i.bak 's/^tempfile = { workspace = true }/tempfile = "3.23.0"/' "$REPO_ROOT/packages/ruby/vendor/$crate_dir/Cargo.toml"
