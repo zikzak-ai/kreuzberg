@@ -1048,7 +1048,7 @@ func TestSpecialCharactersInMetadata(t *testing.T) {
 	}
 
 	// Verify keywords array can contain various encodings
-	if htmlMeta.Keywords != nil && len(htmlMeta.Keywords) > 0 {
+	if len(htmlMeta.Keywords) > 0 {
 		for _, kw := range htmlMeta.Keywords {
 			if kw == "" {
 				t.Errorf("Keyword should not be empty")
@@ -1057,7 +1057,7 @@ func TestSpecialCharactersInMetadata(t *testing.T) {
 	}
 
 	// Verify OpenGraph handles special characters
-	if htmlMeta.OpenGraph != nil && len(htmlMeta.OpenGraph) > 0 {
+	if len(htmlMeta.OpenGraph) > 0 {
 		for key, value := range htmlMeta.OpenGraph {
 			if key == "" || value == "" {
 				t.Errorf("OpenGraph entry should not have empty key or value")

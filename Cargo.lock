@@ -475,7 +475,7 @@ checksum = "0e050f626429857a27ddccb31e0aca21356bfa709c04041aefddac081a8f068a"
 
 [[package]]
 name = "benchmark-harness"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "ahash",
  "async-trait",
@@ -1676,7 +1676,7 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "e2e-rust"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "async-trait",
  "hex",
@@ -2977,7 +2977,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "ahash",
  "anyhow",
@@ -3066,7 +3066,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-cli"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "anyhow",
  "clap",
@@ -3081,7 +3081,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-e2e-generator"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -3099,7 +3099,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-ffi"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "async-trait",
  "cbindgen",
@@ -3115,7 +3115,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-node"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -3162,7 +3162,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-php"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "async-trait",
  "ext-php-rs",
@@ -3175,7 +3175,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-py"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "async-trait",
  "html-to-markdown-rs",
@@ -3191,7 +3191,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-tesseract"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "cc",
  "cmake",
@@ -3204,7 +3204,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-wasm"
-version = "4.0.0-rc.21"
+version = "4.0.0-rc.22"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
