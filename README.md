@@ -17,9 +17,7 @@
   <a href="https://www.npmjs.com/package/@kreuzberg/wasm">
     <img src="https://img.shields.io/npm/v/@kreuzberg/wasm?label=WASM&color=007ec6" alt="WASM">
   </a>
-  <a href="https://rubygems.org/gems/kreuzberg">
-    <img src="https://img.shields.io/gem/v/kreuzberg?label=Ruby&color=007ec6" alt="Ruby">
-  </a>
+
   <a href="https://central.sonatype.com/artifact/dev.kreuzberg/kreuzberg">
     <img src="https://img.shields.io/maven-central/v/dev.kreuzberg/kreuzberg?label=Java&color=007ec6" alt="Java">
   </a>
@@ -32,6 +30,9 @@
   <a href="https://packagist.org/packages/kreuzberg/kreuzberg">
     <img src="https://img.shields.io/packagist/v/kreuzberg/kreuzberg?label=PHP&color=007ec6" alt="PHP">
   </a>
+  <a href="https://rubygems.org/gems/kreuzberg">
+    <img src="https://img.shields.io/gem/v/kreuzberg?label=Ruby&color=007ec6" alt="Ruby">
+  </a>
 
   <!-- Project Info -->
   <a href="https://github.com/kreuzberg-dev/kreuzberg/blob/main/LICENSE">
@@ -40,21 +41,24 @@
   <a href="https://docs.kreuzberg.dev">
     <img src="https://img.shields.io/badge/docs-kreuzberg.dev-blue" alt="Documentation">
   </a>
-  <a href="https://discord.gg/pXxagNK2zN">
-    <img src="https://img.shields.io/badge/Discord-Join%20our%20community-7289da" alt="Discord">
-  </a>
 </div>
 
 <img width="1128" height="191" alt="Banner2" src="https://github.com/user-attachments/assets/419fc06c-8313-4324-b159-4b4d3cfce5c0" />
 
-A polyglot document intelligence framework with a Rust core. Extract text, metadata, and structured information from PDFs, Office documents, images, and 56 formats. Available for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, and C#—or use via CLI, REST API, or MCP server.
+<div align="center" style="margin-top: 20px;">
+  <a href="https://discord.gg/pXxagNK2zN">
+      <img height="30" src="https://img.shields.io/badge/Discord-Join%20our%20community-7289da" alt="Discord">
+  </a>
+</div>
+
+A polyglot document intelligence framework with a Rust core. Extract text, metadata, and structured information from PDFs, Office documents, images, and 56 formats. Available for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, C#, PHP, and Elixir—or use via CLI, REST API, or MCP server.
 
 > Note - Kreuzberg v4.0.0 is in **Release Candidate** stage. Bugs and breaking changes are expected.
 > This is a pre-release version. Please test the library and [report any issues](https://github.com/kreuzberg-dev/kreuzberg/issues) you encounter.
 
 ## Key Features
 
-- **Polyglot** – Native bindings for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, C#
+- **Polyglot** – Native bindings for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, C#, PHP, and Elixir
 - **56 file formats** – PDF, Office documents, images, HTML, XML, emails, archives, and more
 - **OCR support** – Multiple backends (Tesseract, EasyOCR, PaddleOCR) with table extraction
 - **Flexible deployment** – Use as library, CLI tool, REST API server, or MCP server
@@ -203,6 +207,94 @@ All images support API server, CLI, and MCP server modes with automatic platform
 ## Architecture
 
 Kreuzberg is built with a Rust core for efficient document extraction and processing.
+
+<details>
+<summary><strong>System Architecture Diagram</strong></summary>
+
+```mermaid
+graph TB
+    subgraph Core["Rust Core"]
+        direction TB
+        Extractors["Text Extractors"]
+        Parsers["Document Parsers"]
+        OCREngine["OCR Engines"]
+        OutputFormats["Output Formats"]
+    end
+
+    subgraph FFI["FFI/Binding Layer"]
+        direction TB
+        PyBind["Python Binding"]
+        NodeBind["Node.js Binding"]
+        WasmBind["WASM Binding"]
+        GoBind["Go FFI"]
+        JavaBind["Java FFM"]
+        CSharpBind["C# P/Invoke"]
+        PhpBind["PHP Extension"]
+        RubyBind["Ruby Extension"]
+        ElixirBind["Elixir NIF"]
+    end
+
+    subgraph Parsers["Document Format Parsers"]
+        direction TB
+        PDF["PDF Parser"]
+        Office["Office Docs<br/>DOCX, XLSX, PPTX"]
+        Images["Image Formats<br/>PNG, JPG, TIFF"]
+        Web["Web Formats<br/>HTML, XML, JSON"]
+        Archives["Archives<br/>ZIP, TAR, 7Z"]
+        Email["Email<br/>EML, MSG"]
+        Academic["Academic<br/>LaTeX, BibTeX, Markdown"]
+    end
+
+    subgraph OCR["OCR Backends"]
+        direction TB
+        Tesseract["Tesseract OCR"]
+        EasyOCR["EasyOCR"]
+        PaddleOCR["PaddleOCR"]
+        TableDetect["Table Detection<br/>& Extraction"]
+    end
+
+    subgraph Output["Output & Features"]
+        direction TB
+        TextOut["Extracted Text"]
+        MetadataOut["Metadata"]
+        StructuredOut["Structured Data<br/>& Tables"]
+        Embeddings["Embeddings<br/>ONNX Runtime"]
+        Chunking["Document Chunking"]
+    end
+
+    subgraph Deployment["Deployment Options"]
+        direction TB
+        CLI["CLI Tool"]
+        RestAPI["REST API Server"]
+        MCP["MCP Server"]
+        Docker["Docker Images"]
+    end
+
+    Core --> FFI
+    Parsers --> Core
+    OCR --> Core
+    Core --> Output
+    Core --> Deployment
+
+    FFI --> PyBind
+    FFI --> NodeBind
+    FFI --> WasmBind
+    FFI --> GoBind
+    FFI --> JavaBind
+    FFI --> CSharpBind
+    FFI --> PhpBind
+    FFI --> RubyBind
+    FFI --> ElixirBind
+
+    style Core fill:#CE422B
+    style FFI fill:#4A90E2
+    style Parsers fill:#7ED321
+    style OCR fill:#F5A623
+    style Output fill:#9013FE
+    style Deployment fill:#50E3C2
+```
+
+</details>
 
 ### Design Principles
 
