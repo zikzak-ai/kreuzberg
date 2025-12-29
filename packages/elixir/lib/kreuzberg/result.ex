@@ -18,16 +18,14 @@ defmodule Kreuzberg.ExtractionResult do
       - Common types: "application/pdf", "text/plain", "image/png", etc.
       - Helps downstream processors know how to handle the content
 
-    * `:metadata` - Metadata structure containing document-specific information
-      - Map format: %{"key" => "value"}
-      - Common keys: "title", "author", "created_date", "page_count", "file_size"
-      - Can be empty (%{}) if no metadata is available
-      - Example: %{"pages" => 5, "title" => "Report.pdf"}
+    * `:metadata` - Metadata struct containing document-specific information
+      - Proper Kreuzberg.Metadata struct with typed fields
+      - Contains title, author, created_date, page_count, etc.
+      - Can be an empty struct if no metadata is available
 
-    * `:tables` - List of extracted table structures
-      - Each table is a map with "rows" and "columns" keys
-      - Row data is nested lists: [["cell1", "cell2"], ["cell3", "cell4"]]
-      - Column metadata may include headers and alignment information
+    * `:tables` - List of extracted table structs
+      - Each table is a Kreuzberg.Table struct with proper fields
+      - Contains cells, headers, markdown, and other table info
       - Empty list [] if no tables found in document
 
     * `:detected_languages` - List of detected language codes (ISO 639-1 format)
@@ -36,22 +34,19 @@ defmodule Kreuzberg.ExtractionResult do
       - Multiple languages if document contains mixed-language content
       - Example: ["en", "de"] for bilingual document
 
-    * `:chunks` - Optional list of text chunks with embeddings and metadata
+    * `:chunks` - Optional list of text chunk structs with embeddings
       - nil if chunking/embedding is not enabled
-      - Each chunk: %{"text" => "chunk content", "embedding" => [...], "metadata" => %{}}
+      - Each chunk is a Kreuzberg.Chunk struct with text and embedding
       - Used for semantic search and RAG applications
-      - Chunk size depends on embedding model and configuration
 
-    * `:images` - Optional list of extracted images with nested OCR results
+    * `:images` - Optional list of extracted image structs with OCR results
       - nil if image extraction is disabled
-      - Each image: %{"data" => binary, "format" => "png", "ocr_text" => "extracted text"}
+      - Each image is a Kreuzberg.Image struct with format, data, and ocr_text
       - OCR text is result of Tesseract or other OCR backend processing
-      - Format can be "png", "jpeg", "webp" depending on extraction settings
 
-    * `:pages` - Optional list of per-page content when page extraction is enabled
+    * `:pages` - Optional list of per-page content structs
       - nil if page-level extraction is not enabled
-      - Each page: %{"number" => 1, "content" => "page text", "height" => 11.0, "width" => 8.5}
-      - Page dimensions in inches or centimeters
+      - Each page is a Kreuzberg.Page struct with number, content, and dimensions
       - Useful for documents where position and structure matter
 
   ## Examples
@@ -60,7 +55,7 @@ defmodule Kreuzberg.ExtractionResult do
       iex> result = %Kreuzberg.ExtractionResult{
       ...>   content: "Document content",
       ...>   mime_type: "application/pdf",
-      ...>   metadata: %{},
+      ...>   metadata: %Kreuzberg.Metadata{},
       ...>   tables: [],
       ...>   detected_languages: ["en"]
       ...> }
@@ -71,27 +66,26 @@ defmodule Kreuzberg.ExtractionResult do
       iex> result = %Kreuzberg.ExtractionResult{
       ...>   content: "Sales Report 2024\\n\\nQ1: 1M, Q2: 1.2M, Q3: 1.5M",
       ...>   mime_type: "application/pdf",
-      ...>   metadata: %{"title" => "Sales Report", "year" => "2024", "pages" => 3},
-      ...>   tables: [%{"headers" => ["Quarter", "Amount"],
-      ...>             "rows" => [["Q1", "1M"], ["Q2", "1.2M"], ["Q3", "1.5M"]]}],
+      ...>   metadata: %Kreuzberg.Metadata{title: "Sales Report"},
+      ...>   tables: [%Kreuzberg.Table{headers: ["Quarter", "Amount"]}],
       ...>   detected_languages: ["en"],
       ...>   chunks: nil,
       ...>   images: nil,
       ...>   pages: nil
       ...> }
-      iex> result.metadata["title"]
+      iex> result.metadata.title
       "Sales Report"
 
       # Full extraction with all fields
       iex> result = %Kreuzberg.ExtractionResult{
       ...>   content: "Multi-page document content...",
       ...>   mime_type: "application/pdf",
-      ...>   metadata: %{"pages" => 5, "author" => "John Doe"},
-      ...>   tables: [%{"rows" => [["Data1", "Data2"]]}],
+      ...>   metadata: %Kreuzberg.Metadata{page_count: 5},
+      ...>   tables: [%Kreuzberg.Table{cells: [["Data1", "Data2"]]}],
       ...>   detected_languages: ["en", "de"],
-      ...>   chunks: [%{"text" => "chunk1 content", "embedding" => [...]}],
-      ...>   images: [%{"data" => <<...>>, "format" => "png", "ocr_text" => "Image text"}],
-      ...>   pages: [%{"number" => 1, "content" => "Page 1 content"}]
+      ...>   chunks: [%Kreuzberg.Chunk{text: "chunk1 content"}],
+      ...>   images: [%Kreuzberg.Image{format: "png", ocr_text: "Image text"}],
+      ...>   pages: [%Kreuzberg.Page{number: 1, content: "Page 1 content"}]
       ...> }
       iex> Enum.count(result.pages)
       1
@@ -100,23 +94,23 @@ defmodule Kreuzberg.ExtractionResult do
   @type t :: %__MODULE__{
           content: String.t(),
           mime_type: String.t(),
-          metadata: map(),
-          tables: list(map()),
+          metadata: Kreuzberg.Metadata.t(),
+          tables: list(Kreuzberg.Table.t()),
           detected_languages: list(String.t()) | nil,
-          chunks: list(map()) | nil,
-          images: list(map()) | nil,
-          pages: list(map()) | nil
+          chunks: list(Kreuzberg.Chunk.t()) | nil,
+          images: list(Kreuzberg.Image.t()) | nil,
+          pages: list(Kreuzberg.Page.t()) | nil
         }
 
   defstruct [
     :content,
     :mime_type,
-    :metadata,
-    :tables,
     :detected_languages,
     :chunks,
     :images,
-    :pages
+    :pages,
+    metadata: %Kreuzberg.Metadata{},
+    tables: []
   ]
 
   @doc """
@@ -126,17 +120,17 @@ defmodule Kreuzberg.ExtractionResult do
 
     * `content` - The extracted text content
     * `mime_type` - The MIME type of the document
-    * `metadata` - Document metadata (defaults to empty map)
-    * `tables` - List of extracted tables (defaults to empty list)
+    * `metadata` - Document metadata struct or map (defaults to empty Metadata struct)
+    * `tables` - List of extracted table structs or maps (defaults to empty list)
     * `opts` - Optional keyword list containing:
       * `:detected_languages` - List of detected language codes
-      * `:chunks` - List of text chunks with embeddings
-      * `:images` - List of extracted images
-      * `:pages` - List of per-page content
+      * `:chunks` - List of chunk structs or maps
+      * `:images` - List of image structs or maps
+      * `:pages` - List of page structs or maps
 
   ## Returns
 
-  An `ExtractionResult` struct with all fields populated.
+  An `ExtractionResult` struct with all fields properly typed as structs.
 
   ## Examples
 
@@ -144,7 +138,7 @@ defmodule Kreuzberg.ExtractionResult do
       %Kreuzberg.ExtractionResult{
         content: "text",
         mime_type: "text/plain",
-        metadata: %{},
+        metadata: %Kreuzberg.Metadata{},
         tables: [],
         detected_languages: nil,
         chunks: nil,
@@ -152,12 +146,13 @@ defmodule Kreuzberg.ExtractionResult do
         pages: nil
       }
 
-      iex> Kreuzberg.ExtractionResult.new("text", "application/pdf", %{"pages" => 5}, [],
+      iex> metadata = %Kreuzberg.Metadata{page_count: 5}
+      iex> Kreuzberg.ExtractionResult.new("text", "application/pdf", metadata, [],
       ...>   detected_languages: ["en", "de"])
       %Kreuzberg.ExtractionResult{
         content: "text",
         mime_type: "application/pdf",
-        metadata: %{"pages" => 5},
+        metadata: %Kreuzberg.Metadata{page_count: 5},
         tables: [],
         detected_languages: ["en", "de"],
         chunks: nil,
@@ -168,20 +163,78 @@ defmodule Kreuzberg.ExtractionResult do
   @spec new(
           String.t(),
           String.t(),
-          map(),
-          list(map()),
+          Kreuzberg.Metadata.t() | map(),
+          list(Kreuzberg.Table.t() | map()),
           keyword()
         ) :: t()
-  def new(content, mime_type, metadata \\ %{}, tables \\ [], opts \\ []) do
+  def new(content, mime_type, metadata \\ %Kreuzberg.Metadata{}, tables \\ [], opts \\ []) do
     %__MODULE__{
       content: content,
       mime_type: mime_type,
-      metadata: metadata,
-      tables: tables,
+      metadata: normalize_metadata(metadata),
+      tables: normalize_tables(tables),
       detected_languages: Keyword.get(opts, :detected_languages),
-      chunks: Keyword.get(opts, :chunks),
-      images: Keyword.get(opts, :images),
-      pages: Keyword.get(opts, :pages)
+      chunks: normalize_chunks(Keyword.get(opts, :chunks)),
+      images: normalize_images(Keyword.get(opts, :images)),
+      pages: normalize_pages(Keyword.get(opts, :pages))
     }
+  end
+
+  @doc false
+  @spec normalize_metadata(Kreuzberg.Metadata.t() | map()) :: Kreuzberg.Metadata.t()
+  defp normalize_metadata(%Kreuzberg.Metadata{} = metadata), do: metadata
+  defp normalize_metadata(map) when is_map(map), do: Kreuzberg.Metadata.from_map(map)
+  defp normalize_metadata(nil), do: %Kreuzberg.Metadata{}
+
+  @doc false
+  @spec normalize_tables(list()) :: list(Kreuzberg.Table.t())
+  defp normalize_tables(nil), do: []
+  defp normalize_tables([]), do: []
+
+  defp normalize_tables(tables) when is_list(tables) do
+    Enum.map(tables, fn
+      %Kreuzberg.Table{} = table -> table
+      map when is_map(map) -> Kreuzberg.Table.from_map(map)
+      other -> other
+    end)
+  end
+
+  @doc false
+  @spec normalize_chunks(list() | nil) :: list(Kreuzberg.Chunk.t()) | nil
+  defp normalize_chunks(nil), do: nil
+  defp normalize_chunks([]), do: []
+
+  defp normalize_chunks(chunks) when is_list(chunks) do
+    Enum.map(chunks, fn
+      %Kreuzberg.Chunk{} = chunk -> chunk
+      map when is_map(map) -> Kreuzberg.Chunk.from_map(map)
+      other -> other
+    end)
+  end
+
+  @doc false
+  @spec normalize_images(list() | nil) :: list(Kreuzberg.Image.t()) | nil
+  defp normalize_images(nil), do: nil
+  defp normalize_images([]), do: []
+
+  defp normalize_images(images) when is_list(images) do
+    Enum.map(images, fn
+      %Kreuzberg.Image{} = image -> image
+      map when is_map(map) -> Kreuzberg.Image.from_map(map)
+      other -> other
+    end)
+  end
+
+  @doc false
+  @spec normalize_pages(list() | nil) :: list(Kreuzberg.Page.t()) | nil
+  defp normalize_pages(nil), do: nil
+  defp normalize_pages([]), do: []
+
+  defp normalize_pages(pages) when is_list(pages) do
+    Enum.map(pages, fn
+      %Kreuzberg.Page{} = page -> page
+      map when is_map(map) -> Kreuzberg.Page.from_map(map)
+      other -> other
+    end)
   end
 end
