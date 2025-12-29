@@ -19,6 +19,11 @@ linux-x86_64)
 	ARCH="x86_64"
 	EXT_SUFFIX="so"
 	;;
+linux-arm64)
+	OS="linux"
+	ARCH="arm64"
+	EXT_SUFFIX="so"
+	;;
 macos-arm64)
 	OS="macos"
 	ARCH="arm64"

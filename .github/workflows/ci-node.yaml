@@ -178,6 +178,12 @@ jobs:
             find crates/kreuzberg-node -maxdepth 1 \( -name "*.node" -o -name "*.tgz" -o -name "index.js" \) -exec ls -lh {} \;
           fi
 
+      - name: Pack Node package
+        shell: bash
+        run: |
+          cd crates/kreuzberg-node
+          npm pack
+
       - name: Verify TypeScript build artifacts
         shell: bash
         run: scripts/ci/node/verify-ts-artifacts.sh

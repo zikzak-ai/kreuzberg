@@ -17,7 +17,7 @@ echo "=== All runtimes in package ==="
 unzip -l "$pkg" | grep "runtimes/" | head -20 || echo "  (no runtimes found)"
 
 missing_files=0
-for rid in linux-x64 osx-arm64 win-x64; do
+for rid in linux-arm64 linux-x64 osx-arm64 win-x64; do
 	echo ""
 	echo "Checking $rid..."
 

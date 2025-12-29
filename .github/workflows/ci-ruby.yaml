@@ -117,15 +117,15 @@ jobs:
           bundler-cache: false
           working-directory: packages/ruby
 
+      - name: Install Bundler
+        shell: bash
+        run: scripts/ci/ruby/install-bundler.sh
+
       - name: Install Ruby dependencies
         shell: bash
         working-directory: packages/ruby
         run: |
           bundle install
-
-      - name: Install Bundler
-        shell: bash
-        run: scripts/ci/ruby/install-bundler.sh
 
       - name: Print Ruby environment (pre-setup)
         shell: bash
@@ -351,15 +351,15 @@ jobs:
           bundler-cache: false
           working-directory: packages/ruby
 
+      - name: Install Bundler
+        shell: bash
+        run: scripts/ci/ruby/install-bundler.sh
+
       - name: Install Ruby dependencies
         shell: bash
         working-directory: packages/ruby
         run: |
           bundle install
-
-      - name: Install Bundler
-        shell: bash
-        run: scripts/ci/ruby/install-bundler.sh
 
       - name: Install Ruby deps
         if: runner.os != 'Windows'

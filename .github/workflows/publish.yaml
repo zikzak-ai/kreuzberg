@@ -255,6 +255,7 @@ jobs:
           ASSET_PREFIX: kreuzberg-cli-
           REQUIRED_ASSETS: |
             kreuzberg-cli-aarch64-apple-darwin.tar.gz
+            kreuzberg-cli-aarch64-unknown-linux-gnu.tar.gz
             kreuzberg-cli-x86_64-unknown-linux-gnu.tar.gz
             kreuzberg-cli-x86_64-pc-windows-msvc.zip
           SUMMARY_LABEL: CLI
@@ -282,6 +283,7 @@ jobs:
           TAG: ${{ needs.prepare.outputs.tag }}
           ASSET_PREFIX: go-ffi-
           REQUIRED_ASSETS: |
+            go-ffi-linux-aarch64.tar.gz
             go-ffi-linux-x86_64.tar.gz
             go-ffi-macos-arm64.tar.gz
             go-ffi-windows-x86_64.tar.gz
@@ -625,6 +627,11 @@ jobs:
             rust_target: ""
             use_cross: false
             use_napi_cross: false
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            rust_target: ""
+            use_cross: false
+            use_napi_cross: false
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             rust_target: ""
@@ -772,8 +779,10 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             use_cross: false
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            use_cross: false
           # TODO: Re-enable x86_64-unknown-linux-musl once build issues are resolved
-          # TODO: Add aarch64-unknown-linux-gnu once test-build parity is restored
           - os: macos-latest
             target: aarch64-apple-darwin
             use_cross: false
@@ -984,6 +993,8 @@ jobs:
         include:
           - os: ubuntu-latest
             label: linux
+          - os: ubuntu-24.04-arm
+            label: linux-arm64
           - os: macos-latest
             label: macos-arm64
           - os: windows-latest
@@ -1228,6 +1239,10 @@ jobs:
       fail-fast: false
       matrix:
         settings:
+          - os: ubuntu-24.04-arm
+            label: linux-aarch64
+            target: aarch64-unknown-linux-gnu
+            build_features: default
           - os: ubuntu-latest
             label: linux-x86_64
             target: x86_64-unknown-linux-gnu
@@ -1375,6 +1390,9 @@ jobs:
       fail-fast: false
       matrix:
         settings:
+          - os: ubuntu-24.04-arm
+            label: linux-arm64
+            rid: linux-arm64
           - os: ubuntu-latest
             label: linux-x86_64
             rid: linux-x86_64
@@ -1547,6 +1565,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f packages/java/src/main/resources/natives/linux-x86_64/libkreuzberg_ffi.so
+          test -f packages/java/src/main/resources/natives/linux-arm64/libkreuzberg_ffi.so
           test -f packages/java/src/main/resources/natives/macos-arm64/libkreuzberg_ffi.dylib
           test -f packages/java/src/main/resources/natives/windows-x86_64/kreuzberg_ffi.dll
 
@@ -1576,6 +1595,9 @@ jobs:
           - os: ubuntu-latest
             label: linux-x86_64
             platform: linux-x86_64
+          - os: ubuntu-24.04-arm
+            label: linux-arm64
+            platform: linux-arm64
           - os: macos-latest
             label: macos-arm64
             platform: macos-arm64
@@ -1751,6 +1773,13 @@ jobs:
       fail-fast: true
       matrix:
         include:
+          - rid: linux-arm64
+            os: ubuntu-24.04-arm
+            rust_target: aarch64-unknown-linux-gnu
+            ort_arch: arm64
+            pdfium_platform: linux
+            pdfium_arch: arm64
+            ffi_name: libkreuzberg_ffi.so
           - rid: linux-x64
             os: ubuntu-latest
             rust_target: x86_64-unknown-linux-gnu
@@ -2280,6 +2309,12 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: scripts/publish/wait-for-package.sh npm "@kreuzberg/node-linux-x64-gnu" "${{ needs.prepare.outputs.version }}" 25
 
+      - name: Wait for npm indexing (linux arm64)
+        if: ${{ needs.prepare.outputs.dry_run != 'true' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: scripts/publish/wait-for-package.sh npm "@kreuzberg/node-linux-arm64-gnu" "${{ needs.prepare.outputs.version }}" 25
+
       - name: Prepare main Node package metadata
         if: ${{ needs.prepare.outputs.dry_run != 'true' }}
         run: scripts/publish/node/prepublish-main-package.sh crates/kreuzberg-node
@@ -2508,6 +2543,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f packages/java/src/main/resources/natives/linux-x86_64/libkreuzberg_ffi.so
+          test -f packages/java/src/main/resources/natives/linux-arm64/libkreuzberg_ffi.so
           test -f packages/java/src/main/resources/natives/macos-arm64/libkreuzberg_ffi.dylib
           test -f packages/java/src/main/resources/natives/windows-x86_64/kreuzberg_ffi.dll
 

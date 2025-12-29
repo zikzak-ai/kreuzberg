@@ -25,6 +25,12 @@ linux-x86_64)
 		cp -f target/release/libpdfium.so "$out/"
 	fi
 	;;
+linux-arm64)
+	cp -f target/release/libkreuzberg_ffi.so "$out/"
+	if [ -f target/release/libpdfium.so ]; then
+		cp -f target/release/libpdfium.so "$out/"
+	fi
+	;;
 *)
 	echo "Unsupported rid: $rid" >&2
 	exit 1

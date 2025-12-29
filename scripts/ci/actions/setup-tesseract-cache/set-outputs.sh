@@ -15,7 +15,21 @@ if [ "$enable_cache" = "true" ]; then
 
 	docker_opts="--env TESSERACT_RS_CACHE_DIR=/io/.tesseract-cache/${label}"
 	docker_opts="${docker_opts} --env XDG_CACHE_HOME=/io/.xdg-cache/${label}"
-	docker_opts="${docker_opts} --env OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu"
+	multiarch=""
+	if command -v dpkg-architecture >/dev/null 2>&1; then
+		multiarch="$(dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null || true)"
+	fi
+	if [ -z "$multiarch" ]; then
+		case "$(uname -m)" in
+		x86_64) multiarch="x86_64-linux-gnu" ;;
+		aarch64 | arm64) multiarch="aarch64-linux-gnu" ;;
+		esac
+	fi
+	openssl_lib_dir="/usr/lib"
+	if [ -n "$multiarch" ]; then
+		openssl_lib_dir="/usr/lib/${multiarch}"
+	fi
+	docker_opts="${docker_opts} --env OPENSSL_LIB_DIR=${openssl_lib_dir}"
 	docker_opts="${docker_opts} --env OPENSSL_INCLUDE_DIR=/usr/include"
 	echo "docker-options=${docker_opts}" >>"$GITHUB_OUTPUT"
 else
