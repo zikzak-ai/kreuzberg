@@ -31,6 +31,7 @@ allow = [
     "bzip2-1.0.6",
     "MPL-2.0",
     "BSL-1.0",
+    "OpenSSL",
 ]
 confidence-threshold = 0.8
 exceptions = [

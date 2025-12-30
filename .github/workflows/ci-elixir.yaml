@@ -138,6 +138,12 @@ jobs:
           pdfium-version: ${{ env.PDFIUM_VERSION }}
           ort-version: ${{ env.ORT_VERSION }}
 
+      - name: Clean cargo cache to avoid fingerprint conflicts
+        shell: bash
+        run: |
+          cargo clean --release -p kreuzberg-ffi 2>/dev/null || true
+          cargo clean --release -p kreuzberg 2>/dev/null || true
+
       - name: Restore Elixir dependencies cache
         uses: actions/cache@v5
         with:

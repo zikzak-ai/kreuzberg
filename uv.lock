@@ -2108,7 +2108,7 @@ wheels = [
 
 [[package]]
 name = "mineru"
-version = "2.6.8"
+version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -2139,7 +2139,7 @@ dependencies = [
     { name = "tqdm" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/77/1e4744389006bb0115a52a56d1345338016a18aab18e1977c40d5f8b78f9/mineru-2.6.8-py3-none-any.whl", hash = "sha256:d3f8ecc60491f616e042a33b8cd5c8cf7a925c86b51f17e1a6076331f2e933db", size = 1291221, upload-time = "2025-12-15T10:25:54.465Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/58/bb00f6e6a18ee76de50084994657da5a25218fc8b9dfd24c8ebae066e5a4/mineru-2.7.0-py3-none-any.whl", hash = "sha256:d79e93a92c0aceeebea160ccc07c00eed3e03980f5e158ce47554e3196b607e2", size = 1299726, upload-time = "2025-12-30T10:24:43.8Z" },
 ]
 
 [[package]]

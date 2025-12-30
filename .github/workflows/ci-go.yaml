@@ -172,7 +172,7 @@ jobs:
       - name: Set pkg-config path
         shell: bash
         run: |
-          echo "PKG_CONFIG_PATH=${{ github.workspace }}/target/release:$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH=${{ github.workspace }}/crates/kreuzberg-ffi:${{ github.workspace }}/target/release:$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
 
       - name: Set library path for dynamic linking
         shell: bash
