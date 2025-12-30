@@ -16,6 +16,10 @@
 
 {% include 'partials/quick_start.md.jinja' %}
 
+{% if language == "typescript" %}
+{% include 'partials/napi_implementation.md.jinja' %}
+
+{% endif %}
 ## Features
 
 {% include 'partials/features.md.jinja' %}

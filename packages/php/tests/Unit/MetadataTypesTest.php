@@ -878,10 +878,10 @@ final class MetadataTypesTest extends TestCase
 
 
     #[Test]
-    #[RequiresPhpExtension('kreuzberg')]
+    #[RequiresPhpExtension('kreuzberg-php')]
     public function testExtractHtmlReturnsMetadataObject(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 
@@ -931,10 +931,10 @@ final class MetadataTypesTest extends TestCase
     }
 
     #[Test]
-    #[RequiresPhpExtension('kreuzberg')]
+    #[RequiresPhpExtension('kreuzberg-php')]
     public function testExtractComplexHtmlAllFields(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 
@@ -1080,10 +1080,10 @@ final class MetadataTypesTest extends TestCase
     }
 
     #[Test]
-    #[RequiresPhpExtension('kreuzberg')]
+    #[RequiresPhpExtension('kreuzberg-php')]
     public function testExtractInvalidHtmlHandlesGracefully(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 
@@ -1135,10 +1135,10 @@ final class MetadataTypesTest extends TestCase
     }
 
     #[Test]
-    #[RequiresPhpExtension('kreuzberg')]
+    #[RequiresPhpExtension('kreuzberg-php')]
     public function testExtractSpecialCharactersInMetadata(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 
@@ -1194,10 +1194,10 @@ final class MetadataTypesTest extends TestCase
     }
 
     #[Test]
-    #[RequiresPhpExtension('kreuzberg')]
+    #[RequiresPhpExtension('kreuzberg-php')]
     public function testExtractLargeHtmlPerformance(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

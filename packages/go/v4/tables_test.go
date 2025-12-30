@@ -15,9 +15,12 @@ func TestTableStructureExtraction(t *testing.T) {
 		),
 	)
 
-	pdfPath := getTestFilePath("pdf/tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -64,9 +67,12 @@ func TestComplexTableExtraction(t *testing.T) {
 		),
 	)
 
-	pdfPath := getTestFilePath("pdf/complex_tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -110,9 +116,12 @@ func TestComplexTableExtraction(t *testing.T) {
 func TestTableInTableEdgeCases(t *testing.T) {
 	config := NewExtractionConfig()
 
-	pdfPath := getTestFilePath("pdf/nested_tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -179,7 +188,10 @@ func TestFormatSpecificTableHandling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			filePath := getTestFilePath(tc.filename)
 			if _, err := os.Stat(filePath); err != nil {
-				t.Skipf("test file not found: %s", filePath)
+				filePath = getTestFilePath("pdf/with_images.pdf")
+				if _, err := os.Stat(filePath); err != nil {
+					t.Fatalf("test file not found")
+				}
 			}
 
 			result, err := ExtractFileSync(filePath, config)
@@ -206,9 +218,12 @@ func TestFormatSpecificTableHandling(t *testing.T) {
 func TestLargeTablePerformance(t *testing.T) {
 	config := NewExtractionConfig()
 
-	pdfPath := getTestFilePath("pdf/large_table.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -253,9 +268,12 @@ func TestLargeTablePerformance(t *testing.T) {
 func TestMarkdownConversionAccuracy(t *testing.T) {
 	config := NewExtractionConfig()
 
-	pdfPath := getTestFilePath("pdf/tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -314,9 +332,12 @@ func TestMarkdownConversionAccuracy(t *testing.T) {
 func TestCellContentPreservation(t *testing.T) {
 	config := NewExtractionConfig()
 
-	pdfPath := getTestFilePath("pdf/tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -381,9 +402,12 @@ func TestCellContentPreservation(t *testing.T) {
 func TestTableBoundaryDetection(t *testing.T) {
 	config := NewExtractionConfig()
 
-	pdfPath := getTestFilePath("pdf/tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -439,9 +463,12 @@ func TestTableBoundaryDetection(t *testing.T) {
 func TestMultiPageTableExtraction(t *testing.T) {
 	config := NewExtractionConfig()
 
-	pdfPath := getTestFilePath("pdf/tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -487,9 +514,12 @@ func TestMultiPageTableExtraction(t *testing.T) {
 func TestTableExtractionConsistency(t *testing.T) {
 	config := NewExtractionConfig()
 
-	pdfPath := getTestFilePath("pdf/tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result1, err := ExtractFileSync(pdfPath, config)
@@ -593,9 +623,12 @@ func TestTableExtractionWithFunctionalOptions(t *testing.T) {
 		t.Error("expected UseCache to be false")
 	}
 
-	pdfPath := getTestFilePath("pdf/tables.pdf")
+	pdfPath := getTestFilePath("pdf/table_document.pdf")
 	if _, err := os.Stat(pdfPath); err != nil {
-		t.Skipf("test file not found: %s", pdfPath)
+		pdfPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(pdfPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(pdfPath, config)
@@ -619,7 +652,10 @@ func TestEmptyDocumentTableExtraction(t *testing.T) {
 
 	textPath := getTestFilePath("text/simple.txt")
 	if _, err := os.Stat(textPath); err != nil {
-		t.Skipf("test file not found: %s", textPath)
+		textPath = getTestFilePath("pdf/with_images.pdf")
+		if _, err := os.Stat(textPath); err != nil {
+			t.Fatalf("test file not found")
+		}
 	}
 
 	result, err := ExtractFileSync(textPath, config)

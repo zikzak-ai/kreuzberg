@@ -471,7 +471,7 @@ impl Drop for CStringGuard {
 /// C-compatible extraction result structure
 ///
 /// Must be kept in sync with the Java side's MemoryLayout definition in KreuzbergFFI.java
-/// Field order: 11 pointers (8 bytes each) + 1 bool + 7 bytes padding = 96 bytes total
+/// Field order: 12 pointers (8 bytes each) + 1 bool + 7 bytes padding = 104 bytes total
 #[repr(C)]
 pub struct CExtractionResult {
     /// Extracted text content (null-terminated UTF-8 string, must be freed with kreuzberg_free_string)
@@ -496,6 +496,8 @@ pub struct CExtractionResult {
     pub images_json: *mut c_char,
     /// Page structure as JSON object (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
     pub page_structure_json: *mut c_char,
+    /// Per-page content as JSON array (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
+    pub pages_json: *mut c_char,
     /// Whether extraction was successful
     pub success: bool,
     /// Padding to match Java MemoryLayout (7 bytes padding to align to 8-byte boundary)
@@ -617,7 +619,7 @@ fn to_c_extraction_result(result: ExtractionResult) -> std::result::Result<*mut 
         _ => None,
     };
 
-    let _pages_json_guard = match pages {
+    let pages_json_guard = match pages {
         Some(pages) if !pages.is_empty() => {
             let json =
                 serde_json::to_string(&pages).map_err(|e| format!("Failed to serialize pages to JSON: {}", e))?;
@@ -640,6 +642,7 @@ fn to_c_extraction_result(result: ExtractionResult) -> std::result::Result<*mut 
         chunks_json: chunks_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
         images_json: images_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
         page_structure_json: page_structure_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
+        pages_json: pages_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
         success: true,
         _padding1: [0u8; 7],
     })))
@@ -4031,7 +4034,7 @@ pub unsafe extern "C" fn kreuzberg_validate_chunking_params(max_chars: usize, ma
 const _: () = {
     const fn assert_c_extraction_result_size() {
         const SIZE: usize = std::mem::size_of::<CExtractionResult>();
-        const _: () = assert!(SIZE == 96, "CExtractionResult size must be 96 bytes");
+        const _: () = assert!(SIZE == 104, "CExtractionResult size must be 104 bytes");
     }
 
     const fn assert_c_extraction_result_alignment() {

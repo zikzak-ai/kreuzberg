@@ -10,8 +10,54 @@ namespace Kreuzberg\Config;
 readonly class EmbeddingConfig
 {
     public function __construct(
+        /**
+         * Embedding model name or identifier.
+         *
+         * Specifies which pre-trained embedding model to use for generating
+         * vector representations of text chunks. The model determines embedding
+         * dimension, quality, and processing speed.
+         *
+         * Common models:
+         * - 'all-MiniLM-L6-v2': Lightweight, fast (dimension: 384)
+         * - 'all-MiniLM-L12-v2': Balanced quality/speed (dimension: 384)
+         * - 'all-mpnet-base-v2': High quality (dimension: 768)
+         * - 'paraphrase-MiniLM-L6-v2': Good for semantic similarity (dimension: 384)
+         * - 'multi-qa-MiniLM-L6-cos-v1': Optimized for Q&A (dimension: 384)
+         *
+         * @var string
+         * @default 'all-MiniLM-L6-v2'
+         * @example $config = new EmbeddingConfig(model: 'all-mpnet-base-v2');
+         */
         public string $model = 'all-MiniLM-L6-v2',
+
+        /**
+         * Normalize embedding vectors to unit length.
+         *
+         * When enabled, embeddings are normalized to have unit norm (length of 1).
+         * This is beneficial for cosine similarity calculations and ensures
+         * consistent similarity scoring across different documents.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $normalize = true,
+
+        /**
+         * Batch size for embedding generation.
+         *
+         * Number of text chunks to process simultaneously when generating embeddings.
+         * Larger batches improve processing speed but require more memory.
+         * Smaller batches reduce memory usage but are slower.
+         *
+         * Valid range: 1-unlimited (practical range: 1-512)
+         * Recommended values:
+         * - 1-32: For memory-constrained environments
+         * - 32-128: Standard batch sizes for most systems
+         * - 128-512: For high-memory systems with GPU acceleration
+         *
+         * @var int|null
+         * @default null (system default, typically 32)
+         */
         public ?int $batchSize = null,
     ) {
     }

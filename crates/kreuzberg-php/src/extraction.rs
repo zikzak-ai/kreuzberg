@@ -271,6 +271,28 @@ pub fn kreuzberg_detect_mime_type_from_bytes(data: Vec<u8>) -> PhpResult<String>
     kreuzberg::detect_mime_type_from_bytes(&data).map_err(|e| format!("Failed to detect MIME type: {}", e).into())
 }
 
+/// Detect MIME type from file bytes (alias for kreuzberg_detect_mime_type_from_bytes).
+///
+/// # Parameters
+///
+/// - `data` (string): File content as bytes
+///
+/// # Returns
+///
+/// Detected MIME type string (e.g., "application/pdf", "image/png")
+///
+/// # Example
+///
+/// ```php
+/// $data = file_get_contents("unknown_file");
+/// $mime_type = kreuzberg_detect_mime_type($data);
+/// echo "Detected type: $mime_type\n";
+/// ```
+#[php_function]
+pub fn kreuzberg_detect_mime_type(data: Vec<u8>) -> PhpResult<String> {
+    kreuzberg::detect_mime_type_from_bytes(&data).map_err(|e| format!("Failed to detect MIME type: {}", e).into())
+}
+
 /// Detect MIME type from file path.
 ///
 /// # Parameters

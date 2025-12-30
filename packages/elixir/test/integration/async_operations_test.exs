@@ -21,7 +21,8 @@ defmodule KreuzbergTest.Integration.AsyncOperationsTest do
     test "extract_async creates async task" do
       task = Kreuzberg.extract_async(@sample_text, "text/plain")
 
-      assert is_pid(elem(task, 0)) or Task.is_task(task)
+      # In Elixir 1.19+, Task is a struct, not a tuple
+      assert is_struct(task, Task) or (is_tuple(task) and is_pid(elem(task, 0)))
     end
 
     @tag :integration
@@ -94,7 +95,7 @@ defmodule KreuzbergTest.Integration.AsyncOperationsTest do
 
       try do
         config = %Kreuzberg.ExtractionConfig{use_cache: true}
-        task = Kreuzberg.extract_file_async(tmp_file, config)
+        task = Kreuzberg.extract_file_async(tmp_file, nil, config)
 
         {:ok, result} = Task.await(task, 30_000)
 
@@ -370,7 +371,7 @@ defmodule KreuzbergTest.Integration.AsyncOperationsTest do
 
       try do
         config = %Kreuzberg.ExtractionConfig{use_cache: true}
-        task = Kreuzberg.batch_extract_files_async(temp_files, config)
+        task = Kreuzberg.batch_extract_files_async(temp_files, nil, config)
 
         {:ok, results} = Task.await(task, 30_000)
 
@@ -413,7 +414,7 @@ defmodule KreuzbergTest.Integration.AsyncOperationsTest do
     test "async tasks return Task struct" do
       task = Kreuzberg.extract_async(@sample_text, "text/plain")
 
-      assert Task.is_task(task)
+      assert is_struct(task, Task)
     end
 
     @tag :integration
@@ -439,9 +440,9 @@ defmodule KreuzbergTest.Integration.AsyncOperationsTest do
       task3 = Kreuzberg.extract_async("Text 3", "text/plain")
 
       # All tasks should exist independently
-      assert Task.is_task(task1)
-      assert Task.is_task(task2)
-      assert Task.is_task(task3)
+      assert is_struct(task1, Task)
+      assert is_struct(task2, Task)
+      assert is_struct(task3, Task)
 
       # Can await in any order
       {:ok, r1} = Task.await(task3)

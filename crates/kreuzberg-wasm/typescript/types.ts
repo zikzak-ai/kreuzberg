@@ -28,6 +28,73 @@ export interface PostProcessorConfig {
 }
 
 /**
+ * Keyword extraction algorithm type
+ *
+ * Supported algorithms:
+ * - "yake": YAKE (Yet Another Keyword Extractor) - statistical approach
+ * - "rake": RAKE (Rapid Automatic Keyword Extraction) - co-occurrence based
+ */
+export type KeywordAlgorithm = "yake" | "rake";
+
+/**
+ * YAKE algorithm-specific parameters
+ */
+export interface YakeParams {
+	/** Window size for co-occurrence analysis (default: 2) */
+	windowSize?: number;
+}
+
+/**
+ * RAKE algorithm-specific parameters
+ */
+export interface RakeParams {
+	/** Minimum word length to consider (default: 1) */
+	minWordLength?: number;
+	/** Maximum words in a keyword phrase (default: 3) */
+	maxWordsPerPhrase?: number;
+}
+
+/**
+ * Keyword extraction configuration
+ *
+ * Controls how keywords are extracted from text, including algorithm selection,
+ * scoring thresholds, n-gram ranges, and language-specific settings.
+ */
+export interface KeywordConfig {
+	/** Algorithm to use for extraction (default: "yake") */
+	algorithm?: KeywordAlgorithm;
+	/** Maximum number of keywords to extract (default: 10) */
+	maxKeywords?: number;
+	/** Minimum score threshold 0.0-1.0 (default: 0.0) */
+	minScore?: number;
+	/** N-gram range [min, max] for keyword extraction (default: [1, 3]) */
+	ngramRange?: [number, number];
+	/** Language code for stopword filtering (e.g., "en", "de", "fr") */
+	language?: string;
+	/** YAKE-specific tuning parameters */
+	yakeParams?: YakeParams;
+	/** RAKE-specific tuning parameters */
+	rakeParams?: RakeParams;
+}
+
+/**
+ * Extracted keyword with relevance metadata
+ *
+ * Represents a single keyword extracted from text along with its relevance score,
+ * the algorithm that extracted it, and optional position information.
+ */
+export interface ExtractedKeyword {
+	/** The keyword text */
+	text: string;
+	/** Relevance score (higher is better, algorithm-specific range) */
+	score: number;
+	/** Algorithm that extracted this keyword */
+	algorithm: KeywordAlgorithm;
+	/** Optional positions where keyword appears in text (character offsets) */
+	positions?: number[];
+}
+
+/**
  * Configuration for document extraction
  */
 export interface ExtractionConfig {
@@ -47,6 +114,8 @@ export interface ExtractionConfig {
 	tokenReduction?: TokenReductionConfig;
 	/** Post-processor configuration */
 	postprocessor?: PostProcessorConfig;
+	/** Keyword extraction configuration */
+	keywords?: KeywordConfig;
 	/** Whether to use caching */
 	useCache?: boolean;
 	/** Enable quality processing */
@@ -165,6 +234,8 @@ export interface ExtractionResult {
 	images?: ExtractedImage[] | null;
 	/** Per-page content */
 	pages?: PageContent[] | null;
+	/** Extracted keywords when keyword extraction is enabled */
+	keywords?: ExtractedKeyword[] | null;
 }
 
 /**

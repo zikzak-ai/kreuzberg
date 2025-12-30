@@ -43,6 +43,7 @@ public final class ExtractionConfig {
 	private final HtmlOptions htmlOptions;
 	private final KeywordConfig keywords;
 	private final PageConfig pages;
+	private final EmbeddingConfig embedding;
 	private final Integer maxConcurrentExtractions;
 	private final Map<String, Object> rawConfigOverride;
 
@@ -64,6 +65,7 @@ public final class ExtractionConfig {
 		this.htmlOptions = builder.htmlOptions;
 		this.keywords = builder.keywords;
 		this.pages = builder.pages;
+		this.embedding = builder.embedding;
 		this.maxConcurrentExtractions = builder.maxConcurrentExtractions;
 		this.rawConfigOverride = builder.rawConfigOverride != null
 				? Collections.unmodifiableMap(new LinkedHashMap<>(builder.rawConfigOverride))
@@ -128,6 +130,10 @@ public final class ExtractionConfig {
 
 	public PageConfig getPages() {
 		return pages;
+	}
+
+	public EmbeddingConfig getEmbedding() {
+		return embedding;
 	}
 
 	public Integer getMaxConcurrentExtractions() {
@@ -402,6 +408,9 @@ public final class ExtractionConfig {
 		if (pages != null) {
 			map.put("pages", pages.toMap());
 		}
+		if (embedding != null) {
+			map.put("embedding", embedding.toMap());
+		}
 		if (maxConcurrentExtractions != null) {
 			map.put("max_concurrent_extractions", maxConcurrentExtractions);
 		}
@@ -468,6 +477,10 @@ public final class ExtractionConfig {
 		if (pageMap != null) {
 			builder.pages(PageConfig.fromMap(pageMap));
 		}
+		Map<String, Object> embeddingMap = asMap(raw.get("embedding"));
+		if (embeddingMap != null) {
+			builder.embedding(EmbeddingConfig.fromMap(embeddingMap));
+		}
 		if (raw.containsKey("max_concurrent_extractions")) {
 			builder.maxConcurrentExtractions(asInteger(raw.get("max_concurrent_extractions")));
 		}
@@ -526,6 +539,7 @@ public final class ExtractionConfig {
 		private HtmlOptions htmlOptions;
 		private KeywordConfig keywords;
 		private PageConfig pages;
+		private EmbeddingConfig embedding;
 		private Integer maxConcurrentExtractions;
 		private Map<String, Object> rawConfigOverride;
 
@@ -602,6 +616,11 @@ public final class ExtractionConfig {
 
 		public Builder pages(PageConfig pages) {
 			this.pages = pages;
+			return this;
+		}
+
+		public Builder embedding(EmbeddingConfig embedding) {
+			this.embedding = embedding;
 			return this;
 		}
 

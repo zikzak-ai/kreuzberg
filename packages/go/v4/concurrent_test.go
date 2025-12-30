@@ -416,9 +416,6 @@ func TestCacheAccessPattern(t *testing.T) {
 // TestGoroutineLeakDetection monitors goroutine count before and after
 // high-concurrency operations to detect resource leaks.
 func TestGoroutineLeakDetection(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping goroutine leak test in short mode")
-	}
 
 	testPDF := createTestPDF(t)
 	defer cleanup(testPDF)

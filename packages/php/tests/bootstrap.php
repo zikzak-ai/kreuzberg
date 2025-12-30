@@ -20,6 +20,9 @@ if (!file_exists($autoloader)) {
 
 require_once $autoloader;
 
+// Always load extension mock to provide fallback functions
+require_once dirname(__DIR__) . '/src/KreuzbergExtensionMock.php';
+
 if (PHP_VERSION_ID < 80200) {
     fwrite(
         STDERR,
@@ -31,12 +34,12 @@ if (PHP_VERSION_ID < 80200) {
     exit(1);
 }
 
-if (extension_loaded('kreuzberg')) {
+if (extension_loaded('kreuzberg-php')) {
     fwrite(
         STDOUT,
         sprintf(
             '✓ Kreuzberg extension loaded (version %s)' . PHP_EOL,
-            phpversion('kreuzberg') ?: 'unknown',
+            phpversion('kreuzberg-php') ?: 'unknown',
         ),
     );
 } else {

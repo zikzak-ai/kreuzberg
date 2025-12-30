@@ -23,20 +23,152 @@ namespace Kreuzberg\Config;
  */
 readonly class ExtractionConfig
 {
+    /**
+     * Embedding generation configuration.
+     *
+     * Configures how text chunks are converted into embeddings (vector representations)
+     * for semantic search and similarity matching.
+     *
+     * @var EmbeddingConfig|null
+     * @default null
+     */
+    public ?EmbeddingConfig $embedding;
+
+    /**
+     * Keyword extraction configuration.
+     *
+     * Configures keyword extraction parameters such as maximum number of keywords
+     * and minimum relevance score thresholds.
+     *
+     * @var KeywordConfig|null
+     * @default null
+     */
+    public ?KeywordConfig $keyword;
+
+    /**
+     * Page extraction configuration.
+     *
+     * Configures page-level extraction options including page markers and format.
+     *
+     * @var PageConfig|null
+     * @default null
+     */
+    public ?PageConfig $page;
+
     public function __construct(
+        /**
+         * OCR configuration.
+         *
+         * Configures Optical Character Recognition settings for scanned documents
+         * and image-based PDFs. Includes backend selection, language, and Tesseract options.
+         *
+         * @var OcrConfig|null
+         * @default null
+         */
         public ?OcrConfig $ocr = null,
+
+        /**
+         * PDF extraction configuration.
+         *
+         * Configures PDF-specific extraction options like image extraction,
+         * metadata extraction, OCR fallback, and page range selection.
+         *
+         * @var PdfConfig|null
+         * @default null
+         */
         public ?PdfConfig $pdf = null,
+
+        /**
+         * Text chunking configuration.
+         *
+         * Configures how extracted text is split into chunks for processing,
+         * including chunk size, overlap, and boundary preservation options.
+         *
+         * @var ChunkingConfig|null
+         * @default null
+         */
         public ?ChunkingConfig $chunking = null,
-        public ?EmbeddingConfig $embedding = null,
+        ?EmbeddingConfig $embedding = null,
+
+        /**
+         * Image extraction configuration.
+         *
+         * Configures image extraction parameters such as minimum dimensions
+         * and whether to perform OCR on extracted images.
+         *
+         * @var ImageExtractionConfig|null
+         * @default null
+         */
         public ?ImageExtractionConfig $imageExtraction = null,
-        public ?PageConfig $page = null,
+        ?PageConfig $page = null,
+
+        /**
+         * Language detection configuration.
+         *
+         * Configures automatic language detection for document content,
+         * including confidence thresholds and maximum languages to detect.
+         *
+         * @var LanguageDetectionConfig|null
+         * @default null
+         */
         public ?LanguageDetectionConfig $languageDetection = null,
-        public ?KeywordConfig $keyword = null,
+        ?KeywordConfig $keyword = null,
+
+        /**
+         * Enable image extraction from documents.
+         *
+         * When enabled, images will be extracted from PDFs and other document formats
+         * and included in the extraction results.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $extractImages = false,
+
+        /**
+         * Enable table extraction from documents.
+         *
+         * When enabled, tables will be detected and extracted from documents
+         * with structured formatting preserved.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $extractTables = true,
+
+        /**
+         * Preserve document formatting in extracted text.
+         *
+         * When enabled, attempts to preserve original document formatting
+         * including indentation, spacing, and structure in the extracted text.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $preserveFormatting = false,
+
+        /**
+         * Output format for extracted content.
+         *
+         * Specifies the format for the extracted content. Common values:
+         * - 'text': Plain text format
+         * - 'markdown': Markdown format with basic formatting
+         * - 'html': HTML format with rich formatting
+         *
+         * @var string|null
+         * @default null
+         */
         public ?string $outputFormat = null,
+        ?EmbeddingConfig $embeddings = null,
+        ?KeywordConfig $keywords = null,
+        ?PageConfig $pages = null,
     ) {
+        // Support both 'embedding' and 'embeddings' parameter names
+        $this->embedding = $embeddings ?? $embedding;
+        // Support both 'keyword' and 'keywords' parameter names
+        $this->keyword = $keywords ?? $keyword;
+        // Support both 'page' and 'pages' parameter names
+        $this->page = $pages ?? $page;
     }
 
     /**

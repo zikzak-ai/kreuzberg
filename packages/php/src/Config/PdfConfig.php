@@ -10,10 +10,73 @@ namespace Kreuzberg\Config;
 readonly class PdfConfig
 {
     public function __construct(
+        /**
+         * Extract images from PDF documents.
+         *
+         * When enabled, images embedded in PDFs are extracted and included
+         * in the extraction results. Extracted images can be saved to disk
+         * or processed further.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $extractImages = false,
+
+        /**
+         * Extract PDF metadata.
+         *
+         * When enabled, PDF metadata such as title, author, subject, keywords,
+         * creation date, and modification date are extracted and included
+         * in the results.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $extractMetadata = true,
+
+        /**
+         * Use OCR as fallback for PDF extraction.
+         *
+         * When enabled, if standard text extraction fails or produces poor results,
+         * OCR will be used as a fallback mechanism. Useful for scanned PDFs or
+         * PDFs with text rendering issues.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $ocrFallback = false,
+
+        /**
+         * Start page for extraction (1-indexed).
+         *
+         * Specifies the first page to extract from. Pages before this are skipped.
+         * When combined with $endPage, allows extraction of page ranges.
+         *
+         * Valid range: 1-total pages
+         * Examples:
+         * - null: Start from the first page
+         * - 5: Start from page 5, skipping pages 1-4
+         *
+         * @var int|null
+         * @default null (start from first page)
+         */
         public ?int $startPage = null,
+
+        /**
+         * End page for extraction (inclusive, 1-indexed).
+         *
+         * Specifies the last page to extract from. Pages after this are skipped.
+         * When combined with $startPage, allows extraction of page ranges.
+         *
+         * Valid range: 1-total pages
+         * Examples:
+         * - null: Extract until the last page
+         * - 10: Extract up to page 10, skipping pages 11+
+         * - startPage=5, endPage=10: Extract only pages 5-10
+         *
+         * @var int|null
+         * @default null (extract until last page)
+         */
         public ?int $endPage = null,
     ) {
     }

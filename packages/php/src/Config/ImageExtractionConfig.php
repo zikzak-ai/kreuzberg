@@ -10,9 +10,60 @@ namespace Kreuzberg\Config;
 readonly class ImageExtractionConfig
 {
     public function __construct(
+        /**
+         * Enable image extraction from documents.
+         *
+         * When enabled, images are extracted from documents and saved/processed
+         * separately from text content. Extracted images can be further analyzed
+         * or stored for later retrieval.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $extractImages = false,
+
+        /**
+         * Perform OCR on extracted images.
+         *
+         * When enabled, extracted images are processed with OCR to extract any
+         * text content they contain. Useful for images with embedded text,
+         * diagrams with labels, or scanned images.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $performOcr = false,
+
+        /**
+         * Minimum image width for extraction.
+         *
+         * Images narrower than this threshold are skipped during extraction.
+         * Helps reduce noise from small decorative images while preserving
+         * content-relevant images.
+         *
+         * Valid range: 1-unlimited pixels
+         * Recommended values:
+         * - 0-50: Extract small images and icons
+         * - 50-200: Extract medium-sized images
+         * - 200+: Extract only large, content-relevant images
+         *
+         * @var int|null
+         * @default null (no minimum)
+         */
         public ?int $minWidth = null,
+
+        /**
+         * Minimum image height for extraction.
+         *
+         * Images shorter than this threshold are skipped during extraction.
+         * Combined with minWidth to filter based on image dimensions.
+         *
+         * Valid range: 1-unlimited pixels
+         * Recommended values: Same as $minWidth for square aspect ratio filtering
+         *
+         * @var int|null
+         * @default null (no minimum)
+         */
         public ?int $minHeight = null,
     ) {
     }

@@ -1111,6 +1111,46 @@ public sealed class ImagePreprocessingConfig
 }
 
 /// <summary>
+/// Configuration for embedding generation using ONNX Runtime models.
+/// </summary>
+public sealed class EmbeddingConfig
+{
+    /// <summary>
+    /// Embedding model name or preset identifier (e.g., "default", "balanced", "compact").
+    /// </summary>
+    [JsonPropertyName("model")]
+    public string? Model { get; init; }
+
+    /// <summary>
+    /// Number of texts to process simultaneously during embedding generation.
+    /// Higher values use more memory but may be faster.
+    /// </summary>
+    [JsonPropertyName("batch_size")]
+    public int? BatchSize { get; init; }
+
+    /// <summary>
+    /// Whether to normalize embedding vectors to unit length.
+    /// Recommended for cosine similarity calculations.
+    /// </summary>
+    [JsonPropertyName("normalize")]
+    public bool? Normalize { get; init; }
+
+    /// <summary>
+    /// Output dimensionality of the embedding vectors.
+    /// Model-dependent; typically 384, 768, 1536, or higher.
+    /// </summary>
+    [JsonPropertyName("dimensions")]
+    public int? Dimensions { get; init; }
+
+    /// <summary>
+    /// Whether to cache embeddings for identical text chunks.
+    /// Improves performance when processing duplicate content.
+    /// </summary>
+    [JsonPropertyName("use_cache")]
+    public bool? UseCache { get; init; }
+}
+
+/// <summary>
 /// Configuration for text chunking (splitting long documents into smaller pieces).
 /// </summary>
 public sealed class ChunkingConfig
@@ -1149,7 +1189,7 @@ public sealed class ChunkingConfig
     /// Embedding configuration for vector generation.
     /// </summary>
     [JsonPropertyName("embedding")]
-    public Dictionary<string, object?>? Embedding { get; init; }
+    public EmbeddingConfig? Embedding { get; init; }
 
     /// <summary>
     /// Whether chunking is enabled.

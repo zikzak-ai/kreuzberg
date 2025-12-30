@@ -1,8 +1,8 @@
 import type { ExtractionResult, PostProcessorProtocol, ProcessingStage } from "../../../dist/index.js";
 
 type WrappedProcessor = {
-	name: () => string;
-	processingStage?: () => string;
+	name: string;
+	processingStage?: string;
 	process: (...args: unknown[]) => string | Promise<string>;
 	__original?: PostProcessorProtocol;
 	__stage?: ProcessingStage | string;
@@ -183,10 +183,10 @@ export function createMockExtractionBinding() {
 
 	return {
 		registerPostProcessor(processor: WrappedProcessor) {
-			const stage = processor.__stage ?? processor.processingStage?.() ?? "middle";
+			const stage = processor.__stage ?? processor.processingStage ?? "middle";
 			const entry: RegisteredProcessor = {
 				wrapped: processor,
-				name: processor.name(),
+				name: processor.name,
 				stage,
 				original: processor.__original,
 				order: registrationCounter++,

@@ -10,8 +10,48 @@ namespace Kreuzberg\Config;
 readonly class PageConfig
 {
     public function __construct(
+        /**
+         * Enable page-level extraction metadata.
+         *
+         * When enabled, the extraction process tracks and returns information
+         * about which page each extracted element came from, enabling
+         * page-specific queries and reconstruction of page structure.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $extractPages = false,
+
+        /**
+         * Insert page boundary markers in extracted text.
+         *
+         * When enabled, special markers indicating page boundaries are inserted
+         * into the extracted text stream. This helps downstream processors
+         * understand document structure and page breaks.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $insertPageMarkers = false,
+
+        /**
+         * Format string for page boundary markers.
+         *
+         * Template for marker text inserted between pages. The placeholder
+         * {page_num} is replaced with the actual page number.
+         *
+         * Valid placeholders:
+         * - {page_num}: The page number (1-indexed)
+         *
+         * Examples:
+         * - '--- Page {page_num} ---': Standard page break marker
+         * - 'PAGE {page_num}': Simple page header
+         * - '[Page {page_num}]': Bracketed format
+         * - '\\n\\n=== Page {page_num} ===\\n\\n': Markdown-style separator
+         *
+         * @var string
+         * @default '--- Page {page_num} ---'
+         */
         public string $markerFormat = '--- Page {page_num} ---',
     ) {
     }

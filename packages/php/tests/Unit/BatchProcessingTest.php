@@ -21,14 +21,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Kreuzberg::class)]
 #[Group('unit')]
 #[Group('batch')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class BatchProcessingTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

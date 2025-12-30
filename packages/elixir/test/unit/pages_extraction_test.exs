@@ -20,7 +20,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert is_list(result.pages)
       assert result.pages != []
@@ -32,7 +32,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert is_list(result.pages)
 
@@ -50,7 +50,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       Enum.each(result.pages, fn page ->
         assert page.page_number > 0
@@ -66,7 +66,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert String.contains?(result.content, "PAGE") or
                String.contains?(result.content, "page") or
@@ -79,7 +79,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       content = result.content
 
@@ -106,7 +106,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert String.contains?(result.content, "=== Page")
     end
@@ -122,7 +122,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert String.contains?(result.content, "--- BEGIN PAGE")
     end
@@ -138,7 +138,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert String.contains?(result.content, "[Page")
     end
@@ -155,7 +155,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
 
       # Should not raise error even if format is partially numeric
       {:ok, _result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
     end
   end
 
@@ -167,7 +167,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       # At minimum, should have at least one page
       assert result.pages != []
@@ -179,7 +179,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       # Each page should be a map with content
       Enum.each(result.pages, fn page ->
@@ -197,7 +197,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       Enum.each(result.pages, fn page ->
         assert is_binary(page.content)
@@ -210,7 +210,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       Enum.each(result.pages, fn page ->
         assert is_integer(page.page_number)
@@ -224,7 +224,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       Enum.with_index(result.pages, 1)
       |> Enum.each(fn {page, expected_index} ->
@@ -239,7 +239,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       # All pages should have content field, even if empty
       Enum.each(result.pages, fn page ->
@@ -260,7 +260,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       # Should have pages array
       assert is_list(result.pages)
@@ -279,7 +279,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       # Number of pages in array should match document structure
       assert is_list(result.pages)
@@ -294,7 +294,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       config = %Kreuzberg.ExtractionConfig{}
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       # Should succeed with default behavior
       assert is_binary(result.content) or result.content == ""
@@ -306,7 +306,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert is_list(result.pages)
       assert result.pages != []
@@ -318,7 +318,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert is_binary(result.content)
     end
@@ -329,7 +329,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       # Marker format should apply when markers are requested
       assert is_binary(result.content)
@@ -347,7 +347,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert String.contains?(result.content, "##")
     end
@@ -361,7 +361,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert String.contains?(result.content, "---page-")
     end
@@ -375,7 +375,7 @@ defmodule Kreuzberg.Unit.PagesExtractionTest do
       }
 
       {:ok, result} =
-        Kreuzberg.extract_bytes_sync(get_test_pdf_bytes(), "application/pdf", config)
+        Kreuzberg.extract(get_test_pdf_bytes(), "application/pdf", config)
 
       assert String.contains?(result.content, "<!--") or String.contains?(result.content, "PAGE")
     end

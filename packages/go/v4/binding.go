@@ -66,8 +66,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"unsafe"
 )
+
+// ffiMutex serializes all FFI calls to prevent concurrent access to PDFium.
+// PDFium is not thread-safe, and concurrent calls from multiple goroutines
+// cause signal stack crashes on macOS (SIGTRAP) and other platforms.
+// See: https://github.com/kreuzberg-dev/kreuzberg/issues/XXX
+var ffiMutex sync.Mutex
 
 // BytesWithMime represents an in-memory document and its MIME type.
 type BytesWithMime struct {
@@ -87,6 +94,10 @@ func ExtractFileSync(path string, config *ExtractionConfig) (*ExtractionResult, 
 	if cfgCleanup != nil {
 		defer cfgCleanup()
 	}
+
+	// Serialize FFI calls to prevent concurrent PDFium access
+	ffiMutex.Lock()
+	defer ffiMutex.Unlock()
 
 	var cRes *C.CExtractionResult
 	if cfgPtr != nil {
@@ -125,6 +136,10 @@ func ExtractBytesSync(data []byte, mimeType string, config *ExtractionConfig) (*
 	if cfgCleanup != nil {
 		defer cfgCleanup()
 	}
+
+	// Serialize FFI calls to prevent concurrent PDFium access
+	ffiMutex.Lock()
+	defer ffiMutex.Unlock()
 
 	var cRes *C.CExtractionResult
 	if cfgPtr != nil {
@@ -167,6 +182,10 @@ func BatchExtractFilesSync(paths []string, config *ExtractionConfig) ([]*Extract
 	if cfgCleanup != nil {
 		defer cfgCleanup()
 	}
+
+	// Serialize FFI calls to prevent concurrent PDFium access
+	ffiMutex.Lock()
+	defer ffiMutex.Unlock()
 
 	batch := C.kreuzberg_batch_extract_files_sync((**C.char)(unsafe.Pointer(&cStrings[0])), C.uintptr_t(len(paths)), cfgPtr)
 	if batch == nil {
@@ -222,6 +241,10 @@ func BatchExtractBytesSync(items []BytesWithMime, config *ExtractionConfig) ([]*
 		defer cfgCleanup()
 	}
 
+	// Serialize FFI calls to prevent concurrent PDFium access
+	ffiMutex.Lock()
+	defer ffiMutex.Unlock()
+
 	batch := C.kreuzberg_batch_extract_bytes_sync((*C.CBytesWithMime)(unsafe.Pointer(&cItems[0])), C.uintptr_t(len(items)), cfgPtr)
 	if batch == nil {
 		return nil, lastError()
@@ -273,18 +296,25 @@ func BatchExtractBytesWithContext(ctx context.Context, items []BytesWithMime, co
 
 // LibraryVersion returns the underlying Rust crate version string.
 func LibraryVersion() string {
+	ffiMutex.Lock()
+	defer ffiMutex.Unlock()
 	return C.GoString(C.kreuzberg_version())
 }
 
 // LastErrorCode returns the error code from the last FFI call.
 // Returns 0 (Success) if no error occurred.
 func LastErrorCode() ErrorCode {
+	ffiMutex.Lock()
+	defer ffiMutex.Unlock()
 	return ErrorCode(C.kreuzberg_last_error_code())
 }
 
 // LastPanicContext returns the panic context from the last FFI call if it was a panic.
 // Returns nil if the last error was not a panic or if no panic context is available.
 func LastPanicContext() *PanicContext {
+	ffiMutex.Lock()
+	defer ffiMutex.Unlock()
+
 	panicPtr := C.kreuzberg_last_panic_context()
 	if panicPtr == nil {
 		return nil
@@ -443,7 +473,10 @@ func LoadExtractionConfigFromFile(path string) (*ExtractionConfig, error) {
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
+	ffiMutex.Lock()
 	ptr := C.kreuzberg_load_extraction_config_from_file(cPath)
+	ffiMutex.Unlock()
+
 	if ptr == nil {
 		return nil, lastError()
 	}
@@ -501,7 +534,10 @@ func DetectMimeType(data []byte) (string, error) {
 	buf := C.CBytes(data)
 	defer C.free(buf)
 
+	ffiMutex.Lock()
 	ptr := C.kreuzberg_detect_mime_type_from_bytes((*C.uint8_t)(buf), C.uintptr_t(len(data)))
+	ffiMutex.Unlock()
+
 	if ptr == nil {
 		return "", lastError()
 	}
@@ -519,7 +555,10 @@ func DetectMimeTypeFromPath(path string) (string, error) {
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
+	ffiMutex.Lock()
 	ptr := C.kreuzberg_detect_mime_type_from_path(cPath)
+	ffiMutex.Unlock()
+
 	if ptr == nil {
 		return "", lastError()
 	}
@@ -537,7 +576,10 @@ func GetExtensionsForMime(mimeType string) ([]string, error) {
 	cMime := C.CString(mimeType)
 	defer C.free(unsafe.Pointer(cMime))
 
+	ffiMutex.Lock()
 	ptr := C.kreuzberg_get_extensions_for_mime(cMime)
+	ffiMutex.Unlock()
+
 	if ptr == nil {
 		return nil, lastError()
 	}
@@ -560,7 +602,10 @@ func ValidateMimeType(mimeType string) (string, error) {
 	cMime := C.CString(mimeType)
 	defer C.free(unsafe.Pointer(cMime))
 
+	ffiMutex.Lock()
 	ptr := C.kreuzberg_validate_mime_type(cMime)
+	ffiMutex.Unlock()
+
 	if ptr == nil {
 		return "", lastError()
 	}
@@ -581,7 +626,10 @@ type EmbeddingPreset struct {
 
 // ListEmbeddingPresets returns available embedding preset names.
 func ListEmbeddingPresets() ([]string, error) {
+	ffiMutex.Lock()
 	ptr := C.kreuzberg_list_embedding_presets()
+	ffiMutex.Unlock()
+
 	if ptr == nil {
 		return nil, lastError()
 	}
@@ -607,7 +655,10 @@ func GetEmbeddingPreset(name string) (*EmbeddingPreset, error) {
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 
+	ffiMutex.Lock()
 	ptr := C.kreuzberg_get_embedding_preset(cName)
+	ffiMutex.Unlock()
+
 	if ptr == nil {
 		return nil, lastError()
 	}

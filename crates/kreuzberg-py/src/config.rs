@@ -2444,3 +2444,70 @@ pub fn config_merge(py: Python<'_>, base: Py<ExtractionConfig>, override_config:
 
     Ok(())
 }
+
+/// Discover extraction configuration from the environment.
+///
+/// Attempts to locate a Kreuzberg configuration file using the following strategy:
+/// 1. If KREUZBERG_CONFIG_PATH environment variable is set, load from that path
+/// 2. Otherwise, search for kreuzberg.toml, kreuzberg.yaml, or kreuzberg.json
+///    in the current directory and parent directories (walking up the tree)
+/// 3. Return None if no configuration file is found
+///
+/// Returns:
+///     ExtractionConfig | None: Configuration if found and valid, None otherwise
+///
+/// # Errors
+/// Raises RuntimeError if the discovered config file is invalid or cannot be parsed.
+#[pyfunction]
+pub fn _discover_extraction_config_impl(py: Python<'_>) -> PyResult<Option<Py<ExtractionConfig>>> {
+    match kreuzberg::ExtractionConfig::discover() {
+        Ok(Some(inner)) => {
+            let config = ExtractionConfig {
+                inner,
+                html_options_dict: None,
+            };
+            Ok(Some(Py::new(py, config)?))
+        }
+        Ok(None) => Ok(None),
+        Err(e) => Err(pyo3::exceptions::PyRuntimeError::new_err(e.to_string())),
+    }
+}
+
+/// Load extraction configuration from a specific file.
+///
+/// Loads an ExtractionConfig from the specified file path. The file format
+/// is determined by the file extension (.toml, .yaml, or .json).
+///
+/// Args:
+///     path (str): Path to the configuration file (absolute or relative)
+///
+/// Returns:
+///     ExtractionConfig: Configuration parsed from the file
+///
+/// # Errors
+/// Raises:
+///     - FileNotFoundError: If the configuration file does not exist
+///     - RuntimeError: If the file cannot be read or parsed
+///     - ValueError: If the file format is invalid or unsupported
+#[pyfunction]
+pub fn _load_extraction_config_from_file_impl(py: Python<'_>, path: &str) -> PyResult<Py<ExtractionConfig>> {
+    match kreuzberg::ExtractionConfig::from_file(path) {
+        Ok(inner) => {
+            let config = ExtractionConfig {
+                inner,
+                html_options_dict: None,
+            };
+            Py::new(py, config).map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))
+        }
+        Err(e) => {
+            let error_msg = e.to_string();
+            if error_msg.contains("No such file") || error_msg.contains("not found") {
+                Err(pyo3::exceptions::PyFileNotFoundError::new_err(error_msg))
+            } else if error_msg.contains("Invalid") || error_msg.contains("malformed") {
+                Err(pyo3::exceptions::PyValueError::new_err(error_msg))
+            } else {
+                Err(pyo3::exceptions::PyRuntimeError::new_err(error_msg))
+            }
+        }
+    }
+}

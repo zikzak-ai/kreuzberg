@@ -19,6 +19,7 @@ resolver = "2"
 [patch.crates-io]
 kreuzberg = { path = "crates/kreuzberg" }
 kreuzberg-tesseract = { path = "crates/kreuzberg-tesseract" }
+kreuzberg-pdfium-render = { path = "../pdfium-render" }
 
 [workspace.package]
 version = "4.0.0-rc.22"

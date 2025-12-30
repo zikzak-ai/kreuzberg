@@ -41,14 +41,14 @@ use ReflectionClass;
 #[CoversClass(KeywordConfig::class)]
 #[Group('integration')]
 #[Group('keywords')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class KeywordExtractionTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

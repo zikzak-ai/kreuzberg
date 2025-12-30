@@ -10,11 +10,11 @@ use Kreuzberg\Config\ExtractionConfig;
 use Kreuzberg\Config\OcrConfig;
 use Kreuzberg\Exceptions\KreuzbergException;
 use Kreuzberg\Kreuzberg;
+use Kreuzberg\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Integration tests for error handling and edge cases.
@@ -27,14 +27,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(KreuzbergException::class)]
 #[Group('integration')]
 #[Group('errors')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class ErrorHandlingTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

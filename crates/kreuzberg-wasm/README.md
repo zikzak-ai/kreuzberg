@@ -458,6 +458,51 @@ Different file formats have varying support in WASM:
 | OCR | Limited | Tesseract WASM only, main thread only |
 | Embeddings | Not Available | WASM has no ML model support |
 
+### Platform Limitations
+
+**LibreOffice-Dependent Formats Not Available**
+
+WASM cannot load native LibreOffice binaries, so older Office formats are **not supported**:
+
+- ❌ **DOC** (Microsoft Word 97-2003) - Use DOCX instead
+- ❌ **XLS** (Microsoft Excel 97-2003) - Use XLSX instead
+- ❌ **PPT** (Microsoft PowerPoint 97-2003) - Use PPTX instead
+- ❌ **RTF** (Rich Text Format with complex features)
+- ❌ **ODT/ODS/ODP** (LibreOffice/OpenOffice formats)
+
+Modern Office formats (DOCX, XLSX, PPTX) are fully supported and don't require LibreOffice.
+
+**Polars Integration Not Available**
+
+- ❌ Polars DataFrame extraction/conversion not available in WASM
+- ❌ Structured data operations limited compared to Node.js binding
+
+**Alternative: Use Node.js Binding**
+
+If you need support for older Office formats or Polars integration, use the `@kreuzberg/node` package instead:
+
+```bash
+npm install @kreuzberg/node
+```
+
+The Node.js binding provides:
+- ✅ Full LibreOffice format support (DOC, XLS, PPT, RTF, ODT)
+- ✅ Polars DataFrame integration
+- ✅ All OCR backends (Tesseract, EasyOCR, PaddleOCR)
+- ✅ Full embedding model support
+
+**Format Comparison Table**
+
+| Format Type | WASM Support | Node.js Support |
+|-------------|--------------|-----------------|
+| Modern Office (DOCX/XLSX/PPTX) | ✅ Full | ✅ Full |
+| Legacy Office (DOC/XLS/PPT) | ❌ Not Available | ✅ Requires LibreOffice |
+| OpenOffice (ODT/ODS/ODP) | ❌ Not Available | ✅ Requires LibreOffice |
+| PDF | ✅ Full | ✅ Full |
+| Images | ✅ Full | ✅ Full |
+| Embeddings | ❌ Not Available | ✅ With ONNX Runtime |
+| Polars | ❌ Not Available | ✅ Available |
+
 ### Sandbox Security
 
 - WASM code runs in a sandbox with restricted capabilities

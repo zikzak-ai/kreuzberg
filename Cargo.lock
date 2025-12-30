@@ -3149,6 +3149,8 @@ version = "4.0.0-rc.22"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
+ "crossbeam-channel",
+ "futures",
  "html-to-markdown-rs",
  "kreuzberg",
  "kreuzberg-ffi",
@@ -3167,8 +3169,6 @@ dependencies = [
 [[package]]
 name = "kreuzberg-pdfium-render"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6c1ceacb1e6855f8ee797b7da2520f78943b8de062b8a1549827ec39372c180"
 dependencies = [
  "bitflags 2.10.0",
  "bytemuck",
@@ -3177,9 +3177,9 @@ dependencies = [
  "console_error_panic_hook",
  "console_log",
  "image",
- "itertools 0.14.0",
+ "itertools 0.10.5",
  "js-sys",
- "libloading 0.9.0",
+ "libloading 0.8.9",
  "log",
  "maybe-owned",
  "once_cell",

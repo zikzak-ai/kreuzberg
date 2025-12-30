@@ -2,9 +2,10 @@
  * Result type definitions for Kreuzberg document extraction.
  *
  * These types represent the output of extraction operations,
- * including extracted content, metadata, tables, chunks, and images.
+ * including extracted content, metadata, tables, chunks, images, and keywords.
  */
 
+import type { ExtractedKeyword } from "./config.js";
 import type { Metadata } from "./metadata.js";
 
 // ============================================================================
@@ -51,6 +52,7 @@ export interface ExtractionResult {
 	detectedLanguages: string[] | null;
 	chunks: Chunk[] | null;
 	images: ExtractedImage[] | null;
+	keywords?: ExtractedKeyword[] | null;
 
 	/**
 	 * Get the page count from this extraction result.

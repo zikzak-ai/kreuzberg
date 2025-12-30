@@ -10,10 +10,93 @@ namespace Kreuzberg\Config;
 readonly class TesseractConfig
 {
     public function __construct(
+        /**
+         * Page Segmentation Mode (PSM) for Tesseract.
+         *
+         * Tells Tesseract how to interpret page layout and segment the image
+         * before OCR. Different modes work better for different document types
+         * and layouts.
+         *
+         * Common modes:
+         * - 0: Orientation and script detection only
+         * - 1: Automatic page segmentation with OSD
+         * - 3: Fully automatic page segmentation (default)
+         * - 6: Assume a single uniform block of text
+         * - 7: Treat as single text line
+         * - 8: Treat as single word
+         * - 11: Sparse text, find as much text as possible in no particular order
+         * - 13: Raw line - treat the image as a single text line
+         *
+         * Valid range: 0-13
+         *
+         * @var int|null
+         * @default null (Tesseract default, typically 3)
+         * @example $config = new TesseractConfig(psm: 11);
+         */
         public ?int $psm = null,
+
+        /**
+         * OCR Engine Mode (OEM) for Tesseract.
+         *
+         * Selects which OCR engine or combination of engines to use.
+         *
+         * Modes:
+         * - 0: Legacy engine only
+         * - 1: Neural net LSTM engine only
+         * - 2: Legacy + LSTM engines (hybrid)
+         * - 3: Default, automatic selection
+         *
+         * Valid range: 0-3
+         *
+         * @var int|null
+         * @default null (Tesseract default, typically 3)
+         */
         public ?int $oem = null,
+
+        /**
+         * Enable table detection in Tesseract.
+         *
+         * When enabled, Tesseract uses additional algorithms to detect
+         * and parse table structures in the document. Improves text extraction
+         * from documents with tabular data.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $enableTableDetection = false,
+
+        /**
+         * Character whitelist for Tesseract.
+         *
+         * Restricts OCR to only recognize characters in this string.
+         * Useful for documents that contain only known character sets
+         * (e.g., digits only, specific symbols).
+         *
+         * Examples:
+         * - '0123456789': Numbers only
+         * - 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ': Letters only
+         * - '0-9,-$': Numbers, dash, comma, dollar sign
+         * - Leaving empty/null: No whitelist restriction
+         *
+         * @var string|null
+         * @default null (no whitelist)
+         */
         public ?string $tesseditCharWhitelist = null,
+
+        /**
+         * Character blacklist for Tesseract.
+         *
+         * Prevents OCR from recognizing characters in this string.
+         * Useful for filtering out characters known to cause OCR errors.
+         *
+         * Examples:
+         * - '|': Exclude pipe character (often confused with 'l')
+         * - '~': Exclude tilde
+         * - '|[]{}': Exclude bracket-like characters
+         *
+         * @var string|null
+         * @default null (no blacklist)
+         */
         public ?string $tesseditCharBlacklist = null,
     ) {
     }

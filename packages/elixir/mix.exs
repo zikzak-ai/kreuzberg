@@ -15,7 +15,8 @@ defmodule Kreuzberg.MixProject do
       description: "High-performance document intelligence library with OCR support",
       package: package(),
       docs: docs(),
-      source_url: @source_url
+      source_url: @source_url,
+      rustler_crates: [kreuzberg: [mode: :release]]
     ]
   end
 

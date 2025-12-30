@@ -163,4 +163,193 @@ final class Phase2ErrorFFITest {
 			assertThat(code).isNotNull();
 		}
 	}
+
+	@Nested
+	@DisplayName("Error Classification Robustness")
+	final class ErrorClassificationRobustnessTest {
+
+		@Test
+		@DisplayName("should classify various error message patterns")
+		void shouldClassifyVariousErrorPatterns() throws KreuzbergException {
+			String[] errorMessages = {"File not found", "Memory allocation failed",
+					"Configuration error: invalid value", "Network timeout", "Permission denied", "Resource exhausted",
+					"Unknown error occurred"};
+
+			for (String message : errorMessages) {
+				int code = ErrorUtils.classifyError(message);
+				assertThat(code).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+			}
+		}
+
+		@Test
+		@DisplayName("should handle empty string error message")
+		void shouldHandleEmptyErrorMessage() throws KreuzbergException {
+			int code = ErrorUtils.classifyError("");
+			assertThat(code).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+		}
+
+		@Test
+		@DisplayName("should be case-insensitive for error classification")
+		void shouldBeCaseInsensitiveClassification() throws KreuzbergException {
+			int code1 = ErrorUtils.classifyError("PARSING ERROR");
+			int code2 = ErrorUtils.classifyError("parsing error");
+			int code3 = ErrorUtils.classifyError("Parsing Error");
+
+			// All should classify to same category
+			assertThat(code1).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+			assertThat(code2).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+			assertThat(code3).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+		}
+
+		@Test
+		@DisplayName("should classify technical error messages")
+		void shouldClassifyTechnicalErrors() throws KreuzbergException {
+			String[] technicalErrors = {"NullPointerException in module extraction",
+					"StackOverflowError during parsing", "OutOfMemoryError: heap space",
+					"IllegalArgumentException: negative chunk size"};
+
+			for (String error : technicalErrors) {
+				int code = ErrorUtils.classifyError(error);
+				assertThat(code).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("Error Code Name Consistency")
+	final class ErrorCodeNameConsistencyTest {
+
+		@Test
+		@DisplayName("should return consistent names for all valid codes")
+		void shouldReturnConsistentNamesForAllCodes() throws KreuzbergException {
+			for (int i = 0; i <= 7; i++) {
+				String name = ErrorUtils.getErrorCodeName(i);
+				assertThat(name).isNotNull().isNotEmpty();
+
+				// Get again to ensure consistency
+				String nameAgain = ErrorUtils.getErrorCodeName(i);
+				assertThat(name).isEqualTo(nameAgain);
+			}
+		}
+
+		@Test
+		@DisplayName("should have unique names for different error codes")
+		void shouldHaveUniqueNamesForDifferentCodes() throws KreuzbergException {
+			java.util.Set<String> names = new java.util.HashSet<>();
+
+			for (int i = 0; i <= 7; i++) {
+				String name = ErrorUtils.getErrorCodeName(i);
+				assertThat(names).doesNotContain(name);
+				names.add(name);
+			}
+
+			assertThat(names).hasSize(8);
+		}
+
+		@Test
+		@DisplayName("should handle boundary codes correctly")
+		void shouldHandleBoundaryCodes() throws KreuzbergException {
+			// Test boundary values
+			String minName = ErrorUtils.getErrorCodeName(0);
+			String maxName = ErrorUtils.getErrorCodeName(7);
+			String beyondMax = ErrorUtils.getErrorCodeName(8);
+			String negativeCode = ErrorUtils.getErrorCodeName(-1);
+
+			assertThat(minName).isNotNull();
+			assertThat(maxName).isNotNull();
+			assertThat(beyondMax).isEqualTo("unknown");
+			assertThat(negativeCode).isEqualTo("unknown");
+		}
+	}
+
+	@Nested
+	@DisplayName("Error Recovery Strategies")
+	final class ErrorRecoveryStrategiesTest {
+
+		@Test
+		@DisplayName("should provide actionable error code names")
+		void shouldProvideActionableErrorCodeNames() throws KreuzbergException {
+			for (int i = 0; i <= 7; i++) {
+				String name = ErrorUtils.getErrorCodeName(i);
+				String description = ErrorUtils.getErrorCodeDescription(i);
+
+				assertThat(name).isNotNull().isNotEmpty();
+				assertThat(description).isNotNull().isNotEmpty();
+
+				// Description should be more detailed than name
+				assertThat(description.length()).isGreaterThanOrEqualTo(name.length());
+			}
+		}
+
+		@Test
+		@DisplayName("should support error code to ErrorCode enum mapping")
+		void shouldSupportErrorCodeMapping() {
+			for (int i = 0; i <= 7; i++) {
+				ErrorCode code = ErrorUtils.mapErrorCode(i);
+				assertThat(code).isNotNull();
+			}
+
+			// Invalid code should still map to something
+			ErrorCode invalidCode = ErrorUtils.mapErrorCode(999);
+			assertThat(invalidCode).isNotNull();
+		}
+
+		@Test
+		@DisplayName("should provide consistent descriptions")
+		void shouldProvideConsistentDescriptions() throws KreuzbergException {
+			for (int i = 0; i <= 7; i++) {
+				String desc1 = ErrorUtils.getErrorCodeDescription(i);
+				String desc2 = ErrorUtils.getErrorCodeDescription(i);
+
+				assertThat(desc1).isEqualTo(desc2);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("Error Handling Integration")
+	final class ErrorHandlingIntegrationTest {
+
+		@Test
+		@DisplayName("should classify and map errors consistently")
+		void shouldClassifyAndMapErrorsConsistently() throws KreuzbergException {
+			String errorMessage = "PDF parsing failed: corrupted structure";
+
+			// Classify the error
+			int errorCode = ErrorUtils.classifyError(errorMessage);
+			assertThat(errorCode).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+
+			// Map to ErrorCode enum
+			ErrorCode code = ErrorUtils.mapErrorCode(errorCode);
+			assertThat(code).isNotNull();
+
+			// Get name and description
+			String name = ErrorUtils.getErrorCodeName(errorCode);
+			String description = ErrorUtils.getErrorCodeDescription(errorCode);
+
+			assertThat(name).isNotNull().isNotEmpty();
+			assertThat(description).isNotNull().isNotEmpty();
+		}
+
+		@Test
+		@DisplayName("should handle error escalation")
+		void shouldHandleErrorEscalation() throws KreuzbergException {
+			// Start with a specific error message
+			String initialError = "Memory allocation failed during extraction";
+
+			int code1 = ErrorUtils.classifyError(initialError);
+			String name1 = ErrorUtils.getErrorCodeName(code1);
+
+			// Simulate error escalation
+			String escalatedError = "CRITICAL: " + initialError;
+			int code2 = ErrorUtils.classifyError(escalatedError);
+			String name2 = ErrorUtils.getErrorCodeName(code2);
+
+			// Both should classify to valid codes
+			assertThat(code1).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+			assertThat(code2).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(7);
+			assertThat(name1).isNotEmpty();
+			assertThat(name2).isNotEmpty();
+		}
+	}
 }

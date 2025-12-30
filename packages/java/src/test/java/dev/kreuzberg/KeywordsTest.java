@@ -420,4 +420,212 @@ class KeywordsTest {
 		assertNotNull(result.getContent(), "Content should be extracted");
 		assertTrue(result.isSuccess(), "Extraction should succeed without keyword config");
 	}
+
+	/**
+	 * Test keyword extraction with score ordering. Verifies: - Keywords are ordered
+	 * by score - Higher scores come first - Ordering is consistent
+	 */
+	@Test
+	void testKeywordScoreOrdering() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.0).ngramRange(1, 3).maxKeywords(20).build())
+				.build();
+
+		String text = "Important keyword extraction scores determine ranking and ordering.";
+		ExtractionResult result = Kreuzberg.extractBytes(text.getBytes(), "text/plain", config);
+
+		assertTrue(result.isSuccess(), "Extraction should succeed");
+		assertNotNull(result.getContent(), "Content should be extracted");
+	}
+
+	/**
+	 * Test keyword extraction with special characters and punctuation. Verifies: -
+	 * Punctuation is handled correctly - Special characters don't break extraction
+	 * - Keywords are properly identified despite formatting
+	 */
+	@Test
+	void testKeywordExtractionWithSpecialCharacters() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.2).ngramRange(1, 2).maxKeywords(10).build())
+				.build();
+
+		String text = "C++ programming, machine-learning, and AI/ML are important. Data @ scale!";
+		ExtractionResult result = Kreuzberg.extractBytes(text.getBytes(), "text/plain", config);
+
+		assertTrue(result.isSuccess(), "Extraction with special characters should succeed");
+		assertNotNull(result.getContent(), "Content should be extracted");
+	}
+
+	/**
+	 * Test keyword extraction result consistency across multiple runs. Verifies: -
+	 * Multiple extractions produce consistent results - Keywords are stable - No
+	 * randomness in extraction
+	 */
+	@Test
+	void testKeywordExtractionConsistency() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder()
+				.keywords(
+						KeywordConfig.builder().algorithm("yake").minScore(0.3).ngramRange(1, 2).maxKeywords(8).build())
+				.build();
+
+		String text = "Consistency testing ensures reproducible keyword extraction results.";
+
+		// Run extraction multiple times
+		ExtractionResult[] results = new ExtractionResult[3];
+		for (int i = 0; i < 3; i++) {
+			results[i] = Kreuzberg.extractBytes(text.getBytes(), "text/plain", config);
+		}
+
+		// Verify all succeeded
+		for (ExtractionResult result : results) {
+			assertTrue(result.isSuccess(), "All extractions should succeed");
+			assertNotNull(result.getContent(), "All should have content");
+		}
+
+		// Verify content consistency
+		assertEquals(results[0].getContent(), results[1].getContent(), "First and second should match");
+		assertEquals(results[1].getContent(), results[2].getContent(), "Second and third should match");
+	}
+
+	/**
+	 * Test keyword configuration with very high score threshold. Verifies: - High
+	 * threshold filters most keywords - Only top keywords are returned - Extraction
+	 * succeeds with high threshold
+	 */
+	@Test
+	void testKeywordExtractionWithHighScoreThreshold() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder()
+				.keywords(
+						KeywordConfig.builder().algorithm("yake").minScore(0.9).ngramRange(1, 2).maxKeywords(5).build())
+				.build();
+
+		String text = "This text is used for high threshold keyword extraction testing.";
+		ExtractionResult result = Kreuzberg.extractBytes(text.getBytes(), "text/plain", config);
+
+		assertTrue(result.isSuccess(), "Extraction with high threshold should succeed");
+		assertNotNull(result.getMetadata(), "Metadata should be available");
+	}
+
+	/**
+	 * Test keyword extraction from technical documentation. Verifies: - Technical
+	 * terms are properly extracted - Domain-specific keywords are identified - Long
+	 * keywords are handled
+	 */
+	@Test
+	void testKeywordExtractionFromTechnicalText() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.2).ngramRange(1, 3).maxKeywords(15).build())
+				.build();
+
+		String text = "REST API endpoints, OAuth 2.0 authentication, and JSON Web Tokens enable "
+				+ "secure microservices architecture with containerized deployment.";
+		ExtractionResult result = Kreuzberg.extractBytes(text.getBytes(), "text/plain", config);
+
+		assertTrue(result.isSuccess(), "Technical text extraction should succeed");
+		assertNotNull(result.getContent(), "Content should be extracted");
+	}
+
+	/**
+	 * Test keyword extraction respects ngram range limits. Verifies: - Ngram range
+	 * is properly enforced - Keywords don't exceed max ngram - Keywords meet
+	 * minimum ngram requirement
+	 */
+	@Test
+	void testKeywordNgramRangeEnforcement() throws KreuzbergException {
+		String text = "N-gram extraction techniques identify multi-word key phrases and concepts.";
+
+		// Test minimum ngram enforcement
+		ExtractionConfig minConfig = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.2).ngramRange(2, 3).maxKeywords(20).build())
+				.build();
+
+		ExtractionResult minResult = Kreuzberg.extractBytes(text.getBytes(), "text/plain", minConfig);
+		assertTrue(minResult.isSuccess(), "Min ngram extraction should succeed");
+
+		// Test maximum ngram enforcement
+		ExtractionConfig maxConfig = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.2).ngramRange(1, 1).maxKeywords(20).build())
+				.build();
+
+		ExtractionResult maxResult = Kreuzberg.extractBytes(text.getBytes(), "text/plain", maxConfig);
+		assertTrue(maxResult.isSuccess(), "Max ngram extraction should succeed");
+	}
+
+	/**
+	 * Test keyword extraction from structured data formats. Verifies: - JSON
+	 * content extraction - CSV header keyword extraction - Structured data handling
+	 */
+	@Test
+	void testKeywordExtractionFromStructuredData() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.2).ngramRange(1, 2).maxKeywords(10).build())
+				.build();
+
+		String json = "{\"name\": \"John\", \"email\": \"john@example.com\", \"skills\": [\"Java\", \"Python\", \"Machine Learning\"]}";
+		ExtractionResult result = Kreuzberg.extractBytes(json.getBytes(), "application/json", config);
+
+		assertTrue(result.isSuccess(), "JSON keyword extraction should succeed");
+		assertNotNull(result.getContent(), "Content should be extracted from JSON");
+	}
+
+	/**
+	 * Test keyword extraction with boundary test cases. Verifies: - Very long text
+	 * is handled - Text with only numbers - Text with single keyword
+	 */
+	@Test
+	void testKeywordExtractionBoundaryConditions() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.2).ngramRange(1, 2).maxKeywords(10).build())
+				.build();
+
+		// Test with very long sentence
+		StringBuilder longText = new StringBuilder();
+		for (int i = 0; i < 20; i++) {
+			longText.append("This is a word in a very long sentence with many words and phrases. ");
+		}
+		ExtractionResult longResult = Kreuzberg.extractBytes(longText.toString().getBytes(), "text/plain", config);
+		assertTrue(longResult.isSuccess(), "Long text extraction should succeed");
+
+		// Test with numbers-heavy text
+		String numericText = "Price: $100, Quantity: 50, SKU: 12345, Weight: 2.5 kg";
+		ExtractionResult numResult = Kreuzberg.extractBytes(numericText.getBytes(), "text/plain", config);
+		assertTrue(numResult.isSuccess(), "Numeric text extraction should succeed");
+	}
+
+	/**
+	 * Test keyword extraction metadata availability. Verifies: - Metadata is
+	 * populated - Metadata contains expected fields - Metadata is accessible after
+	 * extraction
+	 */
+	@Test
+	void testKeywordExtractionMetadataAvailability() throws KreuzbergException {
+		ExtractionConfig config = ExtractionConfig.builder().keywords(
+				KeywordConfig.builder().algorithm("yake").minScore(0.3).ngramRange(1, 2).maxKeywords(10).build())
+				.build();
+
+		String text = "Metadata availability in keyword extraction indicates successful processing.";
+		ExtractionResult result = Kreuzberg.extractBytes(text.getBytes(), "text/plain", config);
+
+		assertTrue(result.isSuccess(), "Extraction should succeed");
+		assertNotNull(result.getMetadata(), "Metadata should be available");
+		assertFalse(result.getMetadata().isEmpty() || result.getMetadata().size() == 0,
+				"Metadata should be accessible");
+	}
+
+	/**
+	 * Test keyword extraction with language parameter. Verifies: - Language
+	 * parameter is accepted - Different language settings work - Language affects
+	 * extraction appropriately
+	 */
+	@Test
+	void testKeywordExtractionLanguageParameter() throws KreuzbergException {
+		// Test English
+		ExtractionConfig enConfig = ExtractionConfig.builder().keywords(KeywordConfig.builder().algorithm("yake")
+				.language("en").minScore(0.2).ngramRange(1, 2).maxKeywords(10).build()).build();
+
+		String enText = "English language keyword extraction with specific language parameter.";
+		ExtractionResult enResult = Kreuzberg.extractBytes(enText.getBytes(), "text/plain", enConfig);
+
+		assertTrue(enResult.isSuccess(), "English extraction should succeed");
+	}
 }

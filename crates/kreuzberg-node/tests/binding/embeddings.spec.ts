@@ -1234,3 +1234,4 @@ describe("Embedding Vector Generation (Node.js Bindings)", () => {
 		});
 	});
 });
+});

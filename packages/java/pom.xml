@@ -181,6 +181,13 @@
                 <configuration>
                     <argLine>@{argLine} -XX:-ClassUnloading -XX:-ClassUnloadingWithConcurrentMark --enable-native-access=ALL-UNNAMED --enable-preview -Djava.library.path=${project.basedir}/../../target/release</argLine>
                     <forkedProcessTimeoutInSeconds>300</forkedProcessTimeoutInSeconds>
+                    <!-- Parallel execution for speed -->
+                    <parallel>classes</parallel>
+                    <threadCount>4</threadCount>
+                    <perCoreThreadCount>false</perCoreThreadCount>
+                    <!-- Reduce verbosity -->
+                    <printSummary>true</printSummary>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <!-- Temporarily disabled to run all tests even after failures -->
                     <!--<skipAfterFailureCount>1</skipAfterFailureCount>-->
                 </configuration>

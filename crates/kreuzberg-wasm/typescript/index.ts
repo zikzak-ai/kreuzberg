@@ -99,6 +99,20 @@ import { registerOcrBackend } from "./ocr/registry.js";
 import { TesseractWasmBackend } from "./ocr/tesseract-wasm-backend.js";
 import { detectRuntime, hasWasm, isBrowser } from "./runtime.js";
 import type { ExtractionConfig as ExtractionConfigType, ExtractionResult } from "./types.js";
+import {
+	clearPostProcessors,
+	clearValidators,
+	getPostProcessor,
+	getValidator,
+	listPostProcessors,
+	listValidators,
+	registerPostProcessor,
+	registerValidator,
+	unregisterPostProcessor,
+	unregisterValidator,
+	type PostProcessor,
+	type Validator,
+} from "./plugin-registry.js";
 
 export {
 	configToJS,
@@ -115,6 +129,20 @@ export {
 	unregisterOcrBackend,
 } from "./ocr/registry.js";
 export { TesseractWasmBackend } from "./ocr/tesseract-wasm-backend.js";
+export {
+	clearPostProcessors,
+	clearValidators,
+	getPostProcessor,
+	getValidator,
+	listPostProcessors,
+	listValidators,
+	registerPostProcessor,
+	registerValidator,
+	unregisterPostProcessor,
+	unregisterValidator,
+	type PostProcessor,
+	type Validator,
+} from "./plugin-registry.js";
 export {
 	detectRuntime,
 	getRuntimeInfo,
@@ -315,11 +343,11 @@ export async function initWasm(): Promise<void> {
 			let wasmModule: unknown;
 			try {
 				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				wasmModule = await import("../pkg/kreuzberg_wasm.js");
+				wasmModule = await import(/* @vite-ignore */ "../pkg/kreuzberg_wasm.js");
 			} catch {
 				// @ts-expect-error - Dynamic import path
 				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				wasmModule = await import("./kreuzberg_wasm.js");
+				wasmModule = await import(/* @vite-ignore */ "./kreuzberg_wasm.js");
 			}
 			wasm = wasmModule as unknown as WasmModule;
 

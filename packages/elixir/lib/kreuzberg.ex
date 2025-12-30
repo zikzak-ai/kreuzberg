@@ -59,6 +59,9 @@ defmodule Kreuzberg do
   defdelegate validate_tesseract_psm(psm), to: Kreuzberg.Validators
   defdelegate validate_tesseract_oem(oem), to: Kreuzberg.Validators
 
+  # Delegate config discovery to ExtractionConfig module
+  defdelegate discover_extraction_config(), to: Kreuzberg.ExtractionConfig, as: :discover
+
   @doc """
   Extract content from binary document data.
 

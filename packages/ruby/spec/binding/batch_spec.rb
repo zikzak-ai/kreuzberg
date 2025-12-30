@@ -52,7 +52,7 @@ RSpec.describe Kreuzberg do
     end
 
     it 'handles empty file list gracefully' do
-      results = described_class.batch_extract_files_sync([])
+      results = described_class.batch_extract_files_sync(paths: [])
       expect(results).to be_a(Array)
       expect(results).to be_empty
     end
@@ -70,7 +70,7 @@ RSpec.describe Kreuzberg do
         use_cache: false
       )
 
-      results = described_class.batch_extract_files_sync(paths, config: config)
+      results = described_class.batch_extract_files_sync(paths: paths, config: config)
 
       expect(results).to be_a(Array)
       expect(results.length).to eq(2)
@@ -156,7 +156,7 @@ RSpec.describe Kreuzberg do
         use_cache: false
       )
 
-      results = described_class.batch_extract_files(paths, config: config)
+      results = described_class.batch_extract_files(paths: paths, config: config)
 
       expect(results.length).to eq(2)
       results.each { |result| expect(result.content).not_to be_empty }
@@ -198,7 +198,7 @@ RSpec.describe Kreuzberg do
     end
 
     it 'handles empty byte list' do
-      results = described_class.batch_extract_bytes_sync([], [])
+      results = described_class.batch_extract_bytes_sync(data_array: [], mime_types: [])
       expect(results).to be_a(Array)
       expect(results).to be_empty
     end
@@ -211,7 +211,7 @@ RSpec.describe Kreuzberg do
         use_cache: false
       )
 
-      results = described_class.batch_extract_bytes_sync(data, mime_types, config: config)
+      results = described_class.batch_extract_bytes_sync(data_array: data, mime_types: mime_types, config: config)
 
       expect(results.length).to eq(2)
       results.each { |result| expect(result.mime_type).to eq('text/plain') }
@@ -238,7 +238,7 @@ RSpec.describe Kreuzberg do
         use_cache: false
       )
 
-      results = described_class.batch_extract_bytes(data, mime_types, config: config)
+      results = described_class.batch_extract_bytes(data_array: data, mime_types: mime_types, config: config)
 
       expect(results.length).to eq(2)
       results.each { |result| expect(result.content).not_to be_empty }
@@ -281,7 +281,7 @@ RSpec.describe Kreuzberg do
         paths << file_path
       end
 
-      batch_results = described_class.batch_extract_files_sync(paths)
+      batch_results = described_class.batch_extract_files_sync(paths: paths)
 
       sequential_results = paths.map { |p| described_class.extract_file_sync(path: p) }
 
@@ -304,7 +304,7 @@ RSpec.describe Kreuzberg do
       ]
 
       expect do
-        described_class.batch_extract_files_sync(paths)
+        described_class.batch_extract_files_sync(paths: paths)
       end.not_to raise_error
     end
 
@@ -329,7 +329,7 @@ RSpec.describe Kreuzberg do
       mime_types = ['invalid/mime/type']
 
       expect do
-        described_class.batch_extract_bytes_sync(data, mime_types)
+        described_class.batch_extract_bytes_sync(data_array: data, mime_types: mime_types)
       end.not_to raise_error
     end
   end

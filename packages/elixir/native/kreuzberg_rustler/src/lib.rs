@@ -32,6 +32,7 @@ mod atoms {
         invalid_config,
         ocr_error,
         unknown_error,
+        not_found,
     }
 }
 
@@ -1242,6 +1243,80 @@ fn clear_cache<'a>(env: Env<'a>) -> NifResult<Term<'a>> {
         }
         Err(e) => {
             Ok((atoms::error(), format!("Failed to clear cache: {}", e)).encode(env))
+        }
+    }
+}
+
+/// Discover an ExtractionConfig by searching the current directory and parent directories.
+///
+/// Searches for and loads the first config file found in:
+/// - kreuzberg.toml
+/// - kreuzberg.yaml
+/// - kreuzberg.yml
+/// - kreuzberg.json
+///
+/// Returns the config as a JSON string, or nil if not found.
+///
+/// # Returns
+///
+/// * `{:ok, config_json}` - JSON string containing the config
+/// * `{:error, :not_found}` - No config file found
+/// * `{:error, reason}` - Error loading or parsing config
+#[rustler::nif]
+fn config_discover<'a>(env: Env<'a>) -> NifResult<Term<'a>> {
+    match kreuzberg::core::config::ExtractionConfig::discover() {
+        Ok(Some(config)) => {
+            // Convert config to JSON string
+            match serde_json::to_string(&config) {
+                Ok(json) => {
+                    Ok((atoms::ok(), json).encode(env))
+                }
+                Err(e) => {
+                    Ok((atoms::error(), format!("Failed to serialize config: {}", e)).encode(env))
+                }
+            }
+        }
+        Ok(None) => {
+            // No config found - return error with :not_found atom
+            Ok((atoms::error(), atoms::not_found()).encode(env))
+        }
+        Err(e) => {
+            Ok((atoms::error(), format!("Failed to discover config: {}", e)).encode(env))
+        }
+    }
+}
+
+/// Load an ExtractionConfig from a specific file path.
+///
+/// Supports TOML, YAML, and JSON formats.
+///
+/// # Arguments
+/// * `file_path` - String path to the config file
+///
+/// # Returns
+///
+/// * `{:ok, config_json}` - JSON string containing the config
+/// * `{:error, reason}` - Error loading or parsing the config
+#[rustler::nif]
+fn config_from_file<'a>(env: Env<'a>, file_path: String) -> NifResult<Term<'a>> {
+    use std::path::Path;
+
+    let path = Path::new(&file_path);
+
+    match kreuzberg::core::config::ExtractionConfig::from_file(path) {
+        Ok(config) => {
+            // Convert config to JSON string
+            match serde_json::to_string(&config) {
+                Ok(json) => {
+                    Ok((atoms::ok(), json).encode(env))
+                }
+                Err(e) => {
+                    Ok((atoms::error(), format!("Failed to serialize config: {}", e)).encode(env))
+                }
+            }
+        }
+        Err(e) => {
+            Ok((atoms::error(), format!("Failed to load config from file: {}", e)).encode(env))
         }
     }
 }

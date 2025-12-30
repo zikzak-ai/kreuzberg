@@ -52,7 +52,7 @@ typedef struct ResultPool ResultPool;
  * C-compatible extraction result structure
  *
  * Must be kept in sync with the Java side's MemoryLayout definition in KreuzbergFFI.java
- * Field order: 11 pointers (8 bytes each) + 1 bool + 7 bytes padding = 96 bytes total
+ * Field order: 12 pointers (8 bytes each) + 1 bool + 7 bytes padding = 104 bytes total
  */
 typedef struct CExtractionResult {
   /**
@@ -99,6 +99,10 @@ typedef struct CExtractionResult {
    * Page structure as JSON object (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
    */
   char *page_structure_json;
+  /**
+   * Per-page content as JSON array (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
+   */
+  char *pages_json;
   /**
    * Whether extraction was successful
    */

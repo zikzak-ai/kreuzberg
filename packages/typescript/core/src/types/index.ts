@@ -13,15 +13,21 @@
 
 export type {
 	ChunkingConfig,
+	EmbeddingConfig,
+	EmbeddingModelType,
 	ExtractionConfig,
+	ExtractedKeyword,
 	FontConfig,
+	HierarchyConfig,
 	HtmlConversionOptions,
 	HtmlPreprocessingOptions,
 	ImageExtractionConfig,
+	ImagePreprocessingConfig,
 	KeywordAlgorithm,
 	KeywordConfig,
 	LanguageDetectionConfig,
 	OcrConfig,
+	PageConfig,
 	PdfConfig,
 	PostProcessorConfig,
 	RakeParams,
@@ -74,3 +80,7 @@ export {
 	PluginError,
 	ValidationError,
 } from "./errors.js";
+
+export * from "../utils/index.js";
+
+export * from "../constants/index.js";

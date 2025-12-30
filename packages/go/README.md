@@ -387,6 +387,227 @@ func main() {
 }
 ```
 
+#### Embeddings Full Workflow
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/kreuzberg-dev/kreuzberg/packages/go/v4"
+)
+
+func main() {
+	// Configure chunking with embedding generation
+	config := v4.NewExtractionConfig(
+		v4.WithChunking(
+			v4.WithChunkingEnabled(true),
+			v4.WithChunkSize(512),
+			v4.WithChunkOverlap(50),
+			v4.WithEmbedding(
+				v4.WithEmbeddingModel(
+					v4.WithEmbeddingModelType("onnx"),
+					v4.WithEmbeddingModelName("jina-embeddings-v2-small-en"),
+				),
+				v4.WithEmbeddingNormalize(true),
+				v4.WithEmbeddingBatchSize(32),
+				v4.WithShowDownloadProgress(true),
+				v4.WithCacheDir("/tmp/embeddings_cache"),
+			),
+		),
+	)
+
+	result, err := v4.ExtractFileSync("document.pdf", config)
+	if err != nil {
+		log.Fatalf("extraction failed: %v", err)
+	}
+
+	fmt.Printf("Document extracted: %d characters\n", len(result.Content))
+	fmt.Printf("Total chunks: %d\n", len(result.Chunks))
+
+	// Access embeddings from chunks
+	if len(result.Chunks) > 0 {
+		for i, chunk := range result.Chunks {
+			fmt.Printf("Chunk %d: %d chars, %d dimensions\n",
+				i, len(chunk.Content), len(chunk.Embedding))
+			// Embedding is a []float32 - use for similarity search, RAG, etc.
+		}
+	}
+}
+```
+
+#### Image Extraction with Metadata
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/kreuzberg-dev/kreuzberg/packages/go/v4"
+)
+
+func main() {
+	// Configure image extraction with metadata
+	config := v4.NewExtractionConfig(
+		v4.WithImages(
+			v4.WithExtractImages(true),
+			v4.WithImageTargetDPI(150),
+			v4.WithMaxImageDimension(4000),
+			v4.WithAutoAdjustDPI(true),
+		),
+		v4.WithPdfOptions(
+			v4.WithPdfExtractMetadata(true),
+		),
+	)
+
+	result, err := v4.ExtractFileSync("document.pdf", config)
+	if err != nil {
+		log.Fatalf("extraction failed: %v", err)
+	}
+
+	fmt.Printf("Extracted %d images from document\n", len(result.Images))
+
+	// Access image metadata
+	for i, img := range result.Images {
+		fmt.Printf("\nImage %d:\n", i)
+		fmt.Printf("  Format: %s\n", img.Format)
+		if img.Width != nil && img.Height != nil {
+			fmt.Printf("  Dimensions: %dx%d\n", *img.Width, *img.Height)
+		}
+		fmt.Printf("  Size: %d bytes\n", len(img.Data))
+		if img.PageNumber != nil {
+			fmt.Printf("  Page: %d\n", *img.PageNumber)
+		}
+		if img.Colorspace != nil {
+			fmt.Printf("  Colorspace: %s\n", *img.Colorspace)
+		}
+	}
+
+	// Access document-level image metadata if available
+	if imgMeta, ok := result.Metadata.ImageMetadata(); ok {
+		fmt.Printf("\nDocument Image Metadata:\n")
+		fmt.Printf("  Document Size: %dx%d\n", imgMeta.Width, imgMeta.Height)
+		fmt.Printf("  Format: %s\n", imgMeta.Format)
+		if len(imgMeta.EXIF) > 0 {
+			fmt.Printf("  EXIF Data:\n")
+			for key, val := range imgMeta.EXIF {
+				fmt.Printf("    %s: %s\n", key, val)
+			}
+		}
+	}
+}
+```
+
+#### Plugin Registration Patterns
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"strings"
+
+	"github.com/kreuzberg-dev/kreuzberg/packages/go/v4"
+)
+
+func main() {
+	// Register custom post-processor plugins
+	config := v4.NewExtractionConfig(
+		v4.WithPostprocessor(
+			v4.WithPostProcessorEnabled(true),
+			v4.WithEnabledProcessors([]string{
+				"lowercase",      // Built-in processor
+				"remove_extra_spaces",
+				"custom_validator",  // Custom plugin
+			}),
+		),
+	)
+
+	result, err := v4.ExtractFileSync("document.pdf", config)
+	if err != nil {
+		log.Fatalf("extraction failed: %v", err)
+	}
+
+	// Post-processors have transformed the extracted content
+	fmt.Printf("Processed content (first 200 chars):\n")
+	if len(result.Content) > 200 {
+		fmt.Println(result.Content[:200])
+	} else {
+		fmt.Println(result.Content)
+	}
+}
+
+// Example of a post-processor validator callback pattern
+// (If the library supports custom validators)
+func exampleValidatorCallback(content string) (string, error) {
+	// Custom validation logic
+	if strings.TrimSpace(content) == "" {
+		return "", fmt.Errorf("content is empty after processing")
+	}
+	return content, nil
+}
+```
+
+#### Page-Based Extraction
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"strings"
+
+	"github.com/kreuzberg-dev/kreuzberg/packages/go/v4"
+)
+
+func main() {
+	// Configure page extraction with markers
+	config := v4.NewExtractionConfig(
+		v4.WithPages(
+			v4.WithExtractPages(true),
+			v4.WithInsertPageMarkers(true),
+			v4.WithMarkerFormat("--- PAGE %d ---"),
+		),
+	)
+
+	result, err := v4.ExtractFileSync("multi_page.pdf", config)
+	if err != nil {
+		log.Fatalf("extraction failed: %v", err)
+	}
+
+	fmt.Printf("Total content: %d characters\n", len(result.Content))
+
+	// Content now includes page markers
+	lines := strings.Split(result.Content, "\n")
+	pageCount := 0
+	for _, line := range lines {
+		if strings.Contains(line, "PAGE") {
+			pageCount++
+			fmt.Printf("Found: %s\n", line)
+		}
+	}
+
+	fmt.Printf("Document has %d pages\n", pageCount)
+
+	// Access per-page content by splitting on markers
+	pages := strings.Split(result.Content, "--- PAGE")
+	fmt.Printf("Split into %d sections\n", len(pages))
+
+	for i, page := range pages {
+		if i > 0 { // Skip initial empty split
+			contentLen := len(strings.TrimSpace(page))
+			fmt.Printf("Page %d: %d characters\n", i, contentLen)
+		}
+	}
+}
+```
+
 ### Next Steps
 
 - **[Installation Guide](https://kreuzberg.dev/getting-started/installation/)** - Platform-specific setup
@@ -456,7 +677,7 @@ func main() {
 
 - **OCR Support** - Integrate multiple OCR backends for scanned documents
 
-- **Async/Await** - Non-blocking document processing with concurrent operations
+- **Concurrent Processing** - Goroutine-based parallelism with context cancellation
 
 - **Plugin System** - Extensible post-processing for custom text transformation
 
@@ -467,6 +688,77 @@ func main() {
 - **Language Detection** - Detect and support multiple languages in documents
 
 - **Configuration** - Fine-grained control over extraction behavior
+
+### Concurrency Model
+
+**Go Uses Context-Based Cancellation (Not Async/Await)**
+
+Unlike Python and Node.js bindings, Go does NOT support async/await or Promise-based operations. Instead, Go uses:
+
+- ✅ **Context-based pre-operation cancellation** - Check `ctx.Err()` before starting extraction
+- ✅ **Goroutines for parallelism** - Use goroutines and sync.WaitGroup for concurrent processing
+- ❌ **No mid-operation cancellation** - Once extraction starts, it runs to completion
+
+**Comparison Table**
+
+| Feature | Go (context.Context) | Python (async/await) | Node.js (Promises) |
+|---------|---------------------|---------------------|-------------------|
+| **Cancellation Timing** | Before operation starts | During operation (can suspend) | During operation (can suspend) |
+| **Syntax** | `ExtractFileWithContext(ctx, path, cfg)` | `await extract_file(path, cfg)` | `await extractFile(path, cfg)` |
+| **Parallel Execution** | Manual goroutines + WaitGroup | asyncio.gather() / TaskGroup | Promise.all() |
+| **Timeout Pattern** | `context.WithTimeout()` | asyncio.wait_for() | Promise.race() with timeout |
+| **Mid-Operation Cancel** | ❌ No | ✅ Yes | ✅ Yes |
+
+**Example: Concurrent Extraction with Timeout**
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "sync"
+    "time"
+
+    "github.com/kreuzberg-dev/kreuzberg/packages/go/v4"
+)
+
+func main() {
+    files := []string{"doc1.pdf", "doc2.pdf", "doc3.pdf"}
+
+    // Create context with 30-second timeout
+    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+    defer cancel()
+
+    var wg sync.WaitGroup
+    results := make([]*kreuzberg.ExtractionResult, len(files))
+
+    for i, path := range files {
+        wg.Add(1)
+        go func(idx int, p string) {
+            defer wg.Done()
+
+            // Context check happens BEFORE extraction starts
+            // If context is already cancelled/expired, extraction won't start
+            result, err := kreuzberg.ExtractFileWithContext(ctx, p, nil)
+            if err != nil {
+                fmt.Printf("Error extracting %s: %v\n", p, err)
+                return
+            }
+            results[idx] = result
+        }(i, path)
+    }
+
+    wg.Wait()
+    fmt.Printf("Extracted %d documents\n", len(results))
+}
+```
+
+**Migration Note**: If migrating from Python or Node.js:
+- Replace `await extractFile()` with manual goroutines + WaitGroup pattern (see example above)
+- Replace `asyncio.gather()` / `Promise.all()` with goroutines + channels or WaitGroup
+- Use `context.WithTimeout()` instead of Promise.race() or asyncio.wait_for()
+- Remember: Context cancellation is checked BEFORE extraction, not during
 
 ### Performance Characteristics
 

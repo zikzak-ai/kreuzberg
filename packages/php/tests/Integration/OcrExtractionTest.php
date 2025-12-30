@@ -22,14 +22,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Kreuzberg::class)]
 #[Group('integration')]
 #[Group('ocr')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class OcrExtractionTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

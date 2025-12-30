@@ -10,8 +10,53 @@ namespace Kreuzberg\Config;
 readonly class KeywordConfig
 {
     public function __construct(
+        /**
+         * Maximum number of keywords to extract.
+         *
+         * Limits the number of top-ranked keywords returned from the extraction process.
+         * Keywords are ranked by relevance score and only the top N keywords are returned.
+         *
+         * Valid range: 1-unlimited (practical range: 1-100)
+         * Recommended values:
+         * - 5-10: For concise summaries
+         * - 10-20: For moderate detail
+         * - 20-50: For comprehensive keyword extraction
+         *
+         * @var int
+         * @default 10
+         */
         public int $maxKeywords = 10,
+
+        /**
+         * Minimum relevance score threshold for keywords.
+         *
+         * Keywords with relevance scores below this threshold are excluded
+         * from results. Score is typically normalized between 0 and 1.
+         * Higher thresholds result in fewer, more relevant keywords.
+         *
+         * Valid range: 0.0-1.0
+         * Recommended values:
+         * - 0.0: Include all detected keywords
+         * - 0.1-0.3: Moderate filtering
+         * - 0.5+: Strict filtering for high-confidence keywords only
+         *
+         * @var float
+         * @default 0.0
+         */
         public float $minScore = 0.0,
+
+        /**
+         * Language for keyword extraction.
+         *
+         * Specifies the language context for keyword analysis and extraction.
+         * Language-specific processing improves keyword quality by understanding
+         * language nuances and importance of different terms.
+         *
+         * Common values: 'en', 'de', 'fr', 'es', 'it', 'pt', 'nl', 'ru', 'zh'
+         *
+         * @var string|null
+         * @default 'en'
+         */
         public ?string $language = 'en',
     ) {
     }

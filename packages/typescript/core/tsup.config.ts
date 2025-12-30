@@ -5,7 +5,6 @@ export default defineConfig({
 		"src/index.ts",
 		"src/types/index.ts",
 		"src/types/config.ts",
-		"src/types/errors.ts",
 		"src/types/metadata.ts",
 		"src/types/protocols.ts",
 		"src/types/results.ts",

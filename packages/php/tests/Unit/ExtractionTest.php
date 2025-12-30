@@ -57,15 +57,15 @@ final class ExtractionTest extends TestCase
     }
 
     #[Test]
-    #[RequiresPhpExtension('kreuzberg')]
+    #[RequiresPhpExtension('kreuzberg-php')]
     public function it_checks_if_extension_is_loaded(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 
-        $this->assertTrue(extension_loaded('kreuzberg'));
-        $this->assertIsString(phpversion('kreuzberg'));
+        $this->assertTrue(extension_loaded('kreuzberg-php'));
+        $this->assertIsString(phpversion('kreuzberg-php'));
     }
 
     #[Test]

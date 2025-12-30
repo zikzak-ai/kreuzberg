@@ -103,7 +103,8 @@ jobs:
 
       - name: Run WASM tests
         shell: bash
-        run: task wasm:test:ci
+        working-directory: crates/kreuzberg-wasm
+        run: pnpm run build --minify && pnpm test
         env:
           RUST_BACKTRACE: 1
 

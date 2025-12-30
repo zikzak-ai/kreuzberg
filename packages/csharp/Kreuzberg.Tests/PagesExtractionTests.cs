@@ -78,7 +78,8 @@ public class PagesExtractionTests
         Assert.NotNull(result.Pages);
         foreach (var page in result.Pages)
         {
-            Assert.NotNull(page.Content, $"Page {page.PageNumber} should have content");
+            Assert.NotNull(page.Content);
+            Assert.True(!string.IsNullOrEmpty(page.Content), $"Page {page.PageNumber} should have content");
         }
     }
 
@@ -372,8 +373,8 @@ public class PagesExtractionTests
         Assert.NotNull(result.Pages);
         foreach (var page in result.Pages)
         {
-            Assert.NotNull(page.Content, $"Page {page.PageNumber} should have content");
-            Assert.NotEmpty(page.Content.Trim(), $"Page {page.PageNumber} content should not be empty");
+            Assert.NotNull(page.Content);
+            Assert.NotEmpty(page.Content.Trim());
         }
     }
 
@@ -442,7 +443,7 @@ public class PagesExtractionTests
         {
             // Check required fields
             Assert.True(page.PageNumber > 0, "Page must have a valid page number");
-            Assert.NotNull(page.Content, "Page must have content");
+            Assert.NotNull(page.Content);
         }
     }
 

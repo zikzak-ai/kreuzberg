@@ -9,12 +9,59 @@ namespace Kreuzberg\Config;
  */
 readonly class OcrConfig
 {
+    /**
+     * Tesseract-specific OCR configuration.
+     *
+     * Contains advanced settings for Tesseract OCR engine including page segmentation mode,
+     * engine mode, character whitelists/blacklists, and table detection options.
+     *
+     * @var TesseractConfig|null
+     * @default null
+     */
+    public ?TesseractConfig $tesseractConfig;
+
     public function __construct(
+        /**
+         * OCR backend to use for text extraction.
+         *
+         * Selects which OCR engine to use for document processing.
+         * Available backends:
+         * - 'tesseract': Tesseract OCR engine (requires tesseract installation)
+         * - 'guten': Built-in Guten OCR engine
+         *
+         * @var string
+         * @default 'tesseract'
+         */
         public string $backend = 'tesseract',
+
+        /**
+         * Language for OCR text recognition.
+         *
+         * Specifies the language(s) to use for OCR. Use ISO 639-3 language codes.
+         * Multiple languages can be specified as comma-separated values for mixed-language documents.
+         * Examples: 'eng', 'deu', 'fra', 'eng+deu', 'eng+fra+deu'
+         *
+         * @var string
+         * @default 'eng'
+         */
         public string $language = 'eng',
-        public ?TesseractConfig $tesseractConfig = null,
+        ?TesseractConfig $tesseractConfig = null,
+
+        /**
+         * Image preprocessing configuration for OCR.
+         *
+         * Configures preprocessing steps applied to images before OCR,
+         * including rotation correction, deskewing, denoising, and contrast adjustment.
+         *
+         * @var ImagePreprocessingConfig|null
+         * @default null
+         */
         public ?ImagePreprocessingConfig $imagePreprocessing = null,
+        // Support 'tesseract' as an alias for 'tesseractConfig'
+        ?TesseractConfig $tesseract = null,
     ) {
+        // Support both 'tesseractConfig' and 'tesseract' parameter names
+        $this->tesseractConfig = $tesseract ?? $tesseractConfig;
     }
 
     /**

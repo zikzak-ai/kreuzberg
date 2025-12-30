@@ -18,13 +18,21 @@ internal static class NativeTestHelper
             Path.Combine(root, "target", "debug", LibraryFileName()),
         };
 
-        LoadPdfiumIfPresent(root);
+        // Don't manually load Pdfium - let Rust handle it during initialization
+        // LoadPdfiumIfPresent(root);
 
         foreach (var candidate in candidates)
         {
             if (File.Exists(candidate))
             {
-                NativeLibrary.Load(candidate);
+                try
+                {
+                    NativeLibrary.Load(candidate);
+                }
+                catch (InvalidOperationException ex) when (ex.Message.Contains("already loaded"))
+                {
+                    // Library already loaded - this is fine when using a custom test framework
+                }
                 return true;
             }
         }
@@ -101,7 +109,14 @@ internal static class NativeTestHelper
 
             if (File.Exists(path))
             {
-                NativeLibrary.Load(path);
+                try
+                {
+                    NativeLibrary.Load(path);
+                }
+                catch (InvalidOperationException ex) when (ex.Message.Contains("already loaded"))
+                {
+                    // Pdfium already loaded - this is fine when using a custom test framework
+                }
                 return;
             }
         }

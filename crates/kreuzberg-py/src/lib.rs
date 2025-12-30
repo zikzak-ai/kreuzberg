@@ -138,6 +138,8 @@ fn _internal_bindings(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(config::config_to_json, m)?)?;
     m.add_function(wrap_pyfunction!(config::config_get_field, m)?)?;
     m.add_function(wrap_pyfunction!(config::config_merge, m)?)?;
+    m.add_function(wrap_pyfunction!(config::_discover_extraction_config_impl, m)?)?;
+    m.add_function(wrap_pyfunction!(config::_load_extraction_config_from_file_impl, m)?)?;
 
     m.add_function(wrap_pyfunction!(ffi::get_error_details, m)?)?;
     m.add_function(wrap_pyfunction!(ffi::classify_error, m)?)?;

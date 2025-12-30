@@ -68,4 +68,8 @@ defmodule Kreuzberg.Native do
   def validate_binarization_method(_method), do: :erlang.nif_error(:nif_not_loaded)
   def validate_tesseract_psm(_psm), do: :erlang.nif_error(:nif_not_loaded)
   def validate_tesseract_oem(_oem), do: :erlang.nif_error(:nif_not_loaded)
+
+  # Config discovery operations
+  def config_discover, do: :erlang.nif_error(:nif_not_loaded)
+  def config_from_file(_file_path), do: :erlang.nif_error(:nif_not_loaded)
 end

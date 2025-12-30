@@ -10,8 +10,51 @@ namespace Kreuzberg\Config;
 readonly class LanguageDetectionConfig
 {
     public function __construct(
+        /**
+         * Enable automatic language detection.
+         *
+         * When enabled, the extraction process automatically detects the language(s)
+         * of the document content and adjusts processing parameters accordingly.
+         * Improves OCR accuracy and keyword extraction for multilingual documents.
+         *
+         * @var bool
+         * @default false
+         */
         public bool $enabled = false,
+
+        /**
+         * Maximum number of languages to detect in the document.
+         *
+         * Limits the number of distinct languages identified. Useful for preventing
+         * false detection of language switches due to special terms or proper nouns
+         * in mixed-language documents.
+         *
+         * Valid range: 1-unlimited (practical range: 1-10)
+         * Recommended values:
+         * - 1: For single-language documents only
+         * - 2-3: For bilingual/multilingual documents
+         * - null: Unlimited language detection
+         *
+         * @var int|null
+         * @default null (unlimited)
+         */
         public ?int $maxLanguages = null,
+
+        /**
+         * Minimum confidence threshold for language detection.
+         *
+         * Language detections with confidence below this threshold are excluded.
+         * Higher thresholds reduce false positives but may miss legitimate languages.
+         *
+         * Valid range: 0.0-1.0
+         * Recommended values:
+         * - 0.0: Accept all detections regardless of confidence
+         * - 0.5: Moderate confidence threshold
+         * - 0.8-1.0: Strict confidence requirement
+         *
+         * @var float|null
+         * @default null (no threshold)
+         */
         public ?float $confidenceThreshold = null,
     ) {
     }

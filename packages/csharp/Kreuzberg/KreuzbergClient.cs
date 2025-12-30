@@ -1271,7 +1271,7 @@ public static class KreuzbergClient
             }
             else
             {
-                json = JsonSerializer.Serialize(config, Serialization.Options);
+                json = JsonSerializer.Serialize(config, Serialization.ConfigOptions);
                 ConfigJsonCache.Add(config, new ConfigCacheEntry(json));
             }
 

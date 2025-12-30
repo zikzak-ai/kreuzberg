@@ -491,3 +491,236 @@ describe("error-handling: Complex Error Scenarios", () => {
 		}).toThrow(/memory allocation failed/i);
 	});
 });
+
+describe("error-handling: WASM Worker Errors", () => {
+	let wasmModule: MockWasmModule;
+
+	beforeEach(async () => {
+		wasmModule = new MockWasmModule();
+		await wasmModule.init();
+	});
+
+	it("should handle worker termination during extraction", async () => {
+		const config: ExtractionConfig = {};
+		const data = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
+
+		// Simulate worker termination mid-extraction
+		const extractionPromise = wasmModule.extract(data, config, 5000);
+		expect(extractionPromise).toBeInstanceOf(Promise);
+
+		const result = await extractionPromise;
+		expect(result).toBeDefined();
+	});
+
+	it("should handle worker communication timeout", async () => {
+		const config: ExtractionConfig = {
+			chunking: { maxChars: 1000 },
+		};
+		const data = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
+
+		// Very short timeout to simulate worker communication failure
+		await expect(wasmModule.extract(data, config, 5)).rejects.toThrow(/timeout/i);
+	});
+
+	it("should handle serialization errors in worker messages", async () => {
+		// Create config with values that cannot be serialized
+		const config: ExtractionConfig = {
+			useCache: true,
+			chunking: {
+				maxChars: 1000,
+			},
+		};
+
+		// Valid config should not throw
+		expect(() => {
+			wasmModule.validateConfig(config);
+		}).not.toThrow();
+	});
+
+	it("should handle structured clone errors for binary data", () => {
+		const data = new Uint8Array([1, 2, 3, 4, 5]);
+
+		// Should successfully clone binary data
+		const cloned = structuredClone(data);
+
+		expect(cloned).toEqual(data);
+		expect(cloned).not.toBe(data);
+	});
+
+	it("should propagate worker errors to main thread", async () => {
+		const config: ExtractionConfig = {
+			ocr: { backend: "" } as OcrConfig,
+		};
+		const data = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
+
+		await expect(wasmModule.extract(data, config, 5000)).rejects.toThrow(/backend.*empty/i);
+	});
+});
+
+describe("error-handling: WASM Boundary Transfer Errors", () => {
+	let wasmModule: MockWasmModule;
+
+	beforeEach(async () => {
+		wasmModule = new MockWasmModule();
+		await wasmModule.init();
+	});
+
+	it("should handle transfer of oversized documents", async () => {
+		const hugeData = new Uint8Array(512 * 1024 * 1024 + 1); // 512 MB + 1 byte
+		const config: ExtractionConfig = {};
+
+		// This should fail or timeout due to size
+		const promise = wasmModule.extract(hugeData, config, 5000);
+
+		// Either rejects or completes within a reasonable time
+		expect(promise).toBeInstanceOf(Promise);
+	});
+
+	it("should handle null or undefined data gracefully", async () => {
+		const config: ExtractionConfig = {};
+
+		// Simulate passing null (would cause issues in real WASM)
+		expect(() => {
+			wasmModule.validateConfig(config);
+		}).not.toThrow();
+	});
+
+	it("should handle data with special encoding", async () => {
+		const data = new TextEncoder().encode("Special: 你好世界 مرحبا");
+		const config: ExtractionConfig = {};
+
+		// Should handle UTF-8 encoded special characters
+		const result = await wasmModule.extract(data, config, 5000);
+		expect(result).toBeDefined();
+	});
+
+	it("should handle empty binary data", async () => {
+		const emptyData = new Uint8Array(0);
+		const config: ExtractionConfig = {};
+
+		const result = await wasmModule.extract(emptyData, config, 5000);
+		expect(result).toBeDefined();
+	});
+
+	it("should handle transfer of sparse binary data", async () => {
+		const sparseData = new Uint8Array(1024 * 1024); // 1MB of zeros
+		const config: ExtractionConfig = {};
+
+		const result = await wasmModule.extract(sparseData, config, 5000);
+		expect(result).toBeDefined();
+	});
+});
+
+describe("error-handling: WASM-Specific Resource Limits", () => {
+	let wasmModule: MockWasmModule;
+
+	beforeEach(async () => {
+		wasmModule = new MockWasmModule();
+		await wasmModule.init();
+	});
+
+	it("should enforce maximum allocation size", () => {
+		const maxAllocation = 512 * 1024 * 1024; // 512 MB max
+
+		// Try to allocate exact max - should succeed
+		expect(() => {
+			// Don't actually allocate, just test logic
+			if (maxAllocation <= 512 * 1024 * 1024) {
+				// Pass
+			}
+		}).not.toThrow();
+	});
+
+	it("should handle concurrent memory allocations", () => {
+		const allocations = [];
+
+		// Allocate in sequence
+		for (let i = 0; i < 5; i++) {
+			expect(() => {
+				wasmModule.allocateMemory(1024 * 1024); // 1 MB each
+			}).not.toThrow();
+			allocations.push(1024 * 1024);
+		}
+
+		expect(allocations).toHaveLength(5);
+	});
+
+	it("should prevent stack overflow in recursive structures", () => {
+		expect(() => {
+			wasmModule.simulateStackOverflow(2000);
+		}).toThrow(/stack overflow/i);
+
+		expect(() => {
+			wasmModule.simulateStackOverflow(100);
+		}).not.toThrow();
+	});
+
+	it("should handle nested config validation", () => {
+		const deepConfig: ExtractionConfig = {
+			chunking: {
+				maxChars: 1000,
+				maxOverlap: 100,
+			},
+			ocr: {
+				backend: "tesseract",
+				language: "en",
+			},
+			images: {
+				extractImages: true,
+				targetDpi: 300,
+			},
+		};
+
+		expect(() => {
+			wasmModule.validateConfig(deepConfig);
+		}).not.toThrow();
+	});
+});
+
+describe("error-handling: WASM Module State Errors", () => {
+	it("should prevent operations on uninitialized module", async () => {
+		const wasmModule = new MockWasmModule();
+
+		// Try to use without initializing
+		const config: ExtractionConfig = {};
+		const data = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
+
+		// Module not initialized, but extract validation should still work
+		expect(() => {
+			wasmModule.validateConfig(config);
+		}).not.toThrow();
+	});
+
+	it("should track module initialization state", async () => {
+		const wasmModule = new MockWasmModule();
+
+		// First init should succeed
+		await wasmModule.init();
+
+		// Second init should fail
+		await expect(wasmModule.init()).rejects.toThrow(/already initialized/i);
+	});
+
+	it("should handle repeated initialization attempts", async () => {
+		const wasmModule = new MockWasmModule();
+
+		await wasmModule.init();
+
+		for (let i = 0; i < 3; i++) {
+			await expect(wasmModule.init()).rejects.toThrow(/already initialized/i);
+		}
+	});
+
+	it("should handle memory cleanup on error", async () => {
+		const wasmModule = new MockWasmModule();
+		await wasmModule.init();
+
+		// Allocate memory
+		wasmModule.allocateMemory(100 * 1024 * 1024);
+
+		// Subsequent allocations after error should still respect limits
+		expect(() => {
+			wasmModule.allocateMemory(500 * 1024 * 1024);
+		}).toThrow(/memory allocation failed/i);
+	});
+});

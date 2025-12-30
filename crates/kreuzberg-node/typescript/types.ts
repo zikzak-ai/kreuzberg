@@ -384,6 +384,26 @@ export interface KeywordConfig {
 }
 
 /**
+ * Extracted keyword with relevance metadata.
+ *
+ * Represents a single keyword extracted from text along with its relevance score,
+ * the algorithm that extracted it, and optional position information.
+ */
+export interface ExtractedKeyword {
+	/** The keyword text */
+	text: string;
+
+	/** Relevance score (higher is better, algorithm-specific range) */
+	score: number;
+
+	/** Algorithm that extracted this keyword */
+	algorithm: KeywordAlgorithm;
+
+	/** Optional positions where keyword appears in text (character offsets) */
+	positions?: number[];
+}
+
+/**
  * Page tracking and extraction configuration.
  *
  * Controls how pages/slides/sheets are extracted and tracked in the document.
@@ -894,6 +914,9 @@ export interface ExtractionResult {
 
 	/** Per-page content when page extraction is enabled, null otherwise. Each item contains page number, content, tables, and images. */
 	pages?: PageContent[] | null;
+
+	/** Extracted keywords when keyword extraction is enabled, null otherwise */
+	keywords?: ExtractedKeyword[] | null;
 }
 
 /** Post-processor execution stage in the extraction pipeline. */
@@ -1194,4 +1217,66 @@ export interface ErrorClassification {
 	 * Higher values indicate higher confidence in the classification.
 	 */
 	confidence: number;
+}
+
+// ============================================================================
+// Worker Pool APIs
+// ============================================================================
+
+/**
+ * Opaque handle to a worker pool for concurrent extraction operations.
+ *
+ * Worker pools enable parallel processing of CPU-bound document extraction
+ * tasks by distributing work across multiple threads. This is especially
+ * useful for batch processing large numbers of documents.
+ *
+ * @example
+ * ```typescript
+ * import { createWorkerPool, extractFileInWorker, closeWorkerPool } from '@kreuzberg/node';
+ *
+ * const pool = createWorkerPool(4); // 4 concurrent workers
+ * try {
+ *   const result = await extractFileInWorker(pool, 'document.pdf');
+ *   console.log(result.content);
+ * } finally {
+ *   await closeWorkerPool(pool);
+ * }
+ * ```
+ */
+export interface WorkerPool {
+	/** Internal pool identifier (opaque) */
+	readonly poolId: number;
+}
+
+/**
+ * Worker pool statistics.
+ *
+ * Provides information about the current state of a worker pool including
+ * pool size, number of active workers, and queued tasks.
+ *
+ * @example
+ * ```typescript
+ * import { createWorkerPool, getWorkerPoolStats } from '@kreuzberg/node';
+ *
+ * const pool = createWorkerPool(4);
+ * const stats = getWorkerPoolStats(pool);
+ * console.log(`Active: ${stats.activeWorkers}/${stats.size}`);
+ * console.log(`Queued: ${stats.queuedTasks}`);
+ * ```
+ */
+export interface WorkerPoolStats {
+	/**
+	 * Maximum number of concurrent workers in the pool.
+	 */
+	size: number;
+
+	/**
+	 * Number of currently active (executing) workers.
+	 */
+	activeWorkers: number;
+
+	/**
+	 * Number of tasks waiting in the queue.
+	 */
+	queuedTasks: number;
 }

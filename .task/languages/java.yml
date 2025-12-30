@@ -69,23 +69,23 @@ tasks:
       - bash scripts/benchmarks/build-java-package.sh
 
   test:
-    desc: Run Java tests
+    desc: Run Java tests (parallel execution for 4x speed)
     dir: packages/java
     cmds:
-      - cmd: bash -c 'if [ -f ~/.sdkman/bin/sdkman-init.sh ]; then source ~/.sdkman/bin/sdkman-init.sh && sdk use java 25.0.1-tem && sdk use maven 3.9.11; fi && mvn test'
+      - cmd: bash -c 'if [ -f ~/.sdkman/bin/sdkman-init.sh ]; then source ~/.sdkman/bin/sdkman-init.sh && sdk use java 25.0.1-tem && sdk use maven 3.9.11; fi && mvn test -q'
         platforms: [linux, darwin]
-      - cmd: mvn test
+      - cmd: mvn test -q
         platforms: [windows]
 
   test:ci:
-    desc: Run Java tests in CI mode
+    desc: Run Java tests in CI mode (parallel execution)
     env:
       MAVEN_OPTS: "-Xmx1024m"
     dir: packages/java
     cmds:
-      - cmd: bash -c 'if [ -f ~/.sdkman/bin/sdkman-init.sh ]; then source ~/.sdkman/bin/sdkman-init.sh && sdk use java 25.0.1-tem && sdk use maven 3.9.11; fi && mvn test -B'
+      - cmd: bash -c 'if [ -f ~/.sdkman/bin/sdkman-init.sh ]; then source ~/.sdkman/bin/sdkman-init.sh && sdk use java 25.0.1-tem && sdk use maven 3.9.11; fi && mvn test -B -q'
         platforms: [linux, darwin]
-      - cmd: mvn test -B
+      - cmd: mvn test -B -q
         platforms: [windows]
 
   test:verbose:

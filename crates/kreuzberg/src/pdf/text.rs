@@ -289,13 +289,13 @@ fn extract_text_lazy_with_tracking(
             sample_count += 1;
         }
 
-        if page_number > 1 {
-            if config.insert_page_markers {
-                let marker = config.marker_format.replace("{page_num}", &page_number.to_string());
-                content.push_str(&marker);
-            } else {
-                content.push_str("\n\n");
-            }
+        // Insert page marker before the page content (for ALL pages including page 1)
+        if config.insert_page_markers {
+            let marker = config.marker_format.replace("{page_num}", &page_number.to_string());
+            content.push_str(&marker);
+        } else if page_idx > 0 {
+            // Only add separator between pages when markers are disabled
+            content.push_str("\n\n");
         }
 
         let byte_start = content.len();

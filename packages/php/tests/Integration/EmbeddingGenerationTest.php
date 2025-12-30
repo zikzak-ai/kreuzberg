@@ -39,14 +39,14 @@ use ReflectionClass;
 #[CoversClass(EmbeddingConfig::class)]
 #[Group('integration')]
 #[Group('embeddings')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class EmbeddingGenerationTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

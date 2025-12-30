@@ -381,6 +381,199 @@ end
 
 ## Features
 
+### Advanced Usage Examples
+
+#### 1. Table Extraction with Cell Access
+
+Extract and analyze tables with structured cell access and header information:
+
+```elixir title="Elixir"
+alias Kreuzberg.ExtractionConfig
+
+# Extract with table focus
+config = %ExtractionConfig{
+  pages: %{"extract_tables" => true, "extract_text" => false}
+}
+
+{:ok, result} = Kreuzberg.extract_file("data_sheet.pdf", nil, config)
+
+# Iterate over extracted tables
+Enum.each(result.tables, fn table ->
+  IO.puts("Table found:")
+  IO.puts("Headers: #{inspect(table.headers)}")
+
+  # Access cell data
+  Enum.each(table.cells, fn row ->
+    row_data = Enum.join(row, " | ")
+    IO.puts("  #{row_data}")
+  end)
+
+  IO.puts("Table markdown:\n#{table.markdown}")
+end)
+```
+
+#### 2. Image Extraction and Processing
+
+Extract images from documents with preprocessing and format control:
+
+```elixir title="Elixir"
+alias Kreuzberg.ExtractionConfig
+
+# Configure image extraction
+config = %ExtractionConfig{
+  images: %{
+    "enabled" => true,
+    "format" => "png",
+    "quality" => 90,
+    "max_width" => 1920,
+    "max_height" => 1080
+  }
+}
+
+{:ok, result} = Kreuzberg.extract_file("document.pdf", nil, config)
+
+# Process extracted images
+case result.images do
+  nil ->
+    IO.puts("No image extraction enabled")
+
+  images ->
+    Enum.each(images, fn image ->
+      IO.puts("Extracted image:")
+      IO.puts("  Format: #{image.format}")
+      IO.puts("  Size: #{byte_size(image.data)} bytes")
+      IO.puts("  Width: #{image.width}px")
+      IO.puts("  Height: #{image.height}px")
+
+      # OCR text if available
+      if image.ocr_text do
+        IO.puts("  OCR Text: #{String.slice(image.ocr_text, 0..100)}")
+      end
+
+      # Save to file
+      filename = "image_#{image.id}.#{image.format}"
+      File.write!(filename, image.data)
+    end)
+end
+```
+
+#### 3. Keywords Extraction Configuration
+
+Configure and extract keywords using different algorithms:
+
+```elixir title="Elixir"
+alias Kreuzberg.ExtractionConfig
+
+# Extract with keyword detection
+config = %ExtractionConfig{
+  keywords: %{
+    "enabled" => true,
+    "algorithm" => "yake",
+    "max_keywords" => 20,
+    "min_score" => 0.1,
+    "ngram_range" => [1, 3]
+  }
+}
+
+{:ok, result} = Kreuzberg.extract_file("article.pdf", nil, config)
+
+# Use extracted keywords
+IO.puts("Extracted Keywords:")
+IO.puts("Content length: #{byte_size(result.content)} bytes")
+IO.puts("Detected languages: #{inspect(result.detected_languages)}")
+
+# Pattern match on chunked results
+case result.keywords do
+  nil -> IO.puts("Keywords extraction not enabled")
+  keywords ->
+    Enum.each(keywords, fn {keyword, score} ->
+      IO.puts("  #{keyword}: #{Float.round(score, 3)}")
+    end)
+end
+```
+
+#### 4. Embeddings with Chunking
+
+Generate vector embeddings for semantic search and RAG applications:
+
+```elixir title="Elixir"
+alias Kreuzberg.ExtractionConfig
+
+# Configure chunking and embeddings
+config = %ExtractionConfig{
+  chunking: %{
+    "enabled" => true,
+    "chunk_size" => 512,
+    "overlap" => 50,
+    "strategy" => "semantic"
+  }
+}
+
+{:ok, result} = Kreuzberg.extract_file("knowledge_base.pdf", nil, config)
+
+case result.chunks do
+  nil ->
+    IO.puts("Chunking not enabled")
+
+  chunks ->
+    IO.puts("Generated #{length(chunks)} chunks")
+
+    Enum.with_index(chunks, fn chunk, idx ->
+      IO.puts("\nChunk #{idx + 1}:")
+      IO.puts("  Text: #{String.slice(chunk.text, 0..80)}...")
+
+      # Embedding available if embeddings enabled
+      if chunk.embedding do
+        IO.puts("  Embedding dimension: #{length(chunk.embedding)}")
+      end
+    end)
+end
+```
+
+#### 5. Pages Extraction Usage
+
+Extract page-by-page content with structural information:
+
+```elixir title="Elixir"
+alias Kreuzberg.ExtractionConfig
+
+# Extract specific pages with metadata
+config = %ExtractionConfig{
+  pages: %{
+    "enabled" => true,
+    "start_page" => 1,
+    "end_page" => 5,
+    "extract_text" => true,
+    "extract_tables" => true,
+    "extract_headers_footers" => true
+  }
+}
+
+{:ok, result} = Kreuzberg.extract_file("report.pdf", nil, config)
+
+# Access per-page information
+case result.pages do
+  nil ->
+    IO.puts("Page extraction not enabled")
+
+  pages ->
+    Enum.each(pages, fn page ->
+      IO.puts("\nPage #{page.number}:")
+      IO.puts("  Dimensions: #{page.width}x#{page.height}px")
+      IO.puts("  Content length: #{byte_size(page.content)} chars")
+
+      # Use position information if available
+      if page.position do
+        IO.puts("  Position: #{inspect(page.position)}")
+      end
+
+      # Content preview
+      preview = String.slice(page.content, 0..150)
+      IO.puts("  Content: #{preview}...")
+    end)
+end
+```
+
 ### Supported File Formats (56+)
 
 56 file formats across 8 major categories with intelligent format detection and comprehensive metadata extraction.
@@ -463,6 +656,261 @@ end
 | **Images (OCR)** | 1-5 MB/s | Variable | Depends on OCR backend |
 | **Archives** | 5-50 MB/s | ~200MB per doc | ZIP, TAR, etc. |
 | **Web formats** | 50-200 MB/s | Streaming | HTML, XML, JSON |
+
+## Configuration Reference
+
+ExtractionConfig provides comprehensive control over document extraction behavior through nested configuration maps. All nested configs are optional (nil by default) and use string keys for NIF compatibility.
+
+### Chunking Configuration
+
+Configure text chunking for semantic search and document processing:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  chunking: %{
+    "enabled" => true,
+    "chunk_size" => 512,           # Characters per chunk (integer, default: 512)
+    "overlap" => 50,               # Overlap between chunks (integer, default: 50)
+    "strategy" => "semantic",      # Strategy: "fixed", "semantic", or "adaptive"
+    "separator" => "\n\n",         # Custom separator for chunking (string or nil)
+    "preserve_headers" => true     # Keep headers in chunks (boolean, default: true)
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean, optional): Enable/disable chunking
+- `chunk_size` (integer, 1+): Maximum characters per chunk
+- `overlap` (integer, 0+): Character overlap between consecutive chunks (must be < chunk_size)
+- `strategy` (string): "fixed" (simple splitting), "semantic" (respects boundaries), or "adaptive" (ML-based)
+- `separator` (string/nil): Custom text separator (default: respects document structure)
+- `preserve_headers` (boolean): Keep document headers when chunking
+
+### OCR Configuration
+
+Control OCR extraction for scanned documents and images:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  ocr: %{
+    "enabled" => true,            # Enable OCR processing (boolean, default: false)
+    "backend" => "tesseract",      # Backend: "tesseract", "easyocr", "paddleocr"
+    "languages" => ["eng"],        # Language codes (list of strings, ISO 639-3 format)
+    "dpi" => 300,                  # DPI for image processing (integer, default: 300)
+    "psm" => 3,                    # Tesseract PSM mode (0-13, affects layout analysis)
+    "oem" => 3,                    # Tesseract OEM mode (0-3, affects recognition engine)
+    "confidence_threshold" => 0.5  # Minimum confidence for OCR results (0.0-1.0)
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean): Enable OCR for documents without searchable text
+- `backend` (string): "tesseract" (fastest), "easyocr", or "paddleocr"
+- `languages` (list): ISO 639-3 language codes (e.g., "eng", "fra", "deu", "spa")
+- `dpi` (integer, 72+): Resolution for image processing (higher = slower but more accurate)
+- `psm` (0-13): Tesseract Page Segmentation Mode (affects text layout detection)
+- `oem` (0-3): Tesseract OCR Engine Mode (0=legacy, 1=neural, 2=both, 3=default)
+- `confidence_threshold` (0.0-1.0): Filter low-confidence OCR results
+
+### Language Detection Configuration
+
+Detect and identify languages in extracted content:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  language_detection: %{
+    "enabled" => true,                    # Enable language detection (boolean, default: true)
+    "strategy" => "accurate",             # Strategy: "auto", "fast", or "accurate"
+    "confidence_threshold" => 0.7,        # Minimum confidence (0.0-1.0, default: 0.7)
+    "predefined_languages" => ["en", "fr"], # Restrict detection to specific languages
+    "detect_mixed_languages" => true      # Detect multiple languages in single document
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean): Enable automatic language detection
+- `strategy` (string): "auto" (default), "fast" (quick detection), or "accurate" (ML-based)
+- `confidence_threshold` (0.0-1.0): Minimum confidence for language identification
+- `predefined_languages` (list): ISO 639-1 codes to restrict detection (e.g., ["en", "de", "fr"])
+- `detect_mixed_languages` (boolean): Allow detection of multiple languages per document
+
+### Post-Processor Configuration
+
+Clean and normalize extracted text:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  postprocessor: %{
+    "enabled" => true,                    # Enable post-processing (boolean, default: true)
+    "normalize_whitespace" => true,       # Collapse multiple spaces (boolean, default: true)
+    "remove_duplicates" => false,         # Remove duplicate paragraphs (boolean, default: false)
+    "remove_empty_lines" => true,         # Remove blank lines (boolean, default: true)
+    "trim_text" => true,                  # Trim leading/trailing whitespace (boolean, default: true)
+    "normalize_unicode" => true,          # Normalize Unicode characters (boolean, default: true)
+    "remove_control_characters" => true,  # Remove control characters (boolean, default: true)
+    "fix_punctuation" => true,            # Fix spacing around punctuation (boolean, default: false)
+    "fix_hyphens" => true,                # Fix hyphenation issues (boolean, default: false)
+    "convert_quotes" => "straight",       # Quote style: "straight", "curly", or nil
+    "convert_dashes" => true,             # Convert hyphens to proper dashes (boolean, default: false)
+    "duplicate_threshold" => 0.95,        # Similarity threshold for duplicates (0.0-1.0, default: 0.95)
+    "remove_duplicate_paragraphs" => true # Remove duplicate paragraphs (boolean, default: false)
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean): Enable text post-processing
+- `normalize_whitespace` (boolean): Collapse multiple consecutive spaces to single space
+- `remove_duplicates` (boolean): Remove near-duplicate content (uses duplicate_threshold)
+- `remove_empty_lines` (boolean): Strip blank lines from output
+- `trim_text` (boolean): Remove leading/trailing whitespace
+- `normalize_unicode` (boolean): Apply Unicode normalization (NFC)
+- `remove_control_characters` (boolean): Strip control characters (except newlines/tabs)
+- `fix_punctuation` (boolean): Fix spacing around punctuation marks
+- `fix_hyphens` (boolean): Fix hyphenation and line breaking issues
+- `convert_quotes` (string/nil): "straight", "curly", or nil (no conversion)
+- `convert_dashes` (boolean): Convert hyphens to em/en dashes
+- `duplicate_threshold` (0.0-1.0): Similarity score for duplicate detection (higher = stricter)
+- `remove_duplicate_paragraphs` (boolean): Remove duplicate paragraphs
+
+### Images Configuration
+
+Control image extraction and preprocessing:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  images: %{
+    "enabled" => true,            # Enable image extraction (boolean, default: true)
+    "format" => "png",            # Output format: "png", "jpg", "webp", "bmp"
+    "quality" => 90,              # JPEG quality (0-100, default: 95, only for JPEG)
+    "max_width" => 1920,          # Maximum width in pixels (integer or nil)
+    "max_height" => 1080,         # Maximum height in pixels (integer or nil)
+    "extract_ocr_text" => true,   # Extract text from images via OCR (boolean, default: false)
+    "preprocessing" => true       # Apply image preprocessing (boolean, default: false)
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean): Enable image extraction from documents
+- `format` (string): Output format ("png", "jpg", "webp", "bmp")
+- `quality` (0-100): JPEG compression quality (only applies to JPEG format)
+- `max_width` (integer/nil): Resize images to max width (preserves aspect ratio)
+- `max_height` (integer/nil): Resize images to max height (preserves aspect ratio)
+- `extract_ocr_text` (boolean): Run OCR on extracted images
+- `preprocessing` (boolean): Apply contrast/brightness adjustment
+
+### Pages Configuration
+
+Extract page-level content with structural information:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  pages: %{
+    "enabled" => true,                    # Enable page extraction (boolean, default: false)
+    "start_page" => 1,                    # First page to extract (integer, 1+, default: 1)
+    "end_page" => nil,                    # Last page to extract (integer or nil for all)
+    "page_numbers" => [1, 2, 5, 10],      # Extract specific pages (list of integers or nil)
+    "exclude_pages" => [3, 7],            # Skip these pages (list of integers or nil)
+    "extract_text" => true,               # Extract text per page (boolean, default: true)
+    "extract_tables" => true,             # Extract tables per page (boolean, default: true)
+    "extract_images" => false,            # Extract images per page (boolean, default: false)
+    "extract_headers_footers" => true     # Include headers and footers (boolean, default: true)
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean): Enable page-level extraction (returns pages array)
+- `start_page` (integer, 1+): Starting page number (1-indexed)
+- `end_page` (integer/nil): Ending page number (nil = all pages)
+- `page_numbers` (list/nil): Extract only these specific pages (e.g., [1, 3, 5])
+- `exclude_pages` (list/nil): Skip these pages (e.g., [2, 4, 6])
+- `extract_text` (boolean): Include text content per page
+- `extract_tables` (boolean): Extract tables identified on each page
+- `extract_images` (boolean): Extract images found on each page
+- `extract_headers_footers` (boolean): Include document headers/footers
+
+### Token Reduction Configuration
+
+Control output size and summarization:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  token_reduction: %{
+    "enabled" => true,                    # Enable token reduction (boolean, default: false)
+    "strategy" => "summarize",            # Strategy: "none", "truncate", "summarize", "extractive"
+    "target_reduction" => 0.3,            # Target reduction ratio (0.0-1.0, e.g., 0.3 = 30%)
+    "max_tokens" => 2000,                 # Maximum output tokens (integer or nil)
+    "keep_first_percentage" => 0.7,       # Keep first N% for truncation (0.0-1.0)
+    "summary_length_percentage" => 30,    # Summary length as % of original (0-100)
+    "preserve_key_sentences" => true,     # Keep important sentences in summary (boolean, default: true)
+    "num_sentences" => 5,                 # Number of sentences for extractive (integer, 1+)
+    "sentence_importance_threshold" => 0.6 # Importance threshold for sentences (0.0-1.0)
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean): Enable token reduction/summarization
+- `strategy` (string): "none" (no reduction), "truncate" (cut at token limit), "summarize" (abstractive), "extractive" (key sentences)
+- `target_reduction` (0.0-1.0): Percentage reduction (0.3 = reduce to 70% of original)
+- `max_tokens` (integer/nil): Hard limit on output tokens
+- `keep_first_percentage` (0.0-1.0): For truncation: keep first N% of document
+- `summary_length_percentage` (0-100): Summarization target as percentage of original
+- `preserve_key_sentences` (boolean): Include important sentences in summary
+- `num_sentences` (integer, 1+): For extractive: number of sentences to extract
+- `sentence_importance_threshold` (0.0-1.0): Minimum importance score for sentences
+
+### Keywords Configuration
+
+Extract and configure keyword/keyphrase extraction:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  keywords: %{
+    "enabled" => true,                # Enable keyword extraction (boolean, default: false)
+    "algorithm" => "yake",            # Algorithm: "yake", "rake", "tfidf", "frequency"
+    "max_keywords" => 20,             # Maximum keywords to extract (integer, 1+, default: 10)
+    "min_score" => 0.1,               # Minimum relevance score (0.0-1.0, default: 0.0)
+    "ngram_range" => [1, 3],          # N-gram range [min, max] (e.g., [1, 3] = unigrams to trigrams)
+    "language" => "en",               # Language for processing (ISO 639-1, default: auto-detect)
+    "custom_keywords" => ["important", "custom", "terms"], # Boost these keywords (list or nil)
+    "weight_custom" => 2.0            # Weight multiplier for custom keywords (float, default: 1.0)
+  }
+}
+```
+
+**Fields:**
+- `enabled` (boolean): Enable keyword/keyphrase extraction
+- `algorithm` (string): "yake" (unsupervised), "rake" (rapid), "tfidf" (statistical), "frequency" (simple)
+- `max_keywords` (integer, 1+): Maximum number of keywords to return
+- `min_score` (0.0-1.0): Filter out keywords below this score
+- `ngram_range` (list [min, max]): Extract phrases of N words (e.g., [1, 3] = 1-3 word phrases)
+- `language` (string/nil): ISO 639-1 code (e.g., "en", "fr", "de") or nil for auto-detection
+- `custom_keywords` (list/nil): Keywords to boost in results
+- `weight_custom` (float, 0.0+): Multiplier for custom keyword scores
+
+### PDF Options Configuration
+
+PDF-specific extraction settings:
+
+```elixir
+config = %Kreuzberg.ExtractionConfig{
+  pdf_options: %{
+    "use_own_pdfium" => false,            # Use bundled PDFium (boolean, default: true)
+    "allow_hybrid_rendering" => true,     # Blend text and raster (boolean, default: true)
+    "enable_vector_graphics" => true      # Extract vector graphics (boolean, default: true)
+  }
+}
+```
+
+**Fields:**
+- `use_own_pdfium` (boolean): Use custom PDFium build instead of bundled version
+- `allow_hybrid_rendering` (boolean): Combine searchable text with rendered images
+- `enable_vector_graphics` (boolean): Extract vector graphics as images
 
 ## OCR Support
 

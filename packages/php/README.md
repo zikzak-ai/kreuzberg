@@ -619,6 +619,32 @@ echo "\n\nCompleted! Processed $totalProcessed files.\n";
 
 - **Configuration** - Fine-grained control over extraction behavior
 
+### Limitations
+
+**Asynchronous Operations**
+
+PHP does not support async operations. All extraction calls are synchronous and blocking.
+
+- ❌ No async/await support (unlike Node.js and Python bindings)
+- ❌ No Promise-based operations
+- ❌ Operations block until completion
+
+**Alternative: Use Batch Processing for Parallelism**
+
+While PHP doesn't support async/await, you can still process multiple documents in parallel using the batch API:
+
+```php
+$files = ['doc1.pdf', 'doc2.pdf', 'doc3.pdf'];
+$config = ExtractionConfig::fromArray([]);
+
+// Batch processing uses multiple threads internally for concurrent extraction
+$results = Kreuzberg\batch_extract_files($files, $config);
+```
+
+Kreuzberg's batch API uses multiple threads to extract documents concurrently, providing parallelism without requiring async language features.
+
+**Migration Note**: If you're migrating from Node.js or Python bindings that use async/await, replace `await extractFile()` with the synchronous `extract_file()` or use batch operations for parallel processing.
+
 ### Performance Characteristics
 
 | Format | Speed | Memory | Notes |

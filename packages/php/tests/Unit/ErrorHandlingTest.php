@@ -21,14 +21,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(KreuzbergException::class)]
 #[Group('unit')]
 #[Group('errors')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class ErrorHandlingTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

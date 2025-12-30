@@ -176,16 +176,18 @@ public class ImmutabilityTests
     #region ChunkingConfig Immutability Tests
 
     /// <summary>
-    /// Test: Validate ChunkingConfig with collection properties is immutable.
-    /// Verifies init-only pattern on properties containing collections.
+    /// Test: Validate ChunkingConfig with EmbeddingConfig is immutable.
+    /// Verifies init-only pattern on properties containing nested config objects.
     /// </summary>
     [Fact]
-    public void ChunkingConfigIsImmutable_WithDictionaryProperty()
+    public void ChunkingConfigIsImmutable_WithEmbeddingConfig()
     {
-        var embeddingConfig = new Dictionary<string, object?>
+        var embeddingConfig = new EmbeddingConfig
         {
-            { "model", "text-embedding-ada-002" },
-            { "dimension", 1536 }
+            Model = "text-embedding-ada-002",
+            Dimensions = 1536,
+            BatchSize = 32,
+            Normalize = true
         };
 
         var config = new ChunkingConfig

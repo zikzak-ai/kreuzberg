@@ -5,11 +5,7 @@ export default defineConfig({
 		globals: true,
 		environment: "node",
 		pool: "threads",
-		poolOptions: {
-			threads: {
-				singleThread: true,
-			},
-		},
+		singleThread: true,
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html", "lcov"],

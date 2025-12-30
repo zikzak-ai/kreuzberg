@@ -1,4 +1,6 @@
 defmodule Kreuzberg.ExtractionConfig do
+  alias Kreuzberg.Native
+
   @moduledoc """
   Configuration structure for document extraction operations.
 
@@ -209,7 +211,7 @@ defmodule Kreuzberg.ExtractionConfig do
       "images" => config.images,
       "pages" => config.pages,
       "token_reduction" => config.token_reduction,
-      "keywords" => config.keywords,
+      "keywords" => normalize_keywords_config(config.keywords),
       "pdf_options" => config.pdf_options,
       "use_cache" => config.use_cache,
       "enable_quality_processing" => config.enable_quality_processing,
@@ -235,6 +237,22 @@ defmodule Kreuzberg.ExtractionConfig do
         Map.put(acc, string_key, value)
     end)
   end
+
+  @doc false
+  defp normalize_keywords_config(nil), do: nil
+
+  @doc false
+  defp normalize_keywords_config(keywords_config) when is_map(keywords_config) do
+    # Add default values for required fields if missing
+    keywords_config
+    |> Map.put_new("min_score", 0.0)
+    |> Map.put_new("ngram_range", [1, 1])
+    |> Map.put_new("algorithm", "yake")
+    |> Map.put_new("max_keywords", 10)
+  end
+
+  @doc false
+  defp normalize_keywords_config(other), do: other
 
   @doc """
   Validates an ExtractionConfig for correct field types and values.
@@ -296,6 +314,138 @@ defmodule Kreuzberg.ExtractionConfig do
       {:ok, config}
     end
   end
+
+  @doc """
+  Load an ExtractionConfig from a file.
+
+  Supports TOML, YAML, and JSON configuration file formats.
+  The file format is automatically detected based on the file extension
+  or file contents.
+
+  ## Parameters
+
+    * `file_path` - Path to the configuration file (String or Path.t())
+
+  ## Returns
+
+    * `{:ok, config}` - Successfully loaded configuration as a struct
+    * `{:error, reason}` - Failed to load or parse the configuration file
+
+  ## Supported Formats
+
+    * `.toml` - TOML format (e.g., `kreuzberg.toml`)
+    * `.yaml`, `.yml` - YAML format (e.g., `kreuzberg.yaml`)
+    * `.json` - JSON format (e.g., `kreuzberg.json`)
+
+  ## Examples
+
+      iex> Kreuzberg.ExtractionConfig.from_file("kreuzberg.toml")
+      {:ok, %Kreuzberg.ExtractionConfig{...}}
+
+      iex> Kreuzberg.ExtractionConfig.from_file("/etc/config/extraction.yaml")
+      {:ok, config}
+
+      iex> Kreuzberg.ExtractionConfig.from_file("/nonexistent/file.toml")
+      {:error, "File not found: /nonexistent/file.toml"}
+  """
+  @spec from_file(String.t() | Path.t()) :: {:ok, t()} | {:error, String.t()}
+  def from_file(file_path) do
+    file_path_str = to_string(file_path)
+
+    case Native.config_from_file(file_path_str) do
+      {:ok, json_str} ->
+        parse_config_json(json_str)
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Discover and load an ExtractionConfig by searching directories.
+
+  Searches the current working directory and all parent directories for
+  a configuration file in the following order:
+  1. `kreuzberg.toml`
+  2. `kreuzberg.yaml`
+  3. `kreuzberg.yml`
+  4. `kreuzberg.json`
+
+  Returns the first configuration file found.
+
+  ## Returns
+
+    * `{:ok, config}` - Successfully discovered and loaded configuration
+    * `{:error, :not_found}` - No configuration file found in directory tree
+    * `{:error, reason}` - Error loading or parsing the configuration file
+
+  ## Examples
+
+      # With kreuzberg.toml in current directory
+      iex> Kreuzberg.ExtractionConfig.discover()
+      {:ok, %Kreuzberg.ExtractionConfig{...}}
+
+      # With kreuzberg.yaml in a parent directory
+      iex> Kreuzberg.ExtractionConfig.discover()
+      {:ok, config}
+
+      # When no config file exists
+      iex> Kreuzberg.ExtractionConfig.discover()
+      {:error, :not_found}
+  """
+  @spec discover() :: {:ok, t()} | {:error, :not_found | String.t()}
+  def discover do
+    case Native.config_discover() do
+      {:ok, json_str} ->
+        parse_config_json(json_str)
+
+      {:error, :not_found} ->
+        {:error, :not_found}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Private helper to parse JSON config returned from Rust NIFs
+  @doc false
+  defp parse_config_json(json_str) do
+    case Jason.decode(json_str) do
+      {:ok, config_map} ->
+        case from_map(config_map) do
+          {:ok, config} -> {:ok, config}
+          {:error, reason} -> {:error, "Invalid configuration structure: #{reason}"}
+        end
+
+      {:error, _reason} ->
+        {:error, "Failed to parse configuration JSON"}
+    end
+  end
+
+  # Private helper to convert a map to an ExtractionConfig struct
+  @doc false
+  defp from_map(map) when is_map(map) do
+    config = %__MODULE__{
+      chunking: Map.get(map, "chunking"),
+      ocr: Map.get(map, "ocr"),
+      language_detection: Map.get(map, "language_detection"),
+      postprocessor: Map.get(map, "postprocessor"),
+      images: Map.get(map, "images"),
+      pages: Map.get(map, "pages"),
+      token_reduction: Map.get(map, "token_reduction"),
+      keywords: Map.get(map, "keywords"),
+      pdf_options: Map.get(map, "pdf_options"),
+      use_cache: Map.get(map, "use_cache", true),
+      enable_quality_processing: Map.get(map, "enable_quality_processing", true),
+      force_ocr: Map.get(map, "force_ocr", false)
+    }
+
+    {:ok, config}
+  rescue
+    _e -> {:error, "Failed to create config struct"}
+  end
+
+  defp from_map(_), do: {:error, "Configuration must be a map"}
 
   @doc false
   defp validate_boolean_field(value, field_name) do

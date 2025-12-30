@@ -20,14 +20,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Kreuzberg::class)]
 #[Group('integration')]
 #[Group('tables')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class TableExtractionTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

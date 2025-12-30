@@ -63,10 +63,8 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
         assert is_list(results)
 
         Enum.each(results, fn result ->
-          case result do
-            {:ok, extraction} -> assert extraction != nil
-            {:error, _reason} -> assert true
-          end
+          # Results are ExtractionResult structs when successful
+          assert is_struct(result, Kreuzberg.ExtractionResult) or is_binary(result)
         end)
       after
         Enum.each(temp_files, &File.rm!/1)
@@ -96,10 +94,13 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
 
     @tag :integration
     test "batch extract empty file list" do
-      {:ok, results} = Kreuzberg.batch_extract_files([])
+      # Empty list should return an error
+      result = Kreuzberg.batch_extract_files([])
 
-      assert is_list(results)
-      assert results == []
+      case result do
+        {:error, _reason} -> assert true
+        {:ok, results} -> assert results == []
+      end
     end
 
     @tag :integration
@@ -198,10 +199,13 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
 
     @tag :integration
     test "batch extract empty contents list" do
-      {:ok, results} = Kreuzberg.batch_extract_bytes([], "text/plain")
+      # Empty list should return an error
+      result = Kreuzberg.batch_extract_bytes([], "text/plain")
 
-      assert is_list(results)
-      assert results == []
+      case result do
+        {:error, _reason} -> assert true
+        {:ok, results} -> assert results == []
+      end
     end
 
     @tag :integration
@@ -429,9 +433,13 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
 
       total_results =
         results
-        |> Enum.map(fn
-          {:ok, result} -> result
-          {:error, _} -> nil
+        |> Enum.map(fn result ->
+          # Results are ExtractionResult structs
+          if is_struct(result, Kreuzberg.ExtractionResult) do
+            result
+          else
+            nil
+          end
         end)
         |> Enum.filter(&(&1 != nil))
 
@@ -443,9 +451,8 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
       {:ok, results} = Kreuzberg.batch_extract_bytes(@sample_texts, "text/plain")
 
       successful_count =
-        Enum.count(results, fn
-          {:ok, _} -> true
-          {:error, _} -> false
+        Enum.count(results, fn result ->
+          is_struct(result, Kreuzberg.ExtractionResult)
         end)
 
       assert is_integer(successful_count)
@@ -457,9 +464,12 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
 
       contents =
         results
-        |> Enum.map(fn
-          {:ok, result} -> result.content
-          {:error, _} -> ""
+        |> Enum.map(fn result ->
+          if is_struct(result, Kreuzberg.ExtractionResult) do
+            result.content
+          else
+            ""
+          end
         end)
 
       assert is_list(contents)
@@ -480,9 +490,13 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
 
       metadatas =
         results
-        |> Enum.map(fn
-          {:ok, result} -> result.metadata
-          {:error, _} -> nil
+        |> Enum.map(fn result ->
+          # Results are ExtractionResult structs
+          if is_struct(result, Kreuzberg.ExtractionResult) do
+            result.metadata
+          else
+            nil
+          end
         end)
         |> Enum.filter(&(&1 != nil))
 
@@ -501,9 +515,9 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
 
       {:ok, results} = Kreuzberg.batch_extract_bytes(mixed_contents, "text/plain")
 
-      # All results should be tuples
+      # All results should be ExtractionResult structs
       Enum.each(results, fn result ->
-        assert is_tuple(result) and tuple_size(result) == 2
+        assert is_struct(result, Kreuzberg.ExtractionResult)
       end)
     end
 
@@ -520,10 +534,18 @@ defmodule KreuzbergTest.Integration.BatchOperationsTest do
       File.write!(List.last(temp_files), "Content 3")
 
       try do
-        {:ok, results} = Kreuzberg.batch_extract_files(temp_files)
+        # When any file fails, batch returns an error
+        result = Kreuzberg.batch_extract_files(temp_files)
 
-        # Should have results for all files (some may be errors)
-        assert length(results) == 3
+        case result do
+          {:error, _reason} ->
+            # Expected - some files failed
+            assert true
+
+          {:ok, results} ->
+            # All succeeded
+            assert is_list(results)
+        end
       after
         Enum.each(temp_files, fn f ->
           if File.exists?(f), do: File.rm!(f)

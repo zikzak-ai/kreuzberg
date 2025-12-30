@@ -10,7 +10,35 @@ namespace Kreuzberg\Config;
 readonly class TokenReductionConfig
 {
     public function __construct(
+        /**
+         * Token reduction mode.
+         *
+         * Specifies the strategy for reducing the number of tokens in the extracted
+         * content. Useful for staying within token limits of language models or
+         * reducing processing costs while maintaining semantic content.
+         *
+         * Available modes:
+         * - 'off': No token reduction, keep all content
+         * - 'aggressive': Remove less important words and details
+         * - 'moderate': Balanced reduction preserving most semantic content
+         * - 'conservative': Minimal reduction, keep critical content only
+         * - 'summarize': Summarize content instead of selective word removal
+         *
+         * @var string
+         * @default 'off'
+         */
         public string $mode = 'off',
+
+        /**
+         * Preserve important words during token reduction.
+         *
+         * When enabled, word importance analysis is performed to identify
+         * and protect semantically significant terms (keywords, named entities, etc.)
+         * from removal during token reduction. Ensures key information is retained.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $preserveImportantWords = true,
     ) {
     }

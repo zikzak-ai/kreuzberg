@@ -1,4 +1,4 @@
-# Node.js Native Bindings
+# TypeScript (Node.js)
 
 <div align="center" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0;">
   <!-- Language Bindings -->
@@ -18,7 +18,7 @@
     <img src="https://img.shields.io/npm/v/@kreuzberg/wasm?label=WASM&color=007ec6" alt="WASM">
   </a>
 
-<a href="https://central.sonatype.com/artifact/dev.kreuzberg/kreuzberg">
+  <a href="https://central.sonatype.com/artifact/dev.kreuzberg/kreuzberg">
     <img src="https://img.shields.io/maven-central/v/dev.kreuzberg/kreuzberg?label=Java&color=007ec6" alt="Java">
   </a>
   <a href="https://github.com/kreuzberg-dev/kreuzberg/releases">
@@ -34,9 +34,8 @@
     <img src="https://img.shields.io/gem/v/kreuzberg?label=Ruby&color=007ec6" alt="Ruby">
   </a>
 
-<!-- Project Info -->
-
-<a href="https://github.com/kreuzberg-dev/kreuzberg/blob/main/LICENSE">
+  <!-- Project Info -->
+  <a href="https://github.com/kreuzberg-dev/kreuzberg/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
   </a>
   <a href="https://docs.kreuzberg.dev">
@@ -52,7 +51,9 @@
   </a>
 </div>
 
+
 Extract text, tables, images, and metadata from 56 file formats including PDF, Office documents, and images. Native NAPI-RS bindings for Node.js with superior performance, async/await support, and TypeScript type definitions.
+
 
 > **Version 4.0.0 Release Candidate**
 > Kreuzberg v4.0.0 is in **Release Candidate** stage. Bugs and breaking changes are expected.
@@ -62,25 +63,35 @@ Extract text, tables, images, and metadata from 56 file formats including PDF, O
 
 ### Package Installation
 
+
 Install via one of the supported package managers:
 
-**npm:**
 
+
+**npm:**
 ```bash
 npm install @kreuzberg/node
 ```
 
-**pnpm:**
 
+
+
+**pnpm:**
 ```bash
 pnpm add @kreuzberg/node
 ```
 
-**yarn:**
 
+
+
+**yarn:**
 ```bash
 yarn add @kreuzberg/node
 ```
+
+
+
+
 
 ### System Requirements
 
@@ -88,12 +99,24 @@ yarn add @kreuzberg/node
 - Optional: [ONNX Runtime](https://github.com/microsoft/onnxruntime/releases) version 1.21 or lower for embeddings support
 - Optional: [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) for OCR functionality
 
+- Optional: [LibreOffice](https://www.libreoffice.org/download/download/) for legacy Office formats (DOC, XLS, PPT, RTF, ODT, ODS, ODP)
+
+**Format Support Notes:**
+- Modern Office formats (DOCX, XLSX, PPTX) work without LibreOffice
+- Legacy formats (DOC, XLS, PPT) require LibreOffice installation
+- WASM binding does NOT support LibreOffice formats (use Node.js for full format support)
+
+
+
 ### Platform Support
 
 Pre-built binaries available for:
 - macOS (arm64, x64)
 - Linux (x64)
 - Windows (x64)
+
+
+
 
 ## Quick Start
 
@@ -115,11 +138,13 @@ console.log(result.content);
 console.log(`MIME Type: ${result.mimeType}`);
 ```
 
+
 ### Common Use Cases
 
 #### Extract with Custom Configuration
 
 Most use cases benefit from configuration to control extraction behavior:
+
 
 **With OCR (for scanned documents):**
 
@@ -140,7 +165,11 @@ const result = await extractFile('document.pdf', null, config);
 console.log(result.content);
 ```
 
+
+
+
 #### Table Extraction
+
 
 ```typescript
 import { extractFileSync } from '@kreuzberg/node';
@@ -154,7 +183,11 @@ for (const table of result.tables) {
 }
 ```
 
+
+
+
 #### Processing Multiple Files
+
 
 ```typescript
 import { batchExtractFilesSync } from '@kreuzberg/node';
@@ -167,6 +200,10 @@ results.forEach((result, i) => {
 });
 ```
 
+
+
+
+
 #### Async Processing
 
 For non-blocking document processing:
@@ -178,9 +215,11 @@ const result = await extractFile('document.pdf');
 console.log(result.content);
 ```
 
-#### Configuration Discovery
 
-Use `discoverExtractionConfig()` to automatically find and load configuration files from the current directory or parent directories:
+
+
+
+#### Configuration Discovery
 
 ```typescript
 import { discoverExtractionConfig, extractFile } from '@kreuzberg/node';
@@ -197,7 +236,54 @@ if (config) {
 }
 ```
 
-The discovery function looks for `kreuzberg.toml`, `kreuzberg.yaml`, or `kreuzberg.json` files starting in the current directory and searching parent directories up to the filesystem root.
+
+
+
+
+#### Worker Thread Pool
+
+```typescript
+import { createWorkerPool, extractFileInWorker, batchExtractFilesInWorker, closeWorkerPool } from '@kreuzberg/node';
+
+// Create a pool with 4 worker threads
+const pool = createWorkerPool(4);
+
+try {
+  // Extract single file in worker
+  const result = await extractFileInWorker(pool, 'document.pdf', null, {
+    useCache: true
+  });
+  console.log(result.content);
+
+  // Extract multiple files concurrently
+  const files = ['doc1.pdf', 'doc2.docx', 'doc3.xlsx'];
+  const results = await batchExtractFilesInWorker(pool, files, {
+    useCache: true
+  });
+
+  results.forEach((result, i) => {
+    console.log(`File ${i + 1}: ${result.content.length} characters`);
+  });
+} finally {
+  // Always close the pool when done
+  await closeWorkerPool(pool);
+}
+```
+
+
+**Performance Benefits:**
+- **Parallel Processing**: Multiple documents extracted simultaneously
+- **CPU Utilization**: Maximizes multi-core CPU usage for large batches
+- **Queue Management**: Automatically distributes work across available workers
+- **Resource Control**: Prevents thread exhaustion with configurable pool size
+
+**Best Practices:**
+- Use worker pools for batches of 10+ documents
+- Set pool size to number of CPU cores (default behavior)
+- Always close pools with `closeWorkerPool()` to prevent resource leaks
+- Reuse pools across multiple batch operations for efficiency
+
+
 
 ### Next Steps
 
@@ -206,6 +292,8 @@ The discovery function looks for `kreuzberg.toml`, `kreuzberg.yaml`, or `kreuzbe
 - **[Examples & Guides](https://kreuzberg.dev/guides/)** - Full code examples and usage guides
 - **[Configuration Guide](https://kreuzberg.dev/configuration/)** - Advanced configuration options
 - **[Troubleshooting](https://kreuzberg.dev/troubleshooting/)** - Common issues and solutions
+
+
 
 ## NAPI-RS Implementation Details
 
@@ -231,6 +319,8 @@ This binding uses NAPI-RS to provide native Node.js bindings with:
 - Temporary files are created in system temp directory for extraction
 - Memory is automatically released after extraction completion
 - ONNX models are cached in memory for repeated embeddings operations
+
+
 
 ## Features
 
@@ -284,27 +374,22 @@ This binding uses NAPI-RS to provide native Node.js bindings with:
 ### Key Capabilities
 
 - **Text Extraction** - Extract all text content with position and formatting information
-
 - **Metadata Extraction** - Retrieve document properties, creation date, author, etc.
-
 - **Table Extraction** - Parse tables with structure and cell content preservation
-
 - **Image Extraction** - Extract embedded images and render page previews
-
 - **OCR Support** - Integrate multiple OCR backends for scanned documents
 
 - **Async/Await** - Non-blocking document processing with concurrent operations
 
+
 - **Plugin System** - Extensible post-processing for custom text transformation
+
 
 - **Embeddings** - Generate vector embeddings using ONNX Runtime models
 
 - **Batch Processing** - Efficiently process multiple documents in parallel
-
 - **Memory Efficient** - Stream large files without loading entirely into memory
-
 - **Language Detection** - Detect and support multiple languages in documents
-
 - **Configuration** - Fine-grained control over extraction behavior
 
 ### Performance Characteristics
@@ -317,13 +402,17 @@ This binding uses NAPI-RS to provide native Node.js bindings with:
 | **Archives** | 5-50 MB/s | ~200MB per doc | ZIP, TAR, etc. |
 | **Web formats** | 50-200 MB/s | Streaming | HTML, XML, JSON |
 
+
+
 ## OCR Support
 
 Kreuzberg supports multiple OCR backends for extracting text from scanned documents and images:
 
+
 - **Tesseract**
 
 - **Guten**
+
 
 ### OCR Configuration Example
 
@@ -344,6 +433,9 @@ const result = await extractFile('document.pdf', null, config);
 console.log(result.content);
 ```
 
+
+
+
 ## Async Support
 
 This binding provides full async/await support for non-blocking document processing:
@@ -355,17 +447,25 @@ const result = await extractFile('document.pdf');
 console.log(result.content);
 ```
 
+
+
+
 ## Plugin System
 
 Kreuzberg supports extensible post-processing plugins for custom text transformation and filtering.
 
 For detailed plugin documentation, visit [Plugin System Guide](https://kreuzberg.dev/plugins/).
 
+
+
+
 ## Embeddings Support
 
 Generate vector embeddings for extracted text using the built-in ONNX Runtime support. Requires ONNX Runtime installation.
 
 **[Embeddings Guide](https://kreuzberg.dev/features/#embeddings)**
+
+
 
 ## Batch Processing
 
@@ -381,6 +481,9 @@ results.forEach((result, i) => {
 	console.log(`File ${i + 1}: ${result.content.length} characters`);
 });
 ```
+
+
+
 
 ## Configuration
 

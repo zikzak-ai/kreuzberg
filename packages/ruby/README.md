@@ -311,6 +311,421 @@ Generate vector embeddings for extracted text using the built-in ONNX Runtime su
 
 **[Embeddings Guide](https://kreuzberg.dev/features/#embeddings)**
 
+## Advanced Examples
+
+### Embeddings with Model Configuration
+
+Generate embeddings for document chunks with custom model configuration:
+
+```ruby
+require 'kreuzberg'
+
+# Configure embedding model with custom parameters
+embedding_config = Kreuzberg::Config::Embedding.new(
+  model: { type: :preset, name: 'balanced' },
+  normalize: true,
+  batch_size: 32,
+  show_download_progress: false
+)
+
+# Enable chunking with embeddings
+chunking_config = Kreuzberg::Config::Chunking.new(
+  max_chars: 1024,
+  max_overlap: 256,
+  embedding: embedding_config
+)
+
+config = Kreuzberg::Config::Extraction.new(chunking: chunking_config)
+result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: config)
+
+# Access chunks with embeddings
+result.chunks.each_with_index do |chunk, idx|
+  puts "Chunk #{idx}:"
+  puts "  Content: #{chunk.content[0..50]}..."
+  puts "  Tokens: #{chunk.token_count}"
+  puts "  Pages: #{chunk.first_page}-#{chunk.last_page}"
+  if chunk.embedding
+    puts "  Embedding dimensions: #{chunk.embedding.length}"
+  end
+end
+```
+
+### Keywords Extraction (YAKE and RAKE)
+
+Extract keywords using YAKE and RAKE algorithms:
+
+```ruby
+require 'kreuzberg'
+
+# Extract keywords using YAKE algorithm
+yake_config = Kreuzberg::Config::Keywords.new(
+  algorithm: 'yake',
+  max_keywords: 10,
+  min_score: 0.1,
+  yake_params: Kreuzberg::Config::KeywordYakeParams.new(window_size: 3)
+)
+
+config = Kreuzberg::Config::Extraction.new(keywords: yake_config)
+result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: config)
+
+# Extract keywords using RAKE algorithm
+rake_config = Kreuzberg::Config::Keywords.new(
+  algorithm: 'rake',
+  max_keywords: 15,
+  language: 'english',
+  rake_params: Kreuzberg::Config::KeywordRakeParams.new(
+    min_word_length: 3,
+    max_words_per_phrase: 5
+  )
+)
+
+config = Kreuzberg::Config::Extraction.new(keywords: rake_config)
+result = Kreuzberg.extract_file_sync(path: 'report.docx', config: config)
+
+puts "Keywords extracted for document"
+```
+
+### Pages Extraction with PageConfig
+
+Extract and organize content by pages:
+
+```ruby
+require 'kreuzberg'
+
+# Enable per-page extraction with markers
+page_config = Kreuzberg::Config::PageConfig.new(
+  extract_pages: true,
+  insert_page_markers: true,
+  marker_format: "\n\n=== PAGE {page_num} ===\n\n"
+)
+
+config = Kreuzberg::Config::Extraction.new(pages: page_config)
+result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: config)
+
+# Access extracted pages
+if result.pages
+  result.pages.each do |page|
+    puts "Page #{page.page_number}:"
+    puts "  Content length: #{page.content.length}"
+    puts "  Tables: #{page.tables.length}"
+    puts "  Images: #{page.images.length}"
+  end
+end
+
+puts "Total pages: #{result.page_count}"
+```
+
+### Custom PostProcessor Implementation
+
+Create and register custom post-processors for text transformation:
+
+```ruby
+require 'kreuzberg'
+
+# Define a custom post-processor class
+class MarkdownEnhancerPostProcessor
+  include Kreuzberg::PostProcessorProtocol
+
+  def call(result)
+    # Enhance extracted content with markdown formatting
+    enhanced = result.dup
+
+    if enhanced['content']
+      # Add markdown headers for detected structure
+      enhanced['content'] = enhance_with_markdown(enhanced['content'])
+    end
+
+    enhanced
+  end
+
+  private
+
+  def enhance_with_markdown(content)
+    # Example: Convert section breaks to markdown headers
+    content
+      .split("\n\n")
+      .map { |paragraph| paragraph.length > 100 ? "## #{paragraph[0..30]}...\n\n#{paragraph}" : paragraph }
+      .join("\n\n")
+  end
+end
+
+# Use custom post-processor in configuration
+processor = MarkdownEnhancerPostProcessor.new
+postprocessor_config = Kreuzberg::Config::PostProcessor.new(enabled: true)
+config = Kreuzberg::Config::Extraction.new(postprocessor: postprocessor_config)
+
+result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: config)
+puts result.content
+```
+
+### Custom Validator Implementation
+
+Create and register validators to ensure extraction quality:
+
+```ruby
+require 'kreuzberg'
+
+# Define a custom validator class
+class ContentQualityValidator
+  include Kreuzberg::ValidatorProtocol
+
+  MIN_CONTENT_LENGTH = 100
+  MIN_METADATA_FIELDS = 2
+
+  def call(result)
+    # Validate extracted content meets quality standards
+    content = result['content'].to_s
+    metadata = result['metadata'].to_h
+
+    if content.length < MIN_CONTENT_LENGTH
+      raise Kreuzberg::Errors::ValidationError,
+            "Content too short: #{content.length} bytes (minimum: #{MIN_CONTENT_LENGTH})"
+    end
+
+    if metadata.length < MIN_METADATA_FIELDS
+      raise Kreuzberg::Errors::ValidationError,
+            "Insufficient metadata: #{metadata.length} fields (minimum: #{MIN_METADATA_FIELDS})"
+    end
+
+    # Validation passed
+    nil
+  end
+end
+
+# Use validator in extraction workflow
+validator = ContentQualityValidator.new
+config = Kreuzberg::Config::Extraction.new(enable_quality_processing: true)
+
+begin
+  result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: config)
+  validator.call(result.to_h)
+  puts "Extraction passed quality validation"
+rescue Kreuzberg::Errors::ValidationError => e
+  puts "Validation failed: #{e.message}"
+end
+```
+
+### Config File Loading (from_file and discover)
+
+Load configuration from TOML, YAML, or JSON files:
+
+```ruby
+require 'kreuzberg'
+
+# Load configuration from a specific file
+# Supports: .toml, .yaml/.yml, .json
+config = Kreuzberg::Config::Extraction.from_file('config/kreuzberg.toml')
+
+# Example: config/kreuzberg.toml
+# use_cache = true
+# force_ocr = false
+# enable_quality_processing = true
+#
+# [chunking]
+# max_chars = 1024
+# max_overlap = 256
+#
+# [ocr]
+# backend = "tesseract"
+# language = "eng"
+#
+# [language_detection]
+# enabled = true
+# min_confidence = 0.7
+
+result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: config)
+puts "Extracted with config from file"
+
+# Auto-discover configuration in project hierarchy
+discovered_config = Kreuzberg::Config::Extraction.discover
+if discovered_config
+  puts "Found configuration at project root"
+  result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: discovered_config)
+else
+  puts "No configuration file found, using defaults"
+  result = Kreuzberg.extract_file_sync(path: 'document.pdf')
+end
+```
+
+### Fiber-Based Async Patterns
+
+Use Ruby Fibers for efficient async extraction workflows:
+
+```ruby
+require 'kreuzberg'
+
+# Create async extraction workflow using Fibers
+def extract_documents_async(file_paths)
+  fibers = file_paths.map do |path|
+    Fiber.new do
+      config = Kreuzberg::Config::Extraction.new(
+        use_cache: true,
+        enable_quality_processing: true
+      )
+
+      # Extract asynchronously
+      result = Kreuzberg.extract_file(path: path, config: config)
+
+      {
+        path: path,
+        content_length: result.content.length,
+        tables: result.tables.length,
+        languages: result.detected_languages
+      }
+    end
+  end
+
+  # Resume all fibers and collect results
+  results = fibers.map do |fiber|
+    Fiber.yield fiber.resume if fiber.alive?
+  end
+
+  results.compact
+end
+
+# Usage
+file_paths = ['document1.pdf', 'document2.docx', 'document3.xlsx']
+results = extract_documents_async(file_paths)
+
+results.each do |result|
+  puts "#{result[:path]}: #{result[:content_length]} characters"
+end
+```
+
+### Table Extraction Detailed Usage
+
+Extract and access table structure and cell data:
+
+```ruby
+require 'kreuzberg'
+
+# Configure table extraction
+config = Kreuzberg::Config::Extraction.new(
+  pdf_options: Kreuzberg::Config::PDF.new(extract_images: true)
+)
+
+result = Kreuzberg.extract_file_sync(path: 'spreadsheet.pdf', config: config)
+
+# Access extracted tables
+result.tables.each_with_index do |table, table_idx|
+  puts "Table #{table_idx} (Page #{table.page_number}):"
+
+  # Access table cells (2D array)
+  table.cells.each_with_index do |row, row_idx|
+    puts "  Row #{row_idx}:"
+    row.each_with_index do |cell, col_idx|
+      puts "    [#{col_idx}] #{cell}"
+    end
+  end
+
+  # Access markdown representation
+  puts "\nMarkdown format:"
+  puts table.markdown
+end
+
+# Extract tables from specific pages
+page_config = Kreuzberg::Config::PageConfig.new(extract_pages: true)
+config = Kreuzberg::Config::Extraction.new(pages: page_config)
+result = Kreuzberg.extract_file_sync(path: 'data.xlsx', config: config)
+
+if result.pages
+  result.pages.each do |page|
+    page.tables.each do |table|
+      puts "Table on page #{page.page_number}:"
+      puts "  Dimensions: #{table.cells.length} rows x #{table.cells.first&.length || 0} columns"
+    end
+  end
+end
+```
+
+### Image Extraction and Saving
+
+Extract images and save them to disk:
+
+```ruby
+require 'kreuzberg'
+
+# Configure image extraction with high DPI
+image_config = Kreuzberg::Config::ImageExtraction.new(
+  extract_images: true,
+  target_dpi: 300,
+  max_image_dimension: 2000,
+  auto_adjust_dpi: true
+)
+
+config = Kreuzberg::Config::Extraction.new(image_extraction: image_config)
+result = Kreuzberg.extract_file_sync(path: 'document.pdf', config: config)
+
+# Save extracted images
+output_dir = 'extracted_images'
+Dir.mkdir(output_dir) unless Dir.exist?(output_dir)
+
+result.images.each_with_index do |image, idx|
+  # Generate filename
+  filename = "image_p#{image.page_number}_#{image.image_index}.#{image.format}"
+  filepath = File.join(output_dir, filename)
+
+  # Save image data
+  File.write(filepath, image.data, mode: 'wb')
+
+  puts "Saved: #{filename}"
+  puts "  Page: #{image.page_number}"
+  puts "  Format: #{image.format}"
+  puts "  Dimensions: #{image.width}x#{image.height}"
+  puts "  Colorspace: #{image.colorspace}"
+
+  # Process OCR result if available
+  if image.ocr_result
+    puts "  OCR Text: #{image.ocr_result['text'][0..50]}..."
+  end
+end
+```
+
+### Language Detection Configuration
+
+Configure and use language detection:
+
+```ruby
+require 'kreuzberg'
+
+# Enable language detection with confidence threshold
+lang_detection_config = Kreuzberg::Config::LanguageDetection.new(
+  enabled: true,
+  min_confidence: 0.8,
+  detect_multiple: true
+)
+
+config = Kreuzberg::Config::Extraction.new(
+  language_detection: lang_detection_config
+)
+
+result = Kreuzberg.extract_file_sync(path: 'multilingual.pdf', config: config)
+
+# Access detected languages
+puts "Primary language: #{result.detected_language}"
+puts "All detected languages: #{result.detected_languages.join(', ')}"
+
+# Access language from metadata
+if result.metadata.is_a?(Hash)
+  puts "Language from metadata: #{result.metadata['language']}"
+end
+
+# Combine with keyword extraction for specific language
+keywords_config = Kreuzberg::Config::Keywords.new(
+  algorithm: 'yake',
+  language: 'de',  # German keywords
+  max_keywords: 10
+)
+
+config = Kreuzberg::Config::Extraction.new(
+  language_detection: lang_detection_config,
+  keywords: keywords_config
+)
+
+result = Kreuzberg.extract_file_sync(path: 'german_document.pdf', config: config)
+puts "Keywords extracted for: #{result.detected_language}"
+```
+
 ## Batch Processing
 
 Process multiple documents efficiently:

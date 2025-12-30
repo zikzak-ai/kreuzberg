@@ -10,9 +10,65 @@ namespace Kreuzberg\Config;
 readonly class ChunkingConfig
 {
     public function __construct(
+        /**
+         * Maximum size of text chunks in tokens or characters.
+         *
+         * Defines the maximum number of tokens (for token-based chunking) or characters
+         * (for character-based chunking) per chunk. Larger chunks retain more context
+         * but may be too long for some downstream processing.
+         *
+         * Valid range: 1-unlimited (practical range: 128-4096)
+         * Recommended values:
+         * - 256-512: For short documents or limited context windows
+         * - 512-1024: For standard documents and embeddings
+         * - 1024-2048: For longer documents requiring more context
+         *
+         * @var int
+         * @default 512
+         */
         public int $maxChunkSize = 512,
+
+        /**
+         * Number of tokens/characters to overlap between consecutive chunks.
+         *
+         * Overlap ensures context continuity between chunks by repeating some text
+         * at the boundaries. This helps maintain semantic coherence when chunks
+         * are processed independently.
+         *
+         * Valid range: 0-$maxChunkSize
+         * Recommended values:
+         * - 0-10%: For minimal overlap
+         * - 10-25%: For standard overlap (typically 50 tokens for 512-token chunks)
+         * - 25-50%: For high overlap when context preservation is critical
+         *
+         * @var int
+         * @default 50
+         */
         public int $chunkOverlap = 50,
+
+        /**
+         * Respect sentence boundaries when creating chunks.
+         *
+         * When enabled, chunks will not split in the middle of sentences.
+         * This ensures that no sentence is broken across multiple chunks,
+         * maintaining semantic integrity. Actual chunk size may vary slightly
+         * to preserve complete sentences.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $respectSentences = true,
+
+        /**
+         * Respect paragraph boundaries when creating chunks.
+         *
+         * When enabled, chunks will avoid splitting paragraphs.
+         * This preserves thematic grouping and context within the document.
+         * May result in variable chunk sizes to maintain paragraph integrity.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $respectParagraphs = true,
     ) {
     }

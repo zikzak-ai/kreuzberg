@@ -154,7 +154,7 @@ runs:
           ffi-${{ inputs.ffi-crate }}-${{ inputs.platform }}-
         cache-paths: |
           ${{ env.CARGO_TARGET_DIR || 'target' }}/release/
-          kreuzberg-ffi.pc
+          crates/kreuzberg-ffi/kreuzberg-ffi.pc
         operation: restore
 
     # Skip build if cache hit (optional)
@@ -259,7 +259,7 @@ runs:
         cache-key: ${{ steps.generate-cache-key.outputs.cache-key }}
         cache-paths: |
           ${{ env.CARGO_TARGET_DIR || 'target' }}/release/
-          kreuzberg-ffi.pc
+          crates/kreuzberg-ffi/kreuzberg-ffi.pc
         operation: save
 
     # Summary

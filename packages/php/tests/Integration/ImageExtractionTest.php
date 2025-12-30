@@ -31,14 +31,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Kreuzberg::class)]
 #[Group('integration')]
 #[Group('images')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class ImageExtractionTest extends TestCase
 {
     private string $testDocumentsPath;
 
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 

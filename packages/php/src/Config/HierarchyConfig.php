@@ -10,9 +10,64 @@ namespace Kreuzberg\Config;
 readonly class HierarchyConfig
 {
     public function __construct(
+        /**
+         * Enable hierarchical structure detection.
+         *
+         * When enabled, the extraction process analyzes document structure
+         * and identifies heading hierarchies, section organization, and
+         * content relationships to build a logical document tree.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $enabled = true,
+
+        /**
+         * Number of clusters for hierarchical clustering.
+         *
+         * Used in hierarchical structure detection algorithms to group
+         * related content elements. Higher values create finer-grained clusters,
+         * lower values create broader groupings.
+         *
+         * Valid range: 2-20 (practical range: 2-10)
+         * Recommended values:
+         * - 2-4: For simple documents with few sections
+         * - 4-6: Standard for typical documents
+         * - 6-10: For complex documents with many subsections
+         *
+         * @var int
+         * @default 6
+         */
         public int $kClusters = 6,
+
+        /**
+         * Include bounding box coordinates in hierarchy results.
+         *
+         * When enabled, the bounding box (position and dimensions) for each
+         * hierarchical element is included in results. Useful for reconstructing
+         * original document layout or correlating with visual representation.
+         *
+         * @var bool
+         * @default true
+         */
         public bool $includeBbox = true,
+
+        /**
+         * OCR coverage threshold for hierarchy detection.
+         *
+         * Minimum fraction of text that must be successfully extracted via OCR
+         * for OCR-specific hierarchical features to be used. Helps avoid relying
+         * on OCR results when coverage is too low.
+         *
+         * Valid range: 0.0-1.0
+         * Recommended values:
+         * - 0.0: Use OCR results regardless of coverage
+         * - 0.5: Require at least 50% OCR coverage
+         * - 0.8-1.0: Strict coverage requirement for OCR-based features
+         *
+         * @var float|null
+         * @default null (disabled)
+         */
         public ?float $ocrCoverageThreshold = null,
     ) {
     }

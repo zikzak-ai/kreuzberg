@@ -3,8 +3,31 @@ package kreuzberg_test
 import (
 	"fmt"
 	"os"
+	"sync"
 	"testing"
+
+	kreuzberg "github.com/kreuzberg-dev/kreuzberg/packages/go/v4"
 )
+
+// pdfiumOnce ensures Pdfium is initialized only once across all tests
+var pdfiumOnce sync.Once
+
+// init() runs before any tests in this package and initializes Pdfium
+func init() {
+	// Initialize Pdfium early to avoid "already initialized" errors
+	_ = initializePdfium()
+}
+
+// initializePdfium triggers Pdfium initialization by performing a simple extraction
+// This function is protected by sync.Once to ensure it's only called once
+func initializePdfium() error {
+	var err error
+	pdfiumOnce.Do(func() {
+		// Extract a simple text to initialize the library
+		_, err = kreuzberg.ExtractBytesSync([]byte("test"), "text/plain", nil)
+	})
+	return err
+}
 
 // createTestPDF creates a minimal valid PDF file for testing.
 // Returns the path to the created file.

@@ -25,12 +25,12 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(Kreuzberg::class)]
 #[Group('integration')]
-#[RequiresPhpExtension('kreuzberg')]
+#[RequiresPhpExtension('kreuzberg-php')]
 final class ExtensionTest extends TestCase
 {
     protected function setUp(): void
     {
-        if (!extension_loaded('kreuzberg')) {
+        if (!extension_loaded('kreuzberg-php')) {
             $this->markTestSkipped(
                 'Kreuzberg extension is not loaded. ' .
                 'These integration tests require the compiled extension.',
@@ -41,13 +41,13 @@ final class ExtensionTest extends TestCase
     #[Test]
     public function it_loads_kreuzberg_extension(): void
     {
-        $this->assertTrue(extension_loaded('kreuzberg'));
+        $this->assertTrue(extension_loaded('kreuzberg-php'));
     }
 
     #[Test]
     public function it_reports_extension_version(): void
     {
-        $version = phpversion('kreuzberg');
+        $version = phpversion('kreuzberg-php');
 
         $this->assertNotFalse($version);
         $this->assertIsString($version);
@@ -195,7 +195,7 @@ final class ExtensionTest extends TestCase
     public function it_matches_class_version_with_extension_version(): void
     {
         $classVersion = Kreuzberg::version();
-        $extensionVersion = phpversion('kreuzberg');
+        $extensionVersion = phpversion('kreuzberg-php');
 
         $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+/', $classVersion);
 

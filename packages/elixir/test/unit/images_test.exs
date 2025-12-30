@@ -15,8 +15,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
 
   use ExUnit.Case, async: true
 
-  @describetag :unit
   describe "PDF image extraction with metadata" do
+    @describetag :unit
     test "extracts images when images config is enabled" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{"enabled" => true}
@@ -102,8 +102,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
     end
   end
 
-  @describetag :unit
   describe "image format detection" do
+    @describetag :unit
     test "detects PNG format correctly" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{"enabled" => true}
@@ -170,8 +170,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
     end
   end
 
-  @describetag :unit
   describe "image dimensions and metadata" do
+    @describetag :unit
     test "extracts image width and height metadata" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{"enabled" => true}
@@ -237,8 +237,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
     end
   end
 
-  @describetag :unit
   describe "embedded vs referenced images" do
+    @describetag :unit
     test "handles embedded images in PDFs" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{
@@ -289,8 +289,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
     end
   end
 
-  @describetag :unit
   describe "image extraction error handling" do
+    @describetag :unit
     test "handles corrupted image data gracefully" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{"enabled" => true}
@@ -375,8 +375,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
     end
   end
 
-  @describetag :unit
   describe "batch image extraction from multi-page documents" do
+    @describetag :unit
     test "extracts images from all pages in batch" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{"enabled" => true}
@@ -462,8 +462,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
     end
   end
 
-  @describetag :unit
   describe "image extraction configuration variations" do
+    @describetag :unit
     test "handles empty image config" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{}
@@ -515,8 +515,8 @@ defmodule Kreuzberg.Unit.ImagesTest do
     end
   end
 
-  @describetag :unit
   describe "image extraction result structure" do
+    @describetag :unit
     test "result contains images field" do
       config = %Kreuzberg.ExtractionConfig{
         images: %{"enabled" => true}

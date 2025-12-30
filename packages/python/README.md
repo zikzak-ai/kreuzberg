@@ -359,6 +359,391 @@ chunking_config = ChunkingConfig(
 )
 ```
 
+## Advanced Features
+
+### Page Extraction with PageConfig
+
+Extract pages with page markers to track document structure:
+
+```python
+import asyncio
+from kreuzberg import extract_file, ExtractionConfig, PageConfig
+
+async def main() -> None:
+    """Extract pages with boundary tracking and page markers."""
+    config = ExtractionConfig(
+        pages=PageConfig(
+            extract_pages=True,           # Enable page tracking
+            insert_page_markers=True,     # Insert [PAGE-X] markers in content
+            marker_format="[PAGE-{page_number}]"  # Custom marker format
+        )
+    )
+    result = await extract_file("document.pdf", config=config)
+
+    # Content now includes page markers
+    print(f"Content with page markers:\n{result.content[:500]}")
+
+asyncio.run(main())
+```
+
+### Custom PostProcessor Registration
+
+Register custom post-processors to enrich extraction results:
+
+```python
+import asyncio
+from kreuzberg import (
+    extract_file,
+    ExtractionConfig,
+    register_post_processor,
+    PostProcessorProtocol,
+    ExtractionResult,
+)
+
+class MetadataEnricher:
+    """Custom post-processor that enriches document metadata."""
+
+    def name(self) -> str:
+        """Return unique processor name."""
+        return "metadata_enricher"
+
+    def processing_stage(self) -> str:
+        """Process in the middle stage."""
+        return "middle"
+
+    def process(self, result: ExtractionResult) -> ExtractionResult:
+        """Add custom metadata to extraction results."""
+        # Extract custom metrics
+        word_count = len(result.content.split())
+        char_count = len(result.content)
+
+        # Add enriched metadata
+        result.metadata["custom_word_count"] = word_count
+        result.metadata["custom_char_count"] = char_count
+        result.metadata["custom_processor"] = "enabled"
+
+        return result
+
+    def initialize(self) -> None:
+        """Initialize processor (called on registration)."""
+        print("MetadataEnricher initialized")
+
+    def shutdown(self) -> None:
+        """Cleanup (called on unregistration)."""
+        print("MetadataEnricher shutdown")
+
+
+async def main() -> None:
+    """Register custom processor and use it."""
+    # Register the custom post-processor once
+    enricher = MetadataEnricher()
+    register_post_processor(enricher)
+
+    # Extract with the custom post-processor
+    config = ExtractionConfig(use_cache=True)
+    result = await extract_file("document.pdf", config=config)
+
+    # Access custom metadata
+    print(f"Words: {result.metadata['custom_word_count']}")
+    print(f"Chars: {result.metadata['custom_char_count']}")
+
+asyncio.run(main())
+```
+
+### Custom Validator Registration
+
+Register custom validators to validate extraction results:
+
+```python
+import asyncio
+from kreuzberg import (
+    extract_file,
+    ExtractionConfig,
+    register_validator,
+    ValidationError,
+)
+
+class ContentQualityValidator:
+    """Custom validator for content quality checks."""
+
+    def name(self) -> str:
+        """Return unique validator name."""
+        return "content_quality_validator"
+
+    def priority(self) -> int:
+        """Run early in validation chain (higher = earlier)."""
+        return 100
+
+    def should_validate(self, result: dict) -> bool:
+        """Check if validation should run."""
+        # Skip validation for certain document types
+        return result.get("metadata", {}).get("format_type") != "plain/text"
+
+    def validate(self, result: dict) -> None:
+        """Validate extraction quality.
+
+        Raises ValidationError if content doesn't meet quality standards.
+        """
+        content = result.get("content", "")
+
+        # Check minimum content length
+        if len(content) < 100:
+            raise ValidationError(
+                f"Extracted content too short ({len(content)} chars, minimum 100)",
+                context={"actual_length": len(content), "minimum": 100}
+            )
+
+        # Check for suspicious patterns
+        if content.count("  ") > len(content) * 0.1:
+            raise ValidationError(
+                "Content has excessive whitespace",
+                context={"double_space_ratio": content.count("  ") / len(content)}
+            )
+
+    def initialize(self) -> None:
+        """Initialize validator."""
+        pass
+
+    def shutdown(self) -> None:
+        """Cleanup validator."""
+        pass
+
+
+async def main() -> None:
+    """Register validator and handle validation errors."""
+    # Register the custom validator
+    validator = ContentQualityValidator()
+    register_validator(validator)
+
+    config = ExtractionConfig()
+
+    try:
+        result = await extract_file("document.pdf", config=config)
+        print(f"Validation passed: {len(result.content)} chars extracted")
+    except ValidationError as e:
+        print(f"Validation failed: {e}")
+
+asyncio.run(main())
+```
+
+### Embedding Preset Listing and Usage
+
+List available embedding presets and use them for semantic search:
+
+```python
+import asyncio
+from kreuzberg import (
+    extract_file,
+    ExtractionConfig,
+    ChunkingConfig,
+    EmbeddingConfig,
+    list_embedding_presets,
+    get_embedding_preset,
+)
+
+async def main() -> None:
+    """List available presets and use one for embeddings."""
+    # List all available embedding presets
+    presets = list_embedding_presets()
+    print(f"Available embedding presets: {presets}")
+
+    # Get details about each preset
+    print("\nPreset Details:")
+    for preset_name in presets:
+        preset = get_embedding_preset(preset_name)
+        print(f"  {preset.name}:")
+        print(f"    Model: {preset.model_name}")
+        print(f"    Dimensions: {preset.dimensions}")
+        print(f"    Chunk size: {preset.chunk_size}")
+        print(f"    Description: {preset.description}")
+
+    # Use a specific preset for extraction
+    config = ExtractionConfig(
+        chunking=ChunkingConfig(
+            max_chars=512,
+            embedding=EmbeddingConfig(
+                model=get_embedding_preset("balanced")
+            )
+        )
+    )
+
+    result = await extract_file("document.pdf", config=config)
+
+    # Access embeddings for semantic search
+    print(f"\nGenerated {len(result.chunks)} chunks with embeddings")
+    for i, chunk in enumerate(result.chunks[:3]):
+        embedding_size = len(chunk.embedding) if chunk.embedding else 0
+        print(f"Chunk {i}: {chunk.text[:50]}... (embedding size: {embedding_size})")
+
+asyncio.run(main())
+```
+
+### Configuration File Loading (TOML/YAML/JSON)
+
+Load extraction configuration from files:
+
+```python
+import asyncio
+from pathlib import Path
+from kreuzberg import (
+    extract_file,
+    discover_extraction_config,
+    load_extraction_config_from_file,
+)
+
+async def main() -> None:
+    """Load configuration from files."""
+
+    # Method 1: Auto-discover configuration from environment
+    # Searches for kreuzberg.toml, kreuzberg.yaml, or kreuzberg.json
+    config = discover_extraction_config()
+    if config:
+        print("Auto-discovered configuration")
+        result = await extract_file("document.pdf", config=config)
+    else:
+        print("No configuration file found")
+
+    # Method 2: Load from a specific file
+    # Supports TOML, YAML, and JSON formats
+    config_file = Path("config/extraction.toml")
+    if config_file.exists():
+        config = load_extraction_config_from_file(config_file)
+        result = await extract_file("document.pdf", config=config)
+        print(f"Loaded config from {config_file}")
+
+asyncio.run(main())
+```
+
+**Example configuration files:**
+
+`kreuzberg.toml`:
+```toml
+use_cache = true
+enable_quality_processing = true
+min_text_quality_score = 0.5
+
+[language_detection]
+detect_languages = true
+
+[chunking]
+max_chars = 512
+max_overlap = 100
+```
+
+`kreuzberg.yaml`:
+```yaml
+use_cache: true
+enable_quality_processing: true
+min_text_quality_score: 0.5
+
+language_detection:
+  detect_languages: true
+
+chunking:
+  max_chars: 512
+  max_overlap: 100
+```
+
+`kreuzberg.json`:
+```json
+{
+  "use_cache": true,
+  "enable_quality_processing": true,
+  "min_text_quality_score": 0.5,
+  "language_detection": {
+    "detect_languages": true
+  },
+  "chunking": {
+    "max_chars": 512,
+    "max_overlap": 100
+  }
+}
+```
+
+### Advanced Error Handling Patterns
+
+Comprehensive error handling with different error types:
+
+```python
+import asyncio
+from kreuzberg import (
+    extract_file,
+    ExtractionConfig,
+    get_last_error_code,
+    get_error_details,
+    classify_error,
+    error_code_name,
+    KreuzbergError,
+    ValidationError,
+    ParsingError,
+    OCRError,
+    MissingDependencyError,
+    CacheError,
+    ErrorCode,
+)
+
+async def main() -> None:
+    """Demonstrate comprehensive error handling."""
+
+    config = ExtractionConfig(force_ocr=True)
+
+    try:
+        result = await extract_file("document.pdf", config=config)
+        print(f"Extraction successful: {len(result.content)} chars")
+
+    # Handle validation errors (invalid config, parameters)
+    except ValidationError as e:
+        print(f"Validation Error: {e.message}")
+        if e.context:
+            print(f"  Context: {e.context}")
+
+    # Handle parsing errors (corrupt files, unsupported formats)
+    except ParsingError as e:
+        print(f"Parsing Error: {e.message}")
+        error_code = get_last_error_code()
+        print(f"  Error Code: {error_code_name(error_code)}")
+
+    # Handle OCR errors (OCR backend failures)
+    except OCRError as e:
+        print(f"OCR Error: {e.message}")
+        details = get_error_details()
+        print(f"  Details: {details['message']}")
+
+    # Handle missing dependencies
+    except MissingDependencyError as e:
+        print(f"Missing Dependency: {e.message}")
+        if e.context:
+            install_cmd = e.context.get("install_command")
+            print(f"  Install with: {install_cmd}")
+
+    # Handle cache errors
+    except CacheError as e:
+        print(f"Cache Error: {e.message}")
+
+    # Catch all Kreuzberg errors
+    except KreuzbergError as e:
+        print(f"Kreuzberg Error: {type(e).__name__}")
+        print(f"  Message: {e.message}")
+        print(f"  Context: {e.context}")
+
+        # Get detailed error information
+        code = get_last_error_code()
+        details = get_error_details()
+
+        print(f"  Error Code: {code} ({error_code_name(code)})")
+        print(f"  Details: {details}")
+
+    # Handle generic exceptions
+    except Exception as e:
+        print(f"Unexpected Error: {type(e).__name__}: {str(e)}")
+
+        # Classify unknown error messages
+        classification = classify_error(str(e))
+        print(f"  Classified as: {error_code_name(classification)}")
+
+asyncio.run(main())
+```
+
 ### Next Steps
 
 - **[Complete API Reference](https://kreuzberg.dev/reference/api-python/)** - All classes and methods

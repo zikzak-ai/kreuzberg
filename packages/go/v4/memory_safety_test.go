@@ -50,9 +50,6 @@ func TestPointerValidityAfterFFICall(t *testing.T) {
 // TestGoroutineCountStability verifies that extraction operations do not spawn
 // persistent goroutines that are never cleaned up, indicating potential leaks.
 func TestGoroutineCountStability(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping goroutine stability test in short mode")
-	}
 
 	testPDF := createTestPDF(t)
 	defer cleanup(testPDF)
@@ -166,9 +163,6 @@ func TestGoroutineCleanupOnPanic(t *testing.T) {
 // TestConcurrentGoroutineLeakDetection verifies that concurrent extractions
 // do not spawn leaking goroutines by comparing goroutine counts.
 func TestConcurrentGoroutineLeakDetection(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping concurrent leak test in short mode")
-	}
 
 	testPDF := createTestPDF(t)
 	defer cleanup(testPDF)
@@ -374,9 +368,6 @@ func TestConcurrentResultReads(t *testing.T) {
 // TestBatchOperationGoroutineCleanup verifies that batch extraction operations
 // do not leak goroutines, using goroutine count as a proxy for resource leaks.
 func TestBatchOperationGoroutineCleanup(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping batch cleanup test in short mode")
-	}
 
 	// Establish baseline goroutine count
 	for i := 0; i < 10; i++ {

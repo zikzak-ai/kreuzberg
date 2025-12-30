@@ -17,6 +17,239 @@ namespace Kreuzberg;
 /// Optimization: Uses ArrayPool<byte> instead of List<byte> to reduce allocations for large byte arrays.
 /// Expected improvement: 50-100ms reduction for image-heavy workloads (multiple large byte arrays per operation).
 /// </summary>
+/// <summary>
+/// Custom JSON converter for KeywordConfig that ensures all fields are present even when null.
+/// This is required because the Rust FFI expects all config fields.
+/// </summary>
+/// <summary>
+/// Custom JSON converter for PageConfig that ensures all fields are present even when null.
+/// This is required because the Rust FFI expects all config fields.
+/// </summary>
+internal class PageConfigConverter : JsonConverter<PageConfig>
+{
+    public override PageConfig? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new JsonException("Expected StartObject");
+        }
+
+        bool? extractPages = null;
+        bool? insertPageMarkers = null;
+        string? markerFormat = null;
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                break;
+            }
+
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                continue;
+            }
+
+            var propertyName = reader.GetString();
+            reader.Read();
+
+            switch (propertyName?.ToLowerInvariant())
+            {
+                case "extract_pages":
+                    extractPages = reader.TokenType == JsonTokenType.Null ? null : reader.GetBoolean();
+                    break;
+                case "insert_page_markers":
+                    insertPageMarkers = reader.TokenType == JsonTokenType.Null ? null : reader.GetBoolean();
+                    break;
+                case "marker_format":
+                    markerFormat = reader.TokenType == JsonTokenType.Null ? null : reader.GetString();
+                    break;
+            }
+        }
+
+        return new PageConfig
+        {
+            ExtractPages = extractPages,
+            InsertPageMarkers = insertPageMarkers,
+            MarkerFormat = markerFormat
+        };
+    }
+
+    public override void Write(Utf8JsonWriter writer, PageConfig value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+
+        writer.WritePropertyName("extract_pages");
+        if (value.ExtractPages.HasValue)
+        {
+            writer.WriteBooleanValue(value.ExtractPages.Value);
+        }
+        else
+        {
+            writer.WriteBooleanValue(false);
+        }
+
+        writer.WritePropertyName("insert_page_markers");
+        if (value.InsertPageMarkers.HasValue)
+        {
+            writer.WriteBooleanValue(value.InsertPageMarkers.Value);
+        }
+        else
+        {
+            writer.WriteBooleanValue(false);
+        }
+
+        writer.WritePropertyName("marker_format");
+        if (!string.IsNullOrEmpty(value.MarkerFormat))
+        {
+            writer.WriteStringValue(value.MarkerFormat);
+        }
+        else
+        {
+            writer.WriteStringValue("\n\n<!-- PAGE {page_num} -->\n\n");
+        }
+
+        writer.WriteEndObject();
+    }
+}
+
+internal class KeywordConfigConverter : JsonConverter<KeywordConfig>
+{
+    public override KeywordConfig? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new JsonException("Expected StartObject");
+        }
+
+        string? algorithm = null;
+        int? maxKeywords = null;
+        double? minScore = null;
+        List<int>? ngramRange = null;
+        string? language = null;
+        Dictionary<string, object?>? yakeParams = null;
+        Dictionary<string, object?>? rakeParams = null;
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                break;
+            }
+
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                continue;
+            }
+
+            var propertyName = reader.GetString();
+            reader.Read();
+
+            switch (propertyName?.ToLowerInvariant())
+            {
+                case "algorithm":
+                    algorithm = reader.TokenType == JsonTokenType.Null ? null : reader.GetString();
+                    break;
+                case "max_keywords":
+                    maxKeywords = reader.TokenType == JsonTokenType.Null ? null : reader.GetInt32();
+                    break;
+                case "min_score":
+                    minScore = reader.TokenType == JsonTokenType.Null ? null : reader.GetDouble();
+                    break;
+                case "ngram_range":
+                    ngramRange = reader.TokenType == JsonTokenType.Null ? null : JsonSerializer.Deserialize<List<int>>(ref reader, options);
+                    break;
+                case "language":
+                    language = reader.TokenType == JsonTokenType.Null ? null : reader.GetString();
+                    break;
+                case "yake_params":
+                    yakeParams = reader.TokenType == JsonTokenType.Null ? null : JsonSerializer.Deserialize<Dictionary<string, object?>>(ref reader, options);
+                    break;
+                case "rake_params":
+                    rakeParams = reader.TokenType == JsonTokenType.Null ? null : JsonSerializer.Deserialize<Dictionary<string, object?>>(ref reader, options);
+                    break;
+            }
+        }
+
+        return new KeywordConfig
+        {
+            Algorithm = algorithm,
+            MaxKeywords = maxKeywords,
+            MinScore = minScore,
+            NgramRange = ngramRange,
+            Language = language,
+            YakeParams = yakeParams,
+            RakeParams = rakeParams
+        };
+    }
+
+    public override void Write(Utf8JsonWriter writer, KeywordConfig value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+
+        writer.WritePropertyName("algorithm");
+        writer.WriteStringValue(value.Algorithm);
+
+        writer.WritePropertyName("max_keywords");
+        if (value.MaxKeywords.HasValue)
+        {
+            writer.WriteNumberValue(value.MaxKeywords.Value);
+        }
+        else
+        {
+            writer.WriteNumberValue(10);
+        }
+
+        writer.WritePropertyName("min_score");
+        if (value.MinScore.HasValue)
+        {
+            writer.WriteNumberValue(value.MinScore.Value);
+        }
+        else
+        {
+            writer.WriteNumberValue(0.0);
+        }
+
+        writer.WritePropertyName("ngram_range");
+        if (value.NgramRange != null && value.NgramRange.Count == 2)
+        {
+            JsonSerializer.Serialize(writer, value.NgramRange, options);
+        }
+        else
+        {
+            writer.WriteStartArray();
+            writer.WriteNumberValue(1);
+            writer.WriteNumberValue(2);
+            writer.WriteEndArray();
+        }
+
+        writer.WritePropertyName("language");
+        writer.WriteStringValue(value.Language);
+
+        writer.WritePropertyName("yake_params");
+        if (value.YakeParams != null)
+        {
+            JsonSerializer.Serialize(writer, value.YakeParams, options);
+        }
+        else
+        {
+            writer.WriteNullValue();
+        }
+
+        writer.WritePropertyName("rake_params");
+        if (value.RakeParams != null)
+        {
+            JsonSerializer.Serialize(writer, value.RakeParams, options);
+        }
+        else
+        {
+            writer.WriteNullValue();
+        }
+
+        writer.WriteEndObject();
+    }
+}
+
 internal class ByteArrayConverter : JsonConverter<byte[]>
 {
     /// <summary>
@@ -103,6 +336,18 @@ internal static class Serialization
     };
 
     /// <summary>
+    /// JSON serializer options for config serialization that includes null values.
+    /// This ensures the Rust FFI receives all expected fields.
+    /// </summary>
+    internal static readonly JsonSerializerOptions ConfigOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        WriteIndented = false,
+        Converters = { new PageConfigConverter(), new KeywordConfigConverter(), new ByteArrayConverter() }
+    };
+
+    /// <summary>
     /// Gets the appropriate JsonSerializerOptions for the current .NET version.
     /// On .NET 7+, returns options with source-generated serialization.
     /// On older frameworks, returns options with reflection-based serialization.
@@ -176,6 +421,11 @@ internal static class Serialization
             root["images"] = JsonSerializer.SerializeToNode(result.Images, Options);
         }
 
+        if (result.Pages != null)
+        {
+            root["pages"] = JsonSerializer.SerializeToNode(result.Pages, Options);
+        }
+
         return root.ToJsonString(Options);
     }
 
@@ -214,6 +464,11 @@ internal static class Serialization
         if (root.TryGetProperty("images", out var images))
         {
             result.Images = DeserializeElement<List<ExtractedImage>>(images);
+        }
+
+        if (root.TryGetProperty("pages", out var pages))
+        {
+            result.Pages = DeserializeElement<List<PageContent>>(pages);
         }
 
         if (root.TryGetProperty("metadata", out var metadata))
@@ -343,7 +598,7 @@ internal static class Serialization
                 metadata.Format.Text = DeserializeElement<TextMetadata>(root);
                 break;
             case FormatType.Html:
-                metadata.Format.Html = DeserializeElement<HtmlMetadata>(root);
+                metadata.Format.Html = ExtractHtmlMetadata(root);
                 break;
             case FormatType.Ocr:
                 metadata.Format.Ocr = DeserializeElement<OcrMetadata>(root);
@@ -352,6 +607,166 @@ internal static class Serialization
                 metadata.Format.Type = FormatType.Unknown;
                 break;
         }
+    }
+
+    /// <summary>
+    /// Extracts HTML metadata from flattened JSON structure.
+    ///
+    /// Rust serializes FormatMetadata with #[serde(flatten)], which means the HTML metadata
+    /// fields are merged at the root level of the metadata JSON. This method reconstructs
+    /// the proper HtmlMetadata object from the flattened structure.
+    ///
+    /// Example Rust output:
+    /// {
+    ///   "format_type": "html",
+    ///   "title": "...",
+    ///   "description": "...",
+    ///   "keywords": [...],
+    ///   "open_graph": { ... },
+    ///   "twitter_card": { ... },
+    ///   "meta_tags": { ... },
+    ///   "headers": [...],
+    ///   "links": [...],
+    ///   "images": [...],
+    ///   "structured_data": [...]
+    /// }
+    /// </summary>
+    private static HtmlMetadata? ExtractHtmlMetadata(JsonElement root)
+    {
+        var htmlMetadata = new HtmlMetadata();
+
+        // Extract scalar fields
+        if (root.TryGetProperty("title", out var title) && title.ValueKind != JsonValueKind.Null)
+        {
+            htmlMetadata.Title = title.GetString();
+        }
+
+        if (root.TryGetProperty("description", out var description) && description.ValueKind != JsonValueKind.Null)
+        {
+            htmlMetadata.Description = description.GetString();
+
+        }
+
+        if (root.TryGetProperty("author", out var author) && author.ValueKind != JsonValueKind.Null)
+        {
+            htmlMetadata.Author = author.GetString();
+
+        }
+
+        if (root.TryGetProperty("canonical_url", out var canonicalUrl) && canonicalUrl.ValueKind != JsonValueKind.Null)
+        {
+            htmlMetadata.CanonicalUrl = canonicalUrl.GetString();
+
+        }
+
+        if (root.TryGetProperty("base_href", out var baseHref) && baseHref.ValueKind != JsonValueKind.Null)
+        {
+            htmlMetadata.BaseHref = baseHref.GetString();
+
+        }
+
+        if (root.TryGetProperty("language", out var language) && language.ValueKind != JsonValueKind.Null)
+        {
+            htmlMetadata.Language = language.GetString();
+
+        }
+
+        if (root.TryGetProperty("text_direction", out var textDirection) && textDirection.ValueKind != JsonValueKind.Null)
+        {
+            htmlMetadata.TextDirection = textDirection.GetString();
+
+        }
+
+        // Extract keywords list
+        if (root.TryGetProperty("keywords", out var keywords) && keywords.ValueKind != JsonValueKind.Null)
+        {
+            var keywordsList = DeserializeElement<List<string>>(keywords);
+            if (keywordsList != null && keywordsList.Count > 0)
+            {
+                htmlMetadata.Keywords = keywordsList;
+
+            }
+        }
+
+        // Extract open_graph dictionary
+        if (root.TryGetProperty("open_graph", out var openGraph) && openGraph.ValueKind != JsonValueKind.Null)
+        {
+            var ogDict = DeserializeElement<Dictionary<string, string>>(openGraph);
+            if (ogDict != null && ogDict.Count > 0)
+            {
+                htmlMetadata.OpenGraph = ogDict;
+
+            }
+        }
+
+        // Extract twitter_card dictionary
+        if (root.TryGetProperty("twitter_card", out var twitterCard) && twitterCard.ValueKind != JsonValueKind.Null)
+        {
+            var tcDict = DeserializeElement<Dictionary<string, string>>(twitterCard);
+            if (tcDict != null && tcDict.Count > 0)
+            {
+                htmlMetadata.TwitterCard = tcDict;
+
+            }
+        }
+
+        // Extract meta_tags dictionary
+        if (root.TryGetProperty("meta_tags", out var metaTags) && metaTags.ValueKind != JsonValueKind.Null)
+        {
+            var mtDict = DeserializeElement<Dictionary<string, string>>(metaTags);
+            if (mtDict != null && mtDict.Count > 0)
+            {
+                htmlMetadata.MetaTags = mtDict;
+
+            }
+        }
+
+        // Extract headers list
+        if (root.TryGetProperty("headers", out var headers) && headers.ValueKind != JsonValueKind.Null)
+        {
+            var headersList = DeserializeElement<List<HeaderMetadata>>(headers);
+            if (headersList != null && headersList.Count > 0)
+            {
+                htmlMetadata.Headers = headersList;
+
+            }
+        }
+
+        // Extract links list
+        if (root.TryGetProperty("links", out var links) && links.ValueKind != JsonValueKind.Null)
+        {
+            var linksList = DeserializeElement<List<LinkMetadata>>(links);
+            if (linksList != null && linksList.Count > 0)
+            {
+                htmlMetadata.Links = linksList;
+
+            }
+        }
+
+        // Extract images list
+        if (root.TryGetProperty("images", out var images) && images.ValueKind != JsonValueKind.Null)
+        {
+            var imagesList = DeserializeElement<List<HtmlImageMetadata>>(images);
+            if (imagesList != null && imagesList.Count > 0)
+            {
+                htmlMetadata.Images = imagesList;
+
+            }
+        }
+
+        // Extract structured_data list
+        if (root.TryGetProperty("structured_data", out var structuredData) && structuredData.ValueKind != JsonValueKind.Null)
+        {
+            var sdList = DeserializeElement<List<StructuredData>>(structuredData);
+            if (sdList != null && sdList.Count > 0)
+            {
+                htmlMetadata.StructuredData = sdList;
+
+            }
+        }
+
+        // Return the metadata object (always, even if empty, since we want the structure)
+        return htmlMetadata;
     }
 
     public static JsonNode BuildMetadataNode(Metadata metadata)

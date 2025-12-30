@@ -34,12 +34,11 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
-
-# ~keep: This must be imported FIRST before any Rust bindings
-# ~keep: It sets up dynamic library paths for bundled native libraries (pdfium, etc.)
 from importlib.metadata import version
 from typing import TYPE_CHECKING, Any
 
+# ~keep: This must be imported FIRST before any Rust bindings
+# ~keep: It sets up dynamic library paths for bundled native libraries (pdfium, etc.)
 from kreuzberg import _setup_lib_path  # noqa: F401
 from kreuzberg._internal_bindings import (
     ChunkingConfig,
@@ -63,6 +62,8 @@ from kreuzberg._internal_bindings import (
     TesseractConfig,
     TokenReductionConfig,
     YakeParams,
+    _discover_extraction_config_impl,
+    _load_extraction_config_from_file_impl,
     clear_document_extractors,
     clear_ocr_backends,
     clear_post_processors,
@@ -222,6 +223,7 @@ __all__ = [
     "config_to_json",
     "detect_mime_type",
     "detect_mime_type_from_path",
+    "discover_extraction_config",
     "error_code_name",
     "extract_bytes",
     "extract_bytes_sync",
@@ -241,6 +243,7 @@ __all__ = [
     "list_ocr_backends",
     "list_post_processors",
     "list_validators",
+    "load_extraction_config_from_file",
     "register_ocr_backend",
     "register_post_processor",
     "register_validator",
@@ -624,6 +627,64 @@ def detect_mime_type_from_path(path: str | Path) -> str:
         >>> assert "pdf" in mime_type.lower()
     """
     return _detect_mime_type_from_path_impl(str(path))
+
+
+def discover_extraction_config() -> ExtractionConfig | None:
+    """Discover extraction configuration from the environment.
+
+    Attempts to locate a Kreuzberg configuration file using the following strategy:
+    1. If KREUZBERG_CONFIG_PATH environment variable is set, load from that path
+    2. Otherwise, search for kreuzberg.toml, kreuzberg.yaml, or kreuzberg.json
+       in the current directory and parent directories (walking up the tree)
+    3. Return None if no configuration file is found
+
+    The search order for auto-discovery (when env var is not set):
+    - kreuzberg.toml (highest priority)
+    - kreuzberg.yaml
+    - kreuzberg.json (lowest priority)
+
+    Returns:
+        ExtractionConfig if a configuration file is found and valid, None otherwise
+
+    Raises:
+        RuntimeError: If the discovered config file is invalid or cannot be parsed
+        IOError: If there's an error reading the config file
+
+    Example:
+        >>> from kreuzberg import discover_extraction_config
+        >>> config = discover_extraction_config()
+        >>> if config:
+        ...     print(f"Loaded config with use_cache={config.use_cache}")
+        ... else:
+        ...     print("No config found, using defaults")
+    """
+    return _discover_extraction_config_impl()
+
+
+def load_extraction_config_from_file(path: str | Path) -> ExtractionConfig:
+    """Load extraction configuration from a specific file.
+
+    Loads an ExtractionConfig from the specified file path. The file format
+    is determined by the file extension (.toml, .yaml, or .json).
+
+    Args:
+        path: Path to the configuration file (str or pathlib.Path).
+              Supports absolute and relative paths.
+
+    Returns:
+        ExtractionConfig parsed from the file
+
+    Raises:
+        FileNotFoundError: If the configuration file does not exist
+        RuntimeError: If the file cannot be read or parsed
+        ValueError: If the file format is invalid or unsupported
+
+    Example:
+        >>> from kreuzberg import load_extraction_config_from_file
+        >>> config = load_extraction_config_from_file("kreuzberg.toml")
+        >>> result = extract_file_sync("document.pdf", config=config)
+    """
+    return _load_extraction_config_from_file_impl(str(path))
 
 
 def register_ocr_backend(backend: Any) -> None:

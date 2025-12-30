@@ -289,6 +289,9 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: scripts/ci/python/install-spacy-model.sh
 
+      - name: Install Task
+        uses: ./.github/actions/install-task
+
       - name: Run Python tests
         shell: bash
         run: task python:test:ci
@@ -315,9 +318,6 @@ jobs:
         uses: ./.github/actions/setup-onnx-runtime
         with:
           ort-version: ${{ env.ORT_VERSION }}
-
-      - name: Install Task
-        uses: ./.github/actions/install-task
 
       - name: Run E2E tests
         shell: bash

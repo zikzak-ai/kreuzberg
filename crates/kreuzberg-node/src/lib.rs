@@ -1,5 +1,14 @@
 #![deny(clippy::all)]
 
+mod worker_pool;
+mod worker_pool_api;
+
+// Re-export worker pool APIs
+pub use worker_pool_api::{
+    JsWorkerPool, WorkerPoolStats, batch_extract_files_in_worker, close_worker_pool, create_worker_pool,
+    extract_file_in_worker, get_worker_pool_stats,
+};
+
 use base64::Engine;
 use html_to_markdown_rs::options::{
     CodeBlockStyle, ConversionOptions, HeadingStyle, HighlightStyle, ListIndentType, NewlineStyle,
@@ -397,8 +406,17 @@ pub struct ErrorClassification {
 pub fn classify_error(error_message: String) -> ErrorClassification {
     let lower = error_message.to_lowercase();
 
-    let (code, confidence) = if lower.contains("validation")
+    let (code, confidence) = if lower.contains("not found")
+        || lower.contains("not installed")
+        || lower.contains("missing")
+        || lower.contains("dependency")
+        || lower.contains("require")
+        || lower.contains("unavailable")
+    {
+        (3u32, 0.92)
+    } else if lower.contains("validation")
         || lower.contains("invalid_argument")
+        || lower.contains("invalid")
         || lower.contains("schema")
         || lower.contains("required")
         || lower.contains("unexpected field")
@@ -422,14 +440,14 @@ pub fn classify_error(error_message: String) -> ErrorClassification {
         || lower.contains("model")
     {
         (2u32, 0.88)
-    } else if lower.contains("not found")
-        || lower.contains("not installed")
-        || lower.contains("missing")
-        || lower.contains("dependency")
-        || lower.contains("require")
-        || lower.contains("unavailable")
+    } else if lower.contains("plugin")
+        || lower.contains("register")
+        || lower.contains("registration")
+        || lower.contains("extension")
+        || lower.contains("handler")
+        || lower.contains("processor")
     {
-        (3u32, 0.92)
+        (5u32, 0.84)
     } else if lower.contains("io")
         || lower.contains("file")
         || lower.contains("disk")
@@ -440,13 +458,6 @@ pub fn classify_error(error_message: String) -> ErrorClassification {
         || lower.contains("path")
     {
         (4u32, 0.87)
-    } else if lower.contains("plugin")
-        || lower.contains("register")
-        || lower.contains("extension")
-        || lower.contains("handler")
-        || lower.contains("processor")
-    {
-        (5u32, 0.84)
     } else if lower.contains("unsupported")
         || lower.contains("format")
         || lower.contains("mime")
