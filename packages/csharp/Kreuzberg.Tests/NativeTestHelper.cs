@@ -18,8 +18,8 @@ internal static class NativeTestHelper
             Path.Combine(root, "target", "debug", LibraryFileName()),
         };
 
-        // Don't manually load Pdfium - let Rust handle it during initialization
-        // LoadPdfiumIfPresent(root);
+        // Load Pdfium before loading the FFI library to ensure it's available
+        LoadPdfiumIfPresent(root);
 
         foreach (var candidate in candidates)
         {
