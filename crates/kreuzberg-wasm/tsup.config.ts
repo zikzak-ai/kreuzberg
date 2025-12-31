@@ -12,13 +12,9 @@ export default defineConfig({
 	// Modern Node.js (>= 14), Deno, and browsers all support ESM natively
 	format: ["esm"],
 	bundle: true,
-	dts: {
-		compilerOptions: {
-			skipLibCheck: true,
-			skipDefaultLibCheck: true,
-			verbatimModuleSyntax: true,
-		},
-	},
+	// Disable tsup's dts bundling - it generates hashed filenames (types-xxx.d.ts)
+	// that change on every build. We generate stable .d.ts files using tsc instead.
+	dts: false,
 	splitting: false,
 	sourcemap: true,
 	clean: true,

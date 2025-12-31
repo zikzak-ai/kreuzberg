@@ -243,6 +243,15 @@ jobs:
             cat .cargo/config.toml
           fi
 
+      - name: Clean cargo fingerprints to avoid Windows path conflicts
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "Cleaning Cargo fingerprints (Windows MAX_PATH mitigation uses different target dir)"
+          rm -rf packages/ruby/tmp 2>/dev/null || true
+          find target -name ".fingerprint" -type d -exec rm -rf {} + 2>/dev/null || true
+          echo "Done"
+
       - name: Build or restore FFI from cache
         id: ffi
         uses: ./.github/actions/build-and-cache-ffi
@@ -274,19 +283,6 @@ jobs:
           Write-Host "RUSTUP_HOME: $rustupHome"
           $cargoHome = $env:CARGO_HOME
           Write-Host "CARGO_HOME: $cargoHome"
-
-      - name: Clean cargo cache to avoid Windows fingerprint conflicts
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "=== Cleaning cargo cache for Ruby build ==="
-          echo "Reason: Windows MAX_PATH mitigation uses different CARGO_TARGET_DIR,"
-          echo "        causing fingerprint conflicts with Ruby extension builder."
-          echo ""
-          cargo clean --release -p kreuzberg-rb 2>/dev/null || true
-          cargo clean --release -p kreuzberg 2>/dev/null || true
-          rm -rf packages/ruby/tmp 2>/dev/null || true
-          echo "✓ Cache cleaned"
 
       - name: Build Ruby gem
         shell: bash
