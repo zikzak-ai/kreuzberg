@@ -402,10 +402,15 @@ mod build_tesseract {
             tesseract_install_dir.join("lib").display()
         );
 
-        set_os_specific_link_flags();
-
         // Link libraries in the correct order for static linking:
-        // tesseract first (depends on leptonica), then leptonica
+        // 1. tesseract first (depends on leptonica and C++ stdlib)
+        // 2. leptonica (depends on C++ stdlib)
+        // 3. C++ standard library and system libraries (via set_os_specific_link_flags)
+        //
+        // IMPORTANT: For static linking, the linker resolves symbols in order.
+        // Libraries must be listed BEFORE the libraries they depend on.
+        // The C++ stdlib must come LAST because both tesseract and leptonica
+        // depend on it for symbols like operator new, operator delete, etc.
         #[cfg(feature = "dynamic-linking")]
         let link_type = "dylib";
         #[cfg(not(feature = "dynamic-linking"))]
@@ -421,6 +426,11 @@ mod build_tesseract {
             "cargo:warning=Linking with leptonica ({} linking): {}",
             link_type, leptonica_link_name
         );
+
+        // Link C++ standard library and system libraries AFTER tesseract and leptonica.
+        // This is critical for static linking on Linux (especially aarch64) where
+        // tesseract's C++ code needs symbols like operator new/delete from libstdc++.
+        set_os_specific_link_flags();
 
         println!("cargo:warning=Leptonica include dir: {:?}", leptonica_include_dir);
         println!("cargo:warning=Leptonica lib dir: {:?}", leptonica_lib_dir);
