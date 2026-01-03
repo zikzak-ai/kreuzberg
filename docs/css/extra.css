@@ -1107,3 +1107,20 @@ nav.md-nav--secondary > .md-nav__list > .md-nav__item > .md-nav > .md-nav__list 
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 }
+
+.md-typeset h2 a {
+	color: inherit;
+	font-family: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	text-decoration: none;
+}
+
+.md-typeset h2 a:hover {
+	color: var(--md-accent-fg-color);
+	text-decoration: none;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h2 a:hover {
+	color: var(--md-accent-fg-color-opposite);
+}
