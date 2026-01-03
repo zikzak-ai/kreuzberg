@@ -1907,41 +1907,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: scripts/publish/upload-cli-binaries.sh "${{ needs.prepare.outputs.tag }}" dist/cli
 
-  upload-csharp-release:
-    name: Upload C# NuGet to GitHub Release
-    needs: [prepare, validate-versions, check-nuget, csharp-package]
-    if: |
-      always() &&
-      needs.prepare.outputs.dry_run != 'true' &&
-      needs.prepare.outputs.is_tag == 'true' &&
-      needs.prepare.outputs.release_csharp == 'true' &&
-      (needs.prepare.outputs.force_republish == 'true' || needs.check-nuget.outputs.exists != 'true') &&
-      needs.csharp-package.result == 'success'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.prepare.outputs.ref }}
-
-      - name: Ensure GitHub release exists
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/publish/ensure-github-release-exists.sh "${{ needs.prepare.outputs.tag }}"
-
-      - name: Download C# artifacts
-        uses: actions/download-artifact@v7
-        with:
-          name: csharp-nuget
-          path: dist/csharp
-
-      - name: Upload C# packages (idempotent)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/publish/upload-csharp-packages.sh "${{ needs.prepare.outputs.tag }}" dist/csharp
-
   upload-go-release:
     name: Upload Go FFI libraries to GitHub Release
     needs: [prepare, validate-versions, check-go, go-ffi-libraries]
@@ -2757,7 +2722,6 @@ jobs:
       - publish-hex
       - publish-homebrew
       - upload-cli-release
-      - upload-csharp-release
       - upload-go-release
       - homebrew-bottles
       - upload-homebrew-bottles
@@ -2802,6 +2766,5 @@ jobs:
           RESULT_PUBLISH_HEX: ${{ needs.publish-hex.result }}
           RESULT_PUBLISH_HOMEBREW: ${{ needs.publish-homebrew.result }}
           RESULT_UPLOAD_CLI_RELEASE: ${{ needs.upload-cli-release.result }}
-          RESULT_UPLOAD_CSHARP_RELEASE: ${{ needs.upload-csharp-release.result }}
           RESULT_UPLOAD_GO_RELEASE: ${{ needs.upload-go-release.result }}
         run: python3 scripts/publish/aggregate-release-status.py
