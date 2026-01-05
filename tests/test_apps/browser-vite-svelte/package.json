@@ -19,6 +19,6 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
-    "@kreuzberg/wasm": "file:../../kreuzberg/crates/kreuzberg-wasm"
+    "@kreuzberg/wasm": "4.0.0-rc.27"
   }
 }

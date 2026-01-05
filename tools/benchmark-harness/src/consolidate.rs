@@ -141,6 +141,13 @@ pub fn load_run_results(dir: &Path) -> Result<Vec<BenchmarkResult>> {
             let json_content = fs::read_to_string(&path).map_err(Error::Io)?;
             let run_results: Vec<BenchmarkResult> = serde_json::from_str(&json_content)
                 .map_err(|e| Error::Benchmark(format!("Failed to parse {}: {}", path.display(), e)))?;
+
+            // Validate loaded results
+            for result in &run_results {
+                crate::output::validate_result(result)
+                    .map_err(|e| Error::Benchmark(format!("Invalid result in {}: {}", path.display(), e)))?;
+            }
+
             results.extend(run_results);
         } else if path.is_dir() {
             match load_run_results(&path) {
@@ -750,7 +757,7 @@ fn calculate_percentile(values: &[f64], percentile: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::{FrameworkCapabilities, PerformanceMetrics};
+    use crate::types::{FrameworkCapabilities, OcrStatus, PerformanceMetrics};
     use std::path::PathBuf;
     use std::time::Duration;
 
@@ -779,6 +786,7 @@ mod tests {
             file_extension: "pdf".to_string(),
             framework_capabilities: FrameworkCapabilities::default(),
             pdf_metadata: None,
+            ocr_status: OcrStatus::Unknown,
         }
     }
 

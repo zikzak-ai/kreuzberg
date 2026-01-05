@@ -143,3 +143,4 @@ packages/php/php-kreuzberg.ini
 
 # Temporary debug/test files
 packages/csharp/test_html_debug.cs
+.artifacts/

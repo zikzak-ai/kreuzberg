@@ -6,6 +6,7 @@ static ALLOC: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 use benchmark_harness::{BenchmarkConfig, BenchmarkMode, FixtureManager, Result};
 use clap::{Parser, Subcommand, ValueEnum};
+use std::collections::HashSet;
 use std::path::PathBuf;
 
 /// CLI enum for benchmark mode
@@ -426,7 +427,9 @@ async fn main() -> Result<()> {
             format,
             baseline: _baseline,
         } => {
-            use benchmark_harness::{consolidate_runs, load_run_results, write_consolidated_json};
+            use benchmark_harness::{
+                consolidate_runs, load_run_results, write_aggregated_html, write_consolidated_json,
+            };
 
             if inputs.is_empty() {
                 return Err(benchmark_harness::Error::Benchmark(
@@ -453,6 +456,25 @@ async fn main() -> Result<()> {
             println!("\nConsolidating {} run(s)...", all_runs.len());
             let consolidated = consolidate_runs(all_runs)?;
 
+            // Create new aggregation format
+            println!("\nCreating new aggregation format...");
+            // Flatten all runs into a single vec of BenchmarkResult
+            let all_results: Vec<_> = inputs
+                .iter()
+                .flat_map(|input| load_run_results(input).unwrap_or_default())
+                .collect();
+            let aggregated = benchmark_harness::aggregate_new_format(&all_results);
+            println!(
+                "  Aggregated {} frameworks across {} file types",
+                aggregated.by_framework_mode.len(),
+                aggregated
+                    .by_framework_mode
+                    .values()
+                    .flat_map(|fm| fm.by_file_type.keys())
+                    .collect::<HashSet<_>>()
+                    .len()
+            );
+
             println!("\nConsolidation Summary:");
             println!("  Total files processed: {}", consolidated.total_files);
             println!("  Number of runs: {}", consolidated.run_count);
@@ -474,11 +496,33 @@ async fn main() -> Result<()> {
                     let output_file = output.join("consolidated.json");
                     write_consolidated_json(&consolidated, &output_file)?;
                     println!("\nConsolidated results written to: {}", output_file.display());
+
+                    let aggregated_file = output.join("aggregated.json");
+                    let json = serde_json::to_string_pretty(&aggregated).map_err(|e| {
+                        benchmark_harness::Error::Benchmark(format!("Failed to serialize aggregated results: {}", e))
+                    })?;
+                    std::fs::write(&aggregated_file, json).map_err(benchmark_harness::Error::Io)?;
+                    println!("Aggregated metrics written to: {}", aggregated_file.display());
+
+                    let aggregated_html = output.join("aggregated.html");
+                    write_aggregated_html(&aggregated, &aggregated_html)?;
+                    println!("Aggregated HTML report written to: {}", aggregated_html.display());
                 }
                 OutputFormat::Html => {
                     let html_file = output.join("consolidated.html");
                     write_simple_html(&consolidated, &html_file)?;
                     println!("\nConsolidated HTML report written to: {}", html_file.display());
+
+                    let aggregated_file = output.join("aggregated.json");
+                    let json = serde_json::to_string_pretty(&aggregated).map_err(|e| {
+                        benchmark_harness::Error::Benchmark(format!("Failed to serialize aggregated results: {}", e))
+                    })?;
+                    std::fs::write(&aggregated_file, json).map_err(benchmark_harness::Error::Io)?;
+                    println!("Aggregated metrics written to: {}", aggregated_file.display());
+
+                    let aggregated_html = output.join("aggregated.html");
+                    write_aggregated_html(&aggregated, &aggregated_html)?;
+                    println!("Aggregated HTML report written to: {}", aggregated_html.display());
                 }
                 OutputFormat::Both => {
                     let output_file = output.join("consolidated.json");
@@ -488,6 +532,17 @@ async fn main() -> Result<()> {
                     let html_file = output.join("consolidated.html");
                     write_simple_html(&consolidated, &html_file)?;
                     println!("Consolidated HTML report written to: {}", html_file.display());
+
+                    let aggregated_file = output.join("aggregated.json");
+                    let json = serde_json::to_string_pretty(&aggregated).map_err(|e| {
+                        benchmark_harness::Error::Benchmark(format!("Failed to serialize aggregated results: {}", e))
+                    })?;
+                    std::fs::write(&aggregated_file, json).map_err(benchmark_harness::Error::Io)?;
+                    println!("Aggregated metrics written to: {}", aggregated_file.display());
+
+                    let aggregated_html = output.join("aggregated.html");
+                    write_aggregated_html(&aggregated, &aggregated_html)?;
+                    println!("Aggregated HTML report written to: {}", aggregated_html.display());
                 }
             }
 
@@ -500,7 +555,9 @@ async fn main() -> Result<()> {
             format,
             benchmark_date,
         } => {
-            use benchmark_harness::{load_run_results, write_by_extension_analysis, write_html, write_json};
+            use benchmark_harness::{
+                load_run_results, write_aggregated_html, write_by_extension_analysis, write_html, write_json,
+            };
 
             if inputs.is_empty() {
                 return Err(benchmark_harness::Error::Benchmark(
@@ -520,6 +577,20 @@ async fn main() -> Result<()> {
                 results.append(&mut run_results);
             }
 
+            // Create new aggregation format
+            println!("\nCreating new aggregation format...");
+            let aggregated = benchmark_harness::aggregate_new_format(&results);
+            println!(
+                "  Aggregated {} frameworks across {} file types",
+                aggregated.by_framework_mode.len(),
+                aggregated
+                    .by_framework_mode
+                    .values()
+                    .flat_map(|fm| fm.by_file_type.keys())
+                    .collect::<HashSet<_>>()
+                    .len()
+            );
+
             if results.is_empty() {
                 return Err(benchmark_harness::Error::Benchmark(
                     "No benchmark results found to visualize".to_string(),
@@ -537,11 +608,33 @@ async fn main() -> Result<()> {
                     let by_ext_file = output.join("by-extension.json");
                     write_by_extension_analysis(&results, &by_ext_file)?;
                     println!("Per-extension analysis written to: {}", by_ext_file.display());
+
+                    let aggregated_file = output.join("aggregated.json");
+                    let json = serde_json::to_string_pretty(&aggregated).map_err(|e| {
+                        benchmark_harness::Error::Benchmark(format!("Failed to serialize aggregated results: {}", e))
+                    })?;
+                    std::fs::write(&aggregated_file, json).map_err(benchmark_harness::Error::Io)?;
+                    println!("Aggregated metrics written to: {}", aggregated_file.display());
+
+                    let aggregated_html = output.join("aggregated.html");
+                    write_aggregated_html(&aggregated, &aggregated_html)?;
+                    println!("Aggregated HTML report written to: {}", aggregated_html.display());
                 }
                 OutputFormat::Html => {
                     let html_file = output.join("index.html");
                     write_html(&results, &html_file, benchmark_date.as_deref())?;
                     println!("\nHTML report written to: {}", html_file.display());
+
+                    let aggregated_file = output.join("aggregated.json");
+                    let json = serde_json::to_string_pretty(&aggregated).map_err(|e| {
+                        benchmark_harness::Error::Benchmark(format!("Failed to serialize aggregated results: {}", e))
+                    })?;
+                    std::fs::write(&aggregated_file, json).map_err(benchmark_harness::Error::Io)?;
+                    println!("Aggregated metrics written to: {}", aggregated_file.display());
+
+                    let aggregated_html = output.join("aggregated.html");
+                    write_aggregated_html(&aggregated, &aggregated_html)?;
+                    println!("Aggregated HTML report written to: {}", aggregated_html.display());
                 }
                 OutputFormat::Both => {
                     let output_file = output.join("results.json");
@@ -555,6 +648,17 @@ async fn main() -> Result<()> {
                     let html_file = output.join("index.html");
                     write_html(&results, &html_file, benchmark_date.as_deref())?;
                     println!("HTML report written to: {}", html_file.display());
+
+                    let aggregated_file = output.join("aggregated.json");
+                    let json = serde_json::to_string_pretty(&aggregated).map_err(|e| {
+                        benchmark_harness::Error::Benchmark(format!("Failed to serialize aggregated results: {}", e))
+                    })?;
+                    std::fs::write(&aggregated_file, json).map_err(benchmark_harness::Error::Io)?;
+                    println!("Aggregated metrics written to: {}", aggregated_file.display());
+
+                    let aggregated_html = output.join("aggregated.html");
+                    write_aggregated_html(&aggregated, &aggregated_html)?;
+                    println!("Aggregated HTML report written to: {}", aggregated_html.display());
                 }
             }
 

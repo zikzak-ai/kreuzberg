@@ -1,11 +1,11 @@
 # Configuration Discovery Example
 
-Use `discoverExtractionConfig()` to automatically find and load configuration files from the current directory or parent directories:
+Use `ExtractionConfig.discover()` to automatically find and load configuration files from the current directory or parent directories:
 
 ```typescript
-import { discoverExtractionConfig, extractFile } from '@kreuzberg/node';
+import { ExtractionConfig, extractFile } from '@kreuzberg/node';
 
-const config = discoverExtractionConfig();
+const config = ExtractionConfig.discover();
 if (config) {
   console.log('Found configuration file');
   const result = await extractFile('document.pdf', null, config);
@@ -17,4 +17,4 @@ if (config) {
 }
 ```
 
-The discovery function looks for `kreuzberg.toml`, `kreuzberg.yaml`, or `kreuzberg.json` files starting in the current directory and searching parent directories up to the filesystem root.
+The discovery method looks for `kreuzberg.toml`, `kreuzberg.yaml`, or `kreuzberg.json` files starting in the current directory and searching parent directories up to the filesystem root.

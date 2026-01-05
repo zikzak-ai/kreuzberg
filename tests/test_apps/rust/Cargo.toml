@@ -10,7 +10,7 @@ readme = "README.md"
 publish = false
 
 [dependencies]
-kreuzberg = { version = "4.0.0-rc.25", features = ["static-pdfium", "excel", "office", "html"] }
+kreuzberg = { version = "4.0.0-rc.27", features = ["static-pdfium", "excel", "office", "html"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

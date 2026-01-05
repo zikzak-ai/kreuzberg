@@ -5,7 +5,7 @@
 
 use crate::adapter::FrameworkAdapter;
 use crate::monitoring::ResourceMonitor;
-use crate::types::{BenchmarkResult, FrameworkCapabilities, PerformanceMetrics};
+use crate::types::{BenchmarkResult, FrameworkCapabilities, OcrStatus, PerformanceMetrics};
 use crate::{Error, Result};
 use async_trait::async_trait;
 use kreuzberg::{ExtractionConfig, batch_extract_file, extract_file};
@@ -62,6 +62,19 @@ impl NativeAdapter {
     /// Create a new native adapter with custom configuration
     pub fn with_config(config: ExtractionConfig) -> Self {
         Self { config }
+    }
+
+    /// Determine OCR status based on extraction configuration
+    ///
+    /// Returns:
+    /// - `OcrStatus::Used` if OCR is enabled in config (ocr.is_some() or force_ocr is true)
+    /// - `OcrStatus::NotUsed` if OCR is explicitly disabled (ocr.is_none() and force_ocr is false)
+    fn get_ocr_status(&self) -> OcrStatus {
+        if self.config.ocr.is_some() || self.config.force_ocr {
+            OcrStatus::Used
+        } else {
+            OcrStatus::NotUsed
+        }
     }
 }
 
@@ -164,6 +177,7 @@ impl FrameworkAdapter for NativeAdapter {
                     .to_lowercase(),
                 framework_capabilities: FrameworkCapabilities::default(),
                 pdf_metadata: None,
+                ocr_status: self.get_ocr_status(),
             });
         }
 
@@ -197,10 +211,16 @@ impl FrameworkAdapter for NativeAdapter {
                 .to_lowercase(),
             framework_capabilities: FrameworkCapabilities::default(),
             pdf_metadata: None,
+            ocr_status: self.get_ocr_status(),
         })
     }
 
     async fn extract_batch(&self, file_paths: &[&Path], timeout: Duration) -> Result<Vec<BenchmarkResult>> {
+        // Early return if file_paths is empty
+        if file_paths.is_empty() {
+            return Ok(Vec::new());
+        }
+
         let total_file_size: u64 = file_paths
             .iter()
             .filter_map(|path| std::fs::metadata(path).ok())
@@ -227,59 +247,108 @@ impl FrameworkAdapter for NativeAdapter {
         let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots);
 
         if let Err(e) = batch_result {
-            return Ok(vec![BenchmarkResult {
-                framework: self.name().to_string(),
-                file_path: PathBuf::from(format!("batch-{}-files", paths.len())),
-                file_size: total_file_size,
-                success: false,
-                error_message: Some(e.to_string()),
-                duration: total_duration,
-                extraction_duration: None,
-                subprocess_overhead: None,
-                metrics: PerformanceMetrics::default(),
-                quality: None,
-                iterations: vec![],
-                statistics: None,
-                cold_start_duration: None,
-                file_extension: "batch".to_string(),
-                framework_capabilities: FrameworkCapabilities::default(),
-                pdf_metadata: None,
-            }]);
+            // Create one failure result per file instead of a single aggregated failure
+            // Use the actual elapsed time divided by number of files
+            let num_files = file_paths.len() as f64;
+            let avg_duration_per_file = Duration::from_secs_f64(total_duration.as_secs_f64() / num_files.max(1.0));
+
+            let failure_results: Vec<BenchmarkResult> = file_paths
+                .iter()
+                .map(|file_path| {
+                    let file_size = std::fs::metadata(file_path).map(|m| m.len()).unwrap_or(0);
+                    let file_extension = file_path
+                        .extension()
+                        .and_then(|ext| ext.to_str())
+                        .unwrap_or("")
+                        .to_string();
+
+                    BenchmarkResult {
+                        framework: self.name().to_string(),
+                        file_path: file_path.to_path_buf(),
+                        file_size,
+                        success: false,
+                        error_message: Some(e.to_string()),
+                        duration: avg_duration_per_file,
+                        extraction_duration: None,
+                        subprocess_overhead: None,
+                        metrics: PerformanceMetrics {
+                            peak_memory_bytes: resource_stats.peak_memory_bytes,
+                            avg_cpu_percent: resource_stats.avg_cpu_percent,
+                            throughput_bytes_per_sec: 0.0,
+                            p50_memory_bytes: resource_stats.p50_memory_bytes,
+                            p95_memory_bytes: resource_stats.p95_memory_bytes,
+                            p99_memory_bytes: resource_stats.p99_memory_bytes,
+                        },
+                        quality: None,
+                        iterations: vec![],
+                        statistics: None,
+                        cold_start_duration: None,
+                        file_extension,
+                        framework_capabilities: FrameworkCapabilities::default(),
+                        pdf_metadata: None,
+                        ocr_status: self.get_ocr_status(),
+                    }
+                })
+                .collect();
+
+            return Ok(failure_results);
         }
 
-        let throughput = if total_duration.as_secs_f64() > 0.0 {
-            total_file_size as f64 / total_duration.as_secs_f64()
+        // Create one result per file instead of a single aggregated result
+        // Since batch processing doesn't give us per-file timing, we use average duration
+        let num_files = file_paths.len() as f64;
+        let avg_duration_per_file = Duration::from_secs_f64(total_duration.as_secs_f64() / num_files.max(1.0));
+
+        // Ensure we never create success=true with duration=0
+        let avg_duration_per_file = if avg_duration_per_file == Duration::from_secs(0) {
+            Duration::from_nanos(1) // Minimum non-zero duration
         } else {
-            0.0
+            avg_duration_per_file
         };
 
-        let metrics = PerformanceMetrics {
-            peak_memory_bytes: resource_stats.peak_memory_bytes,
-            avg_cpu_percent: resource_stats.avg_cpu_percent,
-            throughput_bytes_per_sec: throughput,
-            p50_memory_bytes: resource_stats.p50_memory_bytes,
-            p95_memory_bytes: resource_stats.p95_memory_bytes,
-            p99_memory_bytes: resource_stats.p99_memory_bytes,
-        };
+        let results: Vec<BenchmarkResult> = file_paths
+            .iter()
+            .map(|file_path| {
+                let file_size = std::fs::metadata(file_path).map(|m| m.len()).unwrap_or(0);
 
-        Ok(vec![BenchmarkResult {
-            framework: self.name().to_string(),
-            file_path: PathBuf::from(format!("batch-{}-files", paths.len())),
-            file_size: total_file_size,
-            success: true,
-            error_message: None,
-            duration: total_duration,
-            extraction_duration: None,
-            subprocess_overhead: None,
-            metrics,
-            quality: None,
-            iterations: vec![],
-            statistics: None,
-            cold_start_duration: None,
-            file_extension: "batch".to_string(),
-            framework_capabilities: FrameworkCapabilities::default(),
-            pdf_metadata: None,
-        }])
+                let file_throughput = if avg_duration_per_file.as_secs_f64() > 0.0 {
+                    file_size as f64 / avg_duration_per_file.as_secs_f64()
+                } else {
+                    0.0
+                };
+
+                let file_extension = file_path.extension().and_then(|e| e.to_str()).unwrap_or("").to_string();
+
+                BenchmarkResult {
+                    framework: self.name().to_string(),
+                    file_path: file_path.to_path_buf(),
+                    file_size,
+                    success: true,
+                    error_message: None,
+                    duration: avg_duration_per_file,
+                    extraction_duration: None,
+                    subprocess_overhead: None,
+                    metrics: PerformanceMetrics {
+                        peak_memory_bytes: resource_stats.peak_memory_bytes,
+                        avg_cpu_percent: resource_stats.avg_cpu_percent,
+                        throughput_bytes_per_sec: file_throughput,
+                        p50_memory_bytes: resource_stats.p50_memory_bytes,
+                        p95_memory_bytes: resource_stats.p95_memory_bytes,
+                        p99_memory_bytes: resource_stats.p99_memory_bytes,
+                    },
+                    quality: None,
+                    iterations: vec![],
+                    statistics: None,
+                    cold_start_duration: None,
+                    file_extension,
+                    framework_capabilities: FrameworkCapabilities::default(),
+                    pdf_metadata: None,
+                    ocr_status: self.get_ocr_status(),
+                }
+            })
+            .collect();
+
+        Ok(results)
     }
 
     fn supports_batch(&self) -> bool {

@@ -119,7 +119,11 @@ impl PoolMetricsReport {
 
         println!("\nBottom 5 performers (lowest hit rate):");
         let mut sorted = self.files.clone();
-        sorted.sort_by(|a, b| a.string_pool_hit_rate.partial_cmp(&b.string_pool_hit_rate).unwrap());
+        sorted.sort_by(|a, b| {
+            a.string_pool_hit_rate
+                .partial_cmp(&b.string_pool_hit_rate)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         for file in sorted.iter().take(5) {
             println!(
                 "  {} ({:.2}% hit rate, {} bytes)",

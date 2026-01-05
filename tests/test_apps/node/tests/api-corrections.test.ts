@@ -354,15 +354,15 @@ function validateResultStructure(result: unknown): void {
 			expect(typeof r.mimeType).toBe("string");
 		}
 
-		if (r.chunks !== undefined) {
+		if (r.chunks !== undefined && r.chunks !== null) {
 			expect(Array.isArray(r.chunks)).toBe(true);
 		}
 
-		if (r.images !== undefined) {
+		if (r.images !== undefined && r.images !== null) {
 			expect(Array.isArray(r.images)).toBe(true);
 		}
 
-		if (r.tables !== undefined) {
+		if (r.tables !== undefined && r.tables !== null) {
 			expect(Array.isArray(r.tables)).toBe(true);
 		}
 

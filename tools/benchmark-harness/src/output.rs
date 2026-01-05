@@ -9,6 +9,45 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use std::time::Duration;
+
+/// Validate a benchmark result for invalid states
+///
+/// # Arguments
+/// * `result` - The benchmark result to validate
+///
+/// # Returns
+/// * `Ok(())` if valid, `Err` with description if invalid
+pub fn validate_result(result: &BenchmarkResult) -> Result<()> {
+    // Check for invalid state: success=true with zero duration
+    if result.success && result.duration == Duration::from_secs(0) {
+        return Err(Error::Benchmark(format!(
+            "Invalid result state for {}/{}: success=true but duration=0",
+            result.framework,
+            result.file_path.display()
+        )));
+    }
+
+    // Check for invalid state: success=true with error message
+    if result.success && result.error_message.is_some() {
+        return Err(Error::Benchmark(format!(
+            "Invalid result state for {}/{}: success=true but error_message is set",
+            result.framework,
+            result.file_path.display()
+        )));
+    }
+
+    // Check for invalid state: success=false without error message
+    if !result.success && result.error_message.is_none() {
+        return Err(Error::Benchmark(format!(
+            "Invalid result state for {}/{}: success=false but error_message is None",
+            result.framework,
+            result.file_path.display()
+        )));
+    }
+
+    Ok(())
+}
 
 /// Write benchmark results to JSON file
 ///
@@ -16,6 +55,11 @@ use std::path::Path;
 /// * `results` - Vector of benchmark results to write
 /// * `output_path` - Path to output JSON file
 pub fn write_json(results: &[BenchmarkResult], output_path: &Path) -> Result<()> {
+    // Validate all results before writing
+    for result in results {
+        validate_result(result)?;
+    }
+
     if let Some(parent) = output_path.parent() {
         fs::create_dir_all(parent).map_err(Error::Io)?;
     }
@@ -138,7 +182,7 @@ fn calculate_framework_stats(results: &[&BenchmarkResult]) -> FrameworkExtension
         .iter()
         .map(|r| r.duration.as_secs_f64() * 1000.0)
         .collect();
-    durations.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    durations.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
     let median_duration_ms = if !durations.is_empty() {
         let mid = durations.len() / 2;
@@ -213,7 +257,7 @@ pub fn write_by_extension_analysis(results: &[BenchmarkResult], output_path: &Pa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::PerformanceMetrics;
+    use crate::types::{OcrStatus, PerformanceMetrics};
     use std::path::PathBuf;
     use std::time::Duration;
     use tempfile::TempDir;
@@ -247,6 +291,7 @@ mod tests {
             file_extension: "txt".to_string(),
             framework_capabilities: Default::default(),
             pdf_metadata: None,
+            ocr_status: OcrStatus::Unknown,
         }];
 
         write_json(&results, &output_path).unwrap();

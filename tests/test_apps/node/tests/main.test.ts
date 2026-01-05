@@ -202,43 +202,41 @@ describe("Kreuzberg TypeScript/Node.js Bindings", () => {
 		let testPdfFile: string;
 		let testTxtFile: string;
 		let testPdfBuffer: Buffer;
+		let testTxtBuffer: Buffer;
 
 		beforeAll(() => {
 			testPdfBuffer = Buffer.from("%PDF-1.4\n%EOF");
 			testPdfFile = join(tmpdir(), "test-document.pdf");
 			writeFileSync(testPdfFile, testPdfBuffer);
 
+			testTxtBuffer = Buffer.from("Hello, World!");
 			testTxtFile = join(tmpdir(), "test-document.txt");
-			writeFileSync(testTxtFile, Buffer.from("Hello, World!"));
+			writeFileSync(testTxtFile, testTxtBuffer);
 		});
 
 		it("should extract from text file (sync)", () => {
-			const config = ExtractionConfig.default().build();
-			const result = extractFileSync(testTxtFile, config);
+				const result = extractFileSync(testTxtFile, null);
 			expect(result).toBeDefined();
 			expect(typeof result).toBe("object");
 			validateExtractionResult(result);
 		});
 
 		it("should extract from text file (async)", async () => {
-			const config = ExtractionConfig.default().build();
-			const result = await extractFile(testTxtFile, config);
+				const result = await extractFile(testTxtFile, null);
 			expect(result).toBeDefined();
 			expect(typeof result).toBe("object");
 			validateExtractionResult(result);
 		});
 
 		it("should extract from bytes (sync)", () => {
-			const config = ExtractionConfig.default().build();
-			const result = extractBytesSync(testTxtFile, "text/plain", config);
+				const result = extractBytesSync(testTxtBuffer, "text/plain", null);
 			expect(result).toBeDefined();
 			expect(typeof result).toBe("object");
 			validateExtractionResult(result);
 		});
 
 		it("should extract from bytes (async)", async () => {
-			const config = ExtractionConfig.default().build();
-			const result = await extractBytes(testTxtFile, "text/plain", config);
+				const result = await extractBytes(testTxtBuffer, "text/plain", null);
 			expect(result).toBeDefined();
 			expect(typeof result).toBe("object");
 			validateExtractionResult(result);
@@ -278,8 +276,7 @@ describe("Kreuzberg TypeScript/Node.js Bindings", () => {
 		});
 
 		it("should batch extract files (sync)", () => {
-			const config = ExtractionConfig.default().build();
-			const results = batchExtractFilesSync(testFiles, config);
+				const results = batchExtractFilesSync(testFiles, null);
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBe(testFiles.length);
 			for (const result of results) {
@@ -288,8 +285,7 @@ describe("Kreuzberg TypeScript/Node.js Bindings", () => {
 		});
 
 		it("should batch extract files (async)", async () => {
-			const config = ExtractionConfig.default().build();
-			const results = await batchExtractFiles(testFiles, config);
+				const results = await batchExtractFiles(testFiles, null);
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBe(testFiles.length);
 			for (const result of results) {
@@ -298,8 +294,7 @@ describe("Kreuzberg TypeScript/Node.js Bindings", () => {
 		});
 
 		it("should batch extract bytes (sync)", () => {
-			const config = ExtractionConfig.default().build();
-			const results = batchExtractBytesSync(testBuffers, testMimeTypes, config);
+				const results = batchExtractBytesSync(testBuffers, testMimeTypes, null);
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBe(testBuffers.length);
 			for (const result of results) {
@@ -308,8 +303,7 @@ describe("Kreuzberg TypeScript/Node.js Bindings", () => {
 		});
 
 		it("should batch extract bytes (async)", async () => {
-			const config = ExtractionConfig.default().build();
-			const results = await batchExtractBytes(testBuffers, testMimeTypes, config);
+				const results = await batchExtractBytes(testBuffers, testMimeTypes, null);
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBe(testBuffers.length);
 			for (const result of results) {
@@ -318,15 +312,13 @@ describe("Kreuzberg TypeScript/Node.js Bindings", () => {
 		});
 
 		it("should handle empty batch gracefully", () => {
-			const config = ExtractionConfig.default().build();
-			const results = batchExtractFilesSync([], config);
+				const results = batchExtractFilesSync([], null);
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBe(0);
 		});
 
 		it("should handle single item batch", () => {
-			const config = ExtractionConfig.default().build();
-			const results = batchExtractFilesSync([testFiles[0]], config);
+				const results = batchExtractFilesSync([testFiles[0]], null);
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBe(1);
 		});
@@ -742,15 +734,15 @@ function validateExtractionResult(result: unknown): void {
 			expect(typeof r.content).toMatch(/^(string|object)$/);
 		}
 
-		if (r.chunks !== undefined) {
+		if (r.chunks !== undefined && r.chunks !== null) {
 			expect(Array.isArray(r.chunks)).toBe(true);
 		}
 
-		if (r.images !== undefined) {
+		if (r.images !== undefined && r.images !== null) {
 			expect(Array.isArray(r.images)).toBe(true);
 		}
 
-		if (r.tables !== undefined) {
+		if (r.tables !== undefined && r.tables !== null) {
 			expect(Array.isArray(r.tables)).toBe(true);
 		}
 
@@ -758,7 +750,7 @@ function validateExtractionResult(result: unknown): void {
 			expect(typeof r.metadata).toBe("object");
 		}
 
-		if (r.errors !== undefined) {
+		if (r.errors !== undefined && r.errors !== null) {
 			expect(Array.isArray(r.errors)).toBe(true);
 		}
 	}

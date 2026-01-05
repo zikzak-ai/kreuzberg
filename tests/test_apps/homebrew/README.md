@@ -4,7 +4,7 @@ Comprehensive test suite for validating Kreuzberg installations via Homebrew on 
 
 ## Overview
 
-This test suite verifies that Kreuzberg v4.0.0-rc.14 (or later) installs correctly via Homebrew and that all major components work as expected:
+This test suite verifies that Kreuzberg v4.0.0-rc.27 (or later) installs correctly via Homebrew and that all major components work as expected:
 
 - **CLI functionality** - Command-line extraction and version checking
 - **API server** - HTTP server for document extraction

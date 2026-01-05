@@ -363,6 +363,81 @@ const result = extractFileSync('document.pdf', null, config);
 
 ---
 
+### ExtractionConfig Static Methods
+
+The `ExtractionConfig` object provides static methods for loading configuration from files and discovering configuration files in the filesystem.
+
+#### ExtractionConfig.fromFile()
+
+Load extraction configuration from a file.
+
+**Signature:**
+
+```typescript title="TypeScript"
+static fromFile(filePath: string): ExtractionConfig
+```
+
+**Parameters:**
+
+- `filePath` (string): Path to the configuration file (absolute or relative). Supports `.toml`, `.yaml`, `.json` formats
+
+**Returns:**
+
+- `ExtractionConfig`: Configuration object loaded from the file
+
+**Throws:**
+
+- `Error`: If file does not exist, is not readable, or contains invalid configuration
+
+**Example:**
+
+```typescript title="load_config_from_file.ts"
+import { ExtractionConfig, extractFileSync } from '@kreuzberg/node';
+
+const config = ExtractionConfig.fromFile('kreuzberg.toml');
+const result = extractFileSync('document.pdf', null, config);
+console.log(result.content);
+```
+
+---
+
+#### ExtractionConfig.discover()
+
+Discover and load configuration from current or parent directories.
+
+**Signature:**
+
+```typescript title="TypeScript"
+static discover(): ExtractionConfig | null
+```
+
+**Returns:**
+
+- `ExtractionConfig | null`: Configuration object if found, or `null` if no configuration file exists
+
+**Description:**
+
+Searches for a `kreuzberg.toml`, `kreuzberg.yaml`, or `kreuzberg.json` file starting from the current working directory and traversing up the directory tree. Returns the first configuration file found.
+
+**Example:**
+
+```typescript title="discover_config.ts"
+import { ExtractionConfig, extractFile } from '@kreuzberg/node';
+
+const config = ExtractionConfig.discover();
+if (config) {
+  const result = await extractFile('document.pdf', null, config);
+  console.log('Extracted using discovered config');
+  console.log(result.content);
+} else {
+  const result = await extractFile('document.pdf', null, null);
+  console.log('No config file found, using defaults');
+  console.log(result.content);
+}
+```
+
+---
+
 ### OcrConfig
 
 OCR processing configuration.

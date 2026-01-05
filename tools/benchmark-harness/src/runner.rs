@@ -7,8 +7,9 @@ use crate::adapter::FrameworkAdapter;
 use crate::config::{BenchmarkConfig, BenchmarkMode};
 use crate::fixture::FixtureManager;
 use crate::registry::AdapterRegistry;
-use crate::types::{BenchmarkResult, DurationStatistics, IterationResult, PerformanceMetrics};
+use crate::types::{BenchmarkResult, DiskSizeInfo, DurationStatistics, IterationResult, PerformanceMetrics};
 use crate::{Error, Result};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
@@ -165,17 +166,27 @@ pub struct BenchmarkRunner {
     config: BenchmarkConfig,
     registry: AdapterRegistry,
     fixtures: FixtureManager,
-    cold_start_durations: std::collections::HashMap<String, Duration>,
+    cold_start_durations: HashMap<String, Duration>,
+    framework_sizes: HashMap<String, DiskSizeInfo>,
 }
 
 impl BenchmarkRunner {
     /// Create a new benchmark runner
     pub fn new(config: BenchmarkConfig, registry: AdapterRegistry) -> Self {
+        // Try to load framework sizes, fall back to empty if not found
+        let framework_sizes =
+            crate::config::load_framework_sizes(Path::new("tools/benchmark-harness/config/framework_sizes.json"))
+                .unwrap_or_else(|e| {
+                    eprintln!("Warning: Failed to load framework sizes: {}", e);
+                    HashMap::new()
+                });
+
         Self {
             config,
             registry,
             fixtures: FixtureManager::new(),
-            cold_start_durations: std::collections::HashMap::new(),
+            cold_start_durations: HashMap::new(),
+            framework_sizes,
         }
     }
 
@@ -199,6 +210,23 @@ impl BenchmarkRunner {
     /// Get count of loaded fixtures
     pub fn fixture_count(&self) -> usize {
         self.fixtures.len()
+    }
+
+    /// Enrich a benchmark result with framework size information
+    ///
+    /// # Arguments
+    /// * `result` - Mutable reference to benchmark result to enrich
+    fn enrich_with_framework_size(&self, result: &mut BenchmarkResult) {
+        // Strip -sync, -async, -batch suffix to find base framework
+        let base_name = result
+            .framework
+            .trim_end_matches("-sync")
+            .trim_end_matches("-async")
+            .trim_end_matches("-batch");
+
+        if let Some(size_info) = self.framework_sizes.get(base_name) {
+            result.framework_capabilities.installation_size = Some(size_info.clone());
+        }
     }
 
     /// Run multiple iterations of a single extraction task (static method for async spawning)
@@ -383,6 +411,7 @@ impl BenchmarkRunner {
             file_extension: first_result.file_extension.clone(),
             framework_capabilities: first_result.framework_capabilities.clone(),
             pdf_metadata: first_result.pdf_metadata.clone(),
+            ocr_status: first_result.ocr_status,
         })
     }
 
@@ -470,6 +499,7 @@ impl BenchmarkRunner {
             file_extension: first_result.file_extension.clone(),
             framework_capabilities: first_result.framework_capabilities.clone(),
             pdf_metadata: first_result.pdf_metadata.clone(),
+            ocr_status: first_result.ocr_status,
         }];
 
         Ok(aggregated_results)
@@ -568,7 +598,11 @@ impl BenchmarkRunner {
                         let cold_start = self.cold_start_durations.get(adapter_name).copied();
 
                         match Self::run_batch_iterations_static(file_paths, adapter, &config, cold_start).await {
-                            Ok(batch_results) => {
+                            Ok(mut batch_results) => {
+                                // Enrich each result with framework size information
+                                for result in &mut batch_results {
+                                    self.enrich_with_framework_size(result);
+                                }
                                 results.extend(batch_results);
                             }
                             Err(e) => {
@@ -583,7 +617,8 @@ impl BenchmarkRunner {
                             let cold_start = self.cold_start_durations.get(adapter_name).copied();
 
                             match Self::run_iterations_static(&file_path, adapter, &config, cold_start).await {
-                                Ok(result) => {
+                                Ok(mut result) => {
+                                    self.enrich_with_framework_size(&mut result);
                                     results.push(result);
                                 }
                                 Err(e) => {
@@ -615,7 +650,8 @@ impl BenchmarkRunner {
             for (file_path, framework_name, adapter) in task_queue {
                 let cold_start = self.cold_start_durations.get(&framework_name).copied();
                 match Self::run_iterations_static(&file_path, adapter, &config, cold_start).await {
-                    Ok(result) => {
+                    Ok(mut result) => {
+                        self.enrich_with_framework_size(&mut result);
                         results.push(result);
                     }
                     Err(e) => {
@@ -724,5 +760,106 @@ mod tests {
 
         config.sample_count_threshold = 500;
         assert!(config.validate().is_ok());
+    }
+
+    #[test]
+    fn test_framework_size_enrichment_with_suffix_stripping() {
+        use crate::types::{BenchmarkResult, FrameworkCapabilities, OcrStatus, PerformanceMetrics};
+        use std::time::Duration;
+
+        let config = BenchmarkConfig::default();
+        let registry = AdapterRegistry::new();
+        let runner = BenchmarkRunner::new(config, registry);
+
+        // Test with -sync suffix
+        let mut result_sync = BenchmarkResult {
+            framework: "kreuzberg-python-sync".to_string(),
+            file_path: PathBuf::from("/test/file.pdf"),
+            file_size: 1024,
+            success: true,
+            error_message: None,
+            duration: Duration::from_millis(100),
+            extraction_duration: None,
+            subprocess_overhead: None,
+            metrics: PerformanceMetrics::default(),
+            quality: None,
+            iterations: vec![],
+            statistics: None,
+            cold_start_duration: None,
+            file_extension: "pdf".to_string(),
+            framework_capabilities: FrameworkCapabilities::default(),
+            pdf_metadata: None,
+            ocr_status: OcrStatus::Unknown,
+        };
+
+        // Test with -async suffix
+        let mut result_async = BenchmarkResult {
+            framework: "kreuzberg-python-async".to_string(),
+            file_path: PathBuf::from("/test/file.pdf"),
+            file_size: 1024,
+            success: true,
+            error_message: None,
+            duration: Duration::from_millis(100),
+            extraction_duration: None,
+            subprocess_overhead: None,
+            metrics: PerformanceMetrics::default(),
+            quality: None,
+            iterations: vec![],
+            statistics: None,
+            cold_start_duration: None,
+            file_extension: "pdf".to_string(),
+            framework_capabilities: FrameworkCapabilities::default(),
+            pdf_metadata: None,
+            ocr_status: OcrStatus::Unknown,
+        };
+
+        // Test with -batch suffix
+        let mut result_batch = BenchmarkResult {
+            framework: "kreuzberg-python-batch".to_string(),
+            file_path: PathBuf::from("/test/file.pdf"),
+            file_size: 1024,
+            success: true,
+            error_message: None,
+            duration: Duration::from_millis(100),
+            extraction_duration: None,
+            subprocess_overhead: None,
+            metrics: PerformanceMetrics::default(),
+            quality: None,
+            iterations: vec![],
+            statistics: None,
+            cold_start_duration: None,
+            file_extension: "pdf".to_string(),
+            framework_capabilities: FrameworkCapabilities::default(),
+            pdf_metadata: None,
+            ocr_status: OcrStatus::Unknown,
+        };
+
+        // Verify installation_size is None before enrichment
+        assert!(result_sync.framework_capabilities.installation_size.is_none());
+        assert!(result_async.framework_capabilities.installation_size.is_none());
+        assert!(result_batch.framework_capabilities.installation_size.is_none());
+
+        // Enrich the results
+        runner.enrich_with_framework_size(&mut result_sync);
+        runner.enrich_with_framework_size(&mut result_async);
+        runner.enrich_with_framework_size(&mut result_batch);
+
+        // If framework_sizes.json exists and contains kreuzberg-python, verify all variants are enriched
+        if let Some(size_info) = &result_sync.framework_capabilities.installation_size {
+            // All three should have the same size info from base "kreuzberg-python"
+            assert_eq!(size_info.size_bytes, 15728640);
+            assert_eq!(size_info.method, "pip_package");
+            assert_eq!(size_info.description, "Python wheel package");
+
+            // Verify all variants got enriched with the same data
+            assert!(result_async.framework_capabilities.installation_size.is_some());
+            assert!(result_batch.framework_capabilities.installation_size.is_some());
+
+            let async_size = result_async.framework_capabilities.installation_size.as_ref().unwrap();
+            let batch_size = result_batch.framework_capabilities.installation_size.as_ref().unwrap();
+
+            assert_eq!(async_size.size_bytes, size_info.size_bytes);
+            assert_eq!(batch_size.size_bytes, size_info.size_bytes);
+        }
     }
 }

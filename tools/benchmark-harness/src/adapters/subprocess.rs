@@ -6,7 +6,7 @@
 
 use crate::adapter::FrameworkAdapter;
 use crate::monitoring::ResourceMonitor;
-use crate::types::{BenchmarkResult, FrameworkCapabilities, PerformanceMetrics};
+use crate::types::{BenchmarkResult, FrameworkCapabilities, OcrStatus, PerformanceMetrics};
 use crate::{Error, Result};
 use async_trait::async_trait;
 use std::path::{Path, PathBuf};
@@ -29,6 +29,33 @@ pub struct SubprocessAdapter {
 }
 
 impl SubprocessAdapter {
+    /// Determine if a framework supports OCR based on its name
+    ///
+    /// Known frameworks with OCR support:
+    /// - kreuzberg-* (all Kreuzberg bindings support OCR)
+    /// - pymupdf (supports OCR via tesseract)
+    ///
+    /// Frameworks without OCR support:
+    /// - pdfplumber
+    /// - pypdf
+    /// - Other basic PDF parsers
+    fn framework_supports_ocr(framework_name: &str) -> bool {
+        let name_lower = framework_name.to_lowercase();
+
+        // Kreuzberg bindings all support OCR
+        if name_lower.starts_with("kreuzberg-") || name_lower == "kreuzberg" {
+            return true;
+        }
+
+        // PyMuPDF supports OCR
+        if name_lower.contains("pymupdf") {
+            return true;
+        }
+
+        // Most other frameworks don't support OCR
+        false
+    }
+
     /// Create a new subprocess adapter
     ///
     /// # Arguments
@@ -260,6 +287,7 @@ impl FrameworkAdapter for SubprocessAdapter {
     async fn extract(&self, file_path: &Path, timeout: Duration) -> Result<BenchmarkResult> {
         let file_size = std::fs::metadata(file_path).map_err(Error::Io)?.len();
 
+        let start_time = std::time::Instant::now();
         let monitor = ResourceMonitor::new();
         monitor.start(Duration::from_millis(10)).await;
 
@@ -269,6 +297,13 @@ impl FrameworkAdapter for SubprocessAdapter {
                 let samples = monitor.stop().await;
                 let snapshots = monitor.get_snapshots().await;
                 let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots);
+                let actual_duration = start_time.elapsed();
+
+                let framework_capabilities = FrameworkCapabilities {
+                    ocr_support: Self::framework_supports_ocr(&self.name),
+                    batch_support: self.supports_batch,
+                    ..Default::default()
+                };
 
                 return Ok(BenchmarkResult {
                     framework: self.name.clone(),
@@ -276,7 +311,7 @@ impl FrameworkAdapter for SubprocessAdapter {
                     file_size,
                     success: false,
                     error_message: Some(e.to_string()),
-                    duration: Duration::from_secs(0),
+                    duration: actual_duration,
                     extraction_duration: None,
                     subprocess_overhead: None,
                     metrics: PerformanceMetrics {
@@ -296,8 +331,9 @@ impl FrameworkAdapter for SubprocessAdapter {
                         .and_then(|e| e.to_str())
                         .unwrap_or("unknown")
                         .to_lowercase(),
-                    framework_capabilities: FrameworkCapabilities::default(),
+                    framework_capabilities,
                     pdf_metadata: None,
+                    ocr_status: OcrStatus::Unknown,
                 });
             }
         };
@@ -309,6 +345,12 @@ impl FrameworkAdapter for SubprocessAdapter {
         let parsed = match self.parse_output(&stdout) {
             Ok(value) => value,
             Err(e) => {
+                let framework_capabilities = FrameworkCapabilities {
+                    ocr_support: Self::framework_supports_ocr(&self.name),
+                    batch_support: self.supports_batch,
+                    ..Default::default()
+                };
+
                 return Ok(BenchmarkResult {
                     framework: self.name.clone(),
                     file_path: file_path.to_path_buf(),
@@ -335,8 +377,9 @@ impl FrameworkAdapter for SubprocessAdapter {
                         .and_then(|e| e.to_str())
                         .unwrap_or("unknown")
                         .to_lowercase(),
-                    framework_capabilities: FrameworkCapabilities::default(),
+                    framework_capabilities,
                     pdf_metadata: None,
+                    ocr_status: OcrStatus::Unknown,
                 });
             }
         };
@@ -363,6 +406,33 @@ impl FrameworkAdapter for SubprocessAdapter {
             p99_memory_bytes: resource_stats.p99_memory_bytes,
         };
 
+        // Check if subprocess reported OCR usage
+        let ocr_status = parsed
+            .get("_ocr_used")
+            .and_then(|v| v.as_bool())
+            .map(|used| if used { OcrStatus::Used } else { OcrStatus::NotUsed })
+            .unwrap_or(OcrStatus::Unknown);
+
+        // Build framework capabilities
+        let framework_capabilities = FrameworkCapabilities {
+            ocr_support: Self::framework_supports_ocr(&self.name),
+            batch_support: self.supports_batch,
+            ..Default::default()
+        };
+
+        // Build PDF metadata if this is a PDF file
+        let pdf_metadata = if file_path.extension().and_then(|e| e.to_str()) == Some("pdf") {
+            Some(crate::types::PdfMetadata {
+                has_text_layer: false, // Unknown from subprocess
+                detection_method: "unknown".to_string(),
+                page_count: None,
+                ocr_enabled: ocr_status == OcrStatus::Used,
+                text_quality_score: None,
+            })
+        } else {
+            None
+        };
+
         Ok(BenchmarkResult {
             framework: self.name.clone(),
             file_path: file_path.to_path_buf(),
@@ -382,8 +452,9 @@ impl FrameworkAdapter for SubprocessAdapter {
                 .and_then(|e| e.to_str())
                 .unwrap_or("unknown")
                 .to_lowercase(),
-            framework_capabilities: FrameworkCapabilities::default(),
-            pdf_metadata: None,
+            framework_capabilities,
+            pdf_metadata,
+            ocr_status,
         })
     }
 
@@ -396,6 +467,11 @@ impl FrameworkAdapter for SubprocessAdapter {
     }
 
     async fn extract_batch(&self, file_paths: &[&Path], timeout: Duration) -> Result<Vec<BenchmarkResult>> {
+        // Early return if file_paths is empty
+        if file_paths.is_empty() {
+            return Ok(Vec::new());
+        }
+
         if !self.supports_batch {
             let mut results = Vec::new();
             for path in file_paths {
@@ -404,11 +480,12 @@ impl FrameworkAdapter for SubprocessAdapter {
             return Ok(results);
         }
 
-        let total_file_size: u64 = file_paths
+        let _total_file_size: u64 = file_paths
             .iter()
             .filter_map(|p| std::fs::metadata(p).ok().map(|m| m.len()))
             .sum();
 
+        let start_time = std::time::Instant::now();
         let monitor = ResourceMonitor::new();
         monitor.start(Duration::from_millis(10)).await;
 
@@ -418,20 +495,114 @@ impl FrameworkAdapter for SubprocessAdapter {
                 let samples = monitor.stop().await;
                 let snapshots = monitor.get_snapshots().await;
                 let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots);
+                let actual_duration = start_time.elapsed();
 
-                return Ok(vec![BenchmarkResult {
+                // Create one failure result per file instead of a single aggregated failure
+                // Use the actual elapsed time divided by number of files
+                let num_files = file_paths.len() as f64;
+                let avg_duration_per_file = Duration::from_secs_f64(actual_duration.as_secs_f64() / num_files.max(1.0));
+
+                let framework_capabilities = FrameworkCapabilities {
+                    ocr_support: Self::framework_supports_ocr(&self.name),
+                    batch_support: self.supports_batch,
+                    ..Default::default()
+                };
+
+                let failure_results: Vec<BenchmarkResult> = file_paths
+                    .iter()
+                    .map(|file_path| {
+                        let file_size = std::fs::metadata(file_path).map(|m| m.len()).unwrap_or(0);
+                        let file_extension = file_path
+                            .extension()
+                            .and_then(|ext| ext.to_str())
+                            .unwrap_or("")
+                            .to_string();
+
+                        BenchmarkResult {
+                            framework: self.name.clone(),
+                            file_path: file_path.to_path_buf(),
+                            file_size,
+                            success: false,
+                            error_message: Some(e.to_string()),
+                            duration: avg_duration_per_file,
+                            extraction_duration: None,
+                            subprocess_overhead: None,
+                            metrics: PerformanceMetrics {
+                                peak_memory_bytes: resource_stats.peak_memory_bytes,
+                                avg_cpu_percent: resource_stats.avg_cpu_percent,
+                                throughput_bytes_per_sec: 0.0,
+                                p50_memory_bytes: resource_stats.p50_memory_bytes,
+                                p95_memory_bytes: resource_stats.p95_memory_bytes,
+                                p99_memory_bytes: resource_stats.p99_memory_bytes,
+                            },
+                            quality: None,
+                            iterations: vec![],
+                            statistics: None,
+                            cold_start_duration: None,
+                            file_extension,
+                            framework_capabilities: framework_capabilities.clone(),
+                            pdf_metadata: None,
+                            ocr_status: if framework_capabilities.ocr_support {
+                                OcrStatus::Used
+                            } else {
+                                OcrStatus::NotUsed
+                            },
+                        }
+                    })
+                    .collect();
+
+                return Ok(failure_results);
+            }
+        };
+
+        let samples = monitor.stop().await;
+        let snapshots = monitor.get_snapshots().await;
+        let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots);
+
+        // Create one result per file instead of a single aggregated result
+        // Since batch processing doesn't give us per-file timing, we use average duration
+        let num_files = file_paths.len() as f64;
+        let avg_duration_per_file = Duration::from_secs_f64(duration.as_secs_f64() / num_files.max(1.0));
+
+        // Ensure we never create success=true with duration=0
+        let avg_duration_per_file = if avg_duration_per_file == Duration::from_secs(0) {
+            Duration::from_nanos(1) // Minimum non-zero duration
+        } else {
+            avg_duration_per_file
+        };
+
+        let framework_capabilities = FrameworkCapabilities {
+            ocr_support: Self::framework_supports_ocr(&self.name),
+            batch_support: self.supports_batch,
+            ..Default::default()
+        };
+
+        let results: Vec<BenchmarkResult> = file_paths
+            .iter()
+            .map(|file_path| {
+                let file_size = std::fs::metadata(file_path).map(|m| m.len()).unwrap_or(0);
+
+                let file_throughput = if avg_duration_per_file.as_secs_f64() > 0.0 {
+                    file_size as f64 / avg_duration_per_file.as_secs_f64()
+                } else {
+                    0.0
+                };
+
+                let file_extension = file_path.extension().and_then(|e| e.to_str()).unwrap_or("").to_string();
+
+                BenchmarkResult {
                     framework: self.name.clone(),
-                    file_path: PathBuf::from(format!("batch-{}-files", file_paths.len())),
-                    file_size: total_file_size,
-                    success: false,
-                    error_message: Some(e.to_string()),
-                    duration: Duration::from_secs(0),
+                    file_path: file_path.to_path_buf(),
+                    file_size,
+                    success: true,
+                    error_message: None,
+                    duration: avg_duration_per_file,
                     extraction_duration: None,
                     subprocess_overhead: None,
                     metrics: PerformanceMetrics {
                         peak_memory_bytes: resource_stats.peak_memory_bytes,
                         avg_cpu_percent: resource_stats.avg_cpu_percent,
-                        throughput_bytes_per_sec: 0.0,
+                        throughput_bytes_per_sec: file_throughput,
                         p50_memory_bytes: resource_stats.p50_memory_bytes,
                         p95_memory_bytes: resource_stats.p95_memory_bytes,
                         p99_memory_bytes: resource_stats.p99_memory_bytes,
@@ -440,48 +611,19 @@ impl FrameworkAdapter for SubprocessAdapter {
                     iterations: vec![],
                     statistics: None,
                     cold_start_duration: None,
-                    file_extension: "batch".to_string(),
-                    framework_capabilities: FrameworkCapabilities::default(),
+                    file_extension,
+                    framework_capabilities: framework_capabilities.clone(),
                     pdf_metadata: None,
-                }]);
-            }
-        };
+                    ocr_status: if framework_capabilities.ocr_support {
+                        OcrStatus::Used
+                    } else {
+                        OcrStatus::NotUsed
+                    },
+                }
+            })
+            .collect();
 
-        let samples = monitor.stop().await;
-        let snapshots = monitor.get_snapshots().await;
-        let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots);
-
-        let batch_throughput = if duration.as_secs_f64() > 0.0 {
-            total_file_size as f64 / duration.as_secs_f64()
-        } else {
-            0.0
-        };
-
-        Ok(vec![BenchmarkResult {
-            framework: self.name.clone(),
-            file_path: PathBuf::from(format!("batch-{}-files", file_paths.len())),
-            file_size: total_file_size,
-            success: true,
-            error_message: None,
-            duration,
-            extraction_duration: None,
-            subprocess_overhead: None,
-            metrics: PerformanceMetrics {
-                peak_memory_bytes: resource_stats.peak_memory_bytes,
-                avg_cpu_percent: resource_stats.avg_cpu_percent,
-                throughput_bytes_per_sec: batch_throughput,
-                p50_memory_bytes: resource_stats.p50_memory_bytes,
-                p95_memory_bytes: resource_stats.p95_memory_bytes,
-                p99_memory_bytes: resource_stats.p99_memory_bytes,
-            },
-            quality: None,
-            iterations: vec![],
-            statistics: None,
-            cold_start_duration: None,
-            file_extension: "batch".to_string(),
-            framework_capabilities: FrameworkCapabilities::default(),
-            pdf_metadata: None,
-        }])
+        Ok(results)
     }
 
     async fn setup(&self) -> Result<()> {

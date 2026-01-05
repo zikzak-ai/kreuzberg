@@ -1,17 +1,17 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    kreuzberg (4.0.0.pre.rc.26)
+    kreuzberg (4.0.0.pre.rc.27)
 
 PLATFORMS
   arm64-darwin-25
   ruby
 
 DEPENDENCIES
-  kreuzberg (= 4.0.0.pre.rc.26)
+  kreuzberg (= 4.0.0.pre.rc.27)
 
 CHECKSUMS
-  kreuzberg (4.0.0.pre.rc.26) sha256=b13986c4409d5e41f1b9f035d3bd58f0494e899c31d4fd015a2c4b7f36d2aba0
+  kreuzberg (4.0.0.pre.rc.27) sha256=0c3a9996d8151984386eb33a0c63cc3eb5052d1a42fc1af24484357cf42b3cae
 
 BUNDLED WITH
   4.0.3

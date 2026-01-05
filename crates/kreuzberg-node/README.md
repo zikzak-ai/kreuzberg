@@ -222,9 +222,9 @@ console.log(result.content);
 #### Configuration Discovery
 
 ```typescript
-import { discoverExtractionConfig, extractFile } from '@kreuzberg/node';
+import { ExtractionConfig, extractFile } from '@kreuzberg/node';
 
-const config = discoverExtractionConfig();
+const config = ExtractionConfig.discover();
 if (config) {
   console.log('Found configuration file');
   const result = await extractFile('document.pdf', null, config);

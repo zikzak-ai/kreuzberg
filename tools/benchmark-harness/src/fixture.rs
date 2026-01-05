@@ -13,7 +13,8 @@
 //!   // Note: frameworks can be Kreuzberg language bindings or open source extraction alternatives
 //!   "metadata": {
 //!     "title": "Test Document",
-//!     "pages": 10
+//!     "pages": 10,
+//!     "requires_ocr": false  // Optional: override OCR requirement detection
 //!   },
 //!   "ground_truth": {
 //!     "text_file": "path/to/ground_truth.txt",
@@ -116,6 +117,20 @@ impl Fixture {
     /// Resolve ground truth path relative to fixture file
     pub fn resolve_ground_truth_path(&self, fixture_dir: &Path) -> Option<PathBuf> {
         self.ground_truth.as_ref().map(|gt| fixture_dir.join(&gt.text_file))
+    }
+
+    /// Determine if this fixture requires OCR based on file type and metadata
+    pub fn requires_ocr(&self) -> bool {
+        // Check if explicitly marked in metadata
+        if let Some(requires_ocr) = self.metadata.get("requires_ocr").and_then(|v| v.as_bool()) {
+            return requires_ocr;
+        }
+
+        // Infer from file type - images always need OCR
+        matches!(
+            self.file_type.to_lowercase().as_str(),
+            "jpg" | "jpeg" | "png" | "gif" | "bmp" | "tiff" | "webp"
+        )
     }
 }
 
@@ -487,5 +502,99 @@ mod tests {
         unsafe {
             std::env::remove_var("PROFILING_FIXTURES");
         }
+    }
+
+    #[test]
+    fn test_requires_ocr_for_image_types() {
+        let image_types = vec!["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"];
+
+        for file_type in image_types {
+            let fixture = Fixture {
+                document: PathBuf::from(format!("test.{}", file_type)),
+                file_type: file_type.to_string(),
+                file_size: 1024,
+                expected_frameworks: vec![],
+                metadata: HashMap::new(),
+                ground_truth: None,
+            };
+
+            assert!(
+                fixture.requires_ocr(),
+                "Expected file type {} to require OCR",
+                file_type
+            );
+        }
+    }
+
+    #[test]
+    fn test_requires_ocr_for_non_image_types() {
+        let non_image_types = vec!["pdf", "docx", "txt", "html", "md"];
+
+        for file_type in non_image_types {
+            let fixture = Fixture {
+                document: PathBuf::from(format!("test.{}", file_type)),
+                file_type: file_type.to_string(),
+                file_size: 1024,
+                expected_frameworks: vec![],
+                metadata: HashMap::new(),
+                ground_truth: None,
+            };
+
+            assert!(
+                !fixture.requires_ocr(),
+                "Expected file type {} to not require OCR",
+                file_type
+            );
+        }
+    }
+
+    #[test]
+    fn test_requires_ocr_explicit_metadata_true() {
+        let mut metadata = HashMap::new();
+        metadata.insert("requires_ocr".to_string(), serde_json::json!(true));
+
+        let fixture = Fixture {
+            document: PathBuf::from("test.pdf"),
+            file_type: "pdf".to_string(),
+            file_size: 1024,
+            expected_frameworks: vec![],
+            metadata,
+            ground_truth: None,
+        };
+
+        // PDF normally doesn't require OCR, but metadata overrides this
+        assert!(fixture.requires_ocr());
+    }
+
+    #[test]
+    fn test_requires_ocr_explicit_metadata_false() {
+        let mut metadata = HashMap::new();
+        metadata.insert("requires_ocr".to_string(), serde_json::json!(false));
+
+        let fixture = Fixture {
+            document: PathBuf::from("test.png"),
+            file_type: "png".to_string(),
+            file_size: 1024,
+            expected_frameworks: vec![],
+            metadata,
+            ground_truth: None,
+        };
+
+        // PNG normally requires OCR, but metadata overrides this
+        assert!(!fixture.requires_ocr());
+    }
+
+    #[test]
+    fn test_requires_ocr_case_insensitive() {
+        let fixture = Fixture {
+            document: PathBuf::from("test.JPG"),
+            file_type: "JPG".to_string(),
+            file_size: 1024,
+            expected_frameworks: vec![],
+            metadata: HashMap::new(),
+            ground_truth: None,
+        };
+
+        assert!(fixture.requires_ocr());
     }
 }

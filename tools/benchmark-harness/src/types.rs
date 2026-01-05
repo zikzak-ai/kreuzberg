@@ -4,6 +4,19 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::Duration;
 
+/// OCR usage status for a benchmark extraction
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum OcrStatus {
+    /// OCR was used for this extraction
+    Used,
+    /// OCR was not used for this extraction
+    NotUsed,
+    /// Unknown whether OCR was used
+    #[default]
+    Unknown,
+}
+
 /// Complete benchmark result for a single file extraction
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BenchmarkResult {
@@ -64,6 +77,10 @@ pub struct BenchmarkResult {
     /// PDF-specific metadata (only present for PDF files)
     /// Includes text layer detection results and OCR strategy
     pub pdf_metadata: Option<PdfMetadata>,
+
+    /// OCR usage status for this extraction
+    #[serde(default)]
+    pub ocr_status: OcrStatus,
 }
 
 /// Performance metrics collected during extraction
@@ -129,6 +146,23 @@ pub struct FrameworkCapabilities {
     /// Framework version
     #[serde(default)]
     pub version: String,
+
+    /// Disk installation size (if known)
+    #[serde(default)]
+    pub installation_size: Option<DiskSizeInfo>,
+}
+
+/// Disk installation size information for a framework
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiskSizeInfo {
+    /// Total size in bytes
+    pub size_bytes: u64,
+
+    /// Measurement method (e.g., "binary_size", "pip_package", "npm_package")
+    pub method: String,
+
+    /// Human-readable description
+    pub description: String,
 }
 
 /// PDF-specific metadata

@@ -173,6 +173,12 @@ fn init_template_env() -> Environment<'static> {
     )
     .expect("Failed to add charts CSS template");
 
+    env.add_template(
+        "aggregated.html.jinja",
+        include_str!("../templates/aggregated.html.jinja"),
+    )
+    .expect("Failed to add aggregated template");
+
     env.set_auto_escape_callback(|name| {
         if name.ends_with(".html.jinja") || name.ends_with(".css.jinja") {
             AutoEscape::Html
@@ -618,6 +624,47 @@ fn render_flamegraph_gallery(data: &FlamegraphGalleryData) -> Result<String> {
     Ok(html)
 }
 
+/// Write aggregated benchmark results as HTML table visualization
+///
+/// Generates an HTML file with a table showing:
+/// - Framework and mode (single/batch/sync/async)
+/// - File type breakdown
+/// - OCR yes/no split
+/// - p50/p95/p99 percentiles for all metrics
+/// - Cold start time
+/// - Disk installation size
+///
+/// # Arguments
+/// * `aggregated` - Aggregated benchmark results
+/// * `output_path` - Path to output HTML file
+pub fn write_aggregated_html(aggregated: &crate::aggregate::NewConsolidatedResults, output_path: &Path) -> Result<()> {
+    if let Some(parent) = output_path.parent() {
+        fs::create_dir_all(parent).map_err(Error::Io)?;
+    }
+
+    let html = generate_aggregated_html(aggregated)?;
+    fs::write(output_path, html).map_err(Error::Io)?;
+
+    Ok(())
+}
+
+/// Generate aggregated HTML from consolidated results
+fn generate_aggregated_html(aggregated: &crate::aggregate::NewConsolidatedResults) -> Result<String> {
+    let env = get_template_env();
+    let tmpl = env
+        .get_template("aggregated.html.jinja")
+        .map_err(|e| Error::Benchmark(format!("Failed to get aggregated template: {}", e)))?;
+
+    let html = tmpl
+        .render(context! {
+            aggregated => aggregated,
+            timestamp => chrono::Utc::now().to_rfc2822(),
+        })
+        .map_err(|e| Error::Benchmark(format!("Failed to render aggregated template: {}", e)))?;
+
+    Ok(html)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -675,7 +722,7 @@ mod tests {
 
     #[test]
     fn test_calculate_aggregated_metrics_single() {
-        use crate::types::{DurationStatistics, FrameworkCapabilities, PerformanceMetrics};
+        use crate::types::{DurationStatistics, FrameworkCapabilities, OcrStatus, PerformanceMetrics};
         use std::path::PathBuf;
 
         let result = BenchmarkResult {
@@ -711,6 +758,7 @@ mod tests {
             file_extension: "pdf".to_string(),
             framework_capabilities: FrameworkCapabilities::default(),
             pdf_metadata: None,
+            ocr_status: OcrStatus::Unknown,
         };
 
         let metrics = calculate_aggregated_metrics(&[&result]);
@@ -722,7 +770,7 @@ mod tests {
 
     #[test]
     fn test_build_chart_data() {
-        use crate::types::{DurationStatistics, FrameworkCapabilities, PerformanceMetrics};
+        use crate::types::{DurationStatistics, FrameworkCapabilities, OcrStatus, PerformanceMetrics};
         use std::path::PathBuf;
 
         let result = BenchmarkResult {
@@ -758,6 +806,7 @@ mod tests {
             file_extension: "pdf".to_string(),
             framework_capabilities: FrameworkCapabilities::default(),
             pdf_metadata: None,
+            ocr_status: OcrStatus::Unknown,
         };
 
         let chart_data = build_chart_data(&[result], None).unwrap();

@@ -1,8 +1,12 @@
 //! Benchmark configuration
 
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
+
+use crate::types::DiskSizeInfo;
+use crate::{Error, Result};
 
 /// Benchmark execution mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -229,4 +233,14 @@ impl BenchmarkConfig {
 
         Ok(())
     }
+}
+
+/// Load framework disk sizes from JSON configuration file
+pub fn load_framework_sizes(config_path: &Path) -> Result<HashMap<String, DiskSizeInfo>> {
+    let json_content = std::fs::read_to_string(config_path).map_err(Error::Io)?;
+
+    let sizes: HashMap<String, DiskSizeInfo> = serde_json::from_str(&json_content)
+        .map_err(|e| Error::Benchmark(format!("Failed to parse framework sizes: {}", e)))?;
+
+    Ok(sizes)
 }

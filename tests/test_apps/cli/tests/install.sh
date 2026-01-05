@@ -16,8 +16,8 @@ fi
 echo -e "${GREEN}✓ cargo found${NC}"
 
 echo
-echo "Installing kreuzberg-cli from crates.io..."
-if cargo install kreuzberg-cli --force; then
+echo "Installing kreuzberg-cli version 4.0.0-rc.27 from crates.io..."
+if cargo install kreuzberg-cli --version 4.0.0-rc.27 --force; then
   echo -e "${GREEN}✓ Installation successful${NC}"
 else
   echo -e "${RED}✗ Installation failed${NC}"

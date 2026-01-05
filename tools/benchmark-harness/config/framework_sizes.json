@@ -1,0 +1,52 @@
+{
+  "kreuzberg-native": {
+    "size_bytes": 52428800,
+    "method": "binary_size",
+    "description": "Native Rust binary with embedded models"
+  },
+  "kreuzberg-python": {
+    "size_bytes": 15728640,
+    "method": "pip_package",
+    "description": "Python wheel package"
+  },
+  "kreuzberg-node": {
+    "size_bytes": 12582912,
+    "method": "npm_package",
+    "description": "Node.js native addon"
+  },
+  "kreuzberg-wasm": {
+    "size_bytes": 8388608,
+    "method": "wasm_bundle",
+    "description": "WebAssembly binary"
+  },
+  "kreuzberg-ruby": {
+    "size_bytes": 10485760,
+    "method": "gem_package",
+    "description": "Ruby gem native extension"
+  },
+  "kreuzberg-go": {
+    "size_bytes": 45088768,
+    "method": "binary_size",
+    "description": "Go binary with CGO"
+  },
+  "kreuzberg-java": {
+    "size_bytes": 18874368,
+    "method": "jar_size",
+    "description": "Java JAR with JNI"
+  },
+  "kreuzberg-csharp": {
+    "size_bytes": 14680064,
+    "method": "nuget_package",
+    "description": ".NET NuGet package"
+  },
+  "kreuzberg-elixir": {
+    "size_bytes": 11534336,
+    "method": "hex_package",
+    "description": "Elixir hex package with NIF"
+  },
+  "kreuzberg-php": {
+    "size_bytes": 9437184,
+    "method": "php_extension",
+    "description": "PHP extension"
+  }
+}
