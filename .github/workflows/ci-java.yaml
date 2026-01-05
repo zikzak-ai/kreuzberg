@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-java.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -13,17 +18,19 @@ on:
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'packages/java/pom.xml'
       - 'scripts/ci/java/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-java.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
   pull_request:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-java.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -32,13 +39,10 @@ on:
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'packages/java/pom.xml'
       - 'scripts/ci/java/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-java.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
 
 concurrency:
   group: ci-java-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

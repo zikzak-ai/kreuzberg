@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-csharp.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -13,18 +18,18 @@ on:
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'packages/csharp/**/*.csproj'
-      - 'e2e/csharp/**/*.csproj'
       - 'scripts/ci/csharp/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-csharp.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
   pull_request:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-csharp.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -33,14 +38,9 @@ on:
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'packages/csharp/**/*.csproj'
-      - 'e2e/csharp/**/*.csproj'
       - 'scripts/ci/csharp/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-csharp.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
 
 concurrency:
   group: ci-csharp-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

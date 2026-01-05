@@ -5,42 +5,44 @@ on:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-php.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-php/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
       - 'packages/php/**'
-      - 'packages/php/composer.lock'
       - 'e2e/php/**'
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'scripts/ci/php/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-php.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
   pull_request:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-php.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-php/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
       - 'packages/php/**'
-      - 'packages/php/composer.lock'
       - 'e2e/php/**'
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'scripts/ci/php/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-php.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
 
 concurrency:
   group: ci-php-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -67,7 +69,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +78,7 @@ jobs:
         uses: ./.github/actions/install-system-deps
 
       - name: Free disk space before setup
-        if: matrix.os == 'ubuntu-latest'
+        if: startsWith(matrix.os, 'ubuntu')
         uses: ./.github/actions/free-disk-space-linux
         with:
           show-initial: "true"
@@ -194,7 +196,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
       RUSTC_WRAPPER: ""

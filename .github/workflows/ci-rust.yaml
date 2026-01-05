@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-rust.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-cli/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -12,19 +17,20 @@ on:
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.cargo/config.toml'
-      - 'rust-toolchain.toml'
       - 'scripts/ci/rust/**'
       - 'scripts/ci/cache/**'
+      - 'scripts/ci/actions/**'
       - 'scripts/install-system-pdfium-linux.sh'
       - 'scripts/install-system-pdfium-macos.sh'
-      - '.github/workflows/ci-rust.yaml'
   pull_request:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-rust.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-cli/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -32,15 +38,11 @@ on:
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.cargo/config.toml'
-      - 'rust-toolchain.toml'
       - 'scripts/ci/rust/**'
       - 'scripts/ci/cache/**'
+      - 'scripts/ci/actions/**'
       - 'scripts/install-system-pdfium-linux.sh'
       - 'scripts/install-system-pdfium-macos.sh'
-      - '.github/workflows/ci-rust.yaml'
 
 permissions:
   contents: read

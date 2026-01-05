@@ -5,6 +5,11 @@ name: CI Ruby
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-ruby.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -13,19 +18,21 @@ name: CI Ruby
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'Gemfile'
       - 'Gemfile.lock'
       - 'packages/ruby/Rakefile'
       - 'scripts/ci/ruby/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-ruby.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
   pull_request:
     branches: [main]
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-ruby.yaml'
+      - '.cargo/config.toml'
+      - 'rust-toolchain.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'crates/kreuzberg/**'
       - 'crates/kreuzberg-ffi/**'
       - 'crates/kreuzberg-tesseract/**'
@@ -34,15 +41,12 @@ name: CI Ruby
       - 'test_documents/**'
       - 'fixtures/**'
       - 'tools/e2e-generator/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'Gemfile'
       - 'Gemfile.lock'
       - 'packages/ruby/Rakefile'
       - 'scripts/ci/ruby/**'
       - 'scripts/ci/cache/**'
-      - '.github/workflows/ci-ruby.yaml'
-      - '.cargo/config.toml'
+      - 'scripts/ci/actions/**'
 
 concurrency:
   group: ci-ruby-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
