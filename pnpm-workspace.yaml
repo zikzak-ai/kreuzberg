@@ -5,6 +5,7 @@ packages:
   - "packages/**/*"
   - "examples/*"
   - "examples/**/*"
-  - 'e2e/**/*'
+  - "e2e/**/*"
   - "e2e/*"
   - "test_apps/*"
+  - "tools/benchmark-visualizer"

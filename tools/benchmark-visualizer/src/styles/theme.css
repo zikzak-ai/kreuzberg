@@ -1,0 +1,24 @@
+:root {
+  --color-primary-light: #da2ae0;
+  --color-primary-dark: #58fbda;
+  --color-bg-light: #ffffff;
+  --color-bg-dark: #23232c;
+  --color-text-light: #323040;
+  --color-text-dark: rgba(255, 255, 255, 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: var(--color-primary-dark);
+    --color-bg: var(--color-bg-dark);
+    --color-text: var(--color-text-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-primary: var(--color-primary-light);
+    --color-bg: var(--color-bg-light);
+    --color-text: var(--color-text-light);
+  }
+}
