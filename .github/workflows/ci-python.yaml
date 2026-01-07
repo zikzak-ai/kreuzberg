@@ -261,6 +261,11 @@ jobs:
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
 
+      - name: Free disk space before tests (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        shell: bash
+        run: scripts/ci/python/free-disk-space.sh
+
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
         with:
