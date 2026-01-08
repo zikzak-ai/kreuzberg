@@ -64,7 +64,7 @@ export const BenchmarkMetadataSchema = z.object({
   total_results: z.number().int().nonnegative(),
   framework_count: z.number().int().nonnegative(),
   file_type_count: z.number().int().nonnegative(),
-  timestamp: z.string().datetime(),
+  timestamp: z.string(), // Accept any timestamp format including nanoseconds
 })
 
 /**
