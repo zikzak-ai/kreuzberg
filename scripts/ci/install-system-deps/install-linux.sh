@@ -28,6 +28,7 @@ packages=(
   libssl-dev
   pkg-config
   build-essential
+  cmake
   php-cli
   php-dev
 )
@@ -41,7 +42,7 @@ else
     echo "::error::Package installation timed out after 15 minutes"
   else
     echo "::warning::Some packages failed to install, attempting individual installs..."
-    for pkg in tesseract-ocr libreoffice libssl-dev pkg-config; do
+    for pkg in tesseract-ocr libreoffice libssl-dev pkg-config cmake; do
       echo "Installing $pkg..."
       if retry_with_backoff_timeout 300 sudo apt-get install -y "$pkg" 2>&1; then
         echo "  ✓ $pkg installed"
