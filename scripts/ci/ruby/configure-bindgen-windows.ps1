@@ -36,113 +36,31 @@ Write-Host ""
 $includeRoot = $includeRoot -replace '\\','/'
 $compatForward = $compat -replace '\\','/'
 
-# Detect MinGW GCC include paths for C standard library headers
-Write-Host "Detecting MinGW GCC include paths:" -ForegroundColor Yellow
-$gccIncludePaths = @()
-
-try {
-    # Get GCC's built-in include search paths
-    $gccOutput = & gcc -v -E -x c - 2>&1 | Out-String
-
-    # Extract include paths from the output
-    $inIncludeSection = $false
-    foreach ($line in $gccOutput -split "`n") {
-        if ($line -match '#include <\.\.\.> search starts here:') {
-            $inIncludeSection = $true
-            continue
-        }
-        if ($line -match 'End of search list') {
-            break
-        }
-        if ($inIncludeSection -and $line.Trim() -ne '') {
-            $path = $line.Trim()
-            # Convert Windows paths to forward slashes
-            $path = $path -replace '\\','/'
-            $gccIncludePaths += $path
-            Write-Host "  Found: $path" -ForegroundColor Green
-        }
-    }
-
-    if ($gccIncludePaths.Count -eq 0) {
-        Write-Host "  [WARN] No GCC include paths detected via -v flag" -ForegroundColor Yellow
-    }
-} catch {
-    Write-Host "  [WARN] Failed to detect GCC include paths: $_" -ForegroundColor Yellow
-}
-
-# Also try to get GCC's resource directory for compiler-specific headers (stdarg.h, stddef.h, etc.)
-try {
-    $gccResourceDir = & gcc -print-file-name=include 2>&1
-    if ($gccResourceDir -and (Test-Path $gccResourceDir)) {
-        $gccResourceDir = $gccResourceDir -replace '\\','/'
-        if ($gccResourceDir -notin $gccIncludePaths) {
-            $gccIncludePaths += $gccResourceDir
-            Write-Host "  GCC resource dir: $gccResourceDir" -ForegroundColor Green
-        }
-    }
-} catch {
-    Write-Host "  [WARN] Failed to get GCC resource directory: $_" -ForegroundColor Yellow
-}
-
+# NOTE: We intentionally do NOT use GCC include paths for bindgen.
+# GCC intrinsic headers (ia32intrin.h, immintrin.h, etc.) are incompatible with Clang
+# and cause parsing errors. Clang/LLVM uses its own built-in includes instead.
+Write-Host "GCC include paths: Skipped (using Clang built-in includes instead)" -ForegroundColor Yellow
 Write-Host ""
 
 # Build the extra clang args with all necessary paths and flags
+# NOTE: Do NOT add -blocklist-header flags here - those are bindgen CLI options, not clang options.
+# Clang will misinterpret them as "-b locklist-header=xxx" which fails.
+# NOTE: Do NOT add GCC include paths - GCC intrinsic headers are incompatible with Clang.
+# Let Clang use its own built-in include paths instead.
 $extra = "-I$includeRoot -I$compatForward -fms-extensions -fstack-protector-strong -fno-omit-frame-pointer -fno-fast-math"
 
-# Add blocklists for intrinsic headers that conflict between GCC and Clang
-# These headers aren't needed by rb-sys and cause bindgen errors on Windows
-$intrinsicHeaders = @(
-    "ia32intrin.h",
-    "immintrin.h",
-    "ammintrin.h",
-    "emmintrin.h",
-    "pmmintrin.h",
-    "tmmintrin.h",
-    "smmintrin.h",
-    "nmmintrin.h",
-    "wmmintrin.h",
-    "popcntintrin.h",
-    "abmintrin.h",
-    "fmaintrin.h",
-    "lzcntintrin.h",
-    "bmiintrin.h",
-    "bmmi2intrin.h",
-    "tbmintrin.h",
-    "avxintrin.h",
-    "avx2intrin.h",
-    "avx512fintrin.h",
-    "avx512cdintrin.h",
-    "avx512erintrin.h",
-    "avx512pfintrin.h",
-    "avx512vldqintrin.h",
-    "avx512vbmiintrin.h",
-    "avx512vbmi2intrin.h",
-    "avx512ifmaintrin.h",
-    "avx512vpopcntdqintrin.h",
-    "vaesintrin.h",
-    "vpclmulqdqintrin.h",
-    "gfniintrin.h",
-    "avxvnniintrin.h",
-    "avxneconvertintrin.h",
-    "cetintrin.h",
-    "cmpccxaddintrin.h",
-    "waitpkgintrin.h",
-    "xsaveintrin.h",
-    "xsavesintrin.h",
-    "xsavecintrin.h",
-    "lwpintrin.h",
-    "rtmintrin.h",
-    "mmintrin.h",
-    "mm3dnow.h"
-)
-
-foreach ($header in $intrinsicHeaders) {
-    $extra += " -blocklist-header=$header"
-}
-
-# Add all detected GCC include paths
-foreach ($path in $gccIncludePaths) {
-    $extra += " -isystem$path"
+# Check for Clang installation and add its include path if available
+$llvmInclude = "C:/Program Files/LLVM/lib/clang"
+if (Test-Path $llvmInclude) {
+    # Find the latest clang version directory
+    $clangVersionDir = Get-ChildItem -Path $llvmInclude -Directory | Sort-Object Name -Descending | Select-Object -First 1
+    if ($clangVersionDir) {
+        $clangInclude = "$($clangVersionDir.FullName)/include" -replace '\\','/'
+        if (Test-Path $clangInclude) {
+            $extra += " -isystem$clangInclude"
+            Write-Host "  Added Clang include: $clangInclude" -ForegroundColor Green
+        }
+    }
 }
 
 # Check for MSYS2/MinGW sysroot
