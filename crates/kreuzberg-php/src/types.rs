@@ -539,16 +539,61 @@ impl ExtractedImage {
     }
 }
 
+/// Chunk metadata describing offsets within the original document.
+///
+/// # Properties
+///
+/// - `byte_start` (int): Starting byte offset
+/// - `byte_end` (int): Ending byte offset
+/// - `token_count` (int|null): Number of tokens in chunk
+/// - `chunk_index` (int): Chunk index (0-based)
+/// - `total_chunks` (int): Total number of chunks
+/// - `first_page` (int|null): First page number in chunk
+/// - `last_page` (int|null): Last page number in chunk
+#[php_class]
+#[php(name = "Kreuzberg\\Types\\ChunkMetadata")]
+#[derive(Clone)]
+pub struct ChunkMetadata {
+    #[php(prop)]
+    pub byte_start: usize,
+    #[php(prop)]
+    pub byte_end: usize,
+    #[php(prop)]
+    pub token_count: Option<usize>,
+    #[php(prop)]
+    pub chunk_index: usize,
+    #[php(prop)]
+    pub total_chunks: usize,
+    #[php(prop)]
+    pub first_page: Option<usize>,
+    #[php(prop)]
+    pub last_page: Option<usize>,
+}
+
+#[php_impl]
+impl ChunkMetadata {}
+
+impl ChunkMetadata {
+    pub fn from_rust(metadata: kreuzberg::ChunkMetadata) -> PhpResult<Self> {
+        Ok(Self {
+            byte_start: metadata.byte_start,
+            byte_end: metadata.byte_end,
+            token_count: metadata.token_count,
+            chunk_index: metadata.chunk_index,
+            total_chunks: metadata.total_chunks,
+            first_page: metadata.first_page,
+            last_page: metadata.last_page,
+        })
+    }
+}
+
 /// Text chunk with optional embedding.
 ///
 /// # Properties
 ///
 /// - `content` (string): Chunk text content
 /// - `embedding` (array|null): Embedding vector (if enabled)
-/// - `byte_start` (int): Start byte offset
-/// - `byte_end` (int): End byte offset
-/// - `chunk_index` (int): Index of this chunk
-/// - `total_chunks` (int): Total number of chunks
+/// - `metadata` (ChunkMetadata): Chunk metadata describing offsets and properties
 #[php_class]
 #[php(name = "Kreuzberg\\Types\\TextChunk")]
 #[derive(Clone)]
@@ -557,37 +602,24 @@ pub struct TextChunk {
     pub content: String,
     #[php(prop)]
     pub embedding: Option<Vec<f32>>,
-    #[php(prop)]
-    pub byte_start: usize,
-    #[php(prop)]
-    pub byte_end: usize,
-    #[php(prop)]
-    pub chunk_index: usize,
-    #[php(prop)]
-    pub total_chunks: usize,
-    #[php(prop)]
-    pub token_count: usize,
-    #[php(prop)]
-    pub first_page: Option<usize>,
-    #[php(prop)]
-    pub last_page: Option<usize>,
+    pub metadata: ChunkMetadata,
 }
 
 #[php_impl]
-impl TextChunk {}
+impl TextChunk {
+    /// Get chunk metadata.
+    #[php(name = "getMetadata")]
+    pub fn get_metadata(&self) -> ChunkMetadata {
+        self.metadata.clone()
+    }
+}
 
 impl TextChunk {
     pub fn from_rust(chunk: kreuzberg::Chunk) -> PhpResult<Self> {
         Ok(Self {
             content: chunk.content,
             embedding: chunk.embedding,
-            byte_start: chunk.metadata.byte_start,
-            byte_end: chunk.metadata.byte_end,
-            chunk_index: chunk.metadata.chunk_index,
-            total_chunks: chunk.metadata.total_chunks,
-            token_count: chunk.metadata.token_count.unwrap_or(0),
-            first_page: chunk.metadata.first_page,
-            last_page: chunk.metadata.last_page,
+            metadata: ChunkMetadata::from_rust(chunk.metadata)?,
         })
     }
 }

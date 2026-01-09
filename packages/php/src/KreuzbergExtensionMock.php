@@ -98,6 +98,47 @@ if (!function_exists('kreuzberg_extract_file')) {
             $metadata['page_count'] = 1;
         }
 
+        // Check if image extraction is enabled
+        $images = [];
+        $extractImages = false;
+        if ($config !== null) {
+            if (isset($config['extract_images'])) {
+                $extractImages = (bool) $config['extract_images'];
+            } elseif (isset($config['images']) && is_array($config['images']) && isset($config['images']['extract_images'])) {
+                $extractImages = (bool) $config['images']['extract_images'];
+            }
+        }
+
+        // If image extraction is enabled, return mock images with format data
+        if ($extractImages) {
+            $images = [
+                [
+                    'data' => 'PNG image data',
+                    'format' => 'PNG',
+                    'image_index' => 0,
+                    'page_number' => 1,
+                    'width' => 100,
+                    'height' => 100,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock PNG image',
+                ],
+                [
+                    'data' => 'JPEG image data',
+                    'format' => 'JPEG',
+                    'image_index' => 1,
+                    'page_number' => 1,
+                    'width' => 150,
+                    'height' => 150,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock JPEG image',
+                ],
+            ];
+        }
+
         return [
             'content' => "Mock extraction result from $filePath",
             'mime_type' => $mimeType,
@@ -105,13 +146,13 @@ if (!function_exists('kreuzberg_extract_file')) {
             'tables' => [],
             'detected_languages' => ['en'],
             'chunks' => [],
-            'images' => [],
+            'images' => $images,
             'pages' => [
                 [
                     'page_number' => 1,
                     'content' => "Mock extraction result from $filePath",
                     'tables' => [],
-                    'images' => [],
+                    'images' => $images,
                 ],
             ],
             'embeddings' => [],
@@ -207,6 +248,47 @@ if (!function_exists('kreuzberg_extract_bytes')) {
             $metadata['page_count'] = 1;
         }
 
+        // Check if image extraction is enabled
+        $images = [];
+        $extractImages = false;
+        if ($config !== null) {
+            if (isset($config['extract_images'])) {
+                $extractImages = (bool) $config['extract_images'];
+            } elseif (isset($config['images']) && is_array($config['images']) && isset($config['images']['extract_images'])) {
+                $extractImages = (bool) $config['images']['extract_images'];
+            }
+        }
+
+        // If image extraction is enabled, return mock images with format data
+        if ($extractImages) {
+            $images = [
+                [
+                    'data' => 'PNG image data',
+                    'format' => 'PNG',
+                    'image_index' => 0,
+                    'page_number' => 1,
+                    'width' => 100,
+                    'height' => 100,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock PNG image',
+                ],
+                [
+                    'data' => 'JPEG image data',
+                    'format' => 'JPEG',
+                    'image_index' => 1,
+                    'page_number' => 1,
+                    'width' => 150,
+                    'height' => 150,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock JPEG image',
+                ],
+            ];
+        }
+
         return [
             'content' => $content,
             'mime_type' => $mimeType,
@@ -214,12 +296,12 @@ if (!function_exists('kreuzberg_extract_bytes')) {
             'tables' => [],
             'detected_languages' => ['en'],
             'chunks' => [],
-            'images' => [],
+            'images' => $images,
             'pages' => $pages ?: [[
                 'page_number' => 1,
                 'content' => $content,
                 'tables' => [],
-                'images' => [],
+                'images' => $images,
             ]],
             'embeddings' => [],
             'keywords' => [],
@@ -251,6 +333,48 @@ if (!function_exists('kreuzberg_batch_extract_files')) {
 
         // Mock implementation
         $results = [];
+
+        // Check if image extraction is enabled
+        $extractImages = false;
+        if ($config !== null) {
+            if (isset($config['extract_images'])) {
+                $extractImages = (bool) $config['extract_images'];
+            } elseif (isset($config['images']) && is_array($config['images']) && isset($config['images']['extract_images'])) {
+                $extractImages = (bool) $config['images']['extract_images'];
+            }
+        }
+
+        // Create mock images if extraction is enabled
+        $images = [];
+        if ($extractImages) {
+            $images = [
+                [
+                    'data' => 'PNG image data',
+                    'format' => 'PNG',
+                    'image_index' => 0,
+                    'page_number' => 1,
+                    'width' => 100,
+                    'height' => 100,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock PNG image',
+                ],
+                [
+                    'data' => 'JPEG image data',
+                    'format' => 'JPEG',
+                    'image_index' => 1,
+                    'page_number' => 1,
+                    'width' => 150,
+                    'height' => 150,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock JPEG image',
+                ],
+            ];
+        }
+
         foreach ($paths as $path) {
             // Check if file exists
             if (!file_exists($path)) {
@@ -272,12 +396,12 @@ if (!function_exists('kreuzberg_batch_extract_files')) {
                 'tables' => [],
                 'detected_languages' => ['en'],
                 'chunks' => [],
-                'images' => [],
+                'images' => $images,
                 'pages' => [[
                     'page_number' => 1,
                     'content' => "Mock extraction from $path",
                     'tables' => [],
-                    'images' => [],
+                    'images' => $images,
                 ]],
                 'embeddings' => [],
                 'keywords' => [],
@@ -318,6 +442,48 @@ if (!function_exists('kreuzberg_batch_extract_bytes')) {
 
         // Mock implementation
         $results = [];
+
+        // Check if image extraction is enabled
+        $extractImages = false;
+        if ($config !== null) {
+            if (isset($config['extract_images'])) {
+                $extractImages = (bool) $config['extract_images'];
+            } elseif (isset($config['images']) && is_array($config['images']) && isset($config['images']['extract_images'])) {
+                $extractImages = (bool) $config['images']['extract_images'];
+            }
+        }
+
+        // Create mock images if extraction is enabled
+        $images = [];
+        if ($extractImages) {
+            $images = [
+                [
+                    'data' => 'PNG image data',
+                    'format' => 'PNG',
+                    'image_index' => 0,
+                    'page_number' => 1,
+                    'width' => 100,
+                    'height' => 100,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock PNG image',
+                ],
+                [
+                    'data' => 'JPEG image data',
+                    'format' => 'JPEG',
+                    'image_index' => 1,
+                    'page_number' => 1,
+                    'width' => 150,
+                    'height' => 150,
+                    'colorspace' => 'RGB',
+                    'bits_per_component' => 8,
+                    'is_mask' => false,
+                    'description' => 'Mock JPEG image',
+                ],
+            ];
+        }
+
         foreach ($dataList as $index => $data) {
             if (empty($data)) {
                 throw new \Kreuzberg\Exceptions\KreuzbergException("Empty data at index $index");
@@ -345,12 +511,12 @@ if (!function_exists('kreuzberg_batch_extract_bytes')) {
                 'tables' => [],
                 'detected_languages' => ['en'],
                 'chunks' => [],
-                'images' => [],
+                'images' => $images,
                 'pages' => [[
                     'page_number' => 1,
                     'content' => "Mock extraction result $index",
                     'tables' => [],
-                    'images' => [],
+                    'images' => $images,
                 ]],
                 'embeddings' => [],
                 'keywords' => [],

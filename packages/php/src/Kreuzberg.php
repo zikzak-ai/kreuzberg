@@ -58,7 +58,7 @@ final readonly class Kreuzberg
     ): ExtractionResult {
         $config ??= $this->defaultConfig ?? new ExtractionConfig();
 
-        return \Kreuzberg\extract_file($filePath, $mimeType, $config);
+        return extract_file($filePath, $mimeType, $config);
     }
 
     /**
@@ -77,7 +77,7 @@ final readonly class Kreuzberg
     ): ExtractionResult {
         $config ??= $this->defaultConfig ?? new ExtractionConfig();
 
-        return \Kreuzberg\extract_bytes($data, $mimeType, $config);
+        return extract_bytes($data, $mimeType, $config);
     }
 
     /**
@@ -94,7 +94,7 @@ final readonly class Kreuzberg
     ): array {
         $config ??= $this->defaultConfig ?? new ExtractionConfig();
 
-        return \Kreuzberg\batch_extract_files($paths, $config);
+        return batch_extract_files($paths, $config);
     }
 
     /**
@@ -113,7 +113,7 @@ final readonly class Kreuzberg
     ): array {
         $config ??= $this->defaultConfig ?? new ExtractionConfig();
 
-        return \Kreuzberg\batch_extract_bytes($dataList, $mimeTypes, $config);
+        return batch_extract_bytes($dataList, $mimeTypes, $config);
     }
 
     /**
@@ -132,7 +132,7 @@ final readonly class Kreuzberg
     ): ExtractionResult {
         $config ??= new ExtractionConfig();
 
-        return \Kreuzberg\extract_file($filePath, $mimeType, $config);
+        return extract_file($filePath, $mimeType, $config);
     }
 
     /**
@@ -151,7 +151,7 @@ final readonly class Kreuzberg
     ): ExtractionResult {
         $config ??= new ExtractionConfig();
 
-        return \Kreuzberg\extract_bytes($data, $mimeType, $config);
+        return extract_bytes($data, $mimeType, $config);
     }
 
     /**
@@ -168,7 +168,7 @@ final readonly class Kreuzberg
     ): array {
         $config ??= new ExtractionConfig();
 
-        return \Kreuzberg\batch_extract_files($paths, $config);
+        return batch_extract_files($paths, $config);
     }
 
     /**
@@ -187,7 +187,7 @@ final readonly class Kreuzberg
     ): array {
         $config ??= new ExtractionConfig();
 
-        return \Kreuzberg\batch_extract_bytes($dataList, $mimeTypes, $config);
+        return batch_extract_bytes($dataList, $mimeTypes, $config);
     }
 
     /**

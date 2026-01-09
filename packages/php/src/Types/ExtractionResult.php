@@ -15,7 +15,7 @@ namespace Kreuzberg\Types;
  * @property-read array<Chunk>|null $chunks Text chunks with embeddings and metadata
  * @property-read array<ExtractedImage>|null $images Extracted images (with nested OCR results)
  * @property-read array<PageContent>|null $pages Per-page content when page extraction is enabled
- * @property-read array<mixed>|null $keywords Extracted keywords with scores if KeywordConfig provided
+ * @property-read array<Keyword>|null $keywords Extracted keywords with scores if KeywordConfig provided
  * @property-read array<mixed, mixed>|null $embeddings Generated embeddings if enabled
  * @property-read array<mixed, mixed>|null $tesseract Tesseract OCR configuration results if enabled
  */
@@ -28,7 +28,7 @@ readonly class ExtractionResult
      * @param array<ExtractedImage>|null $images
      * @param array<PageContent>|null $pages
      * @param array<mixed, mixed>|null $embeddings
-     * @param array<mixed, mixed>|null $keywords
+     * @param array<Keyword>|null $keywords
      * @param array<mixed, mixed>|null $tesseract
      */
     public function __construct(
@@ -103,7 +103,33 @@ readonly class ExtractionResult
 
         // If embeddings field exists in data, use it
         $embeddings = $data['embeddings'] ?? null;
-        if (!is_array($embeddings)) {
+        if (is_array($embeddings)) {
+            // Convert each embedding to a proper object with vector property
+            $embeddings = array_map(
+                static function ($embedding) {
+                    if (is_object($embedding)) {
+                        // If it's already an object, ensure it has the vector property
+                        if (property_exists($embedding, 'vector')) {
+                            // Ensure vector is an array
+                            if (!is_array($embedding->vector)) {
+                                $embedding->vector = (array)$embedding->vector;
+                            }
+                            return $embedding;
+                        }
+                        // If no vector property, convert the whole object to array and wrap in vector
+                        return (object) ['vector' => (array)$embedding];
+                    } elseif (is_array($embedding)) {
+                        // If it's an array, wrap it or use it as vector
+                        if (isset($embedding['vector'])) {
+                            return (object) $embedding;
+                        }
+                        return (object) ['vector' => $embedding];
+                    }
+                    return $embedding;
+                },
+                $embeddings,
+            );
+        } else {
             $embeddings = null;
         }
 
@@ -120,9 +146,17 @@ readonly class ExtractionResult
             }
         }
 
-        $keywords = $data['keywords'] ?? null;
-        if (!is_array($keywords)) {
-            $keywords = null;
+        $keywords = null;
+        if (isset($data['keywords'])) {
+            /** @var array<array<string, mixed>> $keywordsData */
+            $keywordsData = $data['keywords'];
+            if (is_array($keywordsData)) {
+                $keywords = array_map(
+                    /** @param array<string, mixed> $keyword */
+                    static fn (array $keyword): Keyword => Keyword::fromArray($keyword),
+                    $keywordsData,
+                );
+            }
         }
 
         $tesseract = $data['tesseract'] ?? null;
