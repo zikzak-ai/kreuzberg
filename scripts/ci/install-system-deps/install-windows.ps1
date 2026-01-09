@@ -175,8 +175,9 @@ catch {
 
 Write-Host ""
 Write-Host "Tesseract (optional for build):"
-$tesseractPath = (Get-Command tesseract -ErrorAction SilentlyContinue).Path
-if ($tesseractPath) {
+$tesseractCmd = Get-Command tesseract -ErrorAction SilentlyContinue
+if ($tesseractCmd) {
+  $tesseractPath = $tesseractCmd.Path
   Write-Host "  Found at: $tesseractPath"
   try {
     & tesseract --version
