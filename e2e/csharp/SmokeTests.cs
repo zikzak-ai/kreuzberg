@@ -38,7 +38,7 @@ namespace Kreuzberg.E2E.Smoke {
             var result = TestHelpers.RunExtraction("images/sample.png", null);
             TestHelpers.AssertExpectedMime(result, new[] { "image/png" });
             var metadataNode = TestHelpers.MetadataToJson(result.Metadata);
-            TestHelpers.AssertMetadata(metadataNode, "format.format", @"{""eq"": ""PNG""}");
+            TestHelpers.AssertMetadata(metadataNode, "format", @"{""eq"": ""PNG""}");
         }
 
         [Fact]
