@@ -1040,6 +1040,9 @@ jobs:
         if: runner.os == 'Linux'
         run: scripts/publish/ubuntu/free-disk-space.sh
 
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+
       - name: Install MSYS2 toolchain
         if: runner.os == 'Windows'
         shell: pwsh

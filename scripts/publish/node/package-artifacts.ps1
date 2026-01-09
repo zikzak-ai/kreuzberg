@@ -1,7 +1,5 @@
 $ErrorActionPreference = "Stop"
 
-New-Item -ItemType Directory -Force -Path "crates/kreuzberg-node/artifacts" | Out-Null
-pnpm --filter @kreuzberg/node exec napi artifacts --output-dir ./artifacts
 if (-Not (Test-Path "crates/kreuzberg-node/npm")) { throw "npm artifact directory missing" }
 
 $target = $env:TARGET

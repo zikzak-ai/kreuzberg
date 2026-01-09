@@ -4,14 +4,6 @@ set -euo pipefail
 
 target="${TARGET:?TARGET not set}"
 
-mkdir -p crates/kreuzberg-node/artifacts
-echo "Running: pnpm --filter @kreuzberg/node exec napi artifacts --output-dir ./artifacts"
-if ! pnpm --filter @kreuzberg/node exec napi artifacts --output-dir ./artifacts 2>&1 | tee napi-artifacts.log; then
-  echo "ERROR: napi artifacts command failed" >&2
-  echo "See napi-artifacts.log above for details" >&2
-  exit 1
-fi
-echo "✓ NAPI artifacts command completed"
 if [ ! -d crates/kreuzberg-node/npm ]; then
   echo "npm artifact directory missing" >&2
   exit 1

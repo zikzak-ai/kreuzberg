@@ -38,6 +38,12 @@ $llvmCacheHit = $env:LLVM_CACHE_HIT -eq "true"
 $cmakeCacheHit = $env:CMAKE_CACHE_HIT -eq "true"
 $libreofficeInstalled = Test-Path "C:\Program Files\LibreOffice\program\soffice.exe"
 $cmakeInstalled = $false
+
+Write-Host "Cache status:"
+Write-Host "  TESSERACT_CACHE_HIT: $env:TESSERACT_CACHE_HIT (evaluated: $tesseractCacheHit)"
+Write-Host "  LLVM_CACHE_HIT: $env:LLVM_CACHE_HIT (evaluated: $llvmCacheHit)"
+Write-Host "  CMAKE_CACHE_HIT: $env:CMAKE_CACHE_HIT (evaluated: $cmakeCacheHit)"
+Write-Host ""
 try {
   & cmake --version 2>$null
   Write-Host "✓ CMake already installed"
@@ -48,18 +54,20 @@ catch {
 }
 
 if (-not $tesseractCacheHit) {
-  Write-Host "Tesseract cache miss, installing..."
+  Write-Host "Tesseract cache miss, installing (optional for build - needed for tests only)..."
   if (-not (Retry-Command { choco install -y tesseract --no-progress } -MaxAttempts 3)) {
-    throw "Failed to install Tesseract after 3 attempts"
+    Write-Host "::warning::Failed to install Tesseract (optional dependency - gem build does not require it)"
   }
-  Write-Host "✓ Tesseract installed"
+  else {
+    Write-Host "✓ Tesseract installed"
+  }
 }
 else {
   Write-Host "✓ Tesseract found in cache"
 }
 
 if (-not $libreofficeInstalled) {
-  Write-Host "LibreOffice not found, installing (timeout: 20min)..."
+  Write-Host "LibreOffice not found, installing (optional for build - needed for tests only, timeout: 20min)..."
 
   $job = Start-Job -ScriptBlock {
     choco install -y libreoffice --no-progress
@@ -69,19 +77,20 @@ if (-not $libreofficeInstalled) {
 
   if (-not $completed) {
     $job | Stop-Job -Force
-    throw "LibreOffice installation timed out after 20 minutes"
+    Write-Host "::warning::LibreOffice installation timed out after 20 minutes (optional dependency)"
   }
+  else {
+    $result = $job | Receive-Job
+    $exitCode = $job.JobStateInfo.State
 
-  $result = $job | Receive-Job
-  $exitCode = $job.JobStateInfo.State
-
-  if ($exitCode -ne "Completed") {
-    Write-Host "LibreOffice installation failed"
-    Write-Host "Output: $result"
-    throw "LibreOffice installation failed"
+    if ($exitCode -ne "Completed") {
+      Write-Host "::warning::LibreOffice installation failed (optional dependency)"
+      Write-Host "Output: $result"
+    }
+    else {
+      Write-Host "✓ LibreOffice installed"
+    }
   }
-
-  Write-Host "✓ LibreOffice installed"
 }
 else {
   Write-Host "✓ LibreOffice already installed"
@@ -142,8 +151,12 @@ $paths = @(
 
 foreach ($path in $paths) {
   if (Test-Path $path) {
+    Write-Host "  Adding to PATH: $path"
     Write-Output $path | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     $env:PATH = "$path;$env:PATH"
+  }
+  else {
+    Write-Host "  Path not found (skipping): $path"
   }
 }
 
@@ -161,21 +174,24 @@ catch {
 }
 
 Write-Host ""
-Write-Host "Tesseract:"
-& tesseract --version
-
-Write-Host ""
-Write-Host "Available Tesseract languages:"
-& tesseract --list-langs
-
-Write-Host ""
-Write-Host "Tesseract installation location:"
+Write-Host "Tesseract (optional for build):"
 $tesseractPath = (Get-Command tesseract -ErrorAction SilentlyContinue).Path
 if ($tesseractPath) {
-  Write-Host "  $tesseractPath"
+  Write-Host "  Found at: $tesseractPath"
+  try {
+    & tesseract --version
+    Write-Host "✓ Tesseract available and working"
+
+    Write-Host ""
+    Write-Host "Available Tesseract languages:"
+    & tesseract --list-langs
+  }
+  catch {
+    Write-Host "⚠ Warning: Tesseract found but failed to run"
+  }
 }
 else {
-  Write-Host "  ⚠ Could not determine tesseract path"
+  Write-Host "⚠ Tesseract not found on PATH (not required for gem build)"
 }
 
 Write-Host ""
