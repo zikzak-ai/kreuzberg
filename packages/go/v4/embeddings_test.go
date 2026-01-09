@@ -440,12 +440,14 @@ func TestModelSwitching(t *testing.T) {
 		{
 			name: "Default model",
 			modelConfig: []EmbeddingModelTypeOption{
+				WithEmbeddingModelType("preset"),
 				WithEmbeddingModelName("default"),
 			},
 		},
 		{
 			name: "Lightweight model",
 			modelConfig: []EmbeddingModelTypeOption{
+				WithEmbeddingModelType("preset"),
 				WithEmbeddingModelName("light"),
 			},
 		},
