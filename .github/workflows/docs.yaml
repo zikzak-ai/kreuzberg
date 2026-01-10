@@ -100,9 +100,6 @@ jobs:
       - name: Build v4 documentation with mike
         run: scripts/ci/docs/build-v4-docs.sh
 
-      - name: Build v3 documentation with mike
-        run: scripts/ci/docs/build-v3-docs.sh
-
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:

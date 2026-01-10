@@ -49,13 +49,13 @@ cache-keys = [
 ]
 
 [tool.uv.workspace]
-members = ["packages/python", "examples/python", "v3/kreuzberg"]
+members = ["packages/python", "examples/python"]
 
 [tool.ruff]
 target-version = "py310"
 line-length = 120
 src = ["packages/python/*"]
-extend-exclude = ["benchmarks", "crates", "scripts", "test_documents", "v3"]
+extend-exclude = ["benchmarks", "crates", "scripts", "test_documents"]
 format.docstring-code-line-length = 120
 format.docstring-code-format = true
 lint.select = ["ALL"]
@@ -207,7 +207,7 @@ omit = ["packages/python/kreuzberg/ocr/easyocr.py", "packages/python/kreuzberg/o
 
 [tool.mypy]
 packages = ["kreuzberg"]
-exclude = ["examples", "v3", "benchmarks", "crates", "e2e/smoke"]
+exclude = ["examples", "benchmarks", "crates", "e2e/smoke"]
 python_version = "3.10"
 disable_error_code = ['import-untyped', 'untyped-decorator']
 implicit_reexport = false

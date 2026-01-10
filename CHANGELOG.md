@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+#### Legacy Support
+- **V3 Code Removal**: Completely removed v3 legacy Python package and infrastructure
+  - Deleted `/v3/` directory containing standalone v3.22.0 LTS package
+  - Removed `.github/workflows/publish-v3.yaml` workflow
+  - Removed v3 documentation build scripts and tasks
+  - Cleaned up workspace configuration references
+  - V3 users should migrate to v4 using the [migration guide](https://docs.kreuzberg.dev/migration/v3-to-v4/)
+  - V3 package remains available on PyPI for legacy installations
+
 ## [4.0.0-rc.29] - 2026-01-08
 
 ### Added
