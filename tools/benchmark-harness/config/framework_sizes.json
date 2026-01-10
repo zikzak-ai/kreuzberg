@@ -1,8 +1,8 @@
 {
-	"kreuzberg-native": {
+	"kreuzberg-rust": {
 		"size_bytes": 52428800,
 		"method": "binary_size",
-		"description": "Native Rust binary with embedded models"
+		"description": "Native Rust core binary"
 	},
 	"kreuzberg-python": {
 		"size_bytes": 15728640,

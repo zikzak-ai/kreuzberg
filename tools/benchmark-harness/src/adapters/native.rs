@@ -87,7 +87,7 @@ impl Default for NativeAdapter {
 #[async_trait]
 impl FrameworkAdapter for NativeAdapter {
     fn name(&self) -> &str {
-        "kreuzberg-native"
+        "kreuzberg-rust"
     }
 
     fn supports_format(&self, file_type: &str) -> bool {
@@ -377,7 +377,7 @@ mod tests {
     #[tokio::test]
     async fn test_native_adapter_creation() {
         let adapter = NativeAdapter::new();
-        assert_eq!(adapter.name(), "kreuzberg-native");
+        assert_eq!(adapter.name(), "kreuzberg-rust");
     }
 
     #[tokio::test]
@@ -399,7 +399,7 @@ mod tests {
         let result = adapter.extract(&file_path, Duration::from_secs(10)).await.unwrap();
 
         assert!(result.success);
-        assert_eq!(result.framework, "kreuzberg-native");
+        assert_eq!(result.framework, "kreuzberg-rust");
         assert!(result.duration.as_millis() < 1000);
     }
 }

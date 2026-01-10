@@ -119,7 +119,7 @@ mod tests {
 
         registry.register(adapter).unwrap();
         assert_eq!(registry.len(), 1);
-        assert!(registry.contains("kreuzberg-native"));
+        assert!(registry.contains("kreuzberg-rust"));
     }
 
     #[test]
@@ -140,9 +140,9 @@ mod tests {
 
         registry.register(adapter).unwrap();
 
-        let retrieved = registry.get("kreuzberg-native");
+        let retrieved = registry.get("kreuzberg-rust");
         assert!(retrieved.is_some());
-        assert_eq!(retrieved.unwrap().name(), "kreuzberg-native");
+        assert_eq!(retrieved.unwrap().name(), "kreuzberg-rust");
     }
 
     #[test]
@@ -154,7 +154,7 @@ mod tests {
 
         let names = registry.adapter_names();
         assert_eq!(names.len(), 1);
-        assert!(names.contains(&"kreuzberg-native".to_string()));
+        assert!(names.contains(&"kreuzberg-rust".to_string()));
     }
 
     #[test]
@@ -165,7 +165,7 @@ mod tests {
         registry.register(adapter).unwrap();
         assert_eq!(registry.len(), 1);
 
-        let removed = registry.remove("kreuzberg-native");
+        let removed = registry.remove("kreuzberg-rust");
         assert!(removed.is_some());
         assert_eq!(registry.len(), 0);
     }
