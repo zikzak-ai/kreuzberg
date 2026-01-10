@@ -45,11 +45,20 @@ extractFile(filePath)
     });
 "#;
 
+        let supported_formats = vec![
+            "pdf", "docx", "doc", "xlsx", "xls", "pptx", "ppt", "txt", "md", "html", "xml", "json", "yaml", "toml",
+            "eml", "msg", "zip", "tar", "gz", "jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
+
         let inner = SubprocessAdapter::new(
             "kreuzberg",
             node_path.into(),
             vec!["-e".to_string(), script.to_string()],
             env,
+            supported_formats,
         );
 
         Self { inner }

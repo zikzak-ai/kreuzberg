@@ -26,6 +26,7 @@ pub struct SubprocessAdapter {
     env: Vec<(String, String)>,
     supports_batch: bool,
     working_dir: Option<PathBuf>,
+    supported_formats: Vec<String>,
 }
 
 impl SubprocessAdapter {
@@ -63,11 +64,13 @@ impl SubprocessAdapter {
     /// * `command` - Path to executable (e.g., "python3", "node")
     /// * `args` - Base arguments (e.g., ["-m", "kreuzberg"])
     /// * `env` - Environment variables
+    /// * `supported_formats` - List of file extensions this framework can process (e.g., ["pdf", "docx"])
     pub fn new(
         name: impl Into<String>,
         command: impl Into<PathBuf>,
         args: Vec<String>,
         env: Vec<(String, String)>,
+        supported_formats: Vec<String>,
     ) -> Self {
         Self {
             name: name.into(),
@@ -76,6 +79,7 @@ impl SubprocessAdapter {
             env,
             supports_batch: false,
             working_dir: None,
+            supported_formats,
         }
     }
 
@@ -89,11 +93,13 @@ impl SubprocessAdapter {
     /// * `command` - Path to executable (e.g., "python3", "node")
     /// * `args` - Base arguments (e.g., ["-m", "kreuzberg"])
     /// * `env` - Environment variables
+    /// * `supported_formats` - List of file extensions this framework can process
     pub fn with_batch_support(
         name: impl Into<String>,
         command: impl Into<PathBuf>,
         args: Vec<String>,
         env: Vec<(String, String)>,
+        supported_formats: Vec<String>,
     ) -> Self {
         Self {
             name: name.into(),
@@ -102,6 +108,7 @@ impl SubprocessAdapter {
             env,
             supports_batch: true,
             working_dir: None,
+            supported_formats,
         }
     }
 
@@ -253,35 +260,10 @@ impl FrameworkAdapter for SubprocessAdapter {
     }
 
     fn supports_format(&self, file_type: &str) -> bool {
-        matches!(
-            file_type.to_lowercase().as_str(),
-            "pdf"
-                | "docx"
-                | "doc"
-                | "xlsx"
-                | "xls"
-                | "pptx"
-                | "ppt"
-                | "txt"
-                | "md"
-                | "html"
-                | "xml"
-                | "json"
-                | "yaml"
-                | "toml"
-                | "eml"
-                | "msg"
-                | "zip"
-                | "tar"
-                | "gz"
-                | "jpg"
-                | "jpeg"
-                | "png"
-                | "gif"
-                | "bmp"
-                | "tiff"
-                | "webp"
-        )
+        let file_type_lower = file_type.to_lowercase();
+        self.supported_formats
+            .iter()
+            .any(|fmt| fmt.to_lowercase() == file_type_lower)
     }
 
     async fn extract(&self, file_path: &Path, timeout: Duration) -> Result<BenchmarkResult> {
@@ -675,13 +657,25 @@ mod tests {
 
     #[test]
     fn test_subprocess_adapter_creation() {
-        let adapter = SubprocessAdapter::new("test-adapter", "echo", vec!["test".to_string()], vec![]);
+        let adapter = SubprocessAdapter::new(
+            "test-adapter",
+            "echo",
+            vec!["test".to_string()],
+            vec![],
+            vec!["pdf".to_string(), "docx".to_string()],
+        );
         assert_eq!(adapter.name(), "test-adapter");
     }
 
     #[test]
     fn test_supports_format() {
-        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![]);
+        let adapter = SubprocessAdapter::new(
+            "test",
+            "echo",
+            vec![],
+            vec![],
+            vec!["pdf".to_string(), "docx".to_string()],
+        );
         assert!(adapter.supports_format("pdf"));
         assert!(adapter.supports_format("docx"));
         assert!(!adapter.supports_format("unknown"));

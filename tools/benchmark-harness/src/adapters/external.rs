@@ -1,6 +1,62 @@
 use crate::{adapters::subprocess::SubprocessAdapter, error::Result};
 use std::{env, path::PathBuf};
 
+/// Helper function to define supported file types for each framework
+///
+/// Maps framework names to the file extensions they can actually process.
+/// This prevents invalid benchmark combinations (e.g., Pandoc cannot read PDFs).
+fn get_supported_formats(framework_name: &str) -> Vec<String> {
+    match framework_name {
+        // Pandoc can write to PDF but CANNOT read from PDF
+        "pandoc" => vec![
+            "docx", "doc", "html", "md", "markdown", "pptx", "ppt", "odt", "rst", "epub", "txt",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
+
+        // PDF-only tools
+        "pdfplumber" | "pdfplumber-batch" | "pymupdf4llm" => {
+            vec!["pdf".to_string()]
+        }
+
+        // Docling supports documents and PDFs
+        "docling" | "docling-batch" => vec!["pdf", "docx", "pptx", "xlsx"]
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect(),
+
+        // Tika supports many formats
+        "tika" | "tika-batch" => vec!["pdf", "docx", "doc", "html", "pptx", "ppt", "xlsx", "xls", "md", "txt"]
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect(),
+
+        // MarkItDown supports many types
+        "markitdown" => vec!["pdf", "docx", "pptx", "xlsx", "md", "txt", "html"]
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect(),
+
+        // Unstructured supports broad formats
+        "unstructured" => vec!["pdf", "docx", "doc", "html", "pptx", "ppt", "xlsx", "xls", "md", "txt"]
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect(),
+
+        // MinerU supports document formats and PDFs
+        "mineru" | "mineru-batch" => vec!["pdf", "docx", "pptx"].into_iter().map(|s| s.to_string()).collect(),
+
+        // Default: broad support (for unknown frameworks)
+        _ => vec![
+            "pdf", "docx", "doc", "xlsx", "xls", "pptx", "ppt", "txt", "md", "html", "xml", "json", "yaml",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
+    }
+}
+
 /// Creates a subprocess adapter for Docling (open source extraction framework, single-file mode)
 pub fn create_docling_adapter() -> Result<SubprocessAdapter> {
     let script_path = get_script_path("docling_extract.py")?;
@@ -8,7 +64,14 @@ pub fn create_docling_adapter() -> Result<SubprocessAdapter> {
     args.push(script_path.to_string_lossy().to_string());
     args.push("sync".to_string());
 
-    Ok(SubprocessAdapter::new("docling", command, args, vec![]))
+    let supported_formats = get_supported_formats("docling");
+    Ok(SubprocessAdapter::new(
+        "docling",
+        command,
+        args,
+        vec![],
+        supported_formats,
+    ))
 }
 
 /// Creates a subprocess adapter for Docling (open source extraction framework, batch mode)
@@ -18,11 +81,13 @@ pub fn create_docling_batch_adapter() -> Result<SubprocessAdapter> {
     args.push(script_path.to_string_lossy().to_string());
     args.push("batch".to_string());
 
+    let supported_formats = get_supported_formats("docling-batch");
     Ok(SubprocessAdapter::with_batch_support(
         "docling-batch",
         command,
         args,
         vec![],
+        supported_formats,
     ))
 }
 
@@ -32,7 +97,14 @@ pub fn create_unstructured_adapter() -> Result<SubprocessAdapter> {
     let (command, mut args) = find_python_with_framework("unstructured")?;
     args.push(script_path.to_string_lossy().to_string());
 
-    Ok(SubprocessAdapter::new("unstructured", command, args, vec![]))
+    let supported_formats = get_supported_formats("unstructured");
+    Ok(SubprocessAdapter::new(
+        "unstructured",
+        command,
+        args,
+        vec![],
+        supported_formats,
+    ))
 }
 
 /// Creates a subprocess adapter for MarkItDown (open source extraction framework)
@@ -41,7 +113,14 @@ pub fn create_markitdown_adapter() -> Result<SubprocessAdapter> {
     let (command, mut args) = find_python_with_framework("markitdown")?;
     args.push(script_path.to_string_lossy().to_string());
 
-    Ok(SubprocessAdapter::new("markitdown", command, args, vec![]))
+    let supported_formats = get_supported_formats("markitdown");
+    Ok(SubprocessAdapter::new(
+        "markitdown",
+        command,
+        args,
+        vec![],
+        supported_formats,
+    ))
 }
 
 /// Creates a subprocess adapter for Pandoc (universal document converter)
@@ -56,7 +135,14 @@ pub fn create_pandoc_adapter() -> Result<SubprocessAdapter> {
     let command = PathBuf::from("bash");
     let args = vec![script_path.to_string_lossy().to_string()];
 
-    Ok(SubprocessAdapter::new("pandoc", command, args, vec![]))
+    let supported_formats = get_supported_formats("pandoc");
+    Ok(SubprocessAdapter::new(
+        "pandoc",
+        command,
+        args,
+        vec![],
+        supported_formats,
+    ))
 }
 
 /// Helper function to get the path to a wrapper script
@@ -170,7 +256,8 @@ pub fn create_tika_adapter() -> Result<SubprocessAdapter> {
         "sync".to_string(),
     ];
 
-    Ok(SubprocessAdapter::new("tika", command, args, vec![]))
+    let supported_formats = get_supported_formats("tika");
+    Ok(SubprocessAdapter::new("tika", command, args, vec![], supported_formats))
 }
 
 /// Creates a subprocess adapter for Apache Tika (batch mode)
@@ -186,11 +273,13 @@ pub fn create_tika_batch_adapter() -> Result<SubprocessAdapter> {
         "batch".to_string(),
     ];
 
+    let supported_formats = get_supported_formats("tika-batch");
     Ok(SubprocessAdapter::with_batch_support(
         "tika-batch",
         command,
         args,
         vec![],
+        supported_formats,
     ))
 }
 
@@ -200,7 +289,14 @@ pub fn create_pymupdf4llm_adapter() -> Result<SubprocessAdapter> {
     let (command, mut args) = find_python_with_framework("pymupdf4llm")?;
     args.push(script_path.to_string_lossy().to_string());
 
-    Ok(SubprocessAdapter::new("pymupdf4llm", command, args, vec![]))
+    let supported_formats = get_supported_formats("pymupdf4llm");
+    Ok(SubprocessAdapter::new(
+        "pymupdf4llm",
+        command,
+        args,
+        vec![],
+        supported_formats,
+    ))
 }
 
 /// Creates a subprocess adapter for pdfplumber (open source extraction framework, single-file mode)
@@ -210,7 +306,14 @@ pub fn create_pdfplumber_adapter() -> Result<SubprocessAdapter> {
     args.push(script_path.to_string_lossy().to_string());
     args.push("sync".to_string());
 
-    Ok(SubprocessAdapter::new("pdfplumber", command, args, vec![]))
+    let supported_formats = get_supported_formats("pdfplumber");
+    Ok(SubprocessAdapter::new(
+        "pdfplumber",
+        command,
+        args,
+        vec![],
+        supported_formats,
+    ))
 }
 
 /// Creates a subprocess adapter for pdfplumber (open source extraction framework, batch mode)
@@ -220,11 +323,13 @@ pub fn create_pdfplumber_batch_adapter() -> Result<SubprocessAdapter> {
     args.push(script_path.to_string_lossy().to_string());
     args.push("batch".to_string());
 
+    let supported_formats = get_supported_formats("pdfplumber-batch");
     Ok(SubprocessAdapter::with_batch_support(
         "pdfplumber-batch",
         command,
         args,
         vec![],
+        supported_formats,
     ))
 }
 
@@ -235,7 +340,14 @@ pub fn create_mineru_adapter() -> Result<SubprocessAdapter> {
     args.push(script_path.to_string_lossy().to_string());
     args.push("sync".to_string());
 
-    Ok(SubprocessAdapter::new("mineru", command, args, vec![]))
+    let supported_formats = get_supported_formats("mineru");
+    Ok(SubprocessAdapter::new(
+        "mineru",
+        command,
+        args,
+        vec![],
+        supported_formats,
+    ))
 }
 
 /// Creates a subprocess adapter for MinerU (open source extraction framework, batch mode)
@@ -245,11 +357,13 @@ pub fn create_mineru_batch_adapter() -> Result<SubprocessAdapter> {
     args.push(script_path.to_string_lossy().to_string());
     args.push("batch".to_string());
 
+    let supported_formats = get_supported_formats("mineru-batch");
     Ok(SubprocessAdapter::with_batch_support(
         "mineru-batch",
         command,
         args,
         vec![],
+        supported_formats,
     ))
 }
 

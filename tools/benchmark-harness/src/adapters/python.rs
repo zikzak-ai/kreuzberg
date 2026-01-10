@@ -43,11 +43,20 @@ if __name__ == '__main__':
     print(json.dumps(output))
 "#;
 
+        let supported_formats = vec![
+            "pdf", "docx", "doc", "xlsx", "xls", "pptx", "ppt", "txt", "md", "html", "xml", "json", "yaml", "toml",
+            "eml", "msg", "zip", "tar", "gz", "jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
+
         let inner = SubprocessAdapter::new(
             "kreuzberg-python",
             python_path.into(),
             vec!["-c".to_string(), script.to_string()],
             env,
+            supported_formats,
         );
 
         Self { inner }
