@@ -194,6 +194,7 @@ jobs:
           ls -lh crates/kreuzberg-ffi/kreuzberg-ffi.pc 2>/dev/null || echo "  (not found)"
 
       - name: Build Go bindings
+        shell: bash
         run: task go:build:ci
         env:
           CGO_ENABLED: ${{ env.CGO_ENABLED }}
@@ -372,6 +373,7 @@ jobs:
         uses: ./.github/actions/install-task
 
       - name: Run Go tests
+        shell: bash
         run: task go:test:ci
         env:
           LD_LIBRARY_PATH: ${{ env.LD_LIBRARY_PATH }}
@@ -385,9 +387,11 @@ jobs:
           GO_TEST_FLAGS: ${{ runner.os == 'Windows' && '-ldflags=-linkmode=external -extldflags=-Wl,--verbose' || '' }}
 
       - name: Generate Go E2E tests
+        shell: bash
         run: task go:e2e:generate
 
       - name: Run E2E tests
+        shell: bash
         run: task go:e2e:test
         env:
           LD_LIBRARY_PATH: ${{ env.LD_LIBRARY_PATH }}
