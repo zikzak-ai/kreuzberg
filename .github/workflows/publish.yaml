@@ -364,12 +364,20 @@ jobs:
         run: |
           # Check if Formula/kreuzberg.rb exists and contains the current version
           # Use timeout to prevent hanging on API issues
-          if timeout 120s gh api repos/kreuzberg-dev/homebrew-tap/contents/Formula/kreuzberg.rb --jq '.content' 2>/dev/null | base64 -d | grep -q "version \"${VERSION}\""; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Homebrew formula already contains version ${VERSION}" >> "$GITHUB_STEP_SUMMARY"
+          # Validate API response and handle base64 decoding errors gracefully
+          api_response=$(timeout 120s gh api repos/kreuzberg-dev/homebrew-tap/contents/Formula/kreuzberg.rb --jq '.content' 2>/dev/null || echo "")
+
+          if [[ -n "$api_response" ]] && [[ "$api_response" != "null" ]]; then
+            if echo "$api_response" | base64 -d 2>/dev/null | grep -q "version \"${VERSION}\""; then
+              echo "exists=true" >> "$GITHUB_OUTPUT"
+              echo "Homebrew formula already contains version ${VERSION}" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "exists=false" >> "$GITHUB_OUTPUT"
+              echo "Homebrew formula does not contain version ${VERSION} or check failed" >> "$GITHUB_STEP_SUMMARY"
+            fi
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Homebrew formula does not contain version ${VERSION} or check failed" >> "$GITHUB_STEP_SUMMARY"
+            echo "Homebrew formula check failed (API error or file not found)" >> "$GITHUB_STEP_SUMMARY"
           fi
 
   python-wheels:

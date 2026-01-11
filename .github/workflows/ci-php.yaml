@@ -101,6 +101,11 @@ jobs:
           # For now, we'll do a more conservative check: always clean before build
           # since the current Cargo.lock changes frequently
           echo "Preparing clean Rust build environment..."
+
+          # Run comprehensive fingerprint cleanup
+          scripts/ci/actions/setup-rust/cleanup-fingerprints.sh
+
+          # Also perform full clean for critical packages to ensure consistency
           cargo clean --release -p kreuzberg-ffi 2>/dev/null || true
           cargo clean --release -p kreuzberg 2>/dev/null || true
 
@@ -225,6 +230,11 @@ jobs:
           # For now, we'll do a more conservative check: always clean before build
           # since the current Cargo.lock changes frequently
           echo "Preparing clean Rust build environment..."
+
+          # Run comprehensive fingerprint cleanup
+          scripts/ci/actions/setup-rust/cleanup-fingerprints.sh
+
+          # Also perform full clean for critical packages to ensure consistency
           cargo clean --release -p kreuzberg-ffi 2>/dev/null || true
           cargo clean --release -p kreuzberg 2>/dev/null || true
 

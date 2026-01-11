@@ -114,6 +114,10 @@ jobs:
           target: ${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-gnu' || '' }}
           toolchain: ${{ matrix.os == 'windows-latest' && 'stable-x86_64-pc-windows-gnu' || '' }}
 
+      - name: Clean stale fingerprints (build job)
+        shell: bash
+        run: scripts/ci/actions/setup-rust/cleanup-fingerprints.sh
+
       - name: Set GNU as default Rust toolchain (Windows only)
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -264,6 +268,10 @@ jobs:
           use-sccache: ${{ matrix.os != 'windows-latest' }}
           target: ${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-gnu' || '' }}
           toolchain: ${{ matrix.os == 'windows-latest' && 'stable-x86_64-pc-windows-gnu' || '' }}
+
+      - name: Clean stale fingerprints (test job)
+        shell: bash
+        run: scripts/ci/actions/setup-rust/cleanup-fingerprints.sh
 
       - name: Set GNU as default Rust toolchain (Windows only)
         if: matrix.os == 'windows-latest'

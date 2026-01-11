@@ -75,7 +75,9 @@ coverage.xml
 coverage/
 crates/kreuzberg-node/index.d.ts
 crates/kreuzberg-node/index.js
+# Global dist/ ignore, with exceptions for packages that need dist in git
 dist/
+!crates/kreuzberg-node/dist/
 docker-compose.yaml
 docker-logs/
 docs/_build/
