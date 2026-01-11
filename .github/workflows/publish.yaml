@@ -2735,7 +2735,9 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPP_PASSPHRASE }}
-        run: scripts/publish/maven/deploy-or-skip.sh --version "${{ needs.prepare.outputs.version }}" -- mvn -f packages/java/pom.xml --batch-mode --no-transfer-progress -Dgpg.passphrase="${MAVEN_GPG_PASSPHRASE}" -DskipTests clean deploy
+        # Note: GPG passphrase is provided via MAVEN_GPG_PASSPHRASE env var (configured in pom.xml via passphraseEnvName)
+        # The -Ppublish profile activates central-publishing-maven-plugin and skips maven-deploy-plugin
+        run: scripts/publish/maven/deploy-or-skip.sh --version "${{ needs.prepare.outputs.version }}" -- mvn -f packages/java/pom.xml --batch-mode --no-transfer-progress -Ppublish -DskipTests clean deploy
 
       - name: Maven already published summary
         if: ${{ steps.maven_check.outputs.exists == 'true' }}
