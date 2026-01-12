@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.0.3] - 2026-01-12
+
+### Fixed
+
+#### Go Module
+- **Fixed header include path for external users**: `plugins_test_helpers.go` now uses the bundled header at `internal/ffi/kreuzberg.h` instead of a relative path to the monorepo ([#280](https://github.com/kreuzberg-dev/kreuzberg/issues/280))
+  - Users installing via `go get` no longer get compilation errors about missing header files
+
+---
+
 ## [4.0.2] - 2026-01-12
 
 ### Fixed

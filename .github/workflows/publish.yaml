@@ -2113,8 +2113,45 @@ jobs:
         if: runner.os == 'Linux'
         run: scripts/publish/ubuntu/free-disk-space.sh
 
+      - name: Configure Windows GNU toolchain
+        if: matrix.settings.os == 'windows-latest'
+        shell: bash
+        run: scripts/publish/go/configure-windows-gnu-toolchain.sh
+
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
+
+      - name: Setup Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          target: ${{ matrix.settings.target }}
+          cache-key-prefix: ${{ matrix.settings.os == 'windows-latest' && 'publish-elixir-windows-gnu' || format('publish-elixir-{0}', matrix.settings.os) }}
+          use-sccache: ${{ matrix.settings.os != 'windows-latest' }}
+          toolchain: ${{ matrix.settings.os == 'windows-latest' && 'stable-x86_64-pc-windows-gnu' || '' }}
+
+      - name: Set GNU as default (Windows)
+        if: matrix.settings.os == 'windows-latest'
+        shell: pwsh
+        run: rustup default stable-x86_64-pc-windows-gnu
+
+      - name: Setup MSYS2 (Windows)
+        if: matrix.settings.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-pkg-config
+            mingw-w64-ucrt-x86_64-nasm
+            mingw-w64-ucrt-x86_64-zstd
+            mingw-w64-ucrt-x86_64-binutils
+
+      - name: Verify MSYS2 toolchain and add to PATH (Windows)
+        if: matrix.settings.os == 'windows-latest'
+        shell: pwsh
+        run: scripts/ci/go/setup-msys2-windows.ps1
 
       - name: Setup OpenSSL
         uses: ./.github/actions/setup-openssl
@@ -2126,13 +2163,10 @@ jobs:
           label: ${{ matrix.settings.label }}
           enable-cache: "true"
 
-      - name: Setup Rust
-        uses: ./.github/actions/setup-rust
-
       - name: Restore Cargo cache
         uses: ./.github/actions/restore-cargo-cache
         with:
-          shared-key: elixir-${{ matrix.settings.label }}
+          shared-key: ${{ matrix.settings.os == 'windows-latest' && 'publish-elixir-windows-gnu' || format('publish-elixir-{0}', matrix.settings.os) }}
           prefix: elixir
 
       - name: Build Elixir native library
@@ -2140,6 +2174,26 @@ jobs:
         env:
           CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
         run: cargo build --release --target ${{ matrix.settings.target }}
+
+      - name: Debug - List build output
+        shell: bash
+        run: |
+          TARGET="${{ matrix.settings.target }}"
+          echo "=== Build target: ${TARGET} ==="
+          echo "=== Runner OS: ${{ runner.os }} ==="
+          echo ""
+          echo "=== All library files in target ==="
+          find packages/elixir/native/kreuzberg_rustler/target -type f \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" -o -name "libkreuzberg*" -o -name "kreuzberg_rustler*" \) 2>/dev/null | head -30 || echo "No libraries found"
+          echo ""
+          echo "=== Expected location: target/${TARGET}/release/ ==="
+          for f in packages/elixir/native/kreuzberg_rustler/target/"${TARGET}"/release/*kreuzberg*; do
+            [ -e "$f" ] && ls -la "$f" || true
+          done 2>/dev/null || echo "Directory or files do not exist"
+          echo ""
+          echo "=== Fallback location: target/release/ ==="
+          for f in packages/elixir/native/kreuzberg_rustler/target/release/*kreuzberg*; do
+            [ -e "$f" ] && ls -la "$f" || true
+          done 2>/dev/null || echo "No fallback dir"
 
       - name: Package native libraries (NIF 2.16)
         shell: bash
@@ -2163,8 +2217,22 @@ jobs:
           ARTIFACT_NAME="libkreuzberg_rustler-v${VERSION}-nif-${NIF_VERSION}-${TARGET}.${EXT}"
           TARBALL="${ARTIFACT_NAME}.tar.gz"
 
-          # Copy the built library
-          cp "packages/elixir/native/kreuzberg_rustler/target/${TARGET}/release/${LIB_NAME}" "${ARTIFACT_NAME}"
+          # Try expected location first, fallback to root release dir
+          LIB_PATH="packages/elixir/native/kreuzberg_rustler/target/${TARGET}/release/${LIB_NAME}"
+          if [[ ! -f "$LIB_PATH" ]]; then
+            echo "Library not found at expected path, checking fallback..."
+            LIB_PATH="packages/elixir/native/kreuzberg_rustler/target/release/${LIB_NAME}"
+          fi
+
+          if [[ ! -f "$LIB_PATH" ]]; then
+            echo "ERROR: Library not found at either location"
+            echo "Expected: packages/elixir/native/kreuzberg_rustler/target/${TARGET}/release/${LIB_NAME}"
+            echo "Fallback: packages/elixir/native/kreuzberg_rustler/target/release/${LIB_NAME}"
+            exit 1
+          fi
+
+          echo "Found library at: $LIB_PATH"
+          cp "$LIB_PATH" "${ARTIFACT_NAME}"
 
           # Create tarball
           tar -czf "dist/elixir/${TARBALL}" "${ARTIFACT_NAME}"
@@ -2191,8 +2259,19 @@ jobs:
           ARTIFACT_NAME="libkreuzberg_rustler-v${VERSION}-nif-${NIF_VERSION}-${TARGET}.${EXT}"
           TARBALL="${ARTIFACT_NAME}.tar.gz"
 
-          # Copy the built library (same binary works for both NIF versions)
-          cp "packages/elixir/native/kreuzberg_rustler/target/${TARGET}/release/${LIB_NAME}" "${ARTIFACT_NAME}"
+          # Try expected location first, fallback to root release dir
+          LIB_PATH="packages/elixir/native/kreuzberg_rustler/target/${TARGET}/release/${LIB_NAME}"
+          if [[ ! -f "$LIB_PATH" ]]; then
+            LIB_PATH="packages/elixir/native/kreuzberg_rustler/target/release/${LIB_NAME}"
+          fi
+
+          if [[ ! -f "$LIB_PATH" ]]; then
+            echo "ERROR: Library not found"
+            exit 1
+          fi
+
+          echo "Found library at: $LIB_PATH"
+          cp "$LIB_PATH" "${ARTIFACT_NAME}"
 
           # Create tarball
           tar -czf "dist/elixir/${TARBALL}" "${ARTIFACT_NAME}"

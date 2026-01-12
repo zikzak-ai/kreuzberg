@@ -75,16 +75,15 @@ tasks:
 
   test:ci:
     desc: Run Go tests in CI mode
+    dir: packages/go/v4
     env:
       RUST_BACKTRACE: "full"
       RUST_LIB_BACKTRACE: "1"
       CI: "true"
       VERBOSE_MODE: "true"
+      CGO_ENABLED: "1"
     cmds:
-      - cmd: bash scripts/go/test.sh
-        platforms: [linux, darwin]
-      - cmd: pwsh -Command "cd packages/go/v4; go test -timeout 10m -v ./..."
-        platforms: [windows]
+      - go test -timeout 10m -v ./...
 
   test:verbose:
     desc: Run Go tests with verbose output

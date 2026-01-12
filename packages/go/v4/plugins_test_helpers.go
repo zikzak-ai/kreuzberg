@@ -3,8 +3,8 @@
 package kreuzberg
 
 /*
-#cgo CFLAGS: -I${SRCDIR}/../../../crates/kreuzberg-ffi
-#include "../../../crates/kreuzberg-ffi/kreuzberg.h"
+#cgo CFLAGS: -I${SRCDIR}/internal/ffi
+#include "internal/ffi/kreuzberg.h"
 #include <stdlib.h>
 #include <string.h>
 
