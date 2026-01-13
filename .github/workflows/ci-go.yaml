@@ -307,6 +307,8 @@ jobs:
           path: |
             target/release/libkreuzberg_ffi.*
             target/x86_64-pc-windows-gnu/release/libkreuzberg_ffi.*
+            crates/kreuzberg-ffi/kreuzberg.h
+            crates/kreuzberg-ffi/kreuzberg-ffi.pc
           retention-days: 7
 
       - name: Cleanup Rust cache

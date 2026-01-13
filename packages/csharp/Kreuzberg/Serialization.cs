@@ -783,12 +783,12 @@ internal static class Serialization
 
     /// <summary>
     /// JSON serializer options for config serialization that includes null values.
-    /// This ensures the Rust FFI receives all expected fields.
+    /// This ensures the Rust FFI receives all expected fields with proper defaults.
     /// </summary>
     internal static readonly JsonSerializerOptions ConfigOptions = new()
     {
         PropertyNameCaseInsensitive = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
         WriteIndented = false,
         Converters = { new MetadataConverter(), new PageConfigConverter(), new KeywordConfigConverter(), new ByteArrayConverter() }
     };

@@ -33,7 +33,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
             $this->markTestSkipped('Kreuzberg extension is not loaded');
         }
 
-        $this->testDocumentsPath = dirname(__DIR__, 4) . '/test_documents';
+        $this->testDocumentsPath = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'test_documents';
     }
 
     #[Test]

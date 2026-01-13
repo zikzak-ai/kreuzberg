@@ -150,7 +150,7 @@ final class ExtensionTest extends TestCase
         $this->assertTrue(class_exists(ExtractionResult::class));
 
         // The extension may override reflection metadata, so we check by accessing an actual instance
-        $testDocumentsPath = dirname(__DIR__, 4) . '/test_documents';
+        $testDocumentsPath = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'test_documents';
         $pdfPath = $testDocumentsPath . '/pdfs/code_and_formula.pdf';
 
         if (!file_exists($pdfPath)) {
