@@ -43,6 +43,8 @@ tasks:
     desc: Build Node/TypeScript native bindings in CI mode (with debug info)
     dir: crates/kreuzberg-node
     cmds:
+      - corepack enable
+      - pnpm install -r
       - pnpm exec napi build --platform --release
       - pnpm exec tsup
 
