@@ -543,6 +543,11 @@ final class ImageExtractionTest extends TestCase
         $result = $kreuzberg->extractFile($filePath);
 
         // Images should be null or empty array for documents without images
+        $this->assertTrue(
+            $result->images === null || is_array($result->images),
+            'Images should be null or array',
+        );
+
         if ($result->images !== null) {
             $this->assertIsArray(
                 $result->images,
@@ -578,6 +583,11 @@ final class ImageExtractionTest extends TestCase
         $result = $kreuzberg->extractFile($pdfFiles[0]);
 
         // When disabled, images should be null or empty
+        $this->assertTrue(
+            $result->images === null || (is_array($result->images) && empty($result->images)),
+            'Images should be null or empty array when extraction is disabled',
+        );
+
         if ($result->images !== null) {
             $this->assertEmpty(
                 $result->images,

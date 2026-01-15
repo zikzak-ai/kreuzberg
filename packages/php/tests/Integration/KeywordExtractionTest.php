@@ -244,12 +244,27 @@ final class KeywordExtractionTest extends TestCase
         $kreuzberg = new Kreuzberg($config);
         $result = $kreuzberg->extractFile($filePath);
 
+        // Verify keywords array exists and is populated
+        $this->assertNotNull($result->keywords, 'Keywords should not be null');
+        $this->assertIsArray($result->keywords, 'Keywords should be an array');
+        $this->assertNotEmpty($result->keywords, 'Should return at least one keyword');
+
         if (!empty($result->keywords)) {
             $keyword = $result->keywords[0];
 
-            // Verify readonly by attempting to access and verify immutability
-            $this->assertIsString($keyword->text ?? '');
-            $this->assertIsFloat($keyword->score ?? 0.0);
+            // Verify readonly by checking that objects have expected properties
+            $this->assertTrue(
+                property_exists($keyword, 'text'),
+                'Keyword object should have text property',
+            );
+            $this->assertTrue(
+                property_exists($keyword, 'score'),
+                'Keyword object should have score property',
+            );
+
+            // Verify property types
+            $this->assertIsString($keyword->text, 'Keyword text should be a string');
+            $this->assertIsFloat($keyword->score, 'Keyword score should be a float');
         }
     }
 
