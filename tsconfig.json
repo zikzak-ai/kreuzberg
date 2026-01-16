@@ -40,7 +40,6 @@
 		{ "path": "./crates/kreuzberg-node" },
 		{ "path": "./crates/kreuzberg-wasm" },
 		{ "path": "./packages/typescript/core" },
-		{ "path": "./tools/benchmark-visualizer" },
 		{ "path": "./examples/typescript" },
 		{ "path": "./examples/wasm-browser" },
 		{ "path": "./examples/wasm-cloudflare-workers" },

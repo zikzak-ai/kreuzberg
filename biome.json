@@ -92,20 +92,6 @@
 					}
 				}
 			}
-		},
-		{
-			"includes": [
-				"tools/benchmark-visualizer/src/components/ui/**",
-				"tools/benchmark-visualizer/src/components/layout/**"
-			],
-			"linter": {
-				"rules": {
-					"a11y": {
-						"noSvgWithoutTitle": "off",
-						"useSemanticElements": "off"
-					}
-				}
-			}
 		}
 	]
 }

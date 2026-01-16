@@ -422,7 +422,6 @@ async fn main() -> Result<()> {
             })?;
             std::fs::write(&aggregated_file, json).map_err(benchmark_harness::Error::Io)?;
             println!("Aggregated metrics written to: {}", aggregated_file.display());
-            println!("View results with the Vite visualizer at tools/benchmark-visualizer");
 
             Ok(())
         }
