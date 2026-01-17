@@ -106,7 +106,7 @@
 		"prepublishOnly": "npm run build"
 	},
 	"devDependencies": {
-		"@types/node": "^25.0.8",
+		"@types/node": "^25.0.9",
 		"@vitest/coverage-v8": "^4.0.17",
 		"@vitest/ui": "^4.0.17",
 		"jsdom": "^27.4.0",
