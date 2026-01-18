@@ -19,6 +19,8 @@ pub struct ExtractionResult {
     pub images: Option<Vec<ExtractedImage>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pages: Option<Vec<PageContent>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub elements: Option<Vec<Element>>,
 }
 ```
 
@@ -35,6 +37,7 @@ class ExtractionResult(TypedDict):
     chunks: list[Chunk] | None
     images: list[ExtractedImage] | None
     pages: list[PageContent] | None
+    elements: list[Element] | None
 ```
 
 ### TypeScript
@@ -49,6 +52,7 @@ export interface ExtractionResult {
     chunks: Chunk[] | null;
     images: ExtractedImage[] | null;
     pages?: PageContent[];
+    elements?: Element[];
 }
 ```
 
@@ -57,7 +61,7 @@ export interface ExtractionResult {
 ```ruby title="extraction_result.rb"
 class Kreuzberg::Result
     attr_reader :content, :mime_type, :metadata, :tables
-    attr_reader :detected_languages, :chunks, :images, :pages
+    attr_reader :detected_languages, :chunks, :images, :pages, :elements
 end
 ```
 
@@ -72,7 +76,8 @@ public record ExtractionResult(
     List<String> detectedLanguages,
     List<Chunk> chunks,
     List<ExtractedImage> images,
-    List<PageContent> pages
+    List<PageContent> pages,
+    List<Element> elements
 ) {}
 ```
 
@@ -88,6 +93,7 @@ type ExtractionResult struct {
     Chunks            []Chunk          `json:"chunks,omitempty"`
     Images            []ExtractedImage `json:"images,omitempty"`
     Pages             []PageContent    `json:"pages,omitempty"`
+    Elements          []Element        `json:"elements,omitempty"`
 }
 ```
 
@@ -3888,3 +3894,672 @@ if metadata.Pdf != nil && metadata.Pdf.Title != nil {
     fmt.Println("Title:", *metadata.Pdf.Title)
 }
 ```
+
+## Element
+
+Semantic element extracted from a document when using element-based output. Each element represents a specific document component (title, paragraph, list item, table, etc.) with associated metadata.
+
+### Rust
+
+```rust title="element.rs"
+pub struct Element {
+    pub element_id: ElementId,
+    pub element_type: ElementType,
+    pub text: String,
+    pub metadata: ElementMetadata,
+}
+```
+
+### Python
+
+```python title="element.py"
+class Element(TypedDict):
+    """Semantic element from element-based extraction."""
+    element_id: str
+    element_type: ElementType
+    text: str
+    metadata: ElementMetadata
+```
+
+### TypeScript
+
+```typescript title="element.ts"
+export interface Element {
+    elementId: string;
+    elementType: ElementType;
+    text: string;
+    metadata: ElementMetadata;
+}
+```
+
+### Ruby
+
+```ruby title="element.rb"
+class Kreuzberg::Element
+    attr_reader :element_id, :element_type, :text, :metadata
+end
+```
+
+### Java
+
+```java title="Element.java"
+public record Element(
+    String elementId,
+    ElementType elementType,
+    String text,
+    ElementMetadata metadata
+) {}
+```
+
+### Go
+
+```go title="element.go"
+type Element struct {
+    ElementID   string          `json:"element_id"`
+    ElementType ElementType     `json:"element_type"`
+    Text        string          `json:"text"`
+    Metadata    ElementMetadata `json:"metadata"`
+}
+```
+
+### C#
+
+```csharp title="Element.cs"
+public record Element(
+    string ElementId,
+    ElementType ElementType,
+    string Text,
+    ElementMetadata Metadata
+);
+```
+
+### PHP
+
+```php title="Element.php"
+class Element {
+    public string $elementId;
+    public ElementType $elementType;
+    public string $text;
+    public ElementMetadata $metadata;
+}
+```
+
+### Elixir
+
+```elixir title="element.ex"
+defmodule Kreuzberg.Element do
+  @type t :: %__MODULE__{
+    element_id: String.t(),
+    element_type: atom(),
+    text: String.t(),
+    metadata: Kreuzberg.ElementMetadata.t()
+  }
+
+  defstruct [:element_id, :element_type, :text, :metadata]
+end
+```
+
+### WASM
+
+```typescript title="element.ts"
+export interface Element {
+    elementId: string;
+    elementType: ElementType;
+    text: string;
+    metadata: ElementMetadata;
+}
+```
+
+## ElementType
+
+Enumeration of semantic element types extracted from documents.
+
+### Rust
+
+```rust title="element_type.rs"
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ElementType {
+    Title,
+    NarrativeText,
+    ListItem,
+    Table,
+    Image,
+    PageBreak,
+    Heading,
+    CodeBlock,
+    BlockQuote,
+    Header,
+    Footer,
+}
+```
+
+### Python
+
+```python title="element_type.py"
+from typing import Literal
+
+ElementType = Literal[
+    "title",
+    "narrative_text",
+    "list_item",
+    "table",
+    "image",
+    "page_break",
+    "heading",
+    "code_block",
+    "block_quote",
+    "header",
+    "footer"
+]
+```
+
+### TypeScript
+
+```typescript title="element_type.ts"
+export type ElementType =
+    | "title"
+    | "narrative_text"
+    | "list_item"
+    | "table"
+    | "image"
+    | "page_break"
+    | "heading"
+    | "code_block"
+    | "block_quote"
+    | "header"
+    | "footer";
+```
+
+### Ruby
+
+```ruby title="element_type.rb"
+module Kreuzberg
+    module ElementType
+        TITLE = 'title'
+        NARRATIVE_TEXT = 'narrative_text'
+        LIST_ITEM = 'list_item'
+        TABLE = 'table'
+        IMAGE = 'image'
+        PAGE_BREAK = 'page_break'
+        HEADING = 'heading'
+        CODE_BLOCK = 'code_block'
+        BLOCK_QUOTE = 'block_quote'
+        HEADER = 'header'
+        FOOTER = 'footer'
+    end
+end
+```
+
+### Java
+
+```java title="ElementType.java"
+public enum ElementType {
+    TITLE("title"),
+    NARRATIVE_TEXT("narrative_text"),
+    LIST_ITEM("list_item"),
+    TABLE("table"),
+    IMAGE("image"),
+    PAGE_BREAK("page_break"),
+    HEADING("heading"),
+    CODE_BLOCK("code_block"),
+    BLOCK_QUOTE("block_quote"),
+    HEADER("header"),
+    FOOTER("footer");
+
+    private final String value;
+
+    ElementType(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}
+```
+
+### Go
+
+```go title="element_type.go"
+type ElementType string
+
+const (
+    ElementTypeTitle         ElementType = "title"
+    ElementTypeNarrativeText ElementType = "narrative_text"
+    ElementTypeListItem      ElementType = "list_item"
+    ElementTypeTable         ElementType = "table"
+    ElementTypeImage         ElementType = "image"
+    ElementTypePageBreak     ElementType = "page_break"
+    ElementTypeHeading       ElementType = "heading"
+    ElementTypeCodeBlock     ElementType = "code_block"
+    ElementTypeBlockQuote    ElementType = "block_quote"
+    ElementTypeHeader        ElementType = "header"
+    ElementTypeFooter        ElementType = "footer"
+)
+```
+
+### C#
+
+```csharp title="ElementType.cs"
+public enum ElementType
+{
+    Title,
+    NarrativeText,
+    ListItem,
+    Table,
+    Image,
+    PageBreak,
+    Heading,
+    CodeBlock,
+    BlockQuote,
+    Header,
+    Footer
+}
+```
+
+### PHP
+
+```php title="ElementType.php"
+enum ElementType: string {
+    case TITLE = 'title';
+    case NARRATIVE_TEXT = 'narrative_text';
+    case LIST_ITEM = 'list_item';
+    case TABLE = 'table';
+    case IMAGE = 'image';
+    case PAGE_BREAK = 'page_break';
+    case HEADING = 'heading';
+    case CODE_BLOCK = 'code_block';
+    case BLOCK_QUOTE = 'block_quote';
+    case HEADER = 'header';
+    case FOOTER = 'footer';
+}
+```
+
+### Elixir
+
+```elixir title="element_type.ex"
+defmodule Kreuzberg.ElementType do
+  @type t :: :title
+           | :narrative_text
+           | :list_item
+           | :table
+           | :image
+           | :page_break
+           | :heading
+           | :code_block
+           | :block_quote
+           | :header
+           | :footer
+end
+```
+
+### WASM
+
+```typescript title="element_type.ts"
+export type ElementType =
+    | "title"
+    | "narrative_text"
+    | "list_item"
+    | "table"
+    | "image"
+    | "page_break"
+    | "heading"
+    | "code_block"
+    | "block_quote"
+    | "header"
+    | "footer";
+```
+
+## ElementMetadata
+
+Metadata associated with each extracted element, including page numbers, coordinates, and element-type-specific information.
+
+### Rust
+
+```rust title="element_metadata.rs"
+pub struct ElementMetadata {
+    pub page_number: Option<usize>,
+    pub filename: Option<String>,
+    pub coordinates: Option<BoundingBox>,
+    pub element_index: usize,
+    pub additional: HashMap<String, serde_json::Value>,
+}
+```
+
+### Python
+
+```python title="element_metadata.py"
+class ElementMetadata(TypedDict, total=False):
+    """Metadata for extracted elements."""
+    page_number: int | None
+    filename: str | None
+    coordinates: BoundingBox | None
+    element_index: int
+    additional: dict[str, Any]
+```
+
+### TypeScript
+
+```typescript title="element_metadata.ts"
+export interface ElementMetadata {
+    pageNumber?: number;
+    filename?: string;
+    coordinates?: BoundingBox;
+    elementIndex: number;
+    additional?: Record<string, any>;
+}
+```
+
+### Ruby
+
+```ruby title="element_metadata.rb"
+class Kreuzberg::ElementMetadata
+    attr_reader :page_number, :filename, :coordinates
+    attr_reader :element_index, :additional
+end
+```
+
+### Java
+
+```java title="ElementMetadata.java"
+public record ElementMetadata(
+    Integer pageNumber,
+    String filename,
+    BoundingBox coordinates,
+    int elementIndex,
+    Map<String, Object> additional
+) {}
+```
+
+### Go
+
+```go title="element_metadata.go"
+type ElementMetadata struct {
+    PageNumber   *int                   `json:"page_number,omitempty"`
+    Filename     *string                `json:"filename,omitempty"`
+    Coordinates  *BoundingBox           `json:"coordinates,omitempty"`
+    ElementIndex int                    `json:"element_index"`
+    Additional   map[string]interface{} `json:"additional,omitempty"`
+}
+```
+
+### C#
+
+```csharp title="ElementMetadata.cs"
+public record ElementMetadata(
+    int? PageNumber,
+    string? Filename,
+    BoundingBox? Coordinates,
+    int ElementIndex,
+    Dictionary<string, object>? Additional
+);
+```
+
+### PHP
+
+```php title="ElementMetadata.php"
+class ElementMetadata {
+    public ?int $pageNumber;
+    public ?string $filename;
+    public ?BoundingBox $coordinates;
+    public int $elementIndex;
+    public array $additional;
+}
+```
+
+### Elixir
+
+```elixir title="element_metadata.ex"
+defmodule Kreuzberg.ElementMetadata do
+  @type t :: %__MODULE__{
+    page_number: integer() | nil,
+    filename: String.t() | nil,
+    coordinates: Kreuzberg.BoundingBox.t() | nil,
+    element_index: integer(),
+    additional: map()
+  }
+
+  defstruct [:page_number, :filename, :coordinates, :element_index, :additional]
+end
+```
+
+### WASM
+
+```typescript title="element_metadata.ts"
+export interface ElementMetadata {
+    pageNumber?: number;
+    filename?: string;
+    coordinates?: BoundingBox;
+    elementIndex: number;
+    additional?: Record<string, any>;
+}
+```
+
+## BoundingBox
+
+Rectangular bounding box coordinates for element positioning. Coordinates are in PDF points (1/72 inch) with origin typically at bottom-left (PDF) or top-left (HTML).
+
+### Rust
+
+```rust title="bounding_box.rs"
+pub struct BoundingBox {
+    pub left: f32,
+    pub top: f32,
+    pub right: f32,
+    pub bottom: f32,
+}
+```
+
+### Python
+
+```python title="bounding_box.py"
+class BoundingBox(TypedDict):
+    """Rectangular bounding box coordinates."""
+    left: float
+    top: float
+    right: float
+    bottom: float
+```
+
+### TypeScript
+
+```typescript title="bounding_box.ts"
+export interface BoundingBox {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+}
+```
+
+### Ruby
+
+```ruby title="bounding_box.rb"
+class Kreuzberg::BoundingBox
+    attr_reader :left, :top, :right, :bottom
+end
+```
+
+### Java
+
+```java title="BoundingBox.java"
+public record BoundingBox(
+    float left,
+    float top,
+    float right,
+    float bottom
+) {}
+```
+
+### Go
+
+```go title="bounding_box.go"
+type BoundingBox struct {
+    Left   float32 `json:"left"`
+    Top    float32 `json:"top"`
+    Right  float32 `json:"right"`
+    Bottom float32 `json:"bottom"`
+}
+```
+
+### C#
+
+```csharp title="BoundingBox.cs"
+public record BoundingBox(
+    float Left,
+    float Top,
+    float Right,
+    float Bottom
+);
+```
+
+### PHP
+
+```php title="BoundingBox.php"
+class BoundingBox {
+    public float $left;
+    public float $top;
+    public float $right;
+    public float $bottom;
+}
+```
+
+### Elixir
+
+```elixir title="bounding_box.ex"
+defmodule Kreuzberg.BoundingBox do
+  @type t :: %__MODULE__{
+    left: float(),
+    top: float(),
+    right: float(),
+    bottom: float()
+  }
+
+  defstruct [:left, :top, :right, :bottom]
+end
+```
+
+### WASM
+
+```typescript title="bounding_box.ts"
+export interface BoundingBox {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+}
+```
+
+## OutputFormat
+
+Output format selection for extraction results. Controls whether results are returned in unified format (default) or element-based format (Unstructured.io compatible).
+
+### Rust
+
+```rust title="output_format.rs"
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum OutputFormat {
+    #[default]
+    Unified,
+    ElementBased,
+}
+```
+
+### Python
+
+```python title="output_format.py"
+from typing import Literal
+
+OutputFormat = Literal["unified", "element_based", "elements"]
+```
+
+### TypeScript
+
+```typescript title="output_format.ts"
+export type OutputFormat = "unified" | "element_based" | "elements";
+```
+
+### Ruby
+
+```ruby title="output_format.rb"
+module Kreuzberg
+    module OutputFormat
+        UNIFIED = 'unified'
+        ELEMENT_BASED = 'element_based'
+        ELEMENTS = 'elements'  # Alias for element_based
+    end
+end
+```
+
+### Java
+
+```java title="OutputFormat.java"
+public enum OutputFormat {
+    UNIFIED("unified"),
+    ELEMENT_BASED("element_based");
+
+    private final String value;
+
+    OutputFormat(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}
+```
+
+### Go
+
+```go title="output_format.go"
+type OutputFormat string
+
+const (
+    OutputFormatUnified      OutputFormat = "unified"
+    OutputFormatElementBased OutputFormat = "element_based"
+    OutputFormatElements     OutputFormat = "elements"  // Alias
+)
+```
+
+### C#
+
+```csharp title="OutputFormat.cs"
+public enum OutputFormat
+{
+    Unified,
+    ElementBased
+}
+```
+
+### PHP
+
+```php title="OutputFormat.php"
+enum OutputFormat: string {
+    case UNIFIED = 'unified';
+    case ELEMENT_BASED = 'element_based';
+    case ELEMENTS = 'elements';  // Alias
+}
+```
+
+### Elixir
+
+```elixir title="output_format.ex"
+defmodule Kreuzberg.OutputFormat do
+  @type t :: :unified | :element_based | :elements
+end
+```
+
+### WASM
+
+```typescript title="output_format.ts"
+export type OutputFormat = "unified" | "element_based" | "elements";
+```
+
+**Usage Notes:**
+
+- `unified` (default): Returns complete document text in `content` field with metadata, tables, images, and optional pages
+- `element_based` or `elements`: Returns array of semantic elements in `elements` field (Unstructured.io compatible)
+- Both formats can coexist: enabling `element_based` populates `elements` while maintaining `content`, `tables`, etc.

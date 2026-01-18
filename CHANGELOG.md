@@ -9,6 +9,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Core
+- **Element-based output format**: New `OutputFormat::ElementBased` option provides Unstructured.io-compatible semantic element extraction
+  - Extracts structured elements: titles, paragraphs, lists, tables, images, page breaks, headings, code blocks, block quotes, headers, footers
+  - Each element includes rich metadata: bounding boxes, page numbers, confidence scores, hierarchy information
+  - Transformation pipeline converts unified output to element-based format via `extraction::transform` module
+  - Added `Element`, `ElementType`, `ElementMetadata`, and `BoundingBox` types to core types module
+  - Supports PDF hierarchy detection for semantic heading levels
+  - Configuration via `config.output_format` field (defaults to `Unified`)
+
+#### Language Bindings
+- **Python**: Element-based output support with full type hints
+  - New `output_format` parameter in extraction config accepting `"unified"` or `"element_based"`
+  - `Element`, `ElementType`, `ElementMetadata`, `BoundingBox` types exported from `kreuzberg.types`
+  - Result includes `elements` field when using element-based format
+  - Compatible with Unstructured.io API for migration
+
+- **TypeScript/Node.js**: Element-based output with strict TypeScript interfaces
+  - `Element`, `ElementType`, `ElementMetadata`, `BoundingBox` interfaces in `@kreuzberg/core`
+  - `outputFormat: "unified" | "element_based"` configuration option
+  - Result type includes optional `elements` array
+
+- **Ruby**: Element-based output with idiomatic Ruby types
+  - `Element`, `ElementType`, `ElementMetadata`, `BoundingBox` classes in `Kreuzberg::Types`
+  - Snake_case serialization for Ruby conventions
+  - `output_format: :unified` or `:element_based` symbol-based configuration
+
+- **PHP**: Element-based output with typed classes
+  - `Element`, `ElementType`, `ElementMetadata`, `BoundingBox` classes in `Kreuzberg\Types`
+  - `outputFormat` field in extraction config
+  - `$result->elements` array when using element-based format
+
+- **Go**: Element-based output with idiomatic Go structs
+  - `Element`, `ElementType`, `ElementMetadata`, `BoundingBox` types with JSON tags
+  - `OutputFormat` field in extraction config
+  - Result struct includes `Elements` slice
+
+- **Java**: Element-based output with builder pattern
+  - `Element`, `ElementType`, `ElementMetadata`, `BoundingBox` classes with builders
+  - `outputFormat` field in `ExtractionConfig`
+  - `ExtractionResult.getElements()` method
+
+- **C#**: Element-based output with nullable reference types
+  - `Element`, `ElementType`, `ElementMetadata`, `BoundingBox` classes
+  - `OutputFormat` property in extraction config
+  - `ExtractionResult.Elements` property
+
+- **Elixir**: Element-based output with pattern matching
+  - `Kreuzberg.Element` module with typespecs
+  - `:output_format` option in config accepting `:unified` or `:element_based`
+  - Result map includes `:elements` key with element list
+
+- **WASM**: Element-based output with TypeScript definitions
+  - Element types exported to WASM TypeScript bindings
+  - `output_format` configuration option
+  - Elements accessible from extraction result
+
+#### Documentation
+- **Migration guides**: New documentation for Unstructured.io users
+  - `docs/migration/from-unstructured.md`: Step-by-step migration guide with code examples
+  - `docs/comparisons/kreuzberg-vs-unstructured.md`: Feature comparison and compatibility matrix
+  - Element-based output guide: `docs/guides/element-based-output.md` covering all 11 element types
+  - Type reference updates: Added Element, ElementType, ElementMetadata, BoundingBox, OutputFormat
+  - Code snippets for element-based extraction in all 10 languages
+
+### Fixed
+
+#### Python
+- **Type exports**: Fixed missing type exports in `kreuzberg.types.__all__`
+  - Added `Element`, `ElementMetadata`, `ElementType`, `BoundingBox` to exported types
+  - Added `HtmlImageMetadata` for HTML image metadata
+  - Total 32 public types now properly exported for IDE autocomplete and type checking
+  - Resolves import failures where types were defined but not accessible
+
 ---
 
 ## [4.0.8] - 2026-01-17
