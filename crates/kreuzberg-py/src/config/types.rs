@@ -7,7 +7,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
 use crate::html_options::parse_html_options_dict;
-use crate::keywords::{KeywordAlgorithm, KeywordConfig, RakeParams, YakeParams};
+use crate::keywords::KeywordConfig;
 
 /// Main extraction configuration.
 ///

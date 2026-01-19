@@ -3,8 +3,6 @@
 //! Provides From/Into implementations for converting between Python wrapper types
 //! and their corresponding Kreuzberg Rust types.
 
-use pyo3::prelude::*;
-
 use crate::config::*;
 
 /// Convert ExtractionConfig to its inner Rust type
