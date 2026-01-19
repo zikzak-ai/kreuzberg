@@ -115,6 +115,12 @@ pub unsafe extern "C" fn kreuzberg_config_builder_new() -> *mut ConfigBuilder {
 /// # Returns
 ///
 /// 0 on success, -1 on error (NULL builder)
+///
+/// # Safety
+///
+/// This function is meant to be called from C/FFI code. The caller must ensure:
+/// - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+/// - The pointer must be properly aligned and point to a valid ConfigBuilder instance
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kreuzberg_config_builder_set_use_cache(builder: *mut ConfigBuilder, use_cache: i32) -> i32 {
     if builder.is_null() {
@@ -137,6 +143,14 @@ pub unsafe extern "C" fn kreuzberg_config_builder_set_use_cache(builder: *mut Co
 /// # Returns
 ///
 /// 0 on success, -1 on error (check kreuzberg_last_error)
+///
+/// # Safety
+///
+/// This function is meant to be called from C/FFI code. The caller must ensure:
+/// - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+/// - The pointer must be properly aligned and point to a valid ConfigBuilder instance
+/// - `ocr_json` must be a valid, non-null pointer to a null-terminated UTF-8 string
+/// - The string pointer must remain valid for the duration of the function call
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kreuzberg_config_builder_set_ocr(builder: *mut ConfigBuilder, ocr_json: *const c_char) -> i32 {
     if builder.is_null() {
@@ -177,6 +191,14 @@ pub unsafe extern "C" fn kreuzberg_config_builder_set_ocr(builder: *mut ConfigBu
 /// # Returns
 ///
 /// 0 on success, -1 on error
+///
+/// # Safety
+///
+/// This function is meant to be called from C/FFI code. The caller must ensure:
+/// - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+/// - The pointer must be properly aligned and point to a valid ConfigBuilder instance
+/// - `pdf_json` must be a valid, non-null pointer to a null-terminated UTF-8 string
+/// - The string pointer must remain valid for the duration of the function call
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kreuzberg_config_builder_set_pdf(builder: *mut ConfigBuilder, pdf_json: *const c_char) -> i32 {
     if builder.is_null() {
@@ -217,6 +239,14 @@ pub unsafe extern "C" fn kreuzberg_config_builder_set_pdf(builder: *mut ConfigBu
 /// # Returns
 ///
 /// 0 on success, -1 on error
+///
+/// # Safety
+///
+/// This function is meant to be called from C/FFI code. The caller must ensure:
+/// - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+/// - The pointer must be properly aligned and point to a valid ConfigBuilder instance
+/// - `chunking_json` must be a valid, non-null pointer to a null-terminated UTF-8 string
+/// - The string pointer must remain valid for the duration of the function call
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kreuzberg_config_builder_set_chunking(
     builder: *mut ConfigBuilder,
@@ -260,6 +290,14 @@ pub unsafe extern "C" fn kreuzberg_config_builder_set_chunking(
 /// # Returns
 ///
 /// 0 on success, -1 on error
+///
+/// # Safety
+///
+/// This function is meant to be called from C/FFI code. The caller must ensure:
+/// - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+/// - The pointer must be properly aligned and point to a valid ConfigBuilder instance
+/// - `image_json` must be a valid, non-null pointer to a null-terminated UTF-8 string
+/// - The string pointer must remain valid for the duration of the function call
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kreuzberg_config_builder_set_image_extraction(
     builder: *mut ConfigBuilder,
@@ -303,6 +341,14 @@ pub unsafe extern "C" fn kreuzberg_config_builder_set_image_extraction(
 /// # Returns
 ///
 /// 0 on success, -1 on error
+///
+/// # Safety
+///
+/// This function is meant to be called from C/FFI code. The caller must ensure:
+/// - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+/// - The pointer must be properly aligned and point to a valid ConfigBuilder instance
+/// - `pp_json` must be a valid, non-null pointer to a null-terminated UTF-8 string
+/// - The string pointer must remain valid for the duration of the function call
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kreuzberg_config_builder_set_post_processor(
     builder: *mut ConfigBuilder,
@@ -346,6 +392,14 @@ pub unsafe extern "C" fn kreuzberg_config_builder_set_post_processor(
 /// # Returns
 ///
 /// 0 on success, -1 on error
+///
+/// # Safety
+///
+/// This function is meant to be called from C/FFI code. The caller must ensure:
+/// - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+/// - The pointer must be properly aligned and point to a valid ConfigBuilder instance
+/// - `ld_json` must be a valid, non-null pointer to a null-terminated UTF-8 string
+/// - The string pointer must remain valid for the duration of the function call
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kreuzberg_config_builder_set_language_detection(
     builder: *mut ConfigBuilder,

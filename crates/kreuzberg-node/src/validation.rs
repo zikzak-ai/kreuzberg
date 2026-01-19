@@ -61,6 +61,7 @@ pub fn validate_mime_type(mime_type: String) -> Result<String> {
 /// console.log(jpegExts); // ['jpg', 'jpeg']
 /// ```
 #[napi]
+#[allow(dead_code)]
 pub fn get_extensions_for_mime(mime_type: String) -> Result<Vec<String>> {
     kreuzberg::core::mime::get_extensions_for_mime(&mime_type).map_err(convert_error)
 }
@@ -69,6 +70,7 @@ pub fn get_extensions_for_mime(mime_type: String) -> Result<Vec<String>> {
 ///
 /// Contains all settings for a specific embedding model preset.
 #[napi(object)]
+#[allow(dead_code)]
 pub struct EmbeddingPreset {
     /// Name of the preset (e.g., "fast", "balanced", "quality", "multilingual")
     pub name: String,
@@ -101,6 +103,7 @@ pub struct EmbeddingPreset {
 /// console.log(presets); // ['fast', 'balanced', 'quality', 'multilingual']
 /// ```
 #[napi(js_name = "listEmbeddingPresets")]
+#[allow(dead_code)]
 pub fn list_embedding_presets() -> Vec<String> {
     kreuzberg::embeddings::list_presets()
         .into_iter()
@@ -140,6 +143,7 @@ pub fn list_embedding_presets() -> Vec<String> {
 /// }
 /// ```
 #[napi(js_name = "getEmbeddingPreset")]
+#[allow(dead_code)]
 pub fn get_embedding_preset(name: String) -> Option<EmbeddingPreset> {
     let preset = kreuzberg::embeddings::get_preset(&name)?;
 

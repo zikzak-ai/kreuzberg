@@ -11,7 +11,7 @@ mod html;
 mod markdown;
 
 // Re-export all filter functions for backward compatibility
-pub use general::{normalize_newlines, normalize_spaces, remove_stopwords, should_preserve_word, split_word_boundaries};
+pub use general::{normalize_newlines, normalize_spaces, remove_stopwords};
 pub use html::remove_html_comments;
 pub use markdown::{
     extract_and_preserve_code, is_markdown_header, is_markdown_list, is_markdown_table, preserve_markdown_structure,
@@ -215,6 +215,7 @@ impl FilterPipeline {
 #[cfg(all(test, feature = "stopwords"))]
 mod tests {
     use super::*;
+    use super::general::split_word_boundaries;
 
     #[test]
     fn test_stopword_removal() {
@@ -462,7 +463,7 @@ mod tests {
             preserve_code: true,
             ..Default::default()
         });
-        let pipeline = FilterPipeline::new(&config, "en").unwrap();
+        let _pipeline = FilterPipeline::new(&config, "en").unwrap();
 
         let mut preserved = AHashMap::new();
         let input = "Text before\n```rust\nfn main() {}\n```\nText after";
@@ -479,7 +480,7 @@ mod tests {
             preserve_code: true,
             ..Default::default()
         });
-        let pipeline = FilterPipeline::new(&config, "en").unwrap();
+        let _pipeline = FilterPipeline::new(&config, "en").unwrap();
 
         let mut preserved = AHashMap::new();
         let input = "Use the `println!` macro";
@@ -493,7 +494,7 @@ mod tests {
     #[test]
     fn test_restore_preserved_blocks() {
         let config = Arc::new(TokenReductionConfig::default());
-        let pipeline = FilterPipeline::new(&config, "en").unwrap();
+        let _pipeline = FilterPipeline::new(&config, "en").unwrap();
 
         let mut preserved = AHashMap::new();
         preserved.insert("__CODEBLOCK_0__".to_string(), "```code```".to_string());
@@ -582,7 +583,7 @@ mod tests {
             preserve_code: true,
             ..Default::default()
         });
-        let pipeline = FilterPipeline::new(&config, "en").unwrap();
+        let _pipeline = FilterPipeline::new(&config, "en").unwrap();
 
         let input =
             "Start ```rust\nlet x = 1;\n``` middle `inline1` text ```python\nprint('hi')\n``` and `inline2` end";
@@ -615,7 +616,7 @@ mod tests {
             preserve_code: true,
             ..Default::default()
         });
-        let pipeline = FilterPipeline::new(&config, "en").unwrap();
+        let _pipeline = FilterPipeline::new(&config, "en").unwrap();
 
         let input = "Text `a` and `b` and `c` here";
         let mut preserved = AHashMap::new();

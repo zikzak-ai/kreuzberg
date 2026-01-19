@@ -163,14 +163,14 @@ mod tests {
     #[test]
     fn test_build_chunks_empty() {
         let text_chunks: Vec<&str> = vec![];
-        let result = build_chunks(text_chunks.into_iter(), 5, None).unwrap();
+        let result = build_chunks(text_chunks, 5, None).unwrap();
         assert_eq!(result.len(), 0);
     }
 
     #[test]
     fn test_build_chunks_single() {
         let text_chunks = vec!["Single chunk"];
-        let result = build_chunks(text_chunks.into_iter(), 5, None).unwrap();
+        let result = build_chunks(text_chunks, 5, None).unwrap();
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].content, "Single chunk");
         assert_eq!(result[0].metadata.chunk_index, 0);
@@ -183,7 +183,7 @@ mod tests {
     fn test_build_chunks_multiple_with_overlap() {
         let text_chunks = vec!["First chunk here", "Second chunk here", "Third chunk here"];
         let overlap = 5;
-        let result = build_chunks(text_chunks.into_iter(), overlap, None).unwrap();
+        let result = build_chunks(text_chunks, overlap, None).unwrap();
 
         assert_eq!(result.len(), 3);
 
@@ -215,7 +215,7 @@ mod tests {
             },
         ];
 
-        let result = build_chunks(text_chunks.into_iter(), 0, Some(&boundaries)).unwrap();
+        let result = build_chunks(text_chunks, 0, Some(&boundaries)).unwrap();
 
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].metadata.first_page, Some(1));
@@ -226,7 +226,7 @@ mod tests {
     fn test_build_chunks_offset_tracking() {
         let text_chunks = vec!["AAAAA", "BBBBB", "CCCCC"];
         let overlap = 2;
-        let result = build_chunks(text_chunks.into_iter(), overlap, None).unwrap();
+        let result = build_chunks(text_chunks, overlap, None).unwrap();
 
         assert_eq!(result.len(), 3);
 
@@ -277,7 +277,7 @@ mod tests {
     #[test]
     fn test_build_chunks_no_overlap() {
         let text_chunks = vec!["AAAAA", "BBBBB", "CCCCC"];
-        let result = build_chunks(text_chunks.into_iter(), 0, None).unwrap();
+        let result = build_chunks(text_chunks, 0, None).unwrap();
 
         assert_eq!(result.len(), 3);
 

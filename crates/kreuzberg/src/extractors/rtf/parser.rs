@@ -27,10 +27,10 @@ pub fn extract_text_from_rtf(content: &str) -> (String, Vec<Table>) {
     };
 
     let finalize_table = |state_opt: &mut Option<TableState>, tables: &mut Vec<Table>| {
-        if let Some(state) = state_opt.take() {
-            if let Some(table) = state.finalize() {
-                tables.push(table);
-            }
+        if let Some(state) = state_opt.take()
+            && let Some(table) = state.finalize()
+        {
+            tables.push(table);
         }
     };
 

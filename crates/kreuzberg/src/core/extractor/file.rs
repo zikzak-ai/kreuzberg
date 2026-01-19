@@ -13,7 +13,9 @@ use crate::extraction::libreoffice::{convert_doc_to_docx, convert_ppt_to_pptx};
 use crate::types::ExtractionResult;
 #[cfg(feature = "office")]
 use crate::types::LibreOfficeConversionResult;
-use crate::{KreuzbergError, Result};
+#[cfg(any(feature = "otel", not(feature = "office")))]
+use crate::KreuzbergError;
+use crate::Result;
 #[cfg(feature = "office")]
 use serde_json::json;
 use std::path::Path;

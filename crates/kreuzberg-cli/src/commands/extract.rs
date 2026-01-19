@@ -101,6 +101,7 @@ pub fn batch_command(paths: Vec<PathBuf>, config: ExtractionConfig, format: Outp
 }
 
 /// Apply extraction CLI overrides to config
+#[allow(clippy::too_many_arguments)]
 pub fn apply_extraction_overrides(
     config: &mut ExtractionConfig,
     ocr: Option<bool>,

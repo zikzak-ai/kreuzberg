@@ -60,7 +60,7 @@ pub(super) fn handle_thematic_break(state: &mut ExtractionState, attrs: &jotdown
 }
 
 /// Handle end of footnote definition.
-pub(super) fn handle_footnote_end(state: &mut ExtractionState, footnotes: &mut Vec<crate::types::Footnote>) {
+pub(super) fn handle_footnote_end(state: &mut ExtractionState, footnotes: &mut [crate::types::Footnote]) {
     state.flush_text();
     // Pop the footnote content block and add to the last footnote
     if let Some(mut block) = state.block_stack.pop() {

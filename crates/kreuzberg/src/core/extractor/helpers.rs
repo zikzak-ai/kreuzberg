@@ -3,7 +3,9 @@
 //! This module provides shared utilities used across extraction modules.
 
 use crate::plugins::DocumentExtractor;
-use crate::utils::{PoolSizeHint, estimate_pool_size, intern_mime_type};
+use crate::utils::{PoolSizeHint, estimate_pool_size};
+#[cfg(feature = "office")]
+use crate::utils::intern_mime_type;
 use crate::{KreuzbergError, Result};
 use std::sync::Arc;
 
@@ -63,6 +65,7 @@ pub fn get_pool_sizing_hint(file_size: u64, mime_type: &str) -> PoolSizeHint {
 ///
 /// For pre-interned MIME types (all common types), this is O(1) pointer dereference.
 /// For unknown MIME types, this allocates once per unique type and caches the result.
+#[cfg(feature = "office")]
 pub(in crate::core::extractor) fn pool_mime_type(mime_type: &str) -> String {
     intern_mime_type(mime_type).to_string()
 }

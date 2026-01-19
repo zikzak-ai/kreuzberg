@@ -26,9 +26,11 @@
 pub(super) fn extract_bytes_sync_impl(
     content: Vec<u8>,
     mime_type: Option<String>,
-    config: Option<ExtractionConfig>,
-) -> Result<ExtractionResult> {
+    config: Option<crate::core::config::ExtractionConfig>,
+) -> crate::Result<crate::types::ExtractionResult> {
     use crate::core::mime;
+    use crate::core::extractor::helpers::get_extractor;
+    use crate::KreuzbergError;
 
     let config = config.unwrap_or_default();
 

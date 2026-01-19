@@ -19,9 +19,7 @@ pub fn extract_metadata_from_line(line: &str, metadata: &mut Metadata) {
         if let Some(author) = extract_braced(line, "author") {
             metadata.additional.insert("author".to_string(), author.into());
         }
-    } else if line.starts_with("\\date{") {
-        if let Some(date) = extract_braced(line, "date") {
-            metadata.additional.insert("date".to_string(), date.into());
-        }
+    } else if line.starts_with("\\date{") && let Some(date) = extract_braced(line, "date") {
+        metadata.additional.insert("date".to_string(), date.into());
     }
 }

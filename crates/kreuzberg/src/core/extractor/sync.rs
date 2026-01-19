@@ -6,6 +6,8 @@
 use crate::Result;
 use crate::core::config::ExtractionConfig;
 use crate::types::ExtractionResult;
+
+#[cfg(feature = "tokio-runtime")]
 use std::path::Path;
 
 #[cfg(feature = "tokio-runtime")]
@@ -13,7 +15,9 @@ use once_cell::sync::Lazy;
 
 #[cfg(feature = "tokio-runtime")]
 use super::batch::{batch_extract_bytes, batch_extract_file};
+#[cfg(feature = "tokio-runtime")]
 use super::bytes::extract_bytes;
+#[cfg(feature = "tokio-runtime")]
 use super::file::extract_file;
 
 /// Global Tokio runtime for synchronous operations.

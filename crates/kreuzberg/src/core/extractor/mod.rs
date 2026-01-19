@@ -24,12 +24,15 @@ mod batch;
 pub use bytes::extract_bytes;
 pub use file::extract_file;
 pub use helpers::get_pool_sizing_hint;
-pub use sync::{extract_bytes_sync, extract_file_sync};
+pub use sync::{extract_bytes_sync, batch_extract_bytes_sync};
+
+#[cfg(feature = "tokio-runtime")]
+pub use sync::extract_file_sync;
 
 #[cfg(feature = "tokio-runtime")]
 pub use batch::{batch_extract_bytes, batch_extract_file};
 #[cfg(feature = "tokio-runtime")]
-pub use sync::{batch_extract_bytes_sync, batch_extract_file_sync};
+pub use sync::batch_extract_file_sync;
 
 #[cfg(test)]
 mod tests {

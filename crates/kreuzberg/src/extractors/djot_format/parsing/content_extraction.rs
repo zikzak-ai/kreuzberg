@@ -197,9 +197,9 @@ fn handle_end_event(
     state: &mut ExtractionState,
     container: &Container,
     blocks: &mut Vec<FormattedBlock>,
-    images: &mut Vec<DjotImage>,
-    links: &mut Vec<DjotLink>,
-    footnotes: &mut Vec<crate::types::Footnote>,
+    images: &mut [DjotImage],
+    links: &mut [DjotLink],
+    footnotes: &mut [crate::types::Footnote],
 ) {
     // Check if it's a block container
     if handle_block_end(state, container) {

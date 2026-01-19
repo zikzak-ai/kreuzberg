@@ -71,6 +71,7 @@ fn create_test_result(content_size: usize, chunk_count: usize) -> ExtractionResu
         images: None,
         pages: None,
         elements: None,
+        djot_content: None,
     }
 }
 

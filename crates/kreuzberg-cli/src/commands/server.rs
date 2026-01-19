@@ -3,6 +3,7 @@
 //! This module provides commands for starting the Kreuzberg API server
 //! and the MCP (Model Context Protocol) server.
 
+#[cfg(feature = "api")]
 use anyhow::Result;
 
 /// Execute API server command

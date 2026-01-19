@@ -2,7 +2,7 @@
 //!
 //! Handles text quality evaluation, OCR fallback decision logic, and OCR processing.
 
-use crate::Result;
+#[cfg(feature = "ocr")]
 use crate::core::config::ExtractionConfig;
 
 #[cfg(feature = "ocr")]
@@ -152,7 +152,7 @@ pub fn evaluate_native_text_for_ocr(native_text: &str, page_count: Option<usize>
 ///
 /// Concatenated text from all pages, separated by double newlines
 #[cfg(feature = "ocr")]
-pub(crate) async fn extract_with_ocr(content: &[u8], config: &ExtractionConfig) -> Result<String> {
+pub(crate) async fn extract_with_ocr(content: &[u8], config: &ExtractionConfig) -> crate::Result<String> {
     use crate::pdf::rendering::{PageRenderOptions, PdfRenderer};
     use crate::plugins::registry::get_ocr_backend_registry;
     use image::ImageEncoder;

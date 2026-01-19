@@ -159,7 +159,7 @@ pub(super) fn finalize_inline_element(state: &mut ExtractionState, container: &C
 }
 
 /// Handle end of link element.
-pub(super) fn handle_link_end(state: &mut ExtractionState, url: &str, links: &mut Vec<DjotLink>) {
+pub(super) fn handle_link_end(state: &mut ExtractionState, url: &str, links: &mut [DjotLink]) {
     if let Some(idx) = state.current_link_index.take() {
         let text = std::mem::take(&mut state.current_text);
         if let Some(link) = links.get_mut(idx) {
@@ -180,7 +180,7 @@ pub(super) fn handle_link_end(state: &mut ExtractionState, url: &str, links: &mu
 }
 
 /// Handle end of image element.
-pub(super) fn handle_image_end(state: &mut ExtractionState, src: &str, images: &mut Vec<DjotImage>) {
+pub(super) fn handle_image_end(state: &mut ExtractionState, src: &str, images: &mut [DjotImage]) {
     if let Some(idx) = state.current_image_index.take() {
         let alt = std::mem::take(&mut state.current_text);
         if let Some(image) = images.get_mut(idx) {

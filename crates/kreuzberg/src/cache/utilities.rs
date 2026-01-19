@@ -1,8 +1,12 @@
 //! Cache utilities for key generation and disk space management.
 
-use crate::error::{KreuzbergError, Result};
+use crate::error::Result;
 use ahash::AHasher;
 use std::hash::{Hash, Hasher};
+
+#[cfg(unix)]
+use crate::error::KreuzbergError;
+#[cfg(unix)]
 use std::path::Path;
 
 /// Cache key hash format width (32 hex digits for u64 hash)

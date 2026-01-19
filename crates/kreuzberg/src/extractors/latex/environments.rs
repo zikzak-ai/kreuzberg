@@ -24,59 +24,53 @@ pub fn process_list(
         let trimmed = line.trim();
 
         // Handle nested lists
-        if trimmed.contains("\\begin{") {
-            if let Some(env_name) = extract_env_name(trimmed) {
-                if env_name == "itemize" || env_name == "enumerate" || env_name == "description" {
-                    let (nested_content, new_i) = collect_environment(&lines, i, &env_name);
-                    let current_output_len = output.len();
-                    process_list(&nested_content, &env_name, output);
-                    let nested_output = output[current_output_len..].to_string();
-                    output.truncate(current_output_len);
-                    // Indent nested list
-                    for nested_line in nested_output.lines() {
-                        output.push_str("  ");
-                        output.push_str(nested_line);
-                        output.push('\n');
-                    }
-                    i = new_i;
-                    continue;
-                }
+        if trimmed.contains("\\begin{") && let Some(env_name) = extract_env_name(trimmed)
+            && (env_name == "itemize" || env_name == "enumerate" || env_name == "description")
+        {
+            let (nested_content, new_i) = collect_environment(&lines, i, &env_name);
+            let current_output_len = output.len();
+            process_list(&nested_content, &env_name, output);
+            let nested_output = output[current_output_len..].to_string();
+            output.truncate(current_output_len);
+            // Indent nested list
+            for nested_line in nested_output.lines() {
+                output.push_str("  ");
+                output.push_str(nested_line);
+                output.push('\n');
             }
+            i = new_i;
+            continue;
         }
 
         // Handle \item
-        if trimmed.starts_with("\\item") {
-            if let Some(pos) = trimmed.find("\\item") {
-                let after = trimmed[pos + 5..].trim();
+        if trimmed.starts_with("\\item") && let Some(pos) = trimmed.find("\\item") {
+            let after = trimmed[pos + 5..].trim();
 
-                // Handle \item[label] for description lists
-                if after.starts_with('[') {
-                    if let Some(bracket_end) = after.find(']') {
-                        let label = after[1..bracket_end].to_string();
-                        let text = after[bracket_end + 1..].trim().to_string();
-                        if list_type == "description" {
-                            let processed_text = process_line(&text);
-                            output.push_str(&format!("{}: {}\n", label, processed_text));
-                            item_num += 1;
-                            i += 1;
-                            continue;
-                        }
-                    }
+            // Handle \item[label] for description lists
+            if after.starts_with('[') && let Some(bracket_end) = after.find(']') {
+                let label = after[1..bracket_end].to_string();
+                let text = after[bracket_end + 1..].trim().to_string();
+                if list_type == "description" {
+                    let processed_text = process_line(&text);
+                    output.push_str(&format!("{}: {}\n", label, processed_text));
+                    item_num += 1;
+                    i += 1;
+                    continue;
                 }
-
-                // Regular list item
-                let prefix = if list_type == "enumerate" {
-                    format!("{}. ", item_num)
-                } else {
-                    "- ".to_string()
-                };
-                output.push_str(&prefix);
-
-                let item_text = process_line(after);
-                output.push_str(item_text.trim());
-                output.push('\n');
-                item_num += 1;
             }
+
+            // Regular list item
+            let prefix = if list_type == "enumerate" {
+                format!("{}. ", item_num)
+            } else {
+                "- ".to_string()
+            };
+            output.push_str(&prefix);
+
+            let item_text = process_line(after);
+            output.push_str(item_text.trim());
+            output.push('\n');
+            item_num += 1;
         }
 
         i += 1;
@@ -148,20 +142,14 @@ pub fn process_table_with_caption(
     tables: &mut Vec<Table>,
 ) {
     // Extract and add caption if present
-    if content.contains("\\caption{") {
-        if let Some(caption) = extract_braced(content, "caption") {
-            output.push_str(&caption);
-            output.push('\n');
-        }
+    if content.contains("\\caption{") && let Some(caption) = extract_braced(content, "caption") {
+        output.push_str(&caption);
+        output.push('\n');
     }
 
     // Process the tabular environment inside
-    if content.contains("\\begin{tabular}") {
-        if let Some(start) = content.find("\\begin{tabular}") {
-            if let Some(end) = content.find("\\end{tabular}") {
-                let tabular_content = &content[start..end + 13];
-                process_table(tabular_content, output, tables);
-            }
-        }
+    if content.contains("\\begin{tabular}") && let Some(start) = content.find("\\begin{tabular}") && let Some(end) = content.find("\\end{tabular}") {
+        let tabular_content = &content[start..end + 13];
+        process_table(tabular_content, output, tables);
     }
 }

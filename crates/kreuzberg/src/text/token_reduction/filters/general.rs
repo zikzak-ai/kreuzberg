@@ -148,6 +148,7 @@ pub fn should_preserve_word(word: &str, preserve_patterns: &[Regex]) -> bool {
 ///
 /// # Returns
 /// A tuple of (prefix, core, suffix) strings
+#[cfg(test)]
 pub fn split_word_boundaries(word: &str) -> (String, String, String) {
     let chars: Vec<char> = word.chars().collect();
     let mut start = 0;
