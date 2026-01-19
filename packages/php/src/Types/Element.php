@@ -29,17 +29,10 @@ readonly class BoundingBox
      */
     public static function fromArray(array $data): self
     {
-        /** @var float $x0 */
-        $x0 = (float) ($data['x0'] ?? 0.0);
-
-        /** @var float $y0 */
-        $y0 = (float) ($data['y0'] ?? 0.0);
-
-        /** @var float $x1 */
-        $x1 = (float) ($data['x1'] ?? 0.0);
-
-        /** @var float $y1 */
-        $y1 = (float) ($data['y1'] ?? 0.0);
+        $x0 = is_numeric($data['x0'] ?? null) ? (float) $data['x0'] : 0.0;
+        $y0 = is_numeric($data['y0'] ?? null) ? (float) $data['y0'] : 0.0;
+        $x1 = is_numeric($data['x1'] ?? null) ? (float) $data['x1'] : 0.0;
+        $y1 = is_numeric($data['y1'] ?? null) ? (float) $data['y1'] : 0.0;
 
         return new self(
             x0: $x0,
@@ -80,8 +73,9 @@ readonly class ElementMetadata
      */
     public static function fromArray(array $data): self
     {
-        /** @var int|null $pageNumber */
-        $pageNumber = isset($data['page_number']) ? (int) $data['page_number'] : null;
+        $pageNumber = isset($data['page_number']) && is_numeric($data['page_number'])
+            ? (int) $data['page_number']
+            : null;
 
         /** @var string|null $filename */
         $filename = $data['filename'] ?? null;
@@ -93,17 +87,18 @@ readonly class ElementMetadata
             $coordinates = BoundingBox::fromArray($coordinatesData);
         }
 
-        /** @var int|null $elementIndex */
-        $elementIndex = isset($data['element_index']) ? (int) $data['element_index'] : null;
+        $elementIndex = isset($data['element_index']) && is_numeric($data['element_index'])
+            ? (int) $data['element_index']
+            : null;
 
         /** @var array<string, string> $additional */
         $additional = [];
         if (isset($data['additional']) && is_array($data['additional'])) {
-            $additional = array_map(
-                /** @param mixed $value */
-                static fn ($value): string => (string) $value,
-                $data['additional'],
-            );
+            foreach ($data['additional'] as $key => $value) {
+                $stringKey = is_string($key) ? $key : (string) $key;
+                $stringValue = is_string($value) ? $value : (is_scalar($value) ? (string) $value : '');
+                $additional[$stringKey] = $stringValue;
+            }
         }
 
         return new self(
