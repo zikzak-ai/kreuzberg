@@ -89,14 +89,14 @@ pub use core::extractor::{batch_extract_file_sync, extract_file_sync};
 
 pub use core::config::{
     ChunkingConfig, EmbeddingConfig, EmbeddingModelType, ExtractionConfig, ImageExtractionConfig,
-    LanguageDetectionConfig, OcrConfig, OutputFormat, PostProcessorConfig, TokenReductionConfig,
+    LanguageDetectionConfig, OcrConfig, OutputFormat, PageConfig, PostProcessorConfig, TokenReductionConfig,
 };
 
 #[cfg(feature = "api")]
 pub use core::server_config::ServerConfig;
 
 #[cfg(feature = "pdf")]
-pub use core::config::PdfConfig;
+pub use core::config::{HierarchyConfig, PdfConfig};
 
 pub use core::mime::{
     DOCX_MIME_TYPE, EXCEL_MIME_TYPE, HTML_MIME_TYPE, JSON_MIME_TYPE, MARKDOWN_MIME_TYPE, PDF_MIME_TYPE,

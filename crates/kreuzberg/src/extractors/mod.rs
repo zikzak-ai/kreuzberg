@@ -64,7 +64,7 @@ pub trait SyncExtractor {
 pub mod structured;
 pub mod text;
 
-pub mod djot;
+pub mod djot_format;
 pub mod frontmatter_utils;
 
 #[cfg(feature = "archives")]
@@ -169,7 +169,7 @@ pub use epub::EpubExtractor;
 #[cfg(feature = "office")]
 pub use fictionbook::FictionBookExtractor;
 
-pub use djot::DjotExtractor;
+pub use djot_format::DjotExtractor;
 
 #[cfg(feature = "office")]
 pub use markdown::MarkdownExtractor as EnhancedMarkdownExtractor;

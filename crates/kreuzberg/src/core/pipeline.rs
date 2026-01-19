@@ -80,7 +80,7 @@ fn apply_output_format(result: &mut ExtractionResult, output_format: OutputForma
         }
         OutputFormat::Djot => {
             // Convert the extraction result to djot markup
-            match crate::extractors::djot::extraction_result_to_djot(result) {
+            match crate::extractors::djot_format::extraction_result_to_djot(result) {
                 Ok(djot_markup) => {
                     result.content = djot_markup;
                 }
@@ -100,7 +100,7 @@ fn apply_output_format(result: &mut ExtractionResult, output_format: OutputForma
             // emphasis markers are swapped: djot uses _ for emphasis and * for strong,
             // while CommonMark uses * for emphasis and ** for strong).
             if result.djot_content.is_some() {
-                match crate::extractors::djot::extraction_result_to_djot(result) {
+                match crate::extractors::djot_format::extraction_result_to_djot(result) {
                     Ok(djot_markup) => {
                         result.content = djot_markup;
                     }
@@ -119,9 +119,9 @@ fn apply_output_format(result: &mut ExtractionResult, output_format: OutputForma
             // Convert to HTML format
             if result.djot_content.is_some() {
                 // First generate djot markup, then convert to HTML
-                match crate::extractors::djot::extraction_result_to_djot(result) {
+                match crate::extractors::djot_format::extraction_result_to_djot(result) {
                     Ok(djot_markup) => {
-                        match crate::extractors::djot::djot_to_html(&djot_markup) {
+                        match crate::extractors::djot_format::djot_to_html(&djot_markup) {
                             Ok(html) => {
                                 result.content = html;
                             }
