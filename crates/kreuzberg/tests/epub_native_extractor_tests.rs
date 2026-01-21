@@ -31,7 +31,6 @@ fn get_test_epub_path(filename: &str) -> PathBuf {
 /// - Content is extracted successfully (>2000 bytes expected)
 /// - Metadata is extracted correctly
 #[tokio::test]
-#[ignore = "Title metadata extraction changed - returns None"]
 async fn test_native_epub_wasteland_extraction() {
     let test_file = get_test_epub_path("wasteland.epub");
     if !test_file.exists() {
@@ -54,20 +53,14 @@ async fn test_native_epub_wasteland_extraction() {
         result.content.len()
     );
 
-    assert!(
-        result.metadata.additional.contains_key("title"),
-        "Should extract title metadata"
-    );
+    assert!(result.metadata.title.is_some(), "Should extract title metadata");
     assert_eq!(
-        result.metadata.additional.get("title").and_then(|v| v.as_str()),
+        result.metadata.title.as_deref(),
         Some("The Waste Land"),
         "Should have correct title"
     );
 
-    assert!(
-        result.metadata.additional.contains_key("creator"),
-        "Should extract creator metadata"
-    );
+    assert!(result.metadata.authors.is_some(), "Should extract creator metadata");
 
     assert!(
         result.content.contains("April") || result.content.contains("cruellest"),
@@ -84,7 +77,6 @@ async fn test_native_epub_wasteland_extraction() {
 /// - Text content is extracted (images are in manifest but not in content)
 /// - Metadata is extracted
 #[tokio::test]
-#[ignore = "Title metadata extraction changed - returns None"]
 async fn test_native_epub_images_extraction() {
     let test_file = get_test_epub_path("img.epub");
     if !test_file.exists() {
@@ -107,10 +99,7 @@ async fn test_native_epub_images_extraction() {
         result.content.len()
     );
 
-    assert!(
-        result.metadata.additional.contains_key("title"),
-        "Should extract title metadata"
-    );
+    assert!(result.metadata.title.is_some(), "Should extract title metadata");
 
     println!("✅ Images EPUB extraction test passed ({} bytes)", result.content.len());
 }
@@ -158,7 +147,6 @@ async fn test_native_epub_features_extraction() {
 /// - Cover handling works correctly
 /// - Content and metadata extracted
 #[tokio::test]
-#[ignore = "Title metadata extraction changed - returns None"]
 async fn test_native_epub2_cover_extraction() {
     let test_file = get_test_epub_path("epub2_cover.epub");
     if !test_file.exists() {
@@ -182,7 +170,7 @@ async fn test_native_epub2_cover_extraction() {
     );
 
     assert_eq!(
-        result.metadata.additional.get("title").and_then(|v| v.as_str()),
+        result.metadata.title.as_deref(),
         Some("Pandoc EPUB Test"),
         "Should have correct title"
     );

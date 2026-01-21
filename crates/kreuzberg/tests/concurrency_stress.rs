@@ -316,7 +316,6 @@ fn test_concurrent_ocr_cache_stress() {
 /// - Processors don't interfere with each other
 /// - Registry reads are thread-safe
 #[tokio::test]
-#[ignore = "Post-processor not applied during concurrent pipeline runs"]
 async fn test_concurrent_pipeline_processing() {
     struct ConcurrentTestProcessor;
 

@@ -103,15 +103,6 @@ async fn test_embed_with_custom_config() {
         .await
         .unwrap();
 
-    // Debug: print error if not OK
-    let status = response.status();
-    if status != StatusCode::OK {
-        let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-        eprintln!("Response status: {:?}", status);
-        eprintln!("Response body: {}", String::from_utf8_lossy(&body));
-        panic!("Expected OK status, got {}", status);
-    }
-
     assert_eq!(response.status(), StatusCode::OK);
 
     let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
@@ -295,7 +286,6 @@ async fn test_embed_deterministic() {
 
 /// Test embed endpoint with different embedding presets.
 #[tokio::test]
-#[ignore = "Embedding API validation changed - returns 422 instead of 200"]
 async fn test_embed_different_presets() {
     let app = create_router(ExtractionConfig::default());
 
@@ -304,9 +294,8 @@ async fn test_embed_different_presets() {
         "texts": ["Test text"],
         "config": {
             "model": {
-                "preset": {
-                    "name": "fast"
-                }
+                "type": "preset",
+                "name": "fast"
             }
         }
     });
@@ -336,9 +325,8 @@ async fn test_embed_different_presets() {
         "texts": ["Test text"],
         "config": {
             "model": {
-                "preset": {
-                    "name": "balanced"
-                }
+                "type": "preset",
+                "name": "balanced"
             }
         }
     });
