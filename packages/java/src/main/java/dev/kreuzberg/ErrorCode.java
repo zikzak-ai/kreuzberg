@@ -8,6 +8,12 @@ package dev.kreuzberg;
  * Use {@link KreuzbergException#getErrorCode()} to retrieve the code for a
  * specific exception.
  *
+ * <p>
+ * These codes match the panic_shield::ErrorCode enum in the Rust FFI layer
+ * (codes 0-7). Higher-level error types like cache and image processing errors
+ * are created by the Java binding through message-based classification and do
+ * not have corresponding FFI error codes.
+ *
  * @since 4.0.0
  */
 public enum ErrorCode {
@@ -76,5 +82,63 @@ public enum ErrorCode {
 			case CODE_MISSING_DEPENDENCY -> MISSING_DEPENDENCY;
 			default -> SUCCESS;
 		};
+	}
+
+	/**
+	 * Classifies an error message to determine the most appropriate error code.
+	 *
+	 * <p>
+	 * This method analyzes the error message string to determine what type of error
+	 * occurred. It's useful for mapping generic errors to more specific exception
+	 * types based on message content.
+	 *
+	 * <p>
+	 * Note: Cache and image processing errors are identified via message-based
+	 * classification in {@link KreuzbergFFI} and mapped to specific exception types
+	 * ({@link CacheException}, {@link ImageProcessingException}), but they return
+	 * GENERIC_ERROR here since they don't have corresponding FFI error codes. This
+	 * is consistent with how Python and Go handle these error types.
+	 *
+	 * @param message
+	 *            the error message to classify
+	 * @return the most appropriate ErrorCode based on message content
+	 * @since 4.0.0
+	 */
+	public static ErrorCode classifyFromMessage(String message) {
+		if (message == null || message.isBlank()) {
+			return GENERIC_ERROR;
+		}
+
+		String lower = message.toLowerCase(java.util.Locale.ROOT);
+
+		// Check for parsing errors
+		if (lower.contains("parse") || lower.contains("parsing") || lower.contains("corrupt")
+				|| lower.contains("malformed")) {
+			return PARSING_ERROR;
+		}
+
+		// Check for OCR errors
+		if (lower.contains("ocr") || lower.contains("tesseract") || lower.contains("recognition")) {
+			return OCR_ERROR;
+		}
+
+		// Check for missing dependency errors
+		if (lower.contains("not found") || lower.contains("missing") || lower.contains("dependency")
+				|| lower.contains("not installed")) {
+			return MISSING_DEPENDENCY;
+		}
+
+		// Check for I/O errors
+		if (lower.contains("io ") || lower.contains("i/o") || lower.contains("file") || lower.contains("permission")
+				|| lower.contains("access") || lower.contains("disk")) {
+			return IO_ERROR;
+		}
+
+		// Check for validation/invalid argument errors
+		if (lower.contains("invalid") || lower.contains("validation") || lower.contains("parameter")) {
+			return INVALID_ARGUMENT;
+		}
+
+		return GENERIC_ERROR;
 	}
 }

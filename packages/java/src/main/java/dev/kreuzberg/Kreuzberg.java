@@ -100,7 +100,7 @@ public final class Kreuzberg {
 			}
 
 			if (resultPtr == null || resultPtr.address() == 0) {
-				throw new KreuzbergException("Extraction failed: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Extraction failed");
 			}
 
 			return parseAndFreeResult(resultPtr);
@@ -116,13 +116,13 @@ public final class Kreuzberg {
 	public static ExtractionResult extractBytes(byte[] data, String mimeType, ExtractionConfig config)
 			throws KreuzbergException {
 		if (data == null) {
-			throw new KreuzbergException("data must not be null");
+			throw new ValidationException("data must not be null");
 		}
 		if (data.length == 0) {
-			throw new KreuzbergException("data cannot be empty");
+			throw new ValidationException("data cannot be empty");
 		}
 		if (mimeType == null || mimeType.isBlank()) {
-			throw new KreuzbergException("mimeType is required");
+			throw new ValidationException("mimeType is required");
 		}
 
 		FFI_LOCK.lock();
@@ -138,7 +138,7 @@ public final class Kreuzberg {
 					: KreuzbergFFI.KREUZBERG_EXTRACT_BYTES_SYNC.invoke(dataSegment, (long) data.length, mimeSegment));
 
 			if (resultPtr == null || resultPtr.address() == 0) {
-				throw new KreuzbergException("Extraction failed: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Extraction failed");
 			}
 
 			return parseAndFreeResult(resultPtr);
@@ -175,7 +175,7 @@ public final class Kreuzberg {
 					.invoke(arraySegment, (long) paths.size(), configSegment);
 
 			if (batchPtr == null || batchPtr.address() == 0) {
-				throw new KreuzbergException("Batch extraction failed: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Batch extraction failed");
 			}
 
 			return parseAndFreeBatch(batchPtr);
@@ -217,7 +217,7 @@ public final class Kreuzberg {
 					.invoke(bytesWithMimeArray, (long) items.size(), configSegment);
 
 			if (batchPtr == null || batchPtr.address() == 0) {
-				throw new KreuzbergException("Batch extraction failed: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Batch extraction failed");
 			}
 
 			return parseAndFreeBatch(batchPtr);
@@ -234,14 +234,14 @@ public final class Kreuzberg {
 		try {
 			validateFile(path);
 		} catch (IOException e) {
-			throw new KreuzbergException("Invalid configuration file path", e);
+			throw new ValidationException("Invalid configuration file path", e);
 		}
 		try (Arena arena = Arena.ofConfined()) {
 			MemorySegment pathSeg = KreuzbergFFI.allocateCString(arena, path.toString());
 			MemorySegment jsonPtr = (MemorySegment) KreuzbergFFI.KREUZBERG_LOAD_EXTRACTION_CONFIG_FROM_FILE
 					.invoke(pathSeg);
 			if (jsonPtr == null || jsonPtr.address() == 0) {
-				throw new KreuzbergException("Failed to load extraction config: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to load extraction config");
 			}
 			try {
 				String json = KreuzbergFFI.readCString(jsonPtr);
@@ -274,7 +274,7 @@ public final class Kreuzberg {
 			if (jsonPtr == null || jsonPtr.address() == 0) {
 				String error = getLastError();
 				if (error != null && !error.isBlank()) {
-					throw new KreuzbergException("Failed to discover config: " + error);
+					throw KreuzbergFFI.createTypedException("Failed to discover config");
 				}
 				return Optional.empty();
 			}
@@ -413,7 +413,7 @@ public final class Kreuzberg {
 			MemorySegment mimePtr = (MemorySegment) KreuzbergFFI.KREUZBERG_DETECT_MIME_TYPE.invoke(pathSeg,
 					checkExists);
 			if (mimePtr == null || mimePtr.address() == 0) {
-				throw new KreuzbergException("Failed to detect MIME type: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to detect MIME type");
 			}
 			return KreuzbergFFI.readCString(mimePtr);
 		} catch (KreuzbergException e) {
@@ -429,7 +429,7 @@ public final class Kreuzberg {
 			MemorySegment mimeSeg = KreuzbergFFI.allocateCString(arena, mimeType);
 			MemorySegment validatedPtr = (MemorySegment) KreuzbergFFI.KREUZBERG_VALIDATE_MIME_TYPE.invoke(mimeSeg);
 			if (validatedPtr == null || validatedPtr.address() == 0) {
-				throw new KreuzbergException("Failed to validate MIME type: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to validate MIME type");
 			}
 			return KreuzbergFFI.readCString(validatedPtr);
 		} catch (KreuzbergException e) {
@@ -443,7 +443,7 @@ public final class Kreuzberg {
 		try {
 			MemorySegment presetsPtr = (MemorySegment) KreuzbergFFI.KREUZBERG_LIST_EMBEDDING_PRESETS.invoke();
 			if (presetsPtr == null || presetsPtr.address() == 0) {
-				throw new KreuzbergException("Failed to list embedding presets: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to list embedding presets");
 			}
 			try {
 				String json = KreuzbergFFI.readCString(presetsPtr);
@@ -461,7 +461,7 @@ public final class Kreuzberg {
 	public static Optional<EmbeddingPreset> getEmbeddingPreset(String name) throws KreuzbergException {
 		Objects.requireNonNull(name, "name must not be null");
 		if (name.isBlank()) {
-			throw new KreuzbergException("Preset name must not be blank");
+			throw new ValidationException("Preset name must not be blank");
 		}
 
 		try (Arena arena = Arena.ofConfined()) {
@@ -472,8 +472,7 @@ public final class Kreuzberg {
 				if (error != null && error.toLowerCase(Locale.ROOT).contains("unknown embedding preset")) {
 					return Optional.empty();
 				}
-				String errorMsg = error != null ? error : "Unknown error";
-				throw new KreuzbergException("Failed to fetch embedding preset: " + errorMsg);
+				throw KreuzbergFFI.createTypedException("Failed to fetch embedding preset");
 			}
 			try {
 				String json = KreuzbergFFI.readCString(presetPtr);
@@ -541,7 +540,7 @@ public final class Kreuzberg {
 					callback, priority, stageSegment);
 
 			if (!success) {
-				throw new KreuzbergException("Failed to register post-processor: " + getLastError());
+				throw new PluginException(normalizedName, "Failed to register post-processor: " + getLastError());
 			}
 
 			POST_PROCESSOR_CALLBACKS.put(normalizedName, new CallbackHandle(arena, callback, processor));
@@ -549,7 +548,7 @@ public final class Kreuzberg {
 		} catch (KreuzbergException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new KreuzbergException("Unexpected error registering post-processor", e);
+			throw new PluginException(normalizedName, "Unexpected error registering post-processor", e);
 		} finally {
 			if (!registered) {
 				closeCallback(new CallbackHandle(arena, MemorySegment.NULL, processor));
@@ -571,12 +570,12 @@ public final class Kreuzberg {
 			MemorySegment nameSeg = KreuzbergFFI.allocateCString(arena, normalizedName);
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_UNREGISTER_POST_PROCESSOR.invoke(nameSeg);
 			if (!success) {
-				throw new KreuzbergException("Failed to unregister post-processor: " + getLastError());
+				throw new PluginException(normalizedName, "Failed to unregister post-processor: " + getLastError());
 			}
 		} catch (KreuzbergException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new KreuzbergException("Unexpected error unregistering post-processor", e);
+			throw new PluginException(normalizedName, "Unexpected error unregistering post-processor", e);
 		} finally {
 			CallbackHandle handle = POST_PROCESSOR_CALLBACKS.remove(normalizedName);
 			closeCallback(handle);
@@ -593,7 +592,7 @@ public final class Kreuzberg {
 		try {
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_CLEAR_POST_PROCESSORS.invoke();
 			if (!success) {
-				throw new KreuzbergException("Failed to clear post-processors: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to clear post-processors");
 			}
 		} catch (KreuzbergException e) {
 			throw e;
@@ -679,7 +678,7 @@ public final class Kreuzberg {
 					priority);
 
 			if (!success) {
-				throw new KreuzbergException("Failed to register validator: " + getLastError());
+				throw new PluginException(normalizedName, "Failed to register validator: " + getLastError());
 			}
 
 			VALIDATOR_CALLBACKS.put(normalizedName, new CallbackHandle(arena, callback, validator));
@@ -687,7 +686,7 @@ public final class Kreuzberg {
 		} catch (KreuzbergException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new KreuzbergException("Unexpected error registering validator", e);
+			throw new PluginException(normalizedName, "Unexpected error registering validator", e);
 		} finally {
 			if (!registered) {
 				closeCallback(new CallbackHandle(arena, MemorySegment.NULL, validator));
@@ -709,12 +708,12 @@ public final class Kreuzberg {
 			MemorySegment nameSeg = KreuzbergFFI.allocateCString(arena, normalizedName);
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_UNREGISTER_VALIDATOR.invoke(nameSeg);
 			if (!success) {
-				throw new KreuzbergException("Failed to unregister validator: " + getLastError());
+				throw new PluginException(normalizedName, "Failed to unregister validator: " + getLastError());
 			}
 		} catch (KreuzbergException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new KreuzbergException("Unexpected error unregistering validator", e);
+			throw new PluginException(normalizedName, "Unexpected error unregistering validator", e);
 		} finally {
 			CallbackHandle handle = VALIDATOR_CALLBACKS.remove(normalizedName);
 			closeCallback(handle);
@@ -731,7 +730,7 @@ public final class Kreuzberg {
 		try {
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_CLEAR_VALIDATORS.invoke();
 			if (!success) {
-				throw new KreuzbergException("Failed to clear validators: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to clear validators");
 			}
 		} catch (KreuzbergException e) {
 			throw e;
@@ -828,7 +827,7 @@ public final class Kreuzberg {
 						languagesSeg);
 			}
 			if (!success) {
-				throw new KreuzbergException("Failed to register OCR backend: " + getLastError());
+				throw new PluginException(normalizedName, "Failed to register OCR backend: " + getLastError());
 			}
 
 			OCR_CALLBACKS.put(normalizedName, new CallbackHandle(arena, callback, backend));
@@ -836,7 +835,7 @@ public final class Kreuzberg {
 		} catch (KreuzbergException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new KreuzbergException("Unexpected error registering OCR backend", e);
+			throw new PluginException(normalizedName, "Unexpected error registering OCR backend", e);
 		} finally {
 			if (!registered) {
 				closeCallback(new CallbackHandle(arena, MemorySegment.NULL, backend));
@@ -858,12 +857,12 @@ public final class Kreuzberg {
 			MemorySegment nameSeg = KreuzbergFFI.allocateCString(arena, normalizedName);
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_UNREGISTER_OCR_BACKEND.invoke(nameSeg);
 			if (!success) {
-				throw new KreuzbergException("Failed to unregister OCR backend: " + getLastError());
+				throw new PluginException(normalizedName, "Failed to unregister OCR backend: " + getLastError());
 			}
 		} catch (KreuzbergException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new KreuzbergException("Unexpected error unregistering OCR backend", e);
+			throw new PluginException(normalizedName, "Unexpected error unregistering OCR backend", e);
 		} finally {
 			CallbackHandle handle = OCR_CALLBACKS.remove(normalizedName);
 			closeCallback(handle);
@@ -906,7 +905,7 @@ public final class Kreuzberg {
 		try {
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_CLEAR_OCR_BACKENDS.invoke();
 			if (!success) {
-				throw new KreuzbergException("Failed to clear OCR backends: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to clear OCR backends");
 			}
 		} catch (KreuzbergException e) {
 			throw e;
@@ -958,12 +957,12 @@ public final class Kreuzberg {
 			MemorySegment nameSeg = KreuzbergFFI.allocateCString(arena, normalizedName);
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_UNREGISTER_DOCUMENT_EXTRACTOR.invoke(nameSeg);
 			if (!success) {
-				throw new KreuzbergException("Failed to unregister document extractor: " + getLastError());
+				throw new PluginException(normalizedName, "Failed to unregister document extractor: " + getLastError());
 			}
 		} catch (KreuzbergException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new KreuzbergException("Unexpected error unregistering document extractor", e);
+			throw new PluginException(normalizedName, "Unexpected error unregistering document extractor", e);
 		}
 	}
 
@@ -977,7 +976,7 @@ public final class Kreuzberg {
 		try {
 			boolean success = (boolean) KreuzbergFFI.KREUZBERG_CLEAR_DOCUMENT_EXTRACTORS.invoke();
 			if (!success) {
-				throw new KreuzbergException("Failed to clear document extractors: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to clear document extractors");
 			}
 		} catch (KreuzbergException e) {
 			throw e;
@@ -998,7 +997,7 @@ public final class Kreuzberg {
 	public static String detectMimeType(byte[] data) throws KreuzbergException {
 		Objects.requireNonNull(data, "data must not be null");
 		if (data.length == 0) {
-			throw new KreuzbergException("data cannot be empty");
+			throw new ValidationException("data cannot be empty");
 		}
 
 		try (Arena arena = Arena.ofConfined()) {
@@ -1007,7 +1006,7 @@ public final class Kreuzberg {
 			MemorySegment mimePtr = (MemorySegment) KreuzbergFFI.KREUZBERG_DETECT_MIME_TYPE_FROM_BYTES
 					.invoke(dataSegment, (long) data.length);
 			if (mimePtr == null || mimePtr.address() == 0) {
-				throw new KreuzbergException("Failed to detect MIME type from bytes: " + getLastError());
+				throw KreuzbergFFI.createTypedException("Failed to detect MIME type from bytes");
 			}
 			return KreuzbergFFI.readCString(mimePtr);
 		} catch (KreuzbergException e) {
@@ -1042,7 +1041,7 @@ public final class Kreuzberg {
 	public static List<String> getExtensionsForMime(String mimeType) throws KreuzbergException {
 		Objects.requireNonNull(mimeType, "mimeType must not be null");
 		if (mimeType.isBlank()) {
-			throw new KreuzbergException("mimeType must not be blank");
+			throw new ValidationException("mimeType must not be blank");
 		}
 
 		try (Arena arena = Arena.ofConfined()) {
@@ -1050,8 +1049,7 @@ public final class Kreuzberg {
 			MemorySegment extensionsPtr = (MemorySegment) KreuzbergFFI.KREUZBERG_GET_EXTENSIONS_FOR_MIME
 					.invoke(mimeSeg);
 			if (extensionsPtr == null || extensionsPtr.address() == 0) {
-				String error = getLastError();
-				throw new KreuzbergException("Failed to get extensions for MIME type: " + error);
+				throw KreuzbergFFI.createTypedException("Failed to get extensions for MIME type");
 			}
 			try {
 				String json = KreuzbergFFI.readCString(extensionsPtr);
@@ -1082,7 +1080,7 @@ public final class Kreuzberg {
 
 	private static String validatePluginName(String name, String kind) throws KreuzbergException {
 		if (name == null || name.isBlank()) {
-			throw new KreuzbergException(kind + " name must not be blank");
+			throw new ValidationException(kind + " name must not be blank");
 		}
 		return name.trim();
 	}

@@ -15,8 +15,8 @@ function getNativeModule(): Record<string, any> {
 	if (!nativeModule) {
 		try {
 			nativeModule = require("kreuzberg-node");
-		} catch (_error) {
-			throw new Error("Unable to load native kreuzberg-node module. Please ensure it is properly compiled.");
+		} catch (error) {
+			throw new Error(`Unable to load native kreuzberg-node module: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 	return nativeModule;

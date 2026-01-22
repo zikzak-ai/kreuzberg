@@ -9,6 +9,33 @@ declare(strict_types=1);
  * Rust extension is not available, allowing tests to run.
  */
 
+/**
+ * Static storage class for mock implementations.
+ * Using a class with static properties instead of $GLOBALS for better test isolation.
+ */
+class KreuzbergMockStorage
+{
+    /** @var array<string, callable> */
+    public static array $postProcessors = [];
+    /** @var array<string, callable> */
+    public static array $validators = [];
+    /** @var array<string, callable> */
+    public static array $extractors = [];
+    /** @var array<string, callable> */
+    public static array $ocrBackends = [];
+    /** @var array<string, callable> */
+    public static array $documentExtractors = [];
+
+    public static function reset(): void
+    {
+        self::$postProcessors = [];
+        self::$validators = [];
+        self::$extractors = [];
+        self::$ocrBackends = [];
+        self::$documentExtractors = [];
+    }
+}
+
 // Only define if not already defined by the extension
 if (!function_exists('kreuzberg_extract_file')) {
     /**
@@ -719,14 +746,14 @@ if (!function_exists('kreuzberg_validate_mime_type')) {
 if (!function_exists('kreuzberg_register_post_processor')) {
     function kreuzberg_register_post_processor(string $name, callable $callback): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$postProcessors[$name] = $callback;
     }
 }
 
 if (!function_exists('kreuzberg_unregister_post_processor')) {
     function kreuzberg_unregister_post_processor(string $name): void
     {
-        // Mock implementation
+        unset(KreuzbergMockStorage::$postProcessors[$name]);
     }
 }
 
@@ -736,35 +763,37 @@ if (!function_exists('kreuzberg_list_post_processors')) {
      */
     function kreuzberg_list_post_processors(): array
     {
-        return [];
+        return array_keys(KreuzbergMockStorage::$postProcessors);
     }
 }
 
 if (!function_exists('kreuzberg_clear_post_processors')) {
     function kreuzberg_clear_post_processors(): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$postProcessors = [];
     }
 }
 
 if (!function_exists('kreuzberg_run_post_processors')) {
     function kreuzberg_run_post_processors(mixed &$result): void
     {
-        // Mock implementation
+        foreach (KreuzbergMockStorage::$postProcessors as $callback) {
+            $callback($result);
+        }
     }
 }
 
 if (!function_exists('kreuzberg_register_validator')) {
     function kreuzberg_register_validator(string $name, callable $callback): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$validators[$name] = $callback;
     }
 }
 
 if (!function_exists('kreuzberg_unregister_validator')) {
     function kreuzberg_unregister_validator(string $name): void
     {
-        // Mock implementation
+        unset(KreuzbergMockStorage::$validators[$name]);
     }
 }
 
@@ -774,35 +803,37 @@ if (!function_exists('kreuzberg_list_validators')) {
      */
     function kreuzberg_list_validators(): array
     {
-        return [];
+        return array_keys(KreuzbergMockStorage::$validators);
     }
 }
 
 if (!function_exists('kreuzberg_clear_validators')) {
     function kreuzberg_clear_validators(): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$validators = [];
     }
 }
 
 if (!function_exists('kreuzberg_run_validators')) {
     function kreuzberg_run_validators(mixed &$result): void
     {
-        // Mock implementation
+        foreach (KreuzbergMockStorage::$validators as $callback) {
+            $callback($result);
+        }
     }
 }
 
 if (!function_exists('kreuzberg_register_extractor')) {
     function kreuzberg_register_extractor(string $mimeType, callable $callback): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$extractors[$mimeType] = $callback;
     }
 }
 
 if (!function_exists('kreuzberg_unregister_extractor')) {
     function kreuzberg_unregister_extractor(string $mimeType): void
     {
-        // Mock implementation
+        unset(KreuzbergMockStorage::$extractors[$mimeType]);
     }
 }
 
@@ -812,14 +843,14 @@ if (!function_exists('kreuzberg_list_extractors')) {
      */
     function kreuzberg_list_extractors(): array
     {
-        return [];
+        return array_keys(KreuzbergMockStorage::$extractors);
     }
 }
 
 if (!function_exists('kreuzberg_clear_extractors')) {
     function kreuzberg_clear_extractors(): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$extractors = [];
     }
 }
 
@@ -887,7 +918,7 @@ if (!function_exists('kreuzberg_get_extensions_for_mime')) {
 if (!function_exists('kreuzberg_clear_document_extractors')) {
     function kreuzberg_clear_document_extractors(): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$documentExtractors = [];
     }
 }
 
@@ -897,21 +928,35 @@ if (!function_exists('kreuzberg_list_document_extractors')) {
      */
     function kreuzberg_list_document_extractors(): array
     {
-        return [];
+        return array_keys(KreuzbergMockStorage::$documentExtractors);
+    }
+}
+
+if (!function_exists('kreuzberg_register_document_extractor')) {
+    function kreuzberg_register_document_extractor(string $name, callable $callback): void
+    {
+        KreuzbergMockStorage::$documentExtractors[$name] = $callback;
     }
 }
 
 if (!function_exists('kreuzberg_unregister_document_extractor')) {
     function kreuzberg_unregister_document_extractor(string $name): void
     {
-        // Mock implementation
+        unset(KreuzbergMockStorage::$documentExtractors[$name]);
+    }
+}
+
+if (!function_exists('kreuzberg_register_ocr_backend')) {
+    function kreuzberg_register_ocr_backend(string $name, callable $callback): void
+    {
+        KreuzbergMockStorage::$ocrBackends[$name] = $callback;
     }
 }
 
 if (!function_exists('kreuzberg_clear_ocr_backends')) {
     function kreuzberg_clear_ocr_backends(): void
     {
-        // Mock implementation
+        KreuzbergMockStorage::$ocrBackends = [];
     }
 }
 
@@ -921,13 +966,13 @@ if (!function_exists('kreuzberg_list_ocr_backends')) {
      */
     function kreuzberg_list_ocr_backends(): array
     {
-        return [];
+        return array_keys(KreuzbergMockStorage::$ocrBackends);
     }
 }
 
 if (!function_exists('kreuzberg_unregister_ocr_backend')) {
     function kreuzberg_unregister_ocr_backend(string $name): void
     {
-        // Mock implementation
+        unset(KreuzbergMockStorage::$ocrBackends[$name]);
     }
 }

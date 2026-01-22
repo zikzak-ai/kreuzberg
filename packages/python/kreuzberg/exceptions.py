@@ -11,12 +11,20 @@ from typing import Any
 
 
 class ErrorCode(IntEnum):
-    """Error codes from the Kreuzberg FFI layer.
+    """Error codes from the Kreuzberg FFI panic shield layer.
+
+    These codes match the panic_shield::ErrorCode defined in the Rust FFI layer.
+    They are returned by get_last_error_code() to indicate the type of error
+    that occurred during the most recent FFI operation.
+
+    Note: These codes are different from the exception types. Exceptions like
+    CacheError and ImageProcessingError are raised directly by the PyO3 bindings
+    and don't have corresponding codes in this enum.
 
     Attributes:
         SUCCESS: No error occurred
         GENERIC_ERROR: Generic/unknown error
-        PANIC: A panic occurred in the library
+        PANIC: A panic occurred in the Rust core
         INVALID_ARGUMENT: Invalid argument provided
         IO_ERROR: I/O operation failed
         PARSING_ERROR: Document parsing failed

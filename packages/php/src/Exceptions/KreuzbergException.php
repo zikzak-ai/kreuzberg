@@ -15,18 +15,26 @@ use Exception;
 class KreuzbergException extends Exception
 {
     /**
+     * Panic context from Rust, if available.
+     */
+    public readonly ?PanicContext $panicContext;
+
+    /**
      * Create a new KreuzbergException.
      *
      * @param string $message Error message
      * @param int $code Error code (0 for generic errors)
      * @param Exception|null $previous Previous exception for chaining
+     * @param PanicContext|null $panicContext Panic context from Rust
      */
     public function __construct(
         string $message = '',
         int $code = 0,
         ?Exception $previous = null,
+        ?PanicContext $panicContext = null,
     ) {
         parent::__construct($message, $code, $previous);
+        $this->panicContext = $panicContext;
     }
 
     /**

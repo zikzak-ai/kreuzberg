@@ -38,7 +38,7 @@ pub use kreuzberg_ffi::{
     kreuzberg_free_string,
 };
 
-use magnus::{Error, Ruby, RHash, Value, function, IntoValue};
+use magnus::{Error, Ruby, RHash, Value, function, IntoValue, TryConvert};
 use magnus::value::ReprValue;
 
 /// Clear the extraction cache
@@ -246,22 +246,160 @@ pub fn config_merge_wrapper(_ruby: &Ruby, base_json: String, override_json: Stri
     serde_json::to_string(&base).map_err(|e| runtime_error(format!("Failed to serialize merged config: {}", e)))
 }
 
-// Result wrapper functions (placeholders)
-pub fn result_page_count(_ruby: &Ruby, _result_ptr: i64) -> Result<i32, Error> {
+// Result wrapper functions
+// These functions receive a Ruby Hash (the extraction result) and extract specific fields.
+
+/// Get page count from extraction result
+/// Accesses metadata["page_count"] or metadata["sheet_count"] (for Excel) or returns 0
+pub fn result_page_count(_ruby: &Ruby, result: Value) -> Result<i32, Error> {
+    // Try to get the result as an RHash
+    let hash = match RHash::try_convert(result) {
+        Ok(h) => h,
+        Err(_) => return Ok(0),
+    };
+
+    // Get metadata field
+    let metadata = match hash.get("metadata") {
+        Some(m) => m,
+        None => return Ok(0),
+    };
+
+    // Try to convert metadata to hash
+    let metadata_hash = match RHash::try_convert(metadata) {
+        Ok(h) => h,
+        Err(_) => return Ok(0),
+    };
+
+    // Try page_count first (PDF/PPTX format)
+    if let Some(page_count) = metadata_hash.get("page_count") {
+        if !page_count.is_nil() {
+            if let Ok(count) = i32::try_convert(page_count) {
+                return Ok(count);
+            }
+        }
+    }
+
+    // Fall back to sheet_count (Excel format)
+    if let Some(sheet_count) = metadata_hash.get("sheet_count") {
+        if !sheet_count.is_nil() {
+            if let Ok(count) = i32::try_convert(sheet_count) {
+                return Ok(count);
+            }
+        }
+    }
+
     Ok(0)
 }
 
-pub fn result_chunk_count(_ruby: &Ruby, _result_ptr: i64) -> Result<i32, Error> {
-    Ok(0)
+/// Get chunk count from extraction result
+/// Returns chunks.length or 0 if nil/empty
+pub fn result_chunk_count(_ruby: &Ruby, result: Value) -> Result<i32, Error> {
+    // Try to get the result as an RHash
+    let hash = match RHash::try_convert(result) {
+        Ok(h) => h,
+        Err(_) => return Ok(0),
+    };
+
+    // Get chunks field
+    let chunks = match hash.get("chunks") {
+        Some(c) => c,
+        None => return Ok(0),
+    };
+
+    // Check if chunks is nil
+    if chunks.is_nil() {
+        return Ok(0);
+    }
+
+    // Try to convert chunks to array
+    let chunks_array = match magnus::RArray::try_convert(chunks) {
+        Ok(a) => a,
+        Err(_) => return Ok(0),
+    };
+
+    Ok(chunks_array.len() as i32)
 }
 
-pub fn result_detected_language(_ruby: &Ruby, _result_ptr: i64) -> Result<Value, Error> {
-    let ruby = Ruby::get().expect("Ruby not initialized");
+/// Get detected language from extraction result
+/// Returns first element from detected_languages array or metadata["language"]
+pub fn result_detected_language(ruby: &Ruby, result: Value) -> Result<Value, Error> {
+    // Try to get the result as an RHash
+    let hash = match RHash::try_convert(result) {
+        Ok(h) => h,
+        Err(_) => return Ok(ruby.qnil().as_value()),
+    };
+
+    // First try detected_languages array (primary detection result)
+    if let Some(detected_languages) = hash.get("detected_languages") {
+        if !detected_languages.is_nil() {
+            if let Ok(langs_array) = magnus::RArray::try_convert(detected_languages) {
+                if langs_array.len() > 0 {
+                    if let Ok(first) = langs_array.entry(0) {
+                        return Ok(first);
+                    }
+                }
+            }
+        }
+    }
+
+    // Fall back to metadata["language"]
+    if let Some(metadata) = hash.get("metadata") {
+        if let Ok(metadata_hash) = RHash::try_convert(metadata) {
+            if let Some(language) = metadata_hash.get("language") {
+                if !language.is_nil() {
+                    return Ok(language);
+                }
+            }
+        }
+    }
+
     Ok(ruby.qnil().as_value())
 }
 
-pub fn result_metadata_field(ruby: &Ruby, _result_ptr: i64, _field_name: String) -> Result<Value, Error> {
-    Ok(ruby.qnil().as_value())
+/// Get metadata field by name with dot notation support
+/// Accesses metadata[field_name] using dot notation for nested fields
+pub fn result_metadata_field(ruby: &Ruby, result: Value, field_name: String) -> Result<Value, Error> {
+    // Try to get the result as an RHash
+    let hash = match RHash::try_convert(result) {
+        Ok(h) => h,
+        Err(_) => return Ok(ruby.qnil().as_value()),
+    };
+
+    // Get metadata field
+    let metadata = match hash.get("metadata") {
+        Some(m) => m,
+        None => return Ok(ruby.qnil().as_value()),
+    };
+
+    // Check if metadata is nil
+    if metadata.is_nil() {
+        return Ok(ruby.qnil().as_value());
+    }
+
+    // Split field name by dots and traverse
+    let parts: Vec<&str> = field_name.split('.').collect();
+    let mut current = metadata;
+
+    for part in parts {
+        // Try to convert current to hash
+        let current_hash = match RHash::try_convert(current) {
+            Ok(h) => h,
+            Err(_) => return Ok(ruby.qnil().as_value()),
+        };
+
+        // Get the field
+        current = match current_hash.get(part) {
+            Some(v) => v,
+            None => return Ok(ruby.qnil().as_value()),
+        };
+
+        // Check if current is nil
+        if current.is_nil() {
+            return Ok(ruby.qnil().as_value());
+        }
+    }
+
+    Ok(current)
 }
 
 // Error detail functions

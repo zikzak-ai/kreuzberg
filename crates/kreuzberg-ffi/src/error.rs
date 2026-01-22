@@ -486,22 +486,54 @@ pub extern "C" fn kreuzberg_get_error_details() -> CErrorDetails {
         (None, None, 0)
     };
 
+    // Helper to convert string to C string with proper error handling.
+    // On failure, logs the error and returns a fallback heap-allocated string.
+    fn string_to_cstring_with_fallback(value: String, fallback: &str, field_name: &str) -> *mut c_char {
+        match CString::new(value) {
+            Ok(cstr) => cstr.into_raw(),
+            Err(e) => {
+                log::warn!(
+                    "kreuzberg_get_error_details: CString creation failed for {}: {} (contains interior NUL byte)",
+                    field_name,
+                    e
+                );
+                // Allocate a proper CString for the fallback so it can be safely freed
+                CString::new(fallback).map(CString::into_raw).unwrap_or_else(|_| {
+                    // This should never happen since fallback is a static string without NUL bytes
+                    log::warn!(
+                        "kreuzberg_get_error_details: CRITICAL - fallback CString creation also failed for {}",
+                        field_name
+                    );
+                    ptr::null_mut()
+                })
+            }
+        }
+    }
+
+    // Helper for optional string fields (accepts &str to match panic context types)
+    fn optional_str_to_cstring(value: Option<&str>, field_name: &str) -> *mut c_char {
+        match value {
+            Some(s) => match CString::new(s) {
+                Ok(cstr) => cstr.into_raw(),
+                Err(e) => {
+                    log::warn!(
+                        "kreuzberg_get_error_details: CString creation failed for {}: {} (contains interior NUL byte)",
+                        field_name,
+                        e
+                    );
+                    ptr::null_mut()
+                }
+            },
+            None => ptr::null_mut(),
+        }
+    }
+
     CErrorDetails {
-        message: CString::new(message)
-            .map(CString::into_raw)
-            .unwrap_or_else(|_| "Error message creation failed".as_ptr() as *mut c_char),
+        message: string_to_cstring_with_fallback(message, "CString error", "message"),
         error_code,
-        error_type: CString::new(error_type)
-            .map(CString::into_raw)
-            .unwrap_or_else(|_| "unknown".as_ptr() as *mut c_char),
-        source_file: source_file
-            .and_then(|f| CString::new(f).ok())
-            .map(CString::into_raw)
-            .unwrap_or(ptr::null_mut()),
-        source_function: source_function
-            .and_then(|f| CString::new(f).ok())
-            .map(CString::into_raw)
-            .unwrap_or(ptr::null_mut()),
+        error_type: string_to_cstring_with_fallback(error_type, "unknown", "error_type"),
+        source_file: optional_str_to_cstring(source_file, "source_file"),
+        source_function: optional_str_to_cstring(source_function, "source_function"),
         source_line,
         context_info: ptr::null_mut(),
         is_panic,
