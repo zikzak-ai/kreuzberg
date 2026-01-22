@@ -84,6 +84,7 @@ jobs:
     # On Windows, github.workspace paths like D:/a/... get mangled to D:/d/a/... in bash shells.
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -489,7 +490,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
   test-ruby:
@@ -509,6 +510,7 @@ jobs:
     # On Windows, github.workspace paths like D:/a/... get mangled to D:/d/a/... in bash shells.
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps

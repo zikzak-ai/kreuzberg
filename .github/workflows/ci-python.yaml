@@ -90,6 +90,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -197,7 +198,7 @@ jobs:
           retention-days: 7
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
       - name: Smoke test wheel
@@ -261,6 +262,7 @@ jobs:
       RUSTC_WRAPPER: ''
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps

@@ -79,6 +79,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install pkg-config (Windows, fallback)
         if: runner.os == 'Windows'
@@ -315,7 +316,7 @@ jobs:
           retention-days: 7
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
   test-go:
@@ -330,6 +331,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install pkg-config (Windows, fallback)
         if: runner.os == 'Windows'

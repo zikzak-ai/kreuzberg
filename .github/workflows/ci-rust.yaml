@@ -89,6 +89,7 @@ jobs:
             target: x86_64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -157,7 +158,7 @@ jobs:
           DYLD_FALLBACK_LIBRARY_PATH: ${{ env.DYLD_FALLBACK_LIBRARY_PATH || '' }}
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
   rust-e2e:
@@ -169,6 +170,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -222,7 +224,7 @@ jobs:
         shell: bash
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
   test-system-pdfium:
@@ -242,6 +244,7 @@ jobs:
             target: aarch64-apple-darwin
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -303,7 +306,7 @@ jobs:
         shell: bash
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
   build-and-smoke-cli:
@@ -331,6 +334,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -387,7 +391,7 @@ jobs:
           retention-days: 7
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
       - name: Extract and test CLI (Unix)

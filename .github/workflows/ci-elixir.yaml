@@ -77,6 +77,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -199,5 +200,5 @@ jobs:
           ls -lh target/release/libkreuzberg_ffi* 2>/dev/null || echo "    (none found)"
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache

@@ -78,6 +78,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -200,7 +201,7 @@ jobs:
           bash scripts/ci/php/create-ci-php-ini.sh
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
   test-php:
@@ -218,6 +219,7 @@ jobs:
       RUSTC_WRAPPER: ""
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps

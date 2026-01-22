@@ -91,6 +91,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Dump system information
         shell: bash
@@ -209,7 +210,7 @@ jobs:
           retention-days: 7
 
       - name: Cleanup Rust cache
-        if: always()
+        if: always() && steps.checkout.outcome == 'success'
         uses: ./.github/actions/cleanup-rust-cache
 
       - name: Smoke test Node.js bindings
@@ -245,6 +246,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Dump system information (test job)
         shell: bash
