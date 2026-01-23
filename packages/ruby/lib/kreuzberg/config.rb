@@ -733,10 +733,41 @@ module Kreuzberg
       # @example Load from YAML
       #   config = Kreuzberg::Config::Extraction.from_file("config.yaml")
       #
+      # Keys that are allowed in the Extraction config
+      ALLOWED_KEYS = %i[
+        use_cache enable_quality_processing force_ocr ocr chunking
+        language_detection pdf_options image_extraction image_preprocessing
+        postprocessor token_reduction keywords html_options pages
+        max_concurrent_extractions
+      ].freeze
+
+      # Aliases for backward compatibility
+      KEY_ALIASES = {
+        images: :image_extraction
+      }.freeze
+
       def self.from_file(path)
         hash = Kreuzberg._config_from_file_native(path)
-        new(**hash.transform_keys(&:to_sym))
+        new(**normalize_hash_keys(hash))
       end
+
+      # Normalize hash keys from native function
+      # - Converts string keys to symbols
+      # - Maps aliased keys to their canonical names
+      # - Filters out unknown keys
+      def self.normalize_hash_keys(hash)
+        symbolized = hash.transform_keys(&:to_sym)
+
+        # Apply key aliases
+        KEY_ALIASES.each do |from, to|
+          symbolized[to] = symbolized.delete(from) if symbolized.key?(from) && !symbolized.key?(to)
+        end
+
+        # Filter to only allowed keys
+        symbolized.slice(*ALLOWED_KEYS)
+      end
+
+      private_class_method :normalize_hash_keys
 
       # Discover configuration file in current or parent directories.
       #
@@ -755,7 +786,7 @@ module Kreuzberg
         hash = Kreuzberg._config_discover_native
         return nil if hash.nil?
 
-        new(**hash.transform_keys(&:to_sym))
+        new(**normalize_hash_keys(hash))
       end
 
       def initialize(
