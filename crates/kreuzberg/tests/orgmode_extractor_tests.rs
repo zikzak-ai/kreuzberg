@@ -24,9 +24,9 @@ use std::path::PathBuf;
 fn get_test_orgmode_path(filename: &str) -> PathBuf {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     workspace_root.join(format!("test_documents/orgmode/{}", filename))
 }
 

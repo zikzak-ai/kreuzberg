@@ -29,16 +29,16 @@ async fn test_embed_valid_texts() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let embed_response: EmbedResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let embed_response: EmbedResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     assert_eq!(embed_response.count, 2);
     assert_eq!(embed_response.embeddings.len(), 2);
@@ -66,11 +66,11 @@ async fn test_embed_empty_texts() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
@@ -97,16 +97,16 @@ async fn test_embed_with_custom_config() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let embed_response: EmbedResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let embed_response: EmbedResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     assert_eq!(embed_response.count, 1);
     assert_eq!(embed_response.embeddings.len(), 1);
@@ -128,16 +128,16 @@ async fn test_embed_single_text() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let embed_response: EmbedResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let embed_response: EmbedResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     assert_eq!(embed_response.count, 1);
     assert_eq!(embed_response.embeddings.len(), 1);
@@ -160,16 +160,16 @@ async fn test_embed_batch() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let embed_response: EmbedResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let embed_response: EmbedResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     assert_eq!(embed_response.count, 10);
     assert_eq!(embed_response.embeddings.len(), 10);
@@ -198,16 +198,16 @@ async fn test_embed_long_text() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let embed_response: EmbedResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let embed_response: EmbedResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     assert_eq!(embed_response.count, 1);
     assert_eq!(embed_response.embeddings.len(), 1);
@@ -225,10 +225,10 @@ async fn test_embed_malformed_json() {
                 .uri("/embed")
                 .header("content-type", "application/json")
                 .body(Body::from("{invalid json}"))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
@@ -250,16 +250,16 @@ async fn test_embed_deterministic() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response1.status(), StatusCode::OK);
 
-    let body1 = axum::body::to_bytes(response1.into_body(), usize::MAX).await.unwrap();
-    let embed_response1: EmbedResponse = serde_json::from_slice(&body1).unwrap();
+    let body1 = axum::body::to_bytes(response1.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let embed_response1: EmbedResponse = serde_json::from_slice(&body1).expect("Failed to deserialize");
 
     // Second call with same text
     let response2 = app
@@ -268,16 +268,16 @@ async fn test_embed_deterministic() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_body).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_body).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response2.status(), StatusCode::OK);
 
-    let body2 = axum::body::to_bytes(response2.into_body(), usize::MAX).await.unwrap();
-    let embed_response2: EmbedResponse = serde_json::from_slice(&body2).unwrap();
+    let body2 = axum::body::to_bytes(response2.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let embed_response2: EmbedResponse = serde_json::from_slice(&body2).expect("Failed to deserialize");
 
     // Compare embeddings - they should be identical
     assert_eq!(embed_response1.embeddings.len(), embed_response2.embeddings.len());
@@ -307,18 +307,18 @@ async fn test_embed_different_presets() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_fast).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_fast).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response_fast.status(), StatusCode::OK);
 
     let body_fast = axum::body::to_bytes(response_fast.into_body(), usize::MAX)
         .await
-        .unwrap();
-    let embed_fast: EmbedResponse = serde_json::from_slice(&body_fast).unwrap();
+        .expect("Operation failed");
+    let embed_fast: EmbedResponse = serde_json::from_slice(&body_fast).expect("Failed to deserialize");
 
     // Test with "balanced" preset
     let request_balanced = json!({
@@ -337,18 +337,18 @@ async fn test_embed_different_presets() {
                 .method("POST")
                 .uri("/embed")
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_string(&request_balanced).unwrap()))
-                .unwrap(),
+                .body(Body::from(serde_json::to_string(&request_balanced).expect("Operation failed")))
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response_balanced.status(), StatusCode::OK);
 
     let body_balanced = axum::body::to_bytes(response_balanced.into_body(), usize::MAX)
         .await
-        .unwrap();
-    let embed_balanced: EmbedResponse = serde_json::from_slice(&body_balanced).unwrap();
+        .expect("Operation failed");
+    let embed_balanced: EmbedResponse = serde_json::from_slice(&body_balanced).expect("Failed to deserialize");
 
     // Different presets should have different dimensions
     assert_ne!(embed_fast.dimensions, embed_balanced.dimensions);

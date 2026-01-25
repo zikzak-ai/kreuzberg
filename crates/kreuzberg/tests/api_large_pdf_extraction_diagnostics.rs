@@ -93,7 +93,7 @@ startxref
         .expect("Failed to read response body");
 
     let parsed: Value = serde_json::from_slice(&body).expect("Failed to parse response");
-    eprintln!("Extraction result: {}", serde_json::to_string_pretty(&parsed).unwrap());
+    eprintln!("Extraction result: {}", serde_json::to_string_pretty(&parsed).expect("Failed to parse"));
 }
 
 /// Test extracting a 1MB text file (control test without PDF).
@@ -187,7 +187,7 @@ async fn test_find_size_breaking_point() {
                 .expect("Failed to read response body");
 
             if let Ok(parsed) = serde_json::from_slice::<Value>(&body) {
-                eprintln!("Error response: {}", serde_json::to_string_pretty(&parsed).unwrap());
+                eprintln!("Error response: {}", serde_json::to_string_pretty(&parsed).expect("Failed to parse"));
             } else {
                 eprintln!("Response body (not JSON): {}", String::from_utf8_lossy(&body));
             }

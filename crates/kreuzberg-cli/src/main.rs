@@ -63,7 +63,7 @@ use commands::mcp_command;
 #[cfg(feature = "api")]
 use commands::serve_command;
 use commands::{
-    apply_extraction_overrides, batch_command, clear_command, extract_command, load_config, load_config_from_json,
+    apply_extraction_overrides, batch_command, clear_command, extract_command, load_config,
     stats_command,
 };
 use kreuzberg::{OutputFormat as ContentOutputFormat, detect_mime_type};
@@ -442,6 +442,40 @@ fn validate_batch_paths(paths: &[PathBuf]) -> Result<()> {
     Ok(())
 }
 
+/// Merges a JSON value into an existing extraction config.
+///
+/// This function performs a field-by-field merge where JSON fields override
+/// config fields when present. Unspecified fields in the JSON retain their
+/// values from the base config.
+///
+/// # Strategy
+///
+/// For each field in the JSON:
+/// - If present in JSON, override the config value
+/// - If not present in JSON, keep the config value
+/// - This enables partial config updates via CLI flags
+fn merge_json_into_config(base_config: &kreuzberg::ExtractionConfig, json_value: serde_json::Value) -> Result<kreuzberg::ExtractionConfig> {
+    // Serialize base config to JSON
+    let mut config_json = serde_json::to_value(base_config)
+        .context("Failed to serialize base config to JSON")?;
+
+    // Merge JSON value into config JSON (simple recursive merge)
+    // For each key in the provided JSON, override the corresponding key in config JSON
+    if let serde_json::Value::Object(json_obj) = json_value {
+        if let serde_json::Value::Object(ref mut config_obj) = config_json {
+            for (key, value) in json_obj {
+                config_obj.insert(key, value);
+            }
+        }
+    }
+
+    // Deserialize merged JSON back to ExtractionConfig
+    let merged_config: kreuzberg::ExtractionConfig = serde_json::from_value(config_json)
+        .context("Failed to deserialize merged config")?;
+
+    Ok(merged_config)
+}
+
 fn main() -> Result<()> {
     let _ = tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
@@ -474,15 +508,23 @@ fn main() -> Result<()> {
 
             let mut config = load_config(config_path)?;
 
-            // Apply inline JSON config if provided
+            // Apply inline JSON config if provided (merge with file config)
             if let Some(json_str) = config_json {
-                config = load_config_from_json(&json_str).context("Failed to parse --config-json")?;
+                let json_value: serde_json::Value = serde_json::from_str(&json_str)
+                    .context("Failed to parse --config-json as JSON")?;
+                // Merge inline JSON with file config
+                config = merge_json_into_config(&config, json_value)
+                    .context("Failed to merge --config-json with file config")?;
             } else if let Some(base64_str) = config_json_base64 {
                 let json_bytes = STANDARD
                     .decode(&base64_str)
                     .context("Failed to decode base64 in --config-json-base64")?;
                 let json_str = String::from_utf8(json_bytes).context("Base64-decoded content is not valid UTF-8")?;
-                config = load_config_from_json(&json_str).context("Failed to parse decoded --config-json-base64")?;
+                let json_value: serde_json::Value = serde_json::from_str(&json_str)
+                    .context("Failed to parse decoded --config-json-base64 as JSON")?;
+                // Merge inline JSON with file config
+                config = merge_json_into_config(&config, json_value)
+                    .context("Failed to merge --config-json-base64 with file config")?;
             }
 
             apply_extraction_overrides(
@@ -519,15 +561,23 @@ fn main() -> Result<()> {
 
             let mut config = load_config(config_path)?;
 
-            // Apply inline JSON config if provided
+            // Apply inline JSON config if provided (merge with file config)
             if let Some(json_str) = config_json {
-                config = load_config_from_json(&json_str).context("Failed to parse --config-json")?;
+                let json_value: serde_json::Value = serde_json::from_str(&json_str)
+                    .context("Failed to parse --config-json as JSON")?;
+                // Merge inline JSON with file config
+                config = merge_json_into_config(&config, json_value)
+                    .context("Failed to merge --config-json with file config")?;
             } else if let Some(base64_str) = config_json_base64 {
                 let json_bytes = STANDARD
                     .decode(&base64_str)
                     .context("Failed to decode base64 in --config-json-base64")?;
                 let json_str = String::from_utf8(json_bytes).context("Base64-decoded content is not valid UTF-8")?;
-                config = load_config_from_json(&json_str).context("Failed to parse decoded --config-json-base64")?;
+                let json_value: serde_json::Value = serde_json::from_str(&json_str)
+                    .context("Failed to parse decoded --config-json-base64 as JSON")?;
+                // Merge inline JSON with file config
+                config = merge_json_into_config(&config, json_value)
+                    .context("Failed to merge --config-json-base64 with file config")?;
             }
 
             apply_extraction_overrides(

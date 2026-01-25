@@ -492,8 +492,8 @@ fn test_ocr_cache_disabled_then_enabled() {
     }
     assert!(result2.is_ok(), "Second extraction should succeed");
 
-    assert_non_empty_content(&result1.unwrap());
-    assert_non_empty_content(&result2.unwrap());
+    assert_non_empty_content(&result1.expect("Operation failed"));
+    assert_non_empty_content(&result2.expect("Operation failed"));
 }
 
 #[test]
@@ -548,7 +548,7 @@ fn test_ocr_concurrent_same_file() {
         handles.push(handle);
     }
 
-    let successes: usize = handles.into_iter().map(|h| if h.join().unwrap() { 1 } else { 0 }).sum();
+    let successes: usize = handles.into_iter().map(|h| if h.join().expect("Iterator failed") { 1 } else { 0 }).sum();
 
     tracing::debug!("Concurrent processing: {}/5 threads succeeded", successes);
 
@@ -615,7 +615,7 @@ fn test_ocr_concurrent_different_files() {
         handles.push(handle);
     }
 
-    let successes: usize = handles.into_iter().map(|h| if h.join().unwrap() { 1 } else { 0 }).sum();
+    let successes: usize = handles.into_iter().map(|h| if h.join().expect("Iterator failed") { 1 } else { 0 }).sum();
 
     assert_eq!(
         successes, 2,

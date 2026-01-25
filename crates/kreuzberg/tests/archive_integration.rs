@@ -34,7 +34,7 @@ async fn test_zip_basic_extraction() {
     assert!(result.content.contains("Hello from ZIP!"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -54,16 +54,16 @@ async fn test_zip_multiple_files() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("file1.txt", options).unwrap();
-        zip.write_all(b"Content 1").unwrap();
+        zip.start_file("file1.txt", options).expect("Operation failed");
+        zip.write_all(b"Content 1").expect("Operation failed");
 
-        zip.start_file("file2.md", options).unwrap();
-        zip.write_all(b"# Content 2").unwrap();
+        zip.start_file("file2.md", options).expect("Operation failed");
+        zip.write_all(b"# Content 2").expect("Operation failed");
 
-        zip.start_file("file3.json", options).unwrap();
-        zip.write_all(b"{\"key\": \"value\"}").unwrap();
+        zip.start_file("file3.json", options).expect("Operation failed");
+        zip.write_all(b"{\"key\": \"value\"}").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let zip_bytes = cursor.into_inner();
@@ -84,7 +84,7 @@ async fn test_zip_multiple_files() {
     assert!(result.content.contains("value"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -105,16 +105,16 @@ async fn test_zip_nested_directories() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.add_directory("dir1/", options).unwrap();
-        zip.add_directory("dir1/subdir/", options).unwrap();
+        zip.add_directory("dir1/", options).expect("Operation failed");
+        zip.add_directory("dir1/subdir/", options).expect("Operation failed");
 
-        zip.start_file("dir1/file.txt", options).unwrap();
-        zip.write_all(b"File in dir1").unwrap();
+        zip.start_file("dir1/file.txt", options).expect("Operation failed");
+        zip.write_all(b"File in dir1").expect("Operation failed");
 
-        zip.start_file("dir1/subdir/nested.txt", options).unwrap();
-        zip.write_all(b"Nested file").unwrap();
+        zip.start_file("dir1/subdir/nested.txt", options).expect("Operation failed");
+        zip.write_all(b"Nested file").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let zip_bytes = cursor.into_inner();
@@ -134,7 +134,7 @@ async fn test_zip_nested_directories() {
     assert!(result.content.contains("Nested file"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -172,7 +172,7 @@ async fn test_tar_extraction() {
     assert!(result.content.contains("Hello from TAR!"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -202,7 +202,7 @@ async fn test_tar_gz_extraction() {
     assert!(result.content.contains("test.txt"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -242,13 +242,13 @@ async fn test_nested_archive() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("inner.zip", options).unwrap();
-        zip.write_all(&inner_zip).unwrap();
+        zip.start_file("inner.zip", options).expect("Operation failed");
+        zip.write_all(&inner_zip).expect("Operation failed");
 
-        zip.start_file("readme.txt", options).unwrap();
-        zip.write_all(b"This archive contains another archive").unwrap();
+        zip.start_file("readme.txt", options).expect("Operation failed");
+        zip.write_all(b"This archive contains another archive").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let outer_zip_bytes = cursor.into_inner();
@@ -265,7 +265,7 @@ async fn test_nested_archive() {
     assert!(result.content.contains("This archive contains another archive"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -284,19 +284,19 @@ async fn test_archive_mixed_formats() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("document.txt", options).unwrap();
-        zip.write_all(b"Text document").unwrap();
+        zip.start_file("document.txt", options).expect("Operation failed");
+        zip.write_all(b"Text document").expect("Operation failed");
 
-        zip.start_file("readme.md", options).unwrap();
-        zip.write_all(b"# README").unwrap();
+        zip.start_file("readme.md", options).expect("Operation failed");
+        zip.write_all(b"# README").expect("Operation failed");
 
-        zip.start_file("image.png", options).unwrap();
-        zip.write_all(&[0x89, 0x50, 0x4E, 0x47]).unwrap();
+        zip.start_file("image.png", options).expect("Operation failed");
+        zip.write_all(&[0x89, 0x50, 0x4E, 0x47]).expect("Operation failed");
 
-        zip.start_file("document.pdf", options).unwrap();
-        zip.write_all(b"%PDF-1.4").unwrap();
+        zip.start_file("document.pdf", options).expect("Operation failed");
+        zip.write_all(b"%PDF-1.4").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let zip_bytes = cursor.into_inner();
@@ -317,7 +317,7 @@ async fn test_archive_mixed_formats() {
     assert!(result.content.contains("# README"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -373,11 +373,11 @@ async fn test_large_archive() {
         let options = FileOptions::<'_, ()>::default();
 
         for i in 0..100 {
-            zip.start_file(format!("file_{}.txt", i), options).unwrap();
-            zip.write_all(format!("Content {}", i).as_bytes()).unwrap();
+            zip.start_file(format!("file_{}.txt", i), options).expect("Operation failed");
+            zip.write_all(format!("Content {}", i).as_bytes()).expect("Failed to convert to bytes");
         }
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let zip_bytes = cursor.into_inner();
@@ -390,7 +390,7 @@ async fn test_large_archive() {
     assert!(result.tables.is_empty(), "Archive should not have tables");
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -418,16 +418,16 @@ async fn test_archive_with_special_characters() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("测试文件.txt", options).unwrap();
-        zip.write_all("Unicode content".as_bytes()).unwrap();
+        zip.start_file("测试文件.txt", options).expect("Operation failed");
+        zip.write_all("Unicode content".as_bytes()).expect("Failed to convert to bytes");
 
-        zip.start_file("file with spaces.txt", options).unwrap();
-        zip.write_all(b"Spaces in filename").unwrap();
+        zip.start_file("file with spaces.txt", options).expect("Operation failed");
+        zip.write_all(b"Spaces in filename").expect("Operation failed");
 
-        zip.start_file("file-with-dashes.txt", options).unwrap();
-        zip.write_all(b"Dashes").unwrap();
+        zip.start_file("file-with-dashes.txt", options).expect("Operation failed");
+        zip.write_all(b"Dashes").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let zip_bytes = cursor.into_inner();
@@ -444,7 +444,7 @@ async fn test_archive_with_special_characters() {
     assert!(result.content.contains("file-with-dashes.txt"));
 
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -463,7 +463,7 @@ async fn test_empty_archive() {
     let mut cursor = Cursor::new(Vec::new());
     {
         let zip = ZipWriter::new(&mut cursor);
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let zip_bytes = cursor.into_inner();
@@ -477,7 +477,7 @@ async fn test_empty_archive() {
 
     assert!(result.content.contains("ZIP Archive"));
     assert!(result.metadata.format.is_some());
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -503,7 +503,7 @@ fn test_archive_extraction_sync() {
     assert!(result.content.contains("Hello from ZIP!"));
 
     assert!(result.metadata.format.is_some(), "Should have archive metadata");
-    let archive_meta = match result.metadata.format.as_ref().unwrap() {
+    let archive_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Archive(meta) => meta,
         _ => panic!("Expected Archive metadata"),
     };
@@ -519,10 +519,10 @@ fn create_simple_zip() -> Vec<u8> {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("test.txt", options).unwrap();
-        zip.write_all(b"Hello from ZIP!").unwrap();
+        zip.start_file("test.txt", options).expect("Operation failed");
+        zip.write_all(b"Hello from ZIP!").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
     cursor.into_inner()
 }
@@ -534,12 +534,12 @@ fn create_simple_tar() -> Vec<u8> {
 
         let data = b"Hello from TAR!";
         let mut header = tar::Header::new_gnu();
-        header.set_path("test.txt").unwrap();
+        header.set_path("test.txt").expect("Operation failed");
         header.set_size(data.len() as u64);
         header.set_cksum();
-        tar.append(&header, &data[..]).unwrap();
+        tar.append(&header, &data[..]).expect("Operation failed");
 
-        tar.finish().unwrap();
+        tar.finish().expect("Operation failed");
     }
     cursor.into_inner()
 }

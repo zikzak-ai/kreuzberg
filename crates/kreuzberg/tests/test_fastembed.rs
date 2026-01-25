@@ -26,7 +26,7 @@ async fn test_fastembed_embedding_generation() {
     let result = model.embed(texts.clone(), None);
     assert!(result.is_ok(), "Failed to generate embeddings: {:?}", result.err());
 
-    let embeddings = result.unwrap();
+    let embeddings = result.expect("Operation failed");
     assert_eq!(embeddings.len(), 3, "Expected 3 embeddings");
 
     for (i, embedding) in embeddings.iter().enumerate() {
@@ -64,7 +64,7 @@ async fn test_fastembed_batch_processing() {
 
     assert!(result.is_ok(), "Batch embedding failed: {:?}", result.err());
 
-    let embeddings = result.unwrap();
+    let embeddings = result.expect("Operation failed");
     assert_eq!(embeddings.len(), 50, "Expected 50 embeddings");
 
     println!(
@@ -96,7 +96,7 @@ async fn test_fastembed_different_models() {
                 let result = m.embed(test_text.clone(), None);
                 assert!(result.is_ok(), "Failed to generate embedding for {}", description);
 
-                let embeddings = result.unwrap();
+                let embeddings = result.expect("Operation failed");
                 assert_eq!(embeddings.len(), 1);
                 assert_eq!(
                     embeddings[0].len(),
@@ -197,7 +197,7 @@ async fn test_generate_embeddings_for_chunks_basic() {
     for (i, chunk) in chunks.iter().enumerate() {
         assert!(chunk.embedding.is_some(), "Chunk {} missing embedding", i);
 
-        let embedding = chunk.embedding.as_ref().unwrap();
+        let embedding = chunk.embedding.as_ref().expect("Operation failed");
         assert_eq!(embedding.len(), 384, "Chunk {} has wrong embedding dimensions", i);
 
         let sum: f32 = embedding.iter().sum();
@@ -269,8 +269,8 @@ async fn test_generate_embeddings_for_chunks_normalization() {
 
     generate_embeddings_for_chunks(&mut chunks_norm, &config_norm).expect("Failed to generate normalized embeddings");
 
-    let embedding_no_norm = chunks_no_norm[0].embedding.as_ref().unwrap();
-    let embedding_norm = chunks_norm[0].embedding.as_ref().unwrap();
+    let embedding_no_norm = chunks_no_norm[0].embedding.as_ref().expect("Operation failed");
+    let embedding_norm = chunks_norm[0].embedding.as_ref().expect("Operation failed");
 
     let magnitude_no_norm: f32 = embedding_no_norm.iter().map(|x| x * x).sum::<f32>().sqrt();
     let magnitude_norm: f32 = embedding_norm.iter().map(|x| x * x).sum::<f32>().sqrt();
@@ -560,7 +560,7 @@ async fn test_generate_embeddings_for_chunks_batch_size() {
             i
         );
         assert_eq!(
-            chunk.embedding.as_ref().unwrap().len(),
+            chunk.embedding.as_ref().expect("Operation failed").len(),
             384,
             "Chunk {} has wrong dimensions",
             i
@@ -612,7 +612,7 @@ async fn test_generate_embeddings_chunking_integration() {
     for (i, chunk) in chunking_result.chunks.iter().enumerate() {
         assert!(chunk.embedding.is_some(), "Chunk {} missing embedding", i);
 
-        let embedding = chunk.embedding.as_ref().unwrap();
+        let embedding = chunk.embedding.as_ref().expect("Operation failed");
         assert_eq!(embedding.len(), 384, "Chunk {} has wrong embedding dimensions", i);
 
         let magnitude: f32 = embedding.iter().map(|x| x * x).sum::<f32>().sqrt();

@@ -174,6 +174,12 @@ func ConfigMerge(base, override *ExtractionConfig) error {
 	if override.MaxConcurrentExtractions != nil {
 		base.MaxConcurrentExtractions = override.MaxConcurrentExtractions
 	}
+	if override.OutputFormat != "" {
+		base.OutputFormat = override.OutputFormat
+	}
+	if override.ResultFormat != "" {
+		base.ResultFormat = override.ResultFormat
+	}
 
 	return nil
 }

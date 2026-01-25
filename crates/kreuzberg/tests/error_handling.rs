@@ -187,7 +187,7 @@ async fn test_very_large_file() {
     let result = extract_bytes(large_bytes, "text/plain", &config).await;
 
     assert!(result.is_ok(), "Large file should be processed successfully");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Large file content should not be empty");
     assert!(extraction.content.len() > 1_000_000, "Content should be large");
@@ -213,12 +213,12 @@ async fn test_unicode_filenames() {
     let config = ExtractionConfig::default();
 
     let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-    temp_file.write_all(b"Test content with Unicode filename.").unwrap();
+    temp_file.write_all(b"Test content with Unicode filename.").expect("Operation failed");
 
     let result = extract_file(temp_file.path(), Some("text/plain"), &config).await;
 
     assert!(result.is_ok(), "Unicode filename should be handled");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         extraction.content.contains("Test content"),
@@ -249,7 +249,7 @@ Math symbols: ∑ ∫ √ ≈ ∞";
     let result = extract_bytes(special_text.as_bytes(), "text/plain", &config).await;
 
     assert!(result.is_ok(), "Special characters should be handled");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
     assert!(extraction.content.len() > 10, "Should have substantial content");
@@ -319,17 +319,17 @@ async fn test_permission_denied() {
     let config = ExtractionConfig::default();
 
     let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-    temp_file.write_all(b"Test content").unwrap();
+    temp_file.write_all(b"Test content").expect("Operation failed");
 
-    let mut perms = fs::metadata(temp_file.path()).unwrap().permissions();
+    let mut perms = fs::metadata(temp_file.path()).expect("Operation failed").permissions();
     perms.set_mode(0o000);
-    fs::set_permissions(temp_file.path(), perms).unwrap();
+    fs::set_permissions(temp_file.path(), perms).expect("Operation failed");
 
     let result = extract_file(temp_file.path(), Some("text/plain"), &config).await;
 
-    let mut perms = fs::metadata(temp_file.path()).unwrap().permissions();
+    let mut perms = fs::metadata(temp_file.path()).expect("Operation failed").permissions();
     perms.set_mode(0o644);
-    fs::set_permissions(temp_file.path(), perms).unwrap();
+    fs::set_permissions(temp_file.path(), perms).expect("Operation failed");
 
     assert!(result.is_err(), "Permission denied should return error");
 }
@@ -356,7 +356,7 @@ async fn test_null_bytes_in_content() {
     let result = extract_bytes(data_with_nulls, "text/plain", &config).await;
 
     assert!(result.is_ok(), "Null bytes should be handled");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
     assert!(
@@ -388,7 +388,7 @@ async fn test_concurrent_extractions() {
         let result = handle.await.expect("Task should complete");
         assert!(result.is_ok(), "Concurrent extraction should succeed");
 
-        let extraction = result.unwrap();
+        let extraction = result.expect("Operation failed");
         assert!(
             extraction.content.contains("Concurrent extraction"),
             "Content should be extracted correctly"

@@ -31,11 +31,11 @@ fn test_archive_zip_bomb_detection() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("large.txt", options).unwrap();
+        zip.start_file("large.txt", options).expect("Operation failed");
         let zeros = vec![0u8; 10 * 1024 * 1024];
-        zip.write_all(&zeros).unwrap();
+        zip.write_all(&zeros).expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let bytes = cursor.into_inner();
@@ -57,10 +57,10 @@ fn test_archive_path_traversal_zip() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("../../etc/passwd", options).unwrap();
-        zip.write_all(b"malicious content").unwrap();
+        zip.start_file("../../etc/passwd", options).expect("Operation failed");
+        zip.write_all(b"malicious content").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let bytes = cursor.into_inner();
@@ -97,10 +97,10 @@ fn test_archive_absolute_paths_rejected() {
         let mut zip = ZipWriter::new(&mut cursor);
         let options = FileOptions::<'_, ()>::default();
 
-        zip.start_file("/tmp/malicious.txt", options).unwrap();
-        zip.write_all(b"malicious content").unwrap();
+        zip.start_file("/tmp/malicious.txt", options).expect("Operation failed");
+        zip.write_all(b"malicious content").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let bytes = cursor.into_inner();
@@ -125,10 +125,10 @@ fn test_archive_deeply_nested_directories() {
         let deep_path = (0..100).map(|i| format!("dir{}", i)).collect::<Vec<_>>().join("/");
         let file_path = format!("{}/file.txt", deep_path);
 
-        zip.start_file(&file_path, options).unwrap();
-        zip.write_all(b"deep content").unwrap();
+        zip.start_file(&file_path, options).expect("Operation failed");
+        zip.write_all(b"deep content").expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let bytes = cursor.into_inner();
@@ -149,11 +149,11 @@ fn test_archive_many_small_files() {
         let options = FileOptions::<'_, ()>::default();
 
         for i in 0..1000 {
-            zip.start_file(format!("file{}.txt", i), options).unwrap();
-            zip.write_all(b"small content").unwrap();
+            zip.start_file(format!("file{}.txt", i), options).expect("Operation failed");
+            zip.write_all(b"small content").expect("Operation failed");
         }
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     let bytes = cursor.into_inner();
@@ -404,13 +404,13 @@ fn test_security_directory_instead_of_file() {
 
 #[test]
 fn test_security_special_file_handling() {
-    let mut tmpfile = NamedTempFile::new().unwrap();
-    tmpfile.write_all(b"test content").unwrap();
-    tmpfile.flush().unwrap();
+    let mut tmpfile = NamedTempFile::new().expect("Operation failed");
+    tmpfile.write_all(b"test content").expect("Operation failed");
+    tmpfile.flush().expect("Operation failed");
     let path = tmpfile.path();
 
     let config = ExtractionConfig::default();
-    let result = extract_file_sync(path.to_str().unwrap(), None, &config);
+    let result = extract_file_sync(path.to_str().expect("Operation failed"), None, &config);
 
     assert!(result.is_ok() || result.is_err());
 }

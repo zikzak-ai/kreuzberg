@@ -17,7 +17,7 @@ struct SpanCollector {
 
 impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for SpanCollector {
     fn on_new_span(&self, attrs: &Attributes<'_>, _id: &Id, _ctx: Context<'_, S>) {
-        self.spans.lock().unwrap().push(attrs.metadata().name().to_string());
+        self.spans.lock().expect("Operation failed").push(attrs.metadata().name().to_string());
     }
 }
 
@@ -32,21 +32,21 @@ async fn test_cache_instrumentation() {
     let subscriber = tracing_subscriber::registry().with(collector);
     let _guard = tracing::subscriber::set_default(subscriber);
 
-    let temp_dir = tempdir().unwrap();
+    let temp_dir = tempdir().expect("Operation failed");
     let cache = GenericCache::new(
         "test".to_string(),
-        Some(temp_dir.path().to_str().unwrap().to_string()),
+        Some(temp_dir.path().to_str().expect("Operation failed").to_string()),
         30.0,
         500.0,
         1000.0,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    cache.set("test_key", b"test data".to_vec(), None).unwrap();
+    cache.set("test_key", b"test data".to_vec(), None).expect("Operation failed");
 
-    let _ = cache.get("test_key", None).unwrap();
+    let _ = cache.get("test_key", None).expect("Value not found");
 
-    let span_names = spans.lock().unwrap();
+    let span_names = spans.lock().expect("Operation failed");
     assert!(span_names.contains(&"set".to_string()), "Expected 'set' span");
     assert!(span_names.contains(&"get".to_string()), "Expected 'get' span");
 }
@@ -64,13 +64,13 @@ async fn test_ocr_instrumentation() {
     let subscriber = tracing_subscriber::registry().with(collector);
     let _guard = tracing::subscriber::set_default(subscriber);
 
-    let temp_dir = tempdir().unwrap();
-    let processor = OcrProcessor::new(Some(temp_dir.path().to_path_buf())).unwrap();
+    let temp_dir = tempdir().expect("Operation failed");
+    let processor = OcrProcessor::new(Some(temp_dir.path().to_path_buf())).expect("Operation failed");
 
     let mut test_image = Vec::new();
     let img = image::ImageBuffer::from_fn(1, 1, |_, _| image::Rgb([255u8, 255u8, 255u8]));
     img.write_to(&mut std::io::Cursor::new(&mut test_image), image::ImageFormat::Png)
-        .unwrap();
+        .expect("Operation failed");
 
     let config = TesseractConfig {
         output_format: "text".to_string(),
@@ -80,7 +80,7 @@ async fn test_ocr_instrumentation() {
 
     let _ = processor.process_image(&test_image, &config);
 
-    let span_names = spans.lock().unwrap();
+    let span_names = spans.lock().expect("Operation failed");
     assert!(
         span_names.contains(&"process_image".to_string()),
         "Expected 'process_image' span"
@@ -101,7 +101,7 @@ async fn test_registry_instrumentation() {
 
     let _ = registry.get("application/pdf");
 
-    let span_names = spans.lock().unwrap();
+    let span_names = spans.lock().expect("Operation failed");
     assert!(
         span_names.contains(&"get".to_string()),
         "Expected 'get' span from registry"
@@ -125,7 +125,7 @@ async fn test_span_hierarchy() {
 
     let _ = extract_bytes(test_content, "text/plain", &config).await;
 
-    let span_names = spans.lock().unwrap();
+    let span_names = spans.lock().expect("Operation failed");
     assert!(
         span_names.contains(&"extract_bytes".to_string()),
         "Expected 'extract_bytes' span"

@@ -26,10 +26,10 @@ async fn test_chunk_basic() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 }
@@ -44,10 +44,10 @@ async fn test_chunk_empty_text_returns_400() {
                 .method("POST")
                 .header("content-type", "application/json")
                 .body(Body::from(json!({"text": ""}).to_string()))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
@@ -68,10 +68,10 @@ async fn test_chunk_markdown_strategy() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 }
@@ -99,15 +99,15 @@ async fn test_chunk_response_structure() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let chunk_response: ChunkResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let chunk_response: ChunkResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     // Verify response structure
     assert!(chunk_response.chunk_count > 0);
@@ -143,10 +143,10 @@ async fn test_chunk_invalid_strategy_returns_400() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
@@ -168,15 +168,15 @@ async fn test_chunk_with_defaults() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let chunk_response: ChunkResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let chunk_response: ChunkResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     // Verify defaults are applied
     assert_eq!(chunk_response.config.max_characters, 2000);
@@ -195,10 +195,10 @@ async fn test_chunk_malformed_json_returns_400() {
                 .method("POST")
                 .header("content-type", "application/json")
                 .body(Body::from("{invalid json}"))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
@@ -221,15 +221,15 @@ async fn test_chunk_case_insensitive_chunker_type() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let chunk_response: ChunkResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let chunk_response: ChunkResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     // Verify it's normalized to lowercase
     assert_eq!(chunk_response.chunker_type, "markdown");
@@ -258,15 +258,15 @@ async fn test_chunk_long_text() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let chunk_response: ChunkResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let chunk_response: ChunkResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     // Should have multiple chunks
     assert!(chunk_response.chunk_count > 1);
@@ -296,15 +296,15 @@ async fn test_chunk_custom_config() {
                     })
                     .to_string(),
                 ))
-                .unwrap(),
+                .expect("Operation failed"),
         )
         .await
-        .unwrap();
+        .expect("Operation failed");
 
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
-    let chunk_response: ChunkResponse = serde_json::from_slice(&body).unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.expect("Failed to convert to bytes");
+    let chunk_response: ChunkResponse = serde_json::from_slice(&body).expect("Failed to deserialize");
 
     // Verify custom config was applied
     assert_eq!(chunk_response.config.max_characters, 30);

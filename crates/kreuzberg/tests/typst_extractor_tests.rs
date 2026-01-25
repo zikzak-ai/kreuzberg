@@ -56,7 +56,7 @@ async fn test_simple_typst_document_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert_eq!(extraction.mime_type, "text/x-typst", "MIME type should be preserved");
 
@@ -145,7 +145,7 @@ async fn test_minimal_typst_document_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         !extraction.content.is_empty(),
@@ -189,7 +189,7 @@ async fn test_heading_hierarchy_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Document should extract content");
 
@@ -269,7 +269,7 @@ async fn test_metadata_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     if let Some(title) = extraction.metadata.additional.get("title") {
         assert!(
@@ -330,7 +330,7 @@ async fn test_advanced_typst_document_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         extraction.metadata.additional.contains_key("title"),
@@ -411,7 +411,7 @@ async fn test_typst_reader_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         !extraction.content.is_empty(),
@@ -454,7 +454,7 @@ async fn test_undergradmath_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         !extraction.content.is_empty(),
@@ -534,7 +534,7 @@ async fn test_formatting_preservation() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         extraction.content.contains("*") || extraction.content.contains("bold"),
@@ -576,7 +576,7 @@ async fn test_large_document_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         !extraction.content.is_empty(),

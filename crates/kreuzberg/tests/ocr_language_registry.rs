@@ -120,7 +120,7 @@ fn test_registry_singleton_behavior() {
 #[test]
 fn test_easyocr_special_languages() {
     let registry = LanguageRegistry::new();
-    let languages = registry.get_supported_languages("easyocr").unwrap();
+    let languages = registry.get_supported_languages("easyocr").expect("Operation failed");
 
     let special_langs = vec!["ch_sim", "ch_tra", "rs_cyrillic", "rs_latin"];
 

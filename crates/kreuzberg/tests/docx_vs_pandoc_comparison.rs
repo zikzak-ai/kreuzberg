@@ -10,9 +10,9 @@ use kreuzberg::plugins::DocumentExtractor;
 async fn test_docx_kreuzberg_vs_pandoc_comparison() {
     let docx_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .join("test_documents/documents/word_sample.docx");
 
     if !docx_path.exists() {
@@ -319,9 +319,9 @@ Here are some interesting things a respectful duck could eat:
 async fn test_docx_lorem_ipsum_comparison() {
     let docx_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .join("test_documents/documents/lorem_ipsum.docx");
 
     if !docx_path.exists() {

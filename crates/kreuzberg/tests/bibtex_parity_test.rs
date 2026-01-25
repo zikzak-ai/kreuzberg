@@ -65,7 +65,7 @@ async fn test_all_entry_types() {
             .await;
 
         assert!(result.is_ok(), "Failed to parse {} entry", expected_type);
-        let result = result.unwrap();
+        let result = result.expect("Operation failed");
 
         if let Some(entry_types) = result.metadata.additional.get("entry_types") {
             assert!(entry_types.as_object().is_some(), "Entry types should be an object");
@@ -116,7 +116,7 @@ async fn test_all_common_fields() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     let content = &result.content;
 
@@ -183,7 +183,7 @@ async fn test_author_parsing() {
             .await;
 
         assert!(result.is_ok());
-        let result = result.unwrap();
+        let result = result.expect("Operation failed");
 
         if let Some(authors) = result.metadata.additional.get("authors") {
             let authors_array = authors.as_array().expect("Authors should be an array");
@@ -221,7 +221,7 @@ async fn test_special_characters() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     assert_eq!(
         result.metadata.additional.get("entry_count"),
@@ -250,7 +250,7 @@ async fn test_year_range_extraction() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     if let Some(year_range) = result.metadata.additional.get("year_range") {
         assert_eq!(year_range.get("min"), Some(&serde_json::json!(1990)));
@@ -281,7 +281,7 @@ async fn test_citation_keys_extraction() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     if let Some(citation_keys) = result.metadata.additional.get("citation_keys") {
         let keys_array = citation_keys.as_array().expect("Citation keys should be an array");
@@ -316,7 +316,7 @@ async fn test_entry_type_distribution() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     if let Some(entry_types) = result.metadata.additional.get("entry_types") {
         let types_obj = entry_types.as_object().expect("Entry types should be an object");
@@ -348,7 +348,7 @@ async fn test_unicode_support() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     assert_eq!(
         result.metadata.additional.get("entry_count"),
@@ -376,7 +376,7 @@ async fn test_empty_fields() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert_eq!(
         result.metadata.additional.get("entry_count"),
         Some(&serde_json::json!(1))
@@ -397,7 +397,7 @@ async fn test_comprehensive_file() {
         .await;
 
     assert!(result.is_ok());
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     assert_eq!(
         result.metadata.additional.get("entry_count"),

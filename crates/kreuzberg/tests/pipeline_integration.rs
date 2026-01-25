@@ -146,7 +146,7 @@ async fn test_pipeline_empty_no_processors() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "original content");
 }
 
@@ -174,9 +174,9 @@ async fn test_pipeline_single_processor_per_stage() {
             stage: ProcessingStage::Late,
         });
 
-        reg.register(early, 50).unwrap();
-        reg.register(middle, 50).unwrap();
-        reg.register(late, 50).unwrap();
+        reg.register(early, 50).expect("Operation failed");
+        reg.register(middle, 50).expect("Operation failed");
+        reg.register(late, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -193,7 +193,7 @@ async fn test_pipeline_single_processor_per_stage() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start[early][middle][late]");
 }
 
@@ -221,9 +221,9 @@ async fn test_pipeline_multiple_processors_per_stage() {
             stage: ProcessingStage::Early,
         });
 
-        reg.register(early_low, 10).unwrap();
-        reg.register(early_high, 100).unwrap();
-        reg.register(early_medium, 50).unwrap();
+        reg.register(early_low, 10).expect("Operation failed");
+        reg.register(early_high, 100).expect("Operation failed");
+        reg.register(early_medium, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -240,7 +240,7 @@ async fn test_pipeline_multiple_processors_per_stage() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start[early-high][early-medium][early-low]");
 }
 
@@ -260,7 +260,7 @@ async fn test_pipeline_all_stages_enabled() {
                 name: format!("{:?}", stage),
                 stage,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -278,7 +278,7 @@ async fn test_pipeline_all_stages_enabled() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start[Early][Middle][Late]");
 }
 
@@ -297,7 +297,7 @@ async fn test_pipeline_postprocessing_disabled() {
             name: "processor".to_string(),
             stage: ProcessingStage::Early,
         });
-        reg.register(processor, 50).unwrap();
+        reg.register(processor, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -323,7 +323,7 @@ async fn test_pipeline_postprocessing_disabled() {
         ..Default::default()
     };
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start");
 }
 
@@ -347,8 +347,8 @@ async fn test_pipeline_early_stage_runs_first() {
             stage: ProcessingStage::Early,
         });
 
-        reg.register(late, 50).unwrap();
-        reg.register(early, 50).unwrap();
+        reg.register(late, 50).expect("Operation failed");
+        reg.register(early, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -365,7 +365,7 @@ async fn test_pipeline_early_stage_runs_first() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start[early][late]");
 }
 
@@ -389,8 +389,8 @@ async fn test_pipeline_middle_stage_runs_second() {
             stage: ProcessingStage::Middle,
         });
 
-        reg.register(middle, 50).unwrap();
-        reg.register(early, 50).unwrap();
+        reg.register(middle, 50).expect("Operation failed");
+        reg.register(early, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -407,7 +407,7 @@ async fn test_pipeline_middle_stage_runs_second() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start[early][middle]");
 }
 
@@ -427,7 +427,7 @@ async fn test_pipeline_late_stage_runs_last() {
                 name: format!("{:?}", stage),
                 stage,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -445,7 +445,7 @@ async fn test_pipeline_late_stage_runs_last() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start[Early][Middle][Late]");
 }
 
@@ -465,7 +465,7 @@ async fn test_pipeline_within_stage_priority_order() {
                 name: name.to_string(),
                 stage: ProcessingStage::Early,
             });
-            reg.register(processor, priority).unwrap();
+            reg.register(processor, priority).expect("Operation failed");
         }
     }
 
@@ -483,7 +483,7 @@ async fn test_pipeline_within_stage_priority_order() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start[p1][p4][p3][p2]");
 }
 
@@ -523,7 +523,7 @@ async fn test_pipeline_cross_stage_data_flow() {
         impl PostProcessor for MiddleProcessor {
             async fn process(&self, result: &mut ExtractionResult, _: &ExtractionConfig) -> Result<()> {
                 if let Some(stage) = result.metadata.additional.get("stage") {
-                    result.content.push_str(&format!("[saw:{}]", stage.as_str().unwrap()));
+                    result.content.push_str(&format!("[saw:{}]", stage.as_str().expect("Failed to extract string from value")));
                 }
                 Ok(())
             }
@@ -532,8 +532,8 @@ async fn test_pipeline_cross_stage_data_flow() {
             }
         }
 
-        reg.register(early, 50).unwrap();
-        reg.register(Arc::new(MiddleProcessor), 50).unwrap();
+        reg.register(early, 50).expect("Operation failed");
+        reg.register(Arc::new(MiddleProcessor), 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -550,7 +550,7 @@ async fn test_pipeline_cross_stage_data_flow() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert!(processed.content.contains("[saw:early]"));
 }
 
@@ -592,7 +592,7 @@ async fn test_pipeline_early_stage_error_recorded() {
         let mut reg = registry
             .write()
             .expect("Failed to acquire write lock on registry in test");
-        reg.register(Arc::new(EarlyFailingProcessor), 50).unwrap();
+        reg.register(Arc::new(EarlyFailingProcessor), 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -636,7 +636,7 @@ async fn test_pipeline_middle_stage_error_propagation() {
             error_message: "Middle stage error".to_string(),
         });
 
-        reg.register(failing, 50).unwrap();
+        reg.register(failing, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -709,8 +709,8 @@ async fn test_pipeline_late_stage_error_doesnt_affect_earlier_stages() {
         });
         let late_failing = Arc::new(LateFailingProcessor);
 
-        reg.register(early, 50).unwrap();
-        reg.register(late_failing, 50).unwrap();
+        reg.register(early, 50).expect("Operation failed");
+        reg.register(late_failing, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -792,15 +792,15 @@ async fn test_pipeline_processor_error_doesnt_stop_other_processors() {
             }
         }
 
-        reg.register(p1, 100).unwrap();
+        reg.register(p1, 100).expect("Operation failed");
         reg.register(
             Arc::new(EarlyFailingProcessor {
                 name: "p2-failing".to_string(),
             }),
             50,
         )
-        .unwrap();
-        reg.register(p3, 50).unwrap();
+        .expect("Operation failed");
+        reg.register(p3, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -879,7 +879,7 @@ async fn test_pipeline_multiple_processor_errors() {
                 name: name.to_string(),
                 stage,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -924,7 +924,7 @@ async fn test_pipeline_error_context_preservation() {
             error_message: "Detailed error message with context".to_string(),
         });
 
-        reg.register(failing, 50).unwrap();
+        reg.register(failing, 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -997,8 +997,8 @@ async fn test_pipeline_metadata_added_in_early_visible_in_middle() {
             }
         }
 
-        reg.register(early, 50).unwrap();
-        reg.register(Arc::new(MiddleReadingProcessor), 50).unwrap();
+        reg.register(early, 50).expect("Operation failed");
+        reg.register(Arc::new(MiddleReadingProcessor), 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -1015,15 +1015,15 @@ async fn test_pipeline_metadata_added_in_early_visible_in_middle() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(
         processed
             .metadata
             .additional
             .get("middle_saw")
-            .unwrap()
+            .expect("Operation failed")
             .as_str()
-            .unwrap(),
+            .expect("Operation failed"),
         "early_value"
     );
 }
@@ -1070,8 +1070,8 @@ async fn test_pipeline_content_modified_in_middle_visible_in_late() {
             }
         }
 
-        reg.register(middle, 50).unwrap();
-        reg.register(Arc::new(LateReadingProcessor), 50).unwrap();
+        reg.register(middle, 50).expect("Operation failed");
+        reg.register(Arc::new(LateReadingProcessor), 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -1088,7 +1088,7 @@ async fn test_pipeline_content_modified_in_middle_visible_in_late() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert!(processed.content.contains("[middle-content]"));
     assert!(processed.content.contains("[late-saw-middle]"));
 }
@@ -1141,7 +1141,7 @@ async fn test_pipeline_multiple_processors_modifying_same_metadata() {
                 name: format!("proc{}", i),
                 value: format!("value{}", i),
             });
-            reg.register(processor, 100 - i * 10).unwrap();
+            reg.register(processor, 100 - i * 10).expect("Operation failed");
         }
     }
 
@@ -1159,15 +1159,15 @@ async fn test_pipeline_multiple_processors_modifying_same_metadata() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(
         processed
             .metadata
             .additional
             .get("shared_key")
-            .unwrap()
+            .expect("Operation failed")
             .as_str()
-            .unwrap(),
+            .expect("Operation failed"),
         "value3"
     );
 }
@@ -1231,7 +1231,7 @@ async fn test_pipeline_processors_reading_previous_output() {
                 name: name.to_string(),
                 stage,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -1249,8 +1249,8 @@ async fn test_pipeline_processors_reading_previous_output() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
-    assert_eq!(processed.metadata.additional.get("count").unwrap().as_i64().unwrap(), 4);
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
+    assert_eq!(processed.metadata.additional.get("count").expect("Operation failed").as_i64().expect("Operation failed"), 4);
 }
 
 #[tokio::test]
@@ -1289,7 +1289,7 @@ async fn test_pipeline_large_content_modification() {
         let mut reg = registry
             .write()
             .expect("Failed to acquire write lock on registry in test");
-        reg.register(Arc::new(LargeContentProcessor), 50).unwrap();
+        reg.register(Arc::new(LargeContentProcessor), 50).expect("Operation failed");
     }
 
     let result = ExtractionResult {
@@ -1306,7 +1306,7 @@ async fn test_pipeline_large_content_modification() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert!(processed.content.len() > 10000);
 }
 
@@ -1326,7 +1326,7 @@ async fn test_pipeline_enabled_processors_whitelist() {
                 name: name.to_string(),
                 stage: ProcessingStage::Early,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -1353,7 +1353,7 @@ async fn test_pipeline_enabled_processors_whitelist() {
         ..Default::default()
     };
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert!(processed.content.contains("[proc1]"));
     assert!(!processed.content.contains("[proc2]"));
     assert!(processed.content.contains("[proc3]"));
@@ -1375,7 +1375,7 @@ async fn test_pipeline_disabled_processors_blacklist() {
                 name: name.to_string(),
                 stage: ProcessingStage::Early,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -1402,7 +1402,7 @@ async fn test_pipeline_disabled_processors_blacklist() {
         ..Default::default()
     };
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert!(processed.content.contains("[proc1]"));
     assert!(!processed.content.contains("[proc2]"));
     assert!(processed.content.contains("[proc3]"));
@@ -1424,7 +1424,7 @@ async fn test_pipeline_no_filtering_runs_all() {
                 name: name.to_string(),
                 stage: ProcessingStage::Early,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -1442,7 +1442,7 @@ async fn test_pipeline_no_filtering_runs_all() {
     };
     let config = ExtractionConfig::default();
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert!(processed.content.contains("[proc1]"));
     assert!(processed.content.contains("[proc2]"));
     assert!(processed.content.contains("[proc3]"));
@@ -1464,7 +1464,7 @@ async fn test_pipeline_empty_whitelist_runs_none() {
                 name: name.to_string(),
                 stage: ProcessingStage::Early,
             });
-            reg.register(processor, 50).unwrap();
+            reg.register(processor, 50).expect("Operation failed");
         }
     }
 
@@ -1491,6 +1491,6 @@ async fn test_pipeline_empty_whitelist_runs_none() {
         ..Default::default()
     };
 
-    let processed = run_pipeline(result, &config).await.unwrap();
+    let processed = run_pipeline(result, &config).await.expect("Async operation failed");
     assert_eq!(processed.content, "start");
 }

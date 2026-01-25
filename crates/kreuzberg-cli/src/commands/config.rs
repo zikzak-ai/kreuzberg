@@ -73,6 +73,7 @@ pub fn load_config(config_path: Option<PathBuf>) -> Result<ExtractionConfig> {
 /// # Ok(())
 /// # }
 /// ```
+#[allow(dead_code)]
 pub fn load_config_from_json(json_str: &str) -> Result<ExtractionConfig> {
     let config: ExtractionConfig = serde_json::from_str(json_str)
         .context("Invalid JSON configuration. Ensure the JSON is valid and matches the ExtractionConfig schema.")?;

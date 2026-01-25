@@ -121,23 +121,23 @@ fn test_extraction_config_values_are_correct_types() {
 
     // Verify field types
     assert!(
-        json.get("use_cache").unwrap().is_boolean(),
+        json.get("use_cache").expect("Value not found").is_boolean(),
         "use_cache should be boolean"
     );
     assert!(
-        json.get("enable_quality_processing").unwrap().is_boolean(),
+        json.get("enable_quality_processing").expect("Value not found").is_boolean(),
         "enable_quality_processing should be boolean"
     );
     assert!(
-        json.get("force_ocr").unwrap().is_boolean(),
+        json.get("force_ocr").expect("Value not found").is_boolean(),
         "force_ocr should be boolean"
     );
     assert!(
-        json.get("result_format").unwrap().is_string(),
+        json.get("result_format").expect("Value not found").is_string(),
         "result_format should be string"
     );
     assert!(
-        json.get("output_format").unwrap().is_string(),
+        json.get("output_format").expect("Value not found").is_string(),
         "output_format should be string"
     );
 }
@@ -153,9 +153,9 @@ fn test_extraction_config_with_custom_values() {
 
     let json = serde_json::to_value(&config).expect("Failed to serialize");
 
-    assert_eq!(json.get("use_cache").unwrap(), &json!(false));
-    assert_eq!(json.get("force_ocr").unwrap(), &json!(true));
-    assert_eq!(json.get("max_concurrent_extractions").unwrap(), &json!(8));
+    assert_eq!(json.get("use_cache").expect("Value not found"), &json!(false));
+    assert_eq!(json.get("force_ocr").expect("Value not found"), &json!(true));
+    assert_eq!(json.get("max_concurrent_extractions").expect("Value not found"), &json!(8));
 }
 
 #[test]
@@ -320,8 +320,8 @@ fn test_extraction_config_field_presence_consistency() {
     let json2 = serde_json::to_value(&config2).expect("Failed to serialize");
 
     // Both should have the same top-level keys
-    let keys1: Vec<_> = json1.as_object().unwrap().keys().collect();
-    let keys2: Vec<_> = json2.as_object().unwrap().keys().collect();
+    let keys1: Vec<_> = json1.as_object().expect("Expected object value").keys().collect();
+    let keys2: Vec<_> = json2.as_object().expect("Expected object value").keys().collect();
 
     assert_eq!(keys1.len(), keys2.len(), "Configs should have same number of keys");
 }

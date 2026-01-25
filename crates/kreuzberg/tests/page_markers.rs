@@ -202,7 +202,7 @@ fn test_marker_appears_before_content() {
     assert!(marker_pos.is_some(), "Marker should be present");
 
     // Marker should be very early in the content (within first 50 chars)
-    let pos = marker_pos.unwrap();
+    let pos = marker_pos.expect("Operation failed");
     assert!(
         pos < 50,
         "Marker for page 1 should appear at the start, but found at position {}",

@@ -686,7 +686,7 @@ async fn test_rst_extraction_no_errors() {
         result.err()
     );
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Extracted content should not be empty");
 

@@ -61,7 +61,7 @@ async fn test_jupyter_simple_notebook_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert_eq!(
         extraction.mime_type, "application/x-ipynb+json",
@@ -156,7 +156,7 @@ async fn test_jupyter_mime_notebook_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert_eq!(
         extraction.mime_type, "application/x-ipynb+json",
@@ -261,7 +261,7 @@ async fn test_jupyter_mime_out_notebook_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert_eq!(
         extraction.mime_type, "application/x-ipynb+json",
@@ -351,7 +351,7 @@ async fn test_jupyter_rank_notebook_extraction() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert_eq!(
         extraction.mime_type, "application/x-ipynb+json",
@@ -440,7 +440,7 @@ async fn test_jupyter_metadata_aggregation() {
             continue;
         }
 
-        let extraction = result.unwrap();
+        let extraction = result.expect("Operation failed");
 
         assert!(
             !extraction.content.is_empty(),
@@ -491,7 +491,7 @@ async fn test_jupyter_cell_content_aggregation() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     let code_indicators = ["class", "def", "import", "from", "python"];
     let code_count = code_indicators
@@ -563,7 +563,7 @@ async fn test_jupyter_mime_output_handling() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         extraction.content.contains("image")
@@ -620,7 +620,7 @@ async fn test_jupyter_notebook_structure_preservation() {
         return;
     }
 
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     let cell_id_patterns = ["uid1", "uid2", "uid3", "uid4", "uid6"];
     let id_count = cell_id_patterns
@@ -672,7 +672,7 @@ async fn test_jupyter_pandoc_baseline_alignment() {
             continue;
         }
 
-        let extraction = result.unwrap();
+        let extraction = result.expect("Operation failed");
 
         assert!(
             extraction.content.contains("cell")

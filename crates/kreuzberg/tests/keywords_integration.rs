@@ -38,7 +38,7 @@ El procesamiento del lenguaje natural es un campo de la inteligencia artificial 
 #[test]
 fn test_yake_basic_extraction() {
     let config = KeywordConfig::yake();
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords from document");
     assert!(
@@ -80,7 +80,7 @@ fn test_yake_basic_extraction() {
 #[test]
 fn test_rake_basic_extraction() {
     let config = KeywordConfig::rake();
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords from document");
     assert!(
@@ -122,8 +122,8 @@ fn test_yake_vs_rake_comparison() {
     let yake_config = KeywordConfig::yake().with_max_keywords(5);
     let rake_config = KeywordConfig::rake().with_max_keywords(5);
 
-    let yake_keywords = extract_keywords(ML_DOCUMENT, &yake_config).unwrap();
-    let rake_keywords = extract_keywords(ML_DOCUMENT, &rake_config).unwrap();
+    let yake_keywords = extract_keywords(ML_DOCUMENT, &yake_config).expect("Operation failed");
+    let rake_keywords = extract_keywords(ML_DOCUMENT, &rake_config).expect("Operation failed");
 
     assert!(!yake_keywords.is_empty(), "YAKE should extract keywords");
     assert!(!rake_keywords.is_empty(), "RAKE should extract keywords");
@@ -161,7 +161,7 @@ fn test_yake_vs_rake_comparison() {
 #[test]
 fn test_yake_with_max_keywords() {
     let config = KeywordConfig::yake().with_max_keywords(3);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     assert!(keywords.len() <= 3, "Should respect max_keywords=3 limit");
 
@@ -176,7 +176,7 @@ fn test_yake_with_max_keywords() {
 #[test]
 fn test_rake_with_max_keywords() {
     let config = KeywordConfig::rake().with_max_keywords(3);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     assert!(keywords.len() <= 3, "Should respect max_keywords=3 limit");
 
@@ -191,7 +191,7 @@ fn test_rake_with_max_keywords() {
 #[test]
 fn test_yake_with_min_score() {
     let config = KeywordConfig::yake().with_min_score(0.5);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     for keyword in &keywords {
         assert!(
@@ -207,7 +207,7 @@ fn test_yake_with_min_score() {
 #[test]
 fn test_rake_with_min_score() {
     let config = KeywordConfig::rake().with_min_score(0.2);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     for keyword in &keywords {
         assert!(
@@ -223,7 +223,7 @@ fn test_rake_with_min_score() {
 #[test]
 fn test_yake_with_ngram_range() {
     let config = KeywordConfig::yake().with_ngram_range(1, 1);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     for keyword in &keywords {
         let word_count = keyword.text.split_whitespace().count();
@@ -231,7 +231,7 @@ fn test_yake_with_ngram_range() {
     }
 
     let config = KeywordConfig::yake().with_ngram_range(2, 3);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     for keyword in &keywords {
         let word_count = keyword.text.split_whitespace().count();
@@ -248,7 +248,7 @@ fn test_yake_with_ngram_range() {
 #[test]
 fn test_rake_with_ngram_range() {
     let config = KeywordConfig::rake().with_ngram_range(1, 1);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     for keyword in &keywords {
         let word_count = keyword.text.split_whitespace().count();
@@ -256,7 +256,7 @@ fn test_rake_with_ngram_range() {
     }
 
     let config = KeywordConfig::rake().with_ngram_range(2, 2);
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     for keyword in &keywords {
         let word_count = keyword.text.split_whitespace().count();
@@ -268,7 +268,7 @@ fn test_rake_with_ngram_range() {
 #[test]
 fn test_rake_with_spanish() {
     let config = KeywordConfig::rake().with_language("es");
-    let keywords = extract_keywords(SPANISH_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(SPANISH_DOCUMENT, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract Spanish keywords");
 
@@ -294,7 +294,7 @@ fn test_rake_with_spanish() {
 #[test]
 fn test_yake_with_spanish() {
     let config = KeywordConfig::yake().with_language("es");
-    let keywords = extract_keywords(SPANISH_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(SPANISH_DOCUMENT, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract Spanish keywords");
 
@@ -308,7 +308,7 @@ fn test_yake_with_spanish() {
 #[test]
 fn test_rake_empty_document() {
     let config = KeywordConfig::rake();
-    let keywords = extract_keywords("", &config).unwrap();
+    let keywords = extract_keywords("", &config).expect("Operation failed");
 
     assert!(keywords.is_empty(), "Empty document should yield no keywords");
 }
@@ -317,7 +317,7 @@ fn test_rake_empty_document() {
 #[test]
 fn test_yake_empty_document() {
     let config = KeywordConfig::yake();
-    let keywords = extract_keywords("", &config).unwrap();
+    let keywords = extract_keywords("", &config).expect("Operation failed");
 
     assert!(keywords.is_empty(), "Empty document should yield no keywords");
 }
@@ -327,7 +327,7 @@ fn test_yake_empty_document() {
 fn test_rake_short_document() {
     let short_text = "Machine learning algorithms.";
     let config = KeywordConfig::rake();
-    let keywords = extract_keywords(short_text, &config).unwrap();
+    let keywords = extract_keywords(short_text, &config).expect("Operation failed");
 
     println!(
         "Keywords from short text: {:?}",
@@ -340,7 +340,7 @@ fn test_rake_short_document() {
 fn test_yake_short_document() {
     let short_text = "Machine learning algorithms.";
     let config = KeywordConfig::yake();
-    let keywords = extract_keywords(short_text, &config).unwrap();
+    let keywords = extract_keywords(short_text, &config).expect("Operation failed");
 
     println!(
         "YAKE keywords from short text: {:?}",
@@ -353,13 +353,13 @@ fn test_yake_short_document() {
 fn test_rake_different_domains() {
     let config = KeywordConfig::rake().with_max_keywords(5);
 
-    let ml_keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let ml_keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
     println!("\nML domain keywords:");
     for kw in &ml_keywords {
         println!("  {} (score: {:.3})", kw.text, kw.score);
     }
 
-    let climate_keywords = extract_keywords(CLIMATE_DOCUMENT, &config).unwrap();
+    let climate_keywords = extract_keywords(CLIMATE_DOCUMENT, &config).expect("Operation failed");
     println!("\nClimate domain keywords:");
     for kw in &climate_keywords {
         println!("  {} (score: {:.3})", kw.text, kw.score);
@@ -395,13 +395,13 @@ fn test_rake_different_domains() {
 fn test_yake_different_domains() {
     let config = KeywordConfig::yake().with_max_keywords(5);
 
-    let ml_keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let ml_keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
     println!("\nYAKE ML domain keywords:");
     for kw in &ml_keywords {
         println!("  {} (score: {:.3})", kw.text, kw.score);
     }
 
-    let climate_keywords = extract_keywords(CLIMATE_DOCUMENT, &config).unwrap();
+    let climate_keywords = extract_keywords(CLIMATE_DOCUMENT, &config).expect("Operation failed");
     println!("\nYAKE Climate domain keywords:");
     for kw in &climate_keywords {
         println!("  {} (score: {:.3})", kw.text, kw.score);
@@ -415,7 +415,7 @@ fn test_yake_different_domains() {
 #[test]
 fn test_rake_score_distribution() {
     let config = KeywordConfig::rake();
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     if keywords.is_empty() {
         return;
@@ -439,7 +439,7 @@ fn test_rake_score_distribution() {
 #[test]
 fn test_yake_score_distribution() {
     let config = KeywordConfig::yake();
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     if keywords.is_empty() {
         return;
@@ -463,7 +463,7 @@ fn test_yake_score_distribution() {
 #[test]
 fn test_keyword_struct_properties() {
     let config = KeywordConfig::default();
-    let keywords = extract_keywords(ML_DOCUMENT, &config).unwrap();
+    let keywords = extract_keywords(ML_DOCUMENT, &config).expect("Operation failed");
 
     if keywords.is_empty() {
         return;

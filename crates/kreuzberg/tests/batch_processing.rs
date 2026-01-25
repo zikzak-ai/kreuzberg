@@ -51,7 +51,7 @@ async fn test_batch_extract_file_multiple_formats() {
     let results = batch_extract_file(paths, &config).await;
 
     assert!(results.is_ok(), "Batch extraction should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 3);
 
@@ -95,7 +95,7 @@ fn test_batch_extract_file_sync_variant() {
     let results = batch_extract_file_sync(paths, &config);
 
     assert!(results.is_ok(), "Sync batch extraction should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 2);
 
@@ -137,7 +137,7 @@ async fn test_batch_extract_bytes_multiple() {
     let results = batch_extract_bytes(owned_contents, &config).await;
 
     assert!(results.is_ok(), "Batch bytes extraction should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 3);
 
@@ -161,7 +161,7 @@ async fn test_batch_extract_empty_list() {
     let results = batch_extract_file(paths, &config).await;
 
     assert!(results.is_ok(), "Empty batch should succeed");
-    assert_eq!(results.unwrap().len(), 0, "Should return empty vector");
+    assert_eq!(results.expect("Operation failed").len(), 0, "Should return empty vector");
 }
 
 /// Test batch extraction when one file fails (others should succeed).
@@ -187,7 +187,7 @@ async fn test_batch_extract_one_file_fails() {
     let results = batch_extract_file(paths, &config).await;
 
     assert!(results.is_ok(), "Batch should succeed even with one failure");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 3);
 
@@ -216,7 +216,7 @@ async fn test_batch_extract_all_fail() {
     let results = batch_extract_file(paths, &config).await;
 
     assert!(results.is_ok(), "Batch should succeed (errors in metadata)");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 3);
 
@@ -251,7 +251,7 @@ async fn test_batch_extract_concurrent() {
     let duration = start.elapsed();
 
     assert!(results.is_ok(), "Concurrent batch should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 20);
 
@@ -289,7 +289,7 @@ async fn test_batch_extract_large_batch() {
     let results = batch_extract_file(paths, &config).await;
 
     assert!(results.is_ok(), "Large batch should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 50);
 
@@ -319,7 +319,7 @@ fn test_batch_extract_bytes_sync_variant() {
     let results = batch_extract_bytes_sync(owned_contents, &config);
 
     assert!(results.is_ok(), "Sync batch bytes extraction should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
 
     assert_eq!(results.len(), 3);
     assert_text_content(&results[0].content, "content 1");

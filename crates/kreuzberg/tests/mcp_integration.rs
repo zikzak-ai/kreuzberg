@@ -106,8 +106,9 @@ fn test_batch_extraction_params_structure() {
     });
 
     let paths = batch_params.get("paths").expect("Should have paths");
-    assert!(paths.is_array());
-    assert_eq!(paths.as_array().unwrap().len(), 3);
+    assert!(paths.is_array(), "paths field should be an array");
+    let path_array = paths.as_array().expect("paths should be deserializable as array");
+    assert_eq!(path_array.len(), 3, "paths array should contain exactly 3 elements");
 
     if let Some(config_obj) = batch_params.get("config") {
         let config: kreuzberg::core::config::ExtractionConfig =
@@ -119,25 +120,64 @@ fn test_batch_extraction_params_structure() {
 
 #[test]
 fn test_config_merge_in_mcp_context() {
-    // Simulate default config being merged with request config
-    let mut default_config = kreuzberg::core::config::ExtractionConfig::default();
-    default_config.use_cache = false;
+    // Test 1: Verify default config baseline
+    let default_config = kreuzberg::core::config::ExtractionConfig::default();
+    assert_eq!(default_config.use_cache, true, "Default cache should be enabled");
+    assert_eq!(default_config.force_ocr, false, "Default force_ocr should be false");
+    assert_eq!(default_config.output_format, kreuzberg::core::config::OutputFormat::Plain,
+        "Default output format should be Plain");
 
-    // Request provides partial config override
+    // Test 2: Request provides single field override - verify precedence
     let request_config_json = json!({
         "force_ocr": true,
     });
-
     let request_config: kreuzberg::core::config::ExtractionConfig =
-        serde_json::from_value(request_config_json).expect("Failed to parse");
+        serde_json::from_value(request_config_json).expect("Failed to parse request config");
 
-    // In MCP context, request config overrides defaults
-    let final_config = request_config;
+    // Request config should override that field
+    assert_eq!(request_config.force_ocr, true, "Request force_ocr should be true");
 
-    // The new request config replaces defaults
-    assert_eq!(final_config.force_ocr, true);
-    // Other fields get their defaults
-    assert_eq!(final_config.use_cache, true);
+    // But unspecified fields should use defaults
+    assert_eq!(request_config.use_cache, true, "Unspecified use_cache should default to true");
+    assert_eq!(request_config.output_format, kreuzberg::core::config::OutputFormat::Plain,
+        "Unspecified output_format should default to Plain");
+
+    // Test 3: Multiple field overrides - verify precedence chain
+    let multi_override_json = json!({
+        "use_cache": false,
+        "force_ocr": true,
+        "output_format": "markdown",
+    });
+    let multi_config: kreuzberg::core::config::ExtractionConfig =
+        serde_json::from_value(multi_override_json).expect("Failed to parse multi-field config");
+
+    // All specified fields should override defaults
+    assert_eq!(multi_config.use_cache, false, "Override use_cache should be false");
+    assert_eq!(multi_config.force_ocr, true, "Override force_ocr should be true");
+    assert_eq!(multi_config.output_format, kreuzberg::core::config::OutputFormat::Markdown,
+        "Override output_format should be Markdown");
+
+    // Unspecified numeric fields should still have defaults
+    if let Some(max_conc) = multi_config.max_concurrent_extractions {
+        panic!("max_concurrent_extractions should not be specified when not in request, got: {}", max_conc);
+    }
+
+    // Test 4: Verify config can be fully constructed with all fields
+    let full_json = json!({
+        "use_cache": false,
+        "enable_quality_processing": true,
+        "force_ocr": true,
+        "output_format": "html",
+        "max_concurrent_extractions": 8,
+    });
+    let full_config: kreuzberg::core::config::ExtractionConfig =
+        serde_json::from_value(full_json).expect("Failed to parse full config");
+
+    assert_eq!(full_config.use_cache, false, "Full config use_cache should be false");
+    assert_eq!(full_config.enable_quality_processing, true, "Full config quality processing should be true");
+    assert_eq!(full_config.force_ocr, true, "Full config force_ocr should be true");
+    assert_eq!(full_config.output_format, kreuzberg::core::config::OutputFormat::Html, "Full config output_format should be Html");
+    assert_eq!(full_config.max_concurrent_extractions, Some(8), "Full config max_concurrent should be 8");
 }
 
 #[test]
@@ -243,9 +283,9 @@ fn test_mcp_batch_with_config() {
 
     // Verify paths are array
     let paths = batch_request.get("paths").expect("Should have paths");
-    assert!(paths.is_array());
-    let path_array = paths.as_array().unwrap();
-    assert_eq!(path_array.len(), 3);
+    assert!(paths.is_array(), "paths field should be an array");
+    let path_array = paths.as_array().expect("paths should be deserializable as array");
+    assert_eq!(path_array.len(), 3, "paths array should contain exactly 3 elements");
 
     // Verify config applies to batch
     let config_obj = batch_request.get("config").expect("Should have config");
@@ -378,8 +418,9 @@ fn test_mcp_batch_mixed_formats() {
     });
 
     let files = batch_config.get("files").expect("Should have files");
-    assert!(files.is_array());
-    assert_eq!(files.as_array().unwrap().len(), 3);
+    assert!(files.is_array(), "files field should be an array");
+    let file_array = files.as_array().expect("files should be deserializable as array");
+    assert_eq!(file_array.len(), 3, "files array should contain exactly 3 elements");
 
     if let Some(config_obj) = batch_config.get("config") {
         let config: kreuzberg::core::config::ExtractionConfig =
@@ -396,12 +437,13 @@ fn test_mcp_minimal_config() {
         "path": "/document.pdf",
     });
 
-    // Path should exist
-    assert!(minimal_request.get("path").is_some());
+    // Path should exist and be correct
+    assert_eq!(minimal_request.get("path"), Some(&serde_json::Value::String("/document.pdf".to_string())),
+        "Path field should be present and set to /document.pdf");
 
     // If no config, use defaults
     let config = match minimal_request.get("config") {
-        Some(config_obj) => serde_json::from_value(config_obj.clone()).unwrap(),
+        Some(config_obj) => serde_json::from_value(config_obj.clone()).expect("Failed to parse config from minimal request"),
         None => kreuzberg::core::config::ExtractionConfig::default(),
     };
 
@@ -527,7 +569,8 @@ fn test_mcp_tool_extract_file_semantics() {
 
     // Simulate MCP tool: extract_file (sync)
     if test_file.exists() {
-        let result = kreuzberg::extract_file_sync(test_file.to_str().unwrap(), None, &config)
+        let file_path = test_file.to_str().expect("test_file path should be valid UTF-8");
+        let result = kreuzberg::extract_file_sync(file_path, None, &config)
             .expect("Extraction should succeed");
 
         assert!(!result.content.is_empty());
@@ -603,8 +646,9 @@ fn test_mcp_empty_batch_handling() {
     });
 
     let paths = empty_batch.get("paths").expect("Should have paths");
-    assert!(paths.is_array());
-    assert_eq!(paths.as_array().unwrap().len(), 0);
+    assert!(paths.is_array(), "paths field should be an array");
+    let path_array = paths.as_array().expect("paths should be deserializable as array");
+    assert_eq!(path_array.len(), 0, "paths array should be empty");
 }
 
 /// Test MCP parameter extraction with nested config
@@ -684,8 +728,8 @@ fn test_mcp_response_structure_validation() {
         }
     });
 
-    assert_eq!(mcp_response.get("status").unwrap(), "success");
-    assert!(mcp_response.get("data").is_some());
+    assert_eq!(mcp_response.get("status").expect("status field should exist"), "success");
+    assert!(mcp_response.get("data").is_some(), "data field should be present in MCP response");
 }
 
 /// Test MCP request/response roundtrip with config

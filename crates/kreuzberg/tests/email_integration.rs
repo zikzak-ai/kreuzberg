@@ -32,7 +32,7 @@ This is the email body content.";
     assert_eq!(result.metadata.subject, Some("Test Email Subject".to_string()));
 
     assert!(result.metadata.format.is_some());
-    let email_meta = match result.metadata.format.as_ref().unwrap() {
+    let email_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Email(meta) => meta,
         _ => panic!("Expected Email metadata"),
     };
@@ -44,7 +44,7 @@ This is the email body content.";
     assert!(email_meta.bcc_emails.is_empty(), "BCC should be empty");
 
     assert!(email_meta.message_id.is_some());
-    let msg_id = email_meta.message_id.clone().unwrap();
+    let msg_id = email_meta.message_id.clone().expect("Operation failed");
     assert!(
         msg_id.contains("unique123@example.com"),
         "Message ID should contain unique123@example.com"
@@ -86,7 +86,7 @@ Attachment content here.\r\n\
         .expect("Should extract EML with attachment");
 
     assert!(result.metadata.format.is_some());
-    let email_meta = match result.metadata.format.as_ref().unwrap() {
+    let email_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Email(meta) => meta,
         _ => panic!("Expected Email metadata"),
     };
@@ -127,7 +127,7 @@ Content-Type: text/html; charset=utf-8\r\n\
     assert!(result.content.contains("HTML Heading") || result.content.contains("bold"));
 
     assert!(result.metadata.format.is_some());
-    let email_meta = match result.metadata.format.as_ref().unwrap() {
+    let email_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Email(meta) => meta,
         _ => panic!("Expected Email metadata"),
     };
@@ -159,7 +159,7 @@ And preserves formatting.";
     assert!(result.content.contains("preserves formatting"));
 
     assert!(result.metadata.format.is_some());
-    let email_meta = match result.metadata.format.as_ref().unwrap() {
+    let email_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Email(meta) => meta,
         _ => panic!("Expected Email metadata"),
     };
@@ -198,7 +198,7 @@ Content-Type: text/html\r\n\
     );
 
     assert!(result.metadata.format.is_some());
-    let email_meta = match result.metadata.format.as_ref().unwrap() {
+    let email_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Email(meta) => meta,
         _ => panic!("Expected Email metadata"),
     };
@@ -290,7 +290,7 @@ Email to multiple recipients.";
         .expect("Should extract email with multiple recipients");
 
     assert!(result.metadata.format.is_some());
-    let email_meta = match result.metadata.format.as_ref().unwrap() {
+    let email_meta = match result.metadata.format.as_ref().expect("Operation failed") {
         kreuzberg::FormatMetadata::Email(meta) => meta,
         _ => panic!("Expected Email metadata"),
     };

@@ -9,9 +9,9 @@ fn test_file_path(filename: &str) -> PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     PathBuf::from(manifest_dir)
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .join("test_documents")
         .join("fictionbook")
         .join(filename)

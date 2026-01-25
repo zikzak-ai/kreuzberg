@@ -56,10 +56,10 @@ fn test_rayon_batch_stress_many_images() {
         success_count
     );
 
-    let first_content = results[0].result.as_ref().unwrap().content.clone();
+    let first_content = results[0].result.as_ref().expect("Operation failed").content.clone();
     for (i, result) in results.iter().enumerate().skip(1) {
         assert!(result.success, "Result {} should succeed", i);
-        let content = &result.result.as_ref().unwrap().content;
+        let content = &result.result.as_ref().expect("Operation failed").content;
         assert_eq!(
             content, &first_content,
             "Result {} content differs - possible race condition",
@@ -220,7 +220,7 @@ fn test_tesseract_api_thread_safety() {
                 thread_id,
                 result.err()
             );
-            result.unwrap()
+            result.expect("Operation failed")
         }));
     }
 

@@ -67,7 +67,7 @@ fn test_stopwords_removed_during_moderate_token_reduction() {
     };
 
     let input = "The quick brown fox is jumping over the lazy dog and running through the forest";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     assert!(!result.contains(" the "), "Should remove 'the'. Result: {}", result);
     assert!(!result.contains(" is "), "Should remove 'is'. Result: {}", result);
@@ -103,7 +103,7 @@ fn test_stopwords_across_reduction_levels() {
         use_simd: false,
         ..Default::default()
     };
-    let light_result = reduce_tokens(text, &light_config, Some("en")).unwrap();
+    let light_result = reduce_tokens(text, &light_config, Some("en")).expect("Operation failed");
 
     let light_stopwords = count_stopwords(&light_result, "en");
     assert!(light_stopwords > 0, "Light reduction should preserve some stopwords");
@@ -113,7 +113,7 @@ fn test_stopwords_across_reduction_levels() {
         use_simd: false,
         ..Default::default()
     };
-    let moderate_result = reduce_tokens(text, &moderate_config, Some("en")).unwrap();
+    let moderate_result = reduce_tokens(text, &moderate_config, Some("en")).expect("Operation failed");
 
     let moderate_stopwords = count_stopwords(&moderate_result, "en");
     assert!(
@@ -128,7 +128,7 @@ fn test_stopwords_across_reduction_levels() {
         use_simd: false,
         ..Default::default()
     };
-    let aggressive_result = reduce_tokens(text, &aggressive_config, Some("en")).unwrap();
+    let aggressive_result = reduce_tokens(text, &aggressive_config, Some("en")).expect("Operation failed");
 
     assert!(
         aggressive_result.len() <= moderate_result.len(),
@@ -146,7 +146,7 @@ fn test_stopwords_preserve_semantic_meaning() {
 
     let input =
         "The artificial intelligence system is processing the natural language text for extracting meaningful insights";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     let content_words = extract_content_words(&result, "en");
 
@@ -185,7 +185,7 @@ fn test_stopwords_with_multiple_languages() {
         ..Default::default()
     };
     let en_input = "The computer science program is very comprehensive and includes many courses";
-    let en_result = reduce_tokens(en_input, &en_config, Some("en")).unwrap();
+    let en_result = reduce_tokens(en_input, &en_config, Some("en")).expect("Operation failed");
 
     let en_original_stopwords = count_stopwords(en_input, "en");
     let en_result_stopwords = count_stopwords(&en_result, "en");
@@ -200,7 +200,7 @@ fn test_stopwords_with_multiple_languages() {
         ..Default::default()
     };
     let es_input = "El programa de ciencias de la computación es muy completo y tiene muchos cursos";
-    let es_result = reduce_tokens(es_input, &es_config, Some("es")).unwrap();
+    let es_result = reduce_tokens(es_input, &es_config, Some("es")).expect("Operation failed");
 
     let es_original_stopwords = count_stopwords(es_input, "es");
     let es_result_stopwords = count_stopwords(&es_result, "es");
@@ -221,7 +221,7 @@ fn test_stopwords_with_multiple_languages() {
         ..Default::default()
     };
     let de_input = "Die künstliche Intelligenz ist ein wichtiges Forschungsgebiet der Informatik";
-    let de_result = reduce_tokens(de_input, &de_config, Some("de")).unwrap();
+    let de_result = reduce_tokens(de_input, &de_config, Some("de")).expect("Operation failed");
 
     let de_original_stopwords = count_stopwords(de_input, "de");
     let de_result_stopwords = count_stopwords(&de_result, "de");
@@ -240,7 +240,7 @@ fn test_language_fallback_to_english_stopwords() {
     };
 
     let input = "The system is processing the data with the algorithm";
-    let result = reduce_tokens(input, &config, Some("xyz")).unwrap();
+    let result = reduce_tokens(input, &config, Some("xyz")).expect("Operation failed");
 
     let original_stopwords = count_stopwords(input, "en");
     let result_stopwords = count_stopwords(&result, "en");
@@ -267,7 +267,7 @@ fn test_custom_stopwords_integration() {
     };
 
     let input = "The algorithm processes the data in the system efficiently";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     assert!(
         !result.contains("algorithm"),
@@ -301,7 +301,7 @@ fn test_stopwords_with_chinese_text() {
     };
 
     let input = "这个人工智能系统可以处理自然语言";
-    let result = reduce_tokens(input, &config, Some("zh")).unwrap();
+    let result = reduce_tokens(input, &config, Some("zh")).expect("Operation failed");
 
     assert!(
         !result.is_empty(),
@@ -325,7 +325,7 @@ fn test_stopwords_with_mixed_cjk_english() {
     };
 
     let input = "The machine learning model 机器学习模型 is processing data efficiently";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     assert!(
         !result.contains(" the ") && !result.contains("The "),
@@ -355,7 +355,7 @@ fn test_stopwords_with_japanese_text() {
     };
 
     let input = "人工知能技術の研究開発";
-    let result = reduce_tokens(input, &config, Some("ja")).unwrap();
+    let result = reduce_tokens(input, &config, Some("ja")).expect("Operation failed");
 
     assert!(
         !result.is_empty(),
@@ -373,7 +373,7 @@ fn test_stopwords_with_korean_text() {
     };
 
     let input = "인공 지능 기술 개발";
-    let result = reduce_tokens(input, &config, Some("ko")).unwrap();
+    let result = reduce_tokens(input, &config, Some("ko")).expect("Operation failed");
 
     assert!(
         !result.is_empty(),
@@ -391,7 +391,7 @@ fn test_stopwords_excluded_from_rake_keywords() {
 
     let config = KeywordConfig::rake().with_language("en").with_max_keywords(10);
 
-    let keywords = extract_keywords(text, &config).unwrap();
+    let keywords = extract_keywords(text, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords");
 
@@ -439,7 +439,7 @@ fn test_stopwords_excluded_from_yake_keywords() {
 
     let config = KeywordConfig::yake().with_language("en").with_max_keywords(10);
 
-    let keywords = extract_keywords(text, &config).unwrap();
+    let keywords = extract_keywords(text, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords");
 
@@ -472,7 +472,7 @@ fn test_keywords_respect_language_specific_stopwords() {
 
     let config = KeywordConfig::rake().with_language("es").with_max_keywords(8);
 
-    let keywords = extract_keywords(spanish_text, &config).unwrap();
+    let keywords = extract_keywords(spanish_text, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract Spanish keywords");
 
@@ -516,7 +516,7 @@ fn test_all_stopwords_text_reduction() {
     };
 
     let input = "the is a an and or but of to in for on at by";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     assert!(
         result.len() < input.len(),
@@ -533,7 +533,7 @@ fn test_no_stopwords_text_reduction() {
     };
 
     let input = "PyTorch TensorFlow CUDA GPU optimization benchmark performance metrics";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     let input_words: Vec<&str> = input.split_whitespace().collect();
     let result_lower = result.to_lowercase();
@@ -558,7 +558,7 @@ fn test_mixed_case_stopwords_removal() {
     };
 
     let input = "The SYSTEM Is Processing The DATA With The ALGORITHM";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     let result_words: Vec<&str> = result.split_whitespace().collect();
     assert!(
@@ -594,7 +594,7 @@ fn test_reduce_tokens_function_with_stopwords() {
     };
 
     let text = "The artificial intelligence system processes the natural language efficiently";
-    let result = reduce_tokens(text, &config, Some("en")).unwrap();
+    let result = reduce_tokens(text, &config, Some("en")).expect("Operation failed");
 
     let original_stopwords = count_stopwords(text, "en");
     let result_stopwords = count_stopwords(&result, "en");
@@ -622,7 +622,7 @@ fn test_stopwords_with_punctuation() {
     };
 
     let input = "The system, which is processing the data, uses the algorithm.";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     assert!(
         !result.contains(" the ") || result.split_whitespace().filter(|w| w.contains("the")).count() < 3,
@@ -646,7 +646,7 @@ fn test_stopwords_with_numbers() {
     };
 
     let input = "The model has 100 layers and processes the data in 10 seconds";
-    let result = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     assert!(
         result.contains("100"),
@@ -672,9 +672,9 @@ fn test_stopwords_removal_consistency_across_calls() {
 
     let input = "The machine learning model is trained on the dataset";
 
-    let result1 = reduce_tokens(input, &config, Some("en")).unwrap();
-    let result2 = reduce_tokens(input, &config, Some("en")).unwrap();
-    let result3 = reduce_tokens(input, &config, Some("en")).unwrap();
+    let result1 = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
+    let result2 = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
+    let result3 = reduce_tokens(input, &config, Some("en")).expect("Operation failed");
 
     assert_eq!(result1, result2, "Results should be consistent across calls");
     assert_eq!(result2, result3, "Results should be consistent across calls");
@@ -694,7 +694,7 @@ fn test_stopwords_with_long_text() {
                      The system processes the data efficiently and achieves the best performance. ";
     let input = paragraph.repeat(10);
 
-    let result = reduce_tokens(&input, &config, Some("en")).unwrap();
+    let result = reduce_tokens(&input, &config, Some("en")).expect("Operation failed");
 
     assert!(
         result.len() < input.len(),
@@ -719,9 +719,9 @@ fn test_get_stopwords_with_fallback_in_reduction() {
     let primary_stopwords = get_stopwords_with_fallback("xyz", "en");
     assert!(primary_stopwords.is_some(), "Should fallback to English");
 
-    let en_stopwords = get_stopwords("en").unwrap();
+    let en_stopwords = get_stopwords("en").expect("Operation failed");
     assert_eq!(
-        primary_stopwords.unwrap().len(),
+        primary_stopwords.expect("Operation failed").len(),
         en_stopwords.len(),
         "Fallback should return English stopwords"
     );
@@ -733,7 +733,7 @@ fn test_get_stopwords_with_fallback_in_reduction() {
     };
 
     let input = "The system is processing the data";
-    let result = reduce_tokens(input, &config, Some("xyz")).unwrap();
+    let result = reduce_tokens(input, &config, Some("xyz")).expect("Operation failed");
 
     assert!(
         !result.contains(" the ") && !result.contains(" is "),
@@ -789,7 +789,7 @@ fn test_token_reduction_handles_multibyte_utf8() {
     };
 
     let input = "品質管理は重要です。🚀 高速抽出と漢字処理が求められています。";
-    let result = reduce_tokens(input, &config, Some("ja")).unwrap();
+    let result = reduce_tokens(input, &config, Some("ja")).expect("Operation failed");
 
     assert!(
         result.contains("品質管理") || result.contains("漢字処理"),
@@ -814,7 +814,7 @@ fn test_token_reduction_concurrent_access() {
         for _ in 0..8 {
             let cfg = Arc::clone(&config);
             scope.spawn(move || {
-                let reduced = reduce_tokens(input, &cfg, Some("en")).unwrap();
+                let reduced = reduce_tokens(input, &cfg, Some("en")).expect("Operation failed");
                 assert!(!reduced.is_empty());
             });
         }
@@ -831,7 +831,7 @@ fn demo_stopwords_effectiveness() {
         use_simd: false,
         ..Default::default()
     };
-    let en_result = reduce_tokens(en_text, &en_config, Some("en")).unwrap();
+    let en_result = reduce_tokens(en_text, &en_config, Some("en")).expect("Operation failed");
 
     println!("\n=== English Example ===");
     println!("BEFORE: {} chars", en_text.len());
@@ -849,7 +849,7 @@ fn demo_stopwords_effectiveness() {
         use_simd: false,
         ..Default::default()
     };
-    let zh_result = reduce_tokens(zh_text, &zh_config, Some("zh")).unwrap();
+    let zh_result = reduce_tokens(zh_text, &zh_config, Some("zh")).expect("Operation failed");
 
     println!("\n=== Chinese Example ===");
     println!("BEFORE: {}", zh_text);
@@ -870,7 +870,7 @@ fn demo_stopwords_effectiveness() {
             use_simd: false,
             ..Default::default()
         };
-        let result = reduce_tokens(text, &config, Some("en")).unwrap();
+        let result = reduce_tokens(text, &config, Some("en")).expect("Operation failed");
         println!(
             "{:?}: {} chars -> {} chars ({}% reduction)",
             level,
@@ -881,7 +881,7 @@ fn demo_stopwords_effectiveness() {
         println!("  {}", result);
     }
 
-    let stopwords = get_stopwords("en").unwrap();
+    let stopwords = get_stopwords("en").expect("Operation failed");
     println!("\n=== Stopwords Stats ===");
     println!("English stopwords: {}", stopwords.len());
     println!("Sample stopwords: {:?}", stopwords.iter().take(10).collect::<Vec<_>>());

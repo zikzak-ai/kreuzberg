@@ -26,16 +26,16 @@ fn assert_text_content(actual: &str, expected: &str) {
 /// Test basic file extraction with MIME detection.
 #[tokio::test]
 async fn test_extract_file_basic() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let file_path = dir.path().join("test.txt");
-    let mut file = File::create(&file_path).unwrap();
-    file.write_all(b"Hello, Kreuzberg!").unwrap();
+    let mut file = File::create(&file_path).expect("Operation failed");
+    file.write_all(b"Hello, Kreuzberg!").expect("Operation failed");
 
     let config = ExtractionConfig::default();
     let result = extract_file(&file_path, None, &config).await;
 
     assert!(result.is_ok(), "Basic file extraction should succeed");
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     assert_text_content(&result.content, "Hello, Kreuzberg!");
     assert_eq!(result.mime_type, "text/plain");
@@ -47,16 +47,16 @@ async fn test_extract_file_basic() {
 /// Test extraction with explicit MIME type override.
 #[tokio::test]
 async fn test_extract_file_with_mime_override() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let file_path = dir.path().join("data.bin");
-    let mut file = File::create(&file_path).unwrap();
-    file.write_all(b"Binary content").unwrap();
+    let mut file = File::create(&file_path).expect("Operation failed");
+    file.write_all(b"Binary content").expect("Operation failed");
 
     let config = ExtractionConfig::default();
     let result = extract_file(&file_path, Some("text/plain"), &config).await;
 
     assert!(result.is_ok(), "MIME override should work");
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     assert_eq!(result.mime_type, "text/plain");
     assert!(!result.content.is_empty(), "Should extract content");
@@ -66,7 +66,7 @@ async fn test_extract_file_with_mime_override() {
 /// Test extraction of multiple file types.
 #[tokio::test]
 async fn test_extract_multiple_file_types() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config = ExtractionConfig::default();
 
     let test_files: Vec<(&str, &[u8], &str)> = vec![
@@ -80,9 +80,9 @@ async fn test_extract_multiple_file_types() {
 
     for (filename, content, expected_mime) in test_files {
         let file_path = dir.path().join(filename);
-        fs::write(&file_path, content).unwrap();
+        fs::write(&file_path, content).expect("Operation failed");
 
-        let result = extract_file(&file_path, None, &config).await.unwrap();
+        let result = extract_file(&file_path, None, &config).await.expect("Async operation failed");
 
         assert_eq!(result.mime_type, expected_mime, "MIME type mismatch for {}", filename);
         assert!(
@@ -115,7 +115,7 @@ async fn test_extract_bytes_various_mime_types() {
         let result = extract_bytes(content, mime_type, &config).await;
         assert!(result.is_ok(), "Extract bytes failed for MIME type: {}", mime_type);
 
-        let result = result.unwrap();
+        let result = result.expect("Operation failed");
 
         assert_eq!(result.mime_type, mime_type, "MIME type mismatch");
         assert!(
@@ -131,7 +131,7 @@ async fn test_extract_bytes_various_mime_types() {
 /// Test batch extraction with concurrent processing.
 #[tokio::test]
 async fn test_batch_extract_file_concurrency() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config = ExtractionConfig::default();
 
     let num_files = 10;
@@ -139,14 +139,14 @@ async fn test_batch_extract_file_concurrency() {
 
     for i in 0..num_files {
         let file_path = dir.path().join(format!("test_{}.txt", i));
-        fs::write(&file_path, format!("Content {}", i)).unwrap();
+        fs::write(&file_path, format!("Content {}", i)).expect("Operation failed");
         paths.push(file_path);
     }
 
     let results = batch_extract_file(paths.clone(), &config).await;
     assert!(results.is_ok());
 
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), num_files);
 
     for (i, result) in results.iter().enumerate() {
@@ -169,7 +169,7 @@ async fn test_batch_extract_empty() {
 
     let results = batch_extract_file(paths, &config).await;
     assert!(results.is_ok());
-    assert_eq!(results.unwrap().len(), 0);
+    assert_eq!(results.expect("Operation failed").len(), 0);
 }
 
 /// Test batch_extract_bytes with concurrent processing.
@@ -193,7 +193,7 @@ async fn test_batch_extract_bytes_concurrency() {
     let results = batch_extract_bytes(owned_contents, &config).await;
     assert!(results.is_ok());
 
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 5);
 
     for (i, result) in results.iter().enumerate() {
@@ -214,28 +214,28 @@ async fn test_batch_extract_bytes_concurrency() {
 /// Test sync wrappers for extraction functions.
 #[test]
 fn test_sync_wrappers() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let file_path = dir.path().join("sync_test.txt");
-    fs::write(&file_path, "sync content").unwrap();
+    fs::write(&file_path, "sync content").expect("Operation failed");
 
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config);
     assert!(result.is_ok(), "Sync file extraction should succeed");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
     assert_text_content(&extraction.content, "sync content");
     assert!(extraction.chunks.is_none(), "Chunks should be None");
 
     let result = extract_bytes_sync(b"test bytes", "text/plain", &config);
     assert!(result.is_ok(), "Sync bytes extraction should succeed");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
     assert_text_content(&extraction.content, "test bytes");
     assert!(extraction.chunks.is_none(), "Chunks should be None");
 
     let paths = vec![file_path];
     let results = batch_extract_file_sync(paths, &config);
     assert!(results.is_ok(), "Batch sync file should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 1);
     assert_text_content(&results[0].content, "sync content");
     assert!(results[0].chunks.is_none(), "Chunks should be None");
@@ -247,7 +247,7 @@ fn test_sync_wrappers() {
         .collect();
     let results = batch_extract_bytes_sync(owned_contents, &config);
     assert!(results.is_ok(), "Batch bytes sync should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 1);
     assert_text_content(&results[0].content, "test");
     assert!(results[0].chunks.is_none(), "Chunks should be None");
@@ -256,7 +256,7 @@ fn test_sync_wrappers() {
 /// Test MIME type detection for various extensions.
 #[test]
 fn test_mime_detection_comprehensive() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
 
     let test_cases = vec![
         ("test.txt", "text/plain"),
@@ -287,9 +287,9 @@ fn test_mime_detection_comprehensive() {
 
     for (filename, expected_mime) in test_cases {
         let file_path = dir.path().join(filename);
-        File::create(&file_path).unwrap();
+        File::create(&file_path).expect("Operation failed");
 
-        let detected = detect_mime_type(&file_path, true).unwrap();
+        let detected = detect_mime_type(&file_path, true).expect("Operation failed");
         assert_eq!(detected, expected_mime, "Failed for {}", filename);
 
         let validated = validate_mime_type(&detected);
@@ -312,7 +312,7 @@ fn test_mime_validation() {
 /// Test case-insensitive extension handling.
 #[test]
 fn test_case_insensitive_extensions() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
 
     let test_cases = vec![
         ("test.PDF", "application/pdf"),
@@ -326,9 +326,9 @@ fn test_case_insensitive_extensions() {
 
     for (filename, expected_mime) in test_cases {
         let file_path = dir.path().join(filename);
-        File::create(&file_path).unwrap();
+        File::create(&file_path).expect("Operation failed");
 
-        let detected = detect_mime_type(&file_path, true).unwrap();
+        let detected = detect_mime_type(&file_path, true).expect("Operation failed");
         assert_eq!(detected, expected_mime, "Failed for {}", filename);
     }
 }
@@ -336,7 +336,7 @@ fn test_case_insensitive_extensions() {
 /// Test config loading from TOML file.
 #[test]
 fn test_config_loading() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("kreuzberg.toml");
 
     fs::write(
@@ -355,19 +355,19 @@ max_chars = 2000
 max_overlap = 300
     "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ExtractionConfig::from_toml_file(&config_path).unwrap();
+    let config = ExtractionConfig::from_toml_file(&config_path).expect("Operation failed");
 
     assert!(!config.use_cache);
     assert!(config.enable_quality_processing);
     assert!(!config.force_ocr);
 
-    let ocr_config = config.ocr.unwrap();
+    let ocr_config = config.ocr.expect("Operation failed");
     assert_eq!(ocr_config.backend, "tesseract");
     assert_eq!(ocr_config.language, "deu");
 
-    let chunking_config = config.chunking.unwrap();
+    let chunking_config = config.chunking.expect("Operation failed");
     assert_eq!(chunking_config.max_chars, 2000);
     assert_eq!(chunking_config.max_overlap, 300);
 }
@@ -375,9 +375,9 @@ max_overlap = 300
 /// Test config discovery in parent directories.
 #[test]
 fn test_config_discovery() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let subdir = dir.path().join("subdir");
-    fs::create_dir(&subdir).unwrap();
+    fs::create_dir(&subdir).expect("Operation failed");
 
     let config_path = dir.path().join("kreuzberg.toml");
     fs::write(
@@ -387,16 +387,16 @@ use_cache = false
 enable_quality_processing = true
     "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let original_dir = std::env::current_dir().unwrap();
-    std::env::set_current_dir(&subdir).unwrap();
+    let original_dir = std::env::current_dir().expect("Operation failed");
+    std::env::set_current_dir(&subdir).expect("Operation failed");
 
-    let config = ExtractionConfig::discover().unwrap();
+    let config = ExtractionConfig::discover().expect("Operation failed");
     assert!(config.is_some());
-    assert!(!config.unwrap().use_cache);
+    assert!(!config.expect("Operation failed").use_cache);
 
-    std::env::set_current_dir(original_dir).unwrap();
+    std::env::set_current_dir(original_dir).expect("Operation failed");
 }
 
 /// Test error handling for nonexistent files.
@@ -428,9 +428,9 @@ async fn test_unsupported_mime_type_error() {
 /// Test pipeline execution (currently stub, will be expanded in Phase 2).
 #[tokio::test]
 async fn test_pipeline_execution() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let file_path = dir.path().join("pipeline_test.txt");
-    fs::write(&file_path, "pipeline content").unwrap();
+    fs::write(&file_path, "pipeline content").expect("Operation failed");
 
     let config = ExtractionConfig {
         enable_quality_processing: true,
@@ -440,7 +440,7 @@ async fn test_pipeline_execution() {
     let result = extract_file(&file_path, None, &config).await;
     assert!(result.is_ok(), "Pipeline execution should succeed");
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert_text_content(&result.content, "pipeline content");
     assert_eq!(result.mime_type, "text/plain");
     assert!(result.chunks.is_none(), "Chunks should be None without chunking config");
@@ -450,9 +450,9 @@ async fn test_pipeline_execution() {
 /// Test extraction with OCR config (placeholder test for Phase 2).
 #[tokio::test]
 async fn test_extraction_with_ocr_config() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let file_path = dir.path().join("ocr_test.txt");
-    fs::write(&file_path, "ocr content").unwrap();
+    fs::write(&file_path, "ocr content").expect("Operation failed");
 
     let config = ExtractionConfig {
         ocr: Some(kreuzberg::OcrConfig {
@@ -473,11 +473,11 @@ async fn test_extraction_with_ocr_config() {
 #[cfg(feature = "chunking")]
 #[tokio::test]
 async fn test_extraction_with_chunking_config() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let file_path = dir.path().join("chunking_test.txt");
 
     let long_content = "content for chunking. ".repeat(100);
-    fs::write(&file_path, &long_content).unwrap();
+    fs::write(&file_path, &long_content).expect("Operation failed");
 
     let config = ExtractionConfig {
         chunking: Some(kreuzberg::ChunkingConfig {
@@ -492,21 +492,21 @@ async fn test_extraction_with_chunking_config() {
     let result = extract_file(&file_path, None, &config).await;
     assert!(result.is_ok(), "Extraction with chunking should succeed");
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
 
     assert!(
         result.chunks.is_some(),
         "Chunks should be populated when chunking enabled"
     );
 
-    let chunks = result.chunks.unwrap();
+    let chunks = result.chunks.expect("Operation failed");
     assert!(chunks.len() > 1, "Should have multiple chunks for long content");
 
     assert!(result.metadata.additional.contains_key("chunk_count"));
-    let chunk_count = result.metadata.additional.get("chunk_count").unwrap();
+    let chunk_count = result.metadata.additional.get("chunk_count").expect("Value not found");
     assert_eq!(
         chunks.len(),
-        chunk_count.as_u64().unwrap() as usize,
+        chunk_count.as_u64().expect("Operation failed") as usize,
         "chunk_count should match chunks length"
     );
 

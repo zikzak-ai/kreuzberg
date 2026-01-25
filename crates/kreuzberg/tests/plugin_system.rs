@@ -202,9 +202,9 @@ async fn test_extractor_extraction_failure() {
         should_fail_extract: true,
     });
 
-    registry.register(failing_extractor).unwrap();
+    registry.register(failing_extractor).expect("Operation failed");
 
-    let extractor = registry.get("text/plain").unwrap();
+    let extractor = registry.get("text/plain").expect("Value not found");
     let config = ExtractionConfig::default();
     let result = extractor.extract_bytes(b"test", "text/plain", &config).await;
 
@@ -227,8 +227,8 @@ fn test_extractor_duplicate_registration() {
         should_fail_extract: false,
     });
 
-    registry.register(extractor1).unwrap();
-    registry.register(extractor2).unwrap();
+    registry.register(extractor1).expect("Operation failed");
+    registry.register(extractor2).expect("Operation failed");
 
     let names = registry.list();
     assert_eq!(names.len(), 1);
@@ -255,13 +255,13 @@ fn test_extractor_concurrent_registration() {
             let mut reg = registry_clone
                 .write()
                 .expect("Failed to acquire write lock on registry in test");
-            reg.register(extractor).unwrap();
+            reg.register(extractor).expect("Operation failed");
         });
         handles.push(handle);
     }
 
     for handle in handles {
-        handle.join().unwrap();
+        handle.join().expect("Operation failed");
     }
 
     let reg = registry
@@ -323,10 +323,10 @@ fn test_extractor_priority_ordering_complex() {
             name: format!("priority-{}", priority),
             priority,
         });
-        registry.register(extractor).unwrap();
+        registry.register(extractor).expect("Operation failed");
     }
 
-    let selected = registry.get("text/plain").unwrap();
+    let selected = registry.get("text/plain").expect("Value not found");
     assert_eq!(selected.name(), "priority-100");
     assert_eq!(selected.priority(), 100);
 }
@@ -382,10 +382,10 @@ fn test_extractor_wildcard_vs_exact_priority() {
         should_fail_extract: false,
     });
 
-    registry.register(wildcard_arc).unwrap();
-    registry.register(exact).unwrap();
+    registry.register(wildcard_arc).expect("Operation failed");
+    registry.register(exact).expect("Operation failed");
 
-    let selected = registry.get("text/plain").unwrap();
+    let selected = registry.get("text/plain").expect("Value not found");
     assert_eq!(selected.name(), "exact-low");
 }
 
@@ -420,11 +420,11 @@ fn test_extractor_list_after_partial_removal() {
             should_fail_init: false,
             should_fail_extract: false,
         });
-        registry.register(extractor).unwrap();
+        registry.register(extractor).expect("Operation failed");
     }
 
-    registry.remove("extractor-2").unwrap();
-    registry.remove("extractor-3").unwrap();
+    registry.remove("extractor-2").expect("Operation failed");
+    registry.remove("extractor-3").expect("Operation failed");
 
     let names = registry.list();
     assert_eq!(names.len(), 3);
@@ -452,9 +452,9 @@ async fn test_processor_execution_order_within_stage() {
         stage: ProcessingStage::Early,
     });
 
-    registry.register(low, 10).unwrap();
-    registry.register(high, 100).unwrap();
-    registry.register(medium, 50).unwrap();
+    registry.register(low, 10).expect("Operation failed");
+    registry.register(high, 100).expect("Operation failed");
+    registry.register(medium, 50).expect("Operation failed");
 
     let processors = registry.get_for_stage(ProcessingStage::Early);
     assert_eq!(processors.len(), 3);
@@ -474,7 +474,7 @@ async fn test_processor_execution_order_within_stage() {
 
     let config = ExtractionConfig::default();
     for processor in processors {
-        processor.process(&mut result, &config).await.unwrap();
+        processor.process(&mut result, &config).await.expect("Async operation failed");
     }
 
     assert_eq!(result.content, "start [high] [medium] [low]");
@@ -488,7 +488,7 @@ async fn test_processor_error_propagation() {
         name: "failing".to_string(),
     });
 
-    registry.register(failing, 50).unwrap();
+    registry.register(failing, 50).expect("Operation failed");
 
     let processors = registry.get_for_stage(ProcessingStage::Early);
     assert_eq!(processors.len(), 1);
@@ -531,9 +531,9 @@ fn test_processor_multiple_stages() {
         stage: ProcessingStage::Late,
     });
 
-    registry.register(early, 50).unwrap();
-    registry.register(middle, 50).unwrap();
-    registry.register(late, 50).unwrap();
+    registry.register(early, 50).expect("Operation failed");
+    registry.register(middle, 50).expect("Operation failed");
+    registry.register(late, 50).expect("Operation failed");
 
     assert_eq!(registry.get_for_stage(ProcessingStage::Early).len(), 1);
     assert_eq!(registry.get_for_stage(ProcessingStage::Middle).len(), 1);
@@ -593,8 +593,8 @@ fn test_processor_same_priority_same_stage() {
         stage: ProcessingStage::Early,
     });
 
-    registry.register(proc1, 50).unwrap();
-    registry.register(proc2, 50).unwrap();
+    registry.register(proc1, 50).expect("Operation failed");
+    registry.register(proc2, 50).expect("Operation failed");
 
     let processors = registry.get_for_stage(ProcessingStage::Early);
     assert_eq!(processors.len(), 2);
@@ -609,10 +609,10 @@ fn test_processor_remove_from_specific_stage() {
         stage: ProcessingStage::Early,
     });
 
-    registry.register(early, 50).unwrap();
+    registry.register(early, 50).expect("Operation failed");
     assert_eq!(registry.get_for_stage(ProcessingStage::Early).len(), 1);
 
-    registry.remove("processor").unwrap();
+    registry.remove("processor").expect("Operation failed");
     assert_eq!(registry.get_for_stage(ProcessingStage::Early).len(), 0);
 }
 
@@ -625,7 +625,7 @@ fn test_processor_list_across_stages() {
             name: format!("{:?}-processor", stage),
             stage,
         });
-        registry.register(processor, 50).unwrap();
+        registry.register(processor, 50).expect("Operation failed");
     }
 
     let names = registry.list();
@@ -641,10 +641,10 @@ fn test_processor_shutdown_clears_all_stages() {
             name: format!("{:?}-processor", stage),
             stage,
         });
-        registry.register(processor, 50).unwrap();
+        registry.register(processor, 50).expect("Operation failed");
     }
 
-    registry.shutdown_all().unwrap();
+    registry.shutdown_all().expect("Operation failed");
 
     assert_eq!(registry.get_for_stage(ProcessingStage::Early).len(), 0);
     assert_eq!(registry.get_for_stage(ProcessingStage::Middle).len(), 0);
@@ -660,7 +660,7 @@ async fn test_validator_content_validation() {
         min_length: 10,
     });
 
-    registry.register(strict).unwrap();
+    registry.register(strict).expect("Operation failed");
 
     let validators = registry.get_all();
     assert_eq!(validators.len(), 1);
@@ -791,9 +791,9 @@ fn test_validator_priority_ordering() {
     let low = Arc::new(LowPriorityValidator);
     let high_priority = Arc::new(HighPriorityValidator);
 
-    registry.register(medium).unwrap();
-    registry.register(low).unwrap();
-    registry.register(high_priority).unwrap();
+    registry.register(medium).expect("Operation failed");
+    registry.register(low).expect("Operation failed");
+    registry.register(high_priority).expect("Operation failed");
 
     let validators = registry.get_all();
     assert_eq!(validators.len(), 3);
@@ -857,13 +857,13 @@ fn test_validator_remove_and_reregister() {
         min_length: 5,
     });
 
-    registry.register(Arc::clone(&validator)).unwrap();
+    registry.register(Arc::clone(&validator)).expect("Operation failed");
     assert_eq!(registry.get_all().len(), 1);
 
-    registry.remove("validator").unwrap();
+    registry.remove("validator").expect("Operation failed");
     assert_eq!(registry.get_all().len(), 0);
 
-    registry.register(validator).unwrap();
+    registry.register(validator).expect("Operation failed");
     assert_eq!(registry.get_all().len(), 1);
 }
 
@@ -890,9 +890,9 @@ fn test_multiple_registries_independence() {
         min_length: 5,
     });
 
-    extractor_registry.register(extractor).unwrap();
-    processor_registry.register(processor, 50).unwrap();
-    validator_registry.register(validator).unwrap();
+    extractor_registry.register(extractor).expect("Operation failed");
+    processor_registry.register(processor, 50).expect("Operation failed");
+    validator_registry.register(validator).expect("Operation failed");
 
     assert_eq!(ocr_registry.list().len(), 0);
     assert_eq!(extractor_registry.list().len(), 1);
@@ -923,14 +923,14 @@ fn test_shutdown_all_registries() {
         min_length: 5,
     });
 
-    extractor_registry.register(extractor).unwrap();
-    processor_registry.register(processor, 50).unwrap();
-    validator_registry.register(validator).unwrap();
+    extractor_registry.register(extractor).expect("Operation failed");
+    processor_registry.register(processor, 50).expect("Operation failed");
+    validator_registry.register(validator).expect("Operation failed");
 
-    ocr_registry.shutdown_all().unwrap();
-    extractor_registry.shutdown_all().unwrap();
-    processor_registry.shutdown_all().unwrap();
-    validator_registry.shutdown_all().unwrap();
+    ocr_registry.shutdown_all().expect("Operation failed");
+    extractor_registry.shutdown_all().expect("Operation failed");
+    processor_registry.shutdown_all().expect("Operation failed");
+    validator_registry.shutdown_all().expect("Operation failed");
 
     assert_eq!(ocr_registry.list().len(), 0);
     assert_eq!(extractor_registry.list().len(), 0);

@@ -35,14 +35,14 @@ async fn test_chunking_enabled() {
         .expect("Should extract successfully");
 
     assert!(result.chunks.is_some(), "Chunks should be present");
-    let chunks = result.chunks.unwrap();
+    let chunks = result.chunks.expect("Operation failed");
     assert!(chunks.len() > 1, "Should have multiple chunks");
 
     assert!(result.metadata.additional.contains_key("chunk_count"));
-    let chunk_count = result.metadata.additional.get("chunk_count").unwrap();
+    let chunk_count = result.metadata.additional.get("chunk_count").expect("Value not found");
     assert_eq!(
         chunks.len(),
-        chunk_count.as_u64().unwrap() as usize,
+        chunk_count.as_u64().expect("Operation failed") as usize,
         "Chunks length should match chunk_count metadata"
     );
 
@@ -78,7 +78,7 @@ async fn test_chunking_with_overlap() {
         .expect("Should extract successfully");
 
     assert!(result.chunks.is_some(), "Chunks should be present");
-    let chunks = result.chunks.unwrap();
+    let chunks = result.chunks.expect("Operation failed");
     assert!(chunks.len() >= 2, "Should have at least 2 chunks");
 
     assert!(result.metadata.additional.contains_key("chunk_count"));
@@ -118,7 +118,7 @@ async fn test_chunking_custom_sizes() {
         .expect("Should extract successfully");
 
     assert!(result.chunks.is_some(), "Chunks should be present");
-    let chunks = result.chunks.unwrap();
+    let chunks = result.chunks.expect("Operation failed");
     assert!(!chunks.is_empty(), "Should have at least 1 chunk");
 
     assert!(result.metadata.additional.contains_key("chunk_count"));
@@ -178,7 +178,7 @@ async fn test_language_detection_single() {
         .expect("Should extract successfully");
 
     assert!(result.detected_languages.is_some(), "Should detect language");
-    let languages = result.detected_languages.unwrap();
+    let languages = result.detected_languages.expect("Operation failed");
     assert!(!languages.is_empty(), "Should detect at least one language");
     assert_eq!(languages[0], "eng", "Should detect English");
 }
@@ -205,7 +205,7 @@ async fn test_language_detection_multiple() {
         .expect("Should extract successfully");
 
     assert!(result.detected_languages.is_some(), "Should detect languages");
-    let languages = result.detected_languages.unwrap();
+    let languages = result.detected_languages.expect("Operation failed");
     assert!(!languages.is_empty(), "Should detect at least one language");
 }
 
@@ -424,7 +424,7 @@ async fn test_quality_processing_enabled() {
         .expect("Should extract successfully");
 
     if let Some(score) = result.metadata.additional.get("quality_score") {
-        let score_value = score.as_f64().unwrap();
+        let score_value = score.as_f64().expect("Operation failed");
         assert!((0.0..=1.0).contains(&score_value));
     }
 
@@ -463,16 +463,16 @@ async fn test_quality_threshold_filtering() {
         .metadata
         .additional
         .get("quality_score")
-        .unwrap()
+        .expect("Operation failed")
         .as_f64()
-        .unwrap();
+        .expect("Operation failed");
     let score_low = result_low
         .metadata
         .additional
         .get("quality_score")
-        .unwrap()
+        .expect("Operation failed")
         .as_f64()
-        .unwrap();
+        .expect("Operation failed");
 
     assert!((0.0..=1.0).contains(&score_high));
     assert!((0.0..=1.0).contains(&score_low));
@@ -528,7 +528,7 @@ async fn test_chunking_with_embeddings() {
         .expect("Should extract successfully");
 
     assert!(result.chunks.is_some(), "Chunks should be present");
-    let chunks = result.chunks.unwrap();
+    let chunks = result.chunks.expect("Operation failed");
     assert!(chunks.len() > 1, "Should have multiple chunks");
 
     println!("Metadata: {:?}", result.metadata.additional);
@@ -542,13 +542,13 @@ async fn test_chunking_with_embeddings() {
         "Should have embeddings_generated metadata"
     );
     assert_eq!(
-        result.metadata.additional.get("embeddings_generated").unwrap(),
+        result.metadata.additional.get("embeddings_generated").expect("Value not found"),
         &serde_json::Value::Bool(true)
     );
 
     for chunk in &chunks {
         assert!(chunk.embedding.is_some(), "Each chunk should have an embedding");
-        let embedding = chunk.embedding.as_ref().unwrap();
+        let embedding = chunk.embedding.as_ref().expect("Operation failed");
         assert_eq!(
             embedding.len(),
             768,

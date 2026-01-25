@@ -8,9 +8,9 @@ use kreuzberg::{ExtractionConfig, extract_file};
 async fn test_docx_full_metadata_extraction() {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     let test_file = workspace_root.join("test_documents/documents/word_sample.docx");
 
     if !test_file.exists() {
@@ -91,9 +91,9 @@ async fn test_docx_full_metadata_extraction() {
 async fn test_docx_minimal_metadata_extraction() {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     let test_file = workspace_root.join("test_documents/documents/lorem_ipsum.docx");
 
     if !test_file.exists() {
@@ -143,25 +143,25 @@ async fn test_docx_keywords_extraction() {
         let options: FileOptions<()> = FileOptions::default().compression_method(CompressionMethod::Stored);
 
         // Add [Content_Types].xml
-        zip.start_file("[Content_Types].xml", options).unwrap();
+        zip.start_file("[Content_Types].xml", options).expect("Operation failed");
         zip.write_all(br#"<?xml version="1.0" encoding="UTF-8"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
   <Default Extension="xml" ContentType="application/xml"/>
   <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
   <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
-</Types>"#).unwrap();
+</Types>"#).expect("Operation failed");
 
         // Add _rels/.rels
-        zip.start_file("_rels/.rels", options).unwrap();
+        zip.start_file("_rels/.rels", options).expect("Operation failed");
         zip.write_all(br#"<?xml version="1.0" encoding="UTF-8"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
   <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
-</Relationships>"#).unwrap();
+</Relationships>"#).expect("Operation failed");
 
         // Add word/document.xml with simple content
-        zip.start_file("word/document.xml", options).unwrap();
+        zip.start_file("word/document.xml", options).expect("Operation failed");
         zip.write_all(
             br#"<?xml version="1.0" encoding="UTF-8"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -174,10 +174,10 @@ async fn test_docx_keywords_extraction() {
   </w:body>
 </w:document>"#,
         )
-        .unwrap();
+        .expect("Operation failed");
 
         // Add docProps/core.xml with keywords (comma-separated string)
-        zip.start_file("docProps/core.xml", options).unwrap();
+        zip.start_file("docProps/core.xml", options).expect("Operation failed");
         zip.write_all(
             br#"<?xml version="1.0" encoding="UTF-8"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
@@ -189,9 +189,9 @@ async fn test_docx_keywords_extraction() {
   <dc:subject>Testing keyword extraction</dc:subject>
 </cp:coreProperties>"#,
         )
-        .unwrap();
+        .expect("Operation failed");
 
-        zip.finish().unwrap();
+        zip.finish().expect("Operation failed");
     }
 
     // Extract the DOCX file
@@ -216,7 +216,7 @@ async fn test_docx_keywords_extraction() {
         "Keywords should be present in metadata.keywords"
     );
 
-    let keywords = result.metadata.keywords.as_ref().unwrap();
+    let keywords = result.metadata.keywords.as_ref().expect("Operation failed");
     assert_eq!(
         keywords.len(),
         5,

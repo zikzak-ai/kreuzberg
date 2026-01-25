@@ -184,9 +184,9 @@ fn test_register_multiple_validators_succeeds() {
         should_fail: true,
     });
 
-    registry.register(v1).unwrap();
-    registry.register(v2).unwrap();
-    registry.register(v3).unwrap();
+    registry.register(v1).expect("Operation failed");
+    registry.register(v2).expect("Operation failed");
+    registry.register(v3).expect("Operation failed");
 
     let list = registry.list();
     assert_eq!(list.len(), 3, "Should have three validators");
@@ -205,7 +205,7 @@ fn test_validator_unregistration_succeeds() {
         should_fail: false,
     });
 
-    registry.register(validator).unwrap();
+    registry.register(validator).expect("Operation failed");
     assert_eq!(registry.list().len(), 1);
 
     let result = registry.remove("temp-validator");
@@ -298,8 +298,8 @@ fn test_clear_validators_succeeds() {
         should_fail: false,
     });
 
-    registry.register(v1).unwrap();
-    registry.register(v2).unwrap();
+    registry.register(v1).expect("Operation failed");
+    registry.register(v2).expect("Operation failed");
     assert_eq!(registry.list().len(), 2);
 
     let result = registry.shutdown_all();
@@ -355,9 +355,9 @@ fn test_get_all_validators_respects_priority() {
         priority: 100,
     });
 
-    registry.register(medium).unwrap();
-    registry.register(low).unwrap();
-    registry.register(high).unwrap();
+    registry.register(medium).expect("Operation failed");
+    registry.register(low).expect("Operation failed");
+    registry.register(high).expect("Operation failed");
 
     let all = registry.get_all();
     assert_eq!(all.len(), 3, "Should have three validators");
@@ -397,11 +397,11 @@ fn test_get_extractor_by_mime_type_succeeds() {
         priority: 50,
     });
 
-    registry.register(extractor).unwrap();
+    registry.register(extractor).expect("Operation failed");
 
     let result = registry.get("application/pdf");
     assert!(result.is_ok(), "Should find extractor for PDF");
-    assert_eq!(result.unwrap().name(), "pdf-extractor");
+    assert_eq!(result.expect("Operation failed").name(), "pdf-extractor");
 }
 
 /// Test extractor not found for unsupported MIME type.
@@ -437,10 +437,10 @@ fn test_extractor_priority_selection() {
         priority: 100,
     });
 
-    registry.register(low_priority).unwrap();
-    registry.register(high_priority).unwrap();
+    registry.register(low_priority).expect("Operation failed");
+    registry.register(high_priority).expect("Operation failed");
 
-    let result = registry.get("text/plain").unwrap();
+    let result = registry.get("text/plain").expect("Value not found");
     assert_eq!(
         result.name(),
         "high-priority-extractor",
@@ -459,15 +459,15 @@ fn test_extractor_wildcard_mime_matching() {
         priority: 50,
     });
 
-    registry.register(extractor).unwrap();
+    registry.register(extractor).expect("Operation failed");
 
     let result = registry.get("text/plain");
     assert!(result.is_ok(), "Should match text/plain with text/*");
-    assert_eq!(result.unwrap().name(), "text-extractor");
+    assert_eq!(result.expect("Operation failed").name(), "text-extractor");
 
     let result = registry.get("text/html");
     assert!(result.is_ok(), "Should match text/html with text/*");
-    assert_eq!(result.unwrap().name(), "text-extractor");
+    assert_eq!(result.expect("Operation failed").name(), "text-extractor");
 
     let result = registry.get("application/pdf");
     assert!(result.is_err(), "Should not match application/pdf with text/*");
@@ -484,7 +484,7 @@ fn test_extractor_unregistration_succeeds() {
         priority: 50,
     });
 
-    registry.register(extractor).unwrap();
+    registry.register(extractor).expect("Operation failed");
     assert_eq!(registry.list().len(), 1);
 
     let result = registry.remove("temp-extractor");
@@ -506,17 +506,17 @@ fn test_extractor_multiple_mime_types() {
         priority: 50,
     });
 
-    registry.register(extractor).unwrap();
+    registry.register(extractor).expect("Operation failed");
 
     assert!(registry.get("application/pdf").is_ok());
     assert!(registry.get("application/vnd.ms-excel").is_ok());
     assert!(registry.get("text/csv").is_ok());
 
     assert_eq!(
-        registry.get("application/pdf").unwrap().name(),
+        registry.get("application/pdf").expect("Value not found").name(),
         "multi-format-extractor"
     );
-    assert_eq!(registry.get("text/csv").unwrap().name(), "multi-format-extractor");
+    assert_eq!(registry.get("text/csv").expect("Value not found").name(), "multi-format-extractor");
 }
 
 /// Test clearing all extractors.
@@ -535,8 +535,8 @@ fn test_clear_extractors_succeeds() {
         priority: 50,
     });
 
-    registry.register(e1).unwrap();
-    registry.register(e2).unwrap();
+    registry.register(e1).expect("Operation failed");
+    registry.register(e2).expect("Operation failed");
     assert_eq!(registry.list().len(), 2);
 
     let result = registry.shutdown_all();

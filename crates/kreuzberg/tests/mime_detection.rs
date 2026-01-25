@@ -48,12 +48,12 @@ async fn test_mime_detection_by_extension() {
         let temp_dir = TempDir::new().expect("Should create temp dir");
         let temp_path = temp_dir.path().join(filename);
 
-        std::fs::write(&temp_path, b"test content").unwrap();
+        std::fs::write(&temp_path, b"test content").expect("Operation failed");
 
         let detected = detect_mime_type(&temp_path, true);
 
         assert!(detected.is_ok(), "Should detect MIME type for {}", filename);
-        assert_eq!(detected.unwrap(), expected_mime, "MIME type mismatch for {}", filename);
+        assert_eq!(detected.expect("Operation failed"), expected_mime, "MIME type mismatch for {}", filename);
     }
 }
 
@@ -76,11 +76,11 @@ async fn test_mime_detection_case_insensitive() {
         let temp_dir = TempDir::new().expect("Should create temp dir");
         let temp_path = temp_dir.path().join(filename);
 
-        std::fs::write(&temp_path, b"test").unwrap();
+        std::fs::write(&temp_path, b"test").expect("Operation failed");
 
         let detected = detect_mime_type(&temp_path, true);
         assert!(detected.is_ok(), "Should handle {} (case insensitive)", filename);
-        assert_eq!(detected.unwrap(), expected_mime);
+        assert_eq!(detected.expect("Operation failed"), expected_mime);
     }
 }
 
@@ -118,11 +118,11 @@ async fn test_mime_detection_by_content() {
 
     for test_case in test_cases {
         let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-        let temp_path = temp_file.path().parent().unwrap().join(test_case.filename);
+        let temp_path = temp_file.path().parent().expect("Operation failed").join(test_case.filename);
 
-        temp_file.write_all(&test_case.content).unwrap();
-        temp_file.flush().unwrap();
-        std::fs::copy(temp_file.path(), &temp_path).unwrap();
+        temp_file.write_all(&test_case.content).expect("Operation failed");
+        temp_file.flush().expect("Operation failed");
+        std::fs::copy(temp_file.path(), &temp_path).expect("Operation failed");
 
         let detected = detect_mime_type(&temp_path, true);
 
@@ -170,7 +170,7 @@ async fn test_mime_type_validation() {
     for mime_type in supported {
         let result = validate_mime_type(mime_type);
         assert!(result.is_ok(), "Should validate supported MIME type: {}", mime_type);
-        assert_eq!(result.unwrap(), mime_type);
+        assert_eq!(result.expect("Operation failed"), mime_type);
     }
 }
 
@@ -222,18 +222,18 @@ async fn test_unknown_mime_type() {
 #[tokio::test]
 async fn test_mime_mismatch_warning() {
     let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-    let temp_path = temp_file.path().parent().unwrap().join("document.pdf");
+    let temp_path = temp_file.path().parent().expect("Operation failed").join("document.pdf");
 
-    temp_file.write_all(&[0x50, 0x4B, 0x03, 0x04]).unwrap();
-    temp_file.flush().unwrap();
-    std::fs::copy(temp_file.path(), &temp_path).unwrap();
+    temp_file.write_all(&[0x50, 0x4B, 0x03, 0x04]).expect("Operation failed");
+    temp_file.flush().expect("Operation failed");
+    std::fs::copy(temp_file.path(), &temp_path).expect("Operation failed");
 
     let detected = detect_mime_type(&temp_path, true);
 
     assert!(detected.is_ok(), "Should detect MIME type even with mismatch");
 
     assert_eq!(
-        detected.unwrap(),
+        detected.expect("Operation failed"),
         "application/pdf",
         "Extension-based detection should take precedence"
     );
@@ -245,18 +245,18 @@ async fn test_mime_mismatch_warning() {
 #[tokio::test]
 async fn test_extension_content_mismatch() {
     let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-    let temp_path = temp_file.path().parent().unwrap().join("document.txt");
+    let temp_path = temp_file.path().parent().expect("Operation failed").join("document.txt");
 
-    temp_file.write_all(b"%PDF-1.4\n").unwrap();
-    temp_file.flush().unwrap();
-    std::fs::copy(temp_file.path(), &temp_path).unwrap();
+    temp_file.write_all(b"%PDF-1.4\n").expect("Operation failed");
+    temp_file.flush().expect("Operation failed");
+    std::fs::copy(temp_file.path(), &temp_path).expect("Operation failed");
 
     let detected = detect_mime_type(&temp_path, true);
 
     assert!(detected.is_ok(), "Should detect MIME type");
 
     assert_eq!(
-        detected.unwrap(),
+        detected.expect("Operation failed"),
         "text/plain",
         "Should use extension for MIME detection"
     );
@@ -268,11 +268,11 @@ async fn test_extension_content_mismatch() {
 #[tokio::test]
 async fn test_no_extension() {
     let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-    let temp_path = temp_file.path().parent().unwrap().join("testfile");
+    let temp_path = temp_file.path().parent().expect("Operation failed").join("testfile");
 
-    temp_file.write_all(b"test content").unwrap();
-    temp_file.flush().unwrap();
-    std::fs::copy(temp_file.path(), &temp_path).unwrap();
+    temp_file.write_all(b"test content").expect("Operation failed");
+    temp_file.flush().expect("Operation failed");
+    std::fs::copy(temp_file.path(), &temp_path).expect("Operation failed");
 
     let detected = detect_mime_type(&temp_path, true);
 
@@ -322,23 +322,23 @@ async fn test_mime_detection_skip_existence_check() {
     let result = detect_mime_type(nonexistent_path, false);
 
     assert!(result.is_ok(), "Should succeed when skipping existence check");
-    assert_eq!(result.unwrap(), "application/pdf");
+    assert_eq!(result.expect("Operation failed"), "application/pdf");
 }
 
 /// Test multiple dots in filename.
 #[tokio::test]
 async fn test_filename_multiple_dots() {
     let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-    let temp_path = temp_file.path().parent().unwrap().join("my.backup.file.pdf");
+    let temp_path = temp_file.path().parent().expect("Operation failed").join("my.backup.file.pdf");
 
-    temp_file.write_all(b"test").unwrap();
-    temp_file.flush().unwrap();
-    std::fs::copy(temp_file.path(), &temp_path).unwrap();
+    temp_file.write_all(b"test").expect("Operation failed");
+    temp_file.flush().expect("Operation failed");
+    std::fs::copy(temp_file.path(), &temp_path).expect("Operation failed");
 
     let detected = detect_mime_type(&temp_path, true);
 
     assert!(detected.is_ok(), "Should handle multiple dots in filename");
-    assert_eq!(detected.unwrap(), "application/pdf", "Should use last extension");
+    assert_eq!(detected.expect("Operation failed"), "application/pdf", "Should use last extension");
 
     let _ = std::fs::remove_file(&temp_path);
 }
@@ -347,16 +347,16 @@ async fn test_filename_multiple_dots() {
 #[tokio::test]
 async fn test_filename_special_characters() {
     let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-    let temp_path = temp_file.path().parent().unwrap().join("文档 (copy) [v2].pdf");
+    let temp_path = temp_file.path().parent().expect("Operation failed").join("文档 (copy) [v2].pdf");
 
-    temp_file.write_all(b"test").unwrap();
-    temp_file.flush().unwrap();
-    std::fs::copy(temp_file.path(), &temp_path).unwrap();
+    temp_file.write_all(b"test").expect("Operation failed");
+    temp_file.flush().expect("Operation failed");
+    std::fs::copy(temp_file.path(), &temp_path).expect("Operation failed");
 
     let detected = detect_mime_type(&temp_path, true);
 
     assert!(detected.is_ok(), "Should handle special characters in filename");
-    assert_eq!(detected.unwrap(), "application/pdf");
+    assert_eq!(detected.expect("Operation failed"), "application/pdf");
 
     let _ = std::fs::remove_file(&temp_path);
 }
@@ -382,11 +382,11 @@ async fn test_pandoc_formats_mime_detection() {
 
     for (filename, expected_mime) in pandoc_formats {
         let mut temp_file = NamedTempFile::new().expect("Should create temp file");
-        let temp_path = temp_file.path().parent().unwrap().join(filename);
+        let temp_path = temp_file.path().parent().expect("Operation failed").join(filename);
 
-        temp_file.write_all(b"test content").unwrap();
-        temp_file.flush().unwrap();
-        std::fs::copy(temp_file.path(), &temp_path).unwrap();
+        temp_file.write_all(b"test content").expect("Operation failed");
+        temp_file.flush().expect("Operation failed");
+        std::fs::copy(temp_file.path(), &temp_path).expect("Operation failed");
 
         let detected = detect_mime_type(&temp_path, true);
 
@@ -396,7 +396,7 @@ async fn test_pandoc_formats_mime_detection() {
             filename
         );
         assert_eq!(
-            detected.unwrap(),
+            detected.expect("Operation failed"),
             expected_mime,
             "MIME type mismatch for Pandoc format: {}",
             filename
@@ -424,6 +424,6 @@ async fn test_pandoc_mime_validation() {
     for mime_type in pandoc_mimes {
         let result = validate_mime_type(mime_type);
         assert!(result.is_ok(), "Pandoc MIME type should be supported: {}", mime_type);
-        assert_eq!(result.unwrap(), mime_type);
+        assert_eq!(result.expect("Operation failed"), mime_type);
     }
 }

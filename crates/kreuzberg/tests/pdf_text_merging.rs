@@ -29,7 +29,7 @@ fn test_extract_chars_basic() {
     // Load PDF
     let pdfium = Pdfium;
     let document = pdfium
-        .load_pdf_from_file(pdf_path.to_str().unwrap(), None)
+        .load_pdf_from_file(pdf_path.to_str().expect("Operation failed"), None)
         .expect("Failed to load test PDF");
 
     // Get first page
@@ -62,7 +62,7 @@ fn test_extract_chars_preserves_order() {
     // Load PDF
     let pdfium = Pdfium;
     let document = pdfium
-        .load_pdf_from_file(pdf_path.to_str().unwrap(), None)
+        .load_pdf_from_file(pdf_path.to_str().expect("Operation failed"), None)
         .expect("Failed to load test PDF");
 
     // Get first page

@@ -48,7 +48,7 @@ impl OcrBackend for MockOcrBackend {
     async fn process_image(&self, image_bytes: &[u8], config: &OcrConfig) -> Result<ExtractionResult> {
         self.call_count.fetch_add(1, Ordering::SeqCst);
 
-        *self.last_language.lock().unwrap() = config.language.clone();
+        *self.last_language.lock().expect("Operation failed") = config.language.clone();
 
         if image_bytes.is_empty() {
             return Err(KreuzbergError::validation("Empty image data".to_string()));
@@ -240,8 +240,8 @@ fn test_register_custom_ocr_backend() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MockOcrBackend {
@@ -253,7 +253,7 @@ fn test_register_custom_ocr_backend() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         let result = reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>);
         assert!(result.is_ok(), "Failed to register OCR backend: {:?}", result.err());
     }
@@ -264,15 +264,15 @@ fn test_register_custom_ocr_backend() {
     );
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 
     assert!(list.contains(&"test-ocr".to_string()));
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -283,8 +283,8 @@ fn test_ocr_backend_used_for_image_extraction() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MockOcrBackend {
@@ -296,8 +296,8 @@ fn test_ocr_backend_used_for_image_extraction() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     let ocr_config = OcrConfig {
@@ -317,7 +317,7 @@ fn test_ocr_backend_used_for_image_extraction() {
 
     assert!(result.is_ok(), "Extraction failed: {:?}", result.err());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
     assert!(
         extraction_result.content.contains("CUSTOM OCR TEXT"),
         "Custom OCR backend was not used. Content: {}",
@@ -331,8 +331,8 @@ fn test_ocr_backend_used_for_image_extraction() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -343,8 +343,8 @@ fn test_ocr_backend_receives_correct_parameters() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MockOcrBackend {
@@ -356,8 +356,8 @@ fn test_ocr_backend_receives_correct_parameters() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     let ocr_config = OcrConfig {
@@ -377,15 +377,15 @@ fn test_ocr_backend_receives_correct_parameters() {
 
     assert!(result.is_ok());
 
-    let last_lang = backend.last_language.lock().unwrap();
+    let last_lang = backend.last_language.lock().expect("Operation failed");
     assert_eq!(*last_lang, "deu", "Language parameter not passed correctly");
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
     assert!(extraction_result.content.contains("(lang: deu)"));
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -396,8 +396,8 @@ fn test_ocr_backend_returns_correct_format() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MetadataOcrBackend {
@@ -405,8 +405,8 @@ fn test_ocr_backend_returns_correct_format() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(backend as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(backend as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     let ocr_config = OcrConfig {
@@ -426,7 +426,7 @@ fn test_ocr_backend_returns_correct_format() {
 
     assert!(result.is_ok());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
 
     assert!(!extraction_result.content.is_empty());
     assert_eq!(extraction_result.mime_type, "image/png");
@@ -435,8 +435,8 @@ fn test_ocr_backend_returns_correct_format() {
     assert!(extraction_result.metadata.additional.contains_key("ocr_language"));
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -447,8 +447,8 @@ fn test_ocr_backend_error_handling() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(FailingOcrBackend {
@@ -456,8 +456,8 @@ fn test_ocr_backend_error_handling() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(backend as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(backend as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     let ocr_config = OcrConfig {
@@ -477,7 +477,7 @@ fn test_ocr_backend_error_handling() {
 
     assert!(result.is_err(), "Expected OCR to fail");
 
-    match result.err().unwrap() {
+    match result.err().expect("Operation failed") {
         KreuzbergError::Ocr { message, .. } => {
             assert!(message.contains("intentionally failed"));
         }
@@ -485,8 +485,8 @@ fn test_ocr_backend_error_handling() {
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -497,8 +497,8 @@ fn test_ocr_backend_validation_error() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(ValidatingOcrBackend {
@@ -507,8 +507,8 @@ fn test_ocr_backend_validation_error() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(backend as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(backend as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     let ocr_config = OcrConfig {
@@ -528,7 +528,7 @@ fn test_ocr_backend_validation_error() {
 
     assert!(result.is_err(), "Expected validation to fail");
 
-    match result.err().unwrap() {
+    match result.err().expect("Operation failed") {
         KreuzbergError::Validation { message, .. } => {
             assert!(message.contains("Image too small"));
         }
@@ -536,8 +536,8 @@ fn test_ocr_backend_validation_error() {
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -548,8 +548,8 @@ fn test_switching_between_ocr_backends() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend1 = Arc::new(MockOcrBackend {
@@ -569,9 +569,9 @@ fn test_switching_between_ocr_backends() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&backend1) as Arc<dyn OcrBackend>).unwrap();
-        reg.register(Arc::clone(&backend2) as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&backend1) as Arc<dyn OcrBackend>).expect("Operation failed");
+        reg.register(Arc::clone(&backend2) as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     let ocr_config1 = OcrConfig {
@@ -589,7 +589,7 @@ fn test_switching_between_ocr_backends() {
 
     let result1 = extract_file_sync(test_image, None, &config1);
     assert!(result1.is_ok());
-    assert!(result1.unwrap().content.contains("BACKEND ONE OUTPUT"));
+    assert!(result1.expect("Operation failed").content.contains("BACKEND ONE OUTPUT"));
     assert_eq!(backend1.call_count.load(Ordering::SeqCst), 1);
     assert_eq!(backend2.call_count.load(Ordering::SeqCst), 0);
 
@@ -608,13 +608,13 @@ fn test_switching_between_ocr_backends() {
 
     let result2 = extract_file_sync(test_image, None, &config2);
     assert!(result2.is_ok());
-    assert!(result2.unwrap().content.contains("BACKEND TWO OUTPUT"));
+    assert!(result2.expect("Operation failed").content.contains("BACKEND TWO OUTPUT"));
     assert_eq!(backend1.call_count.load(Ordering::SeqCst), 1);
     assert_eq!(backend2.call_count.load(Ordering::SeqCst), 1);
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -624,8 +624,8 @@ fn test_ocr_backend_language_support() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MockOcrBackend {
@@ -637,8 +637,8 @@ fn test_ocr_backend_language_support() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     assert!(backend.supports_language("eng"));
@@ -653,8 +653,8 @@ fn test_ocr_backend_language_support() {
     assert!(supported.contains(&"fra".to_string()));
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -678,8 +678,8 @@ fn test_ocr_backend_invalid_name() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MockOcrBackend {
@@ -691,16 +691,16 @@ fn test_ocr_backend_invalid_name() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         let result = reg.register(backend);
 
         assert!(result.is_err());
-        assert!(matches!(result.err().unwrap(), KreuzbergError::Validation { .. }));
+        assert!(matches!(result.err().expect("Operation failed"), KreuzbergError::Validation { .. }));
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -710,8 +710,8 @@ fn test_ocr_backend_initialization_lifecycle() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MockOcrBackend {
@@ -728,8 +728,8 @@ fn test_ocr_backend_initialization_lifecycle() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     assert!(
@@ -738,8 +738,8 @@ fn test_ocr_backend_initialization_lifecycle() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     assert!(
@@ -754,8 +754,8 @@ fn test_unregister_ocr_backend() {
     let registry = get_ocr_backend_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let backend = Arc::new(MockOcrBackend {
@@ -767,17 +767,17 @@ fn test_unregister_ocr_backend() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&backend) as Arc<dyn OcrBackend>).expect("Operation failed");
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.remove("unregister-ocr").unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.remove("unregister-ocr").expect("Operation failed");
     }
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 

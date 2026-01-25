@@ -63,7 +63,7 @@ async fn test_batch_documents_parallel_execution() {
     let parallel_duration = parallel_start.elapsed();
 
     assert!(results.is_ok(), "Batch extraction should succeed");
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 20, "Should process all 20 files");
 
     for result in &results {
@@ -102,7 +102,7 @@ async fn test_batch_documents_concurrency_limiting() {
     let results = batch_extract_file(paths, &config).await;
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 4);
 }
 
@@ -127,7 +127,7 @@ async fn test_batch_documents_default_concurrency() {
     let duration = start.elapsed();
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 50);
 
     println!("Processed 50 files in {:?}", duration);
@@ -152,7 +152,7 @@ async fn test_batch_documents_preserves_order() {
         get_test_file_path("xml/simple_note.xml"),
     ];
 
-    let results = batch_extract_file(paths, &config).await.unwrap();
+    let results = batch_extract_file(paths, &config).await.expect("Async operation failed");
 
     assert_eq!(results.len(), 3, "Should have 3 results");
 
@@ -201,7 +201,7 @@ async fn test_multipage_pdf_extraction() {
     let duration = start.elapsed();
 
     assert!(result.is_ok(), "Multi-page PDF extraction should succeed");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Should extract text from all pages");
     println!("Extracted multi-page PDF in {:?}", duration);
@@ -230,7 +230,7 @@ async fn test_concurrent_pdf_extractions() {
     let duration = start.elapsed();
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 10);
 
     println!("Processed 10 PDFs in {:?}", duration);
@@ -318,7 +318,7 @@ async fn test_batch_bytes_parallel_processing() {
     let duration = start.elapsed();
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 30);
 
     for (i, result) in results.iter().enumerate() {
@@ -350,7 +350,7 @@ async fn test_batch_bytes_mixed_valid_invalid() {
     let results = batch_extract_bytes(owned_contents, &config).await;
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 5);
 
     assert_text_content(&results[0].content, "valid content 1");
@@ -394,7 +394,7 @@ async fn test_batch_utilizes_multiple_cores() {
     let duration = start.elapsed();
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 20);
 
     println!(
@@ -437,7 +437,7 @@ async fn test_batch_memory_pressure_handling() {
     let duration = start.elapsed();
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 50);
 
     println!("Processed 50 large documents with concurrency limit in {:?}", duration);
@@ -469,7 +469,7 @@ async fn test_batch_scales_with_cpu_count() {
         .collect();
 
     let start = Instant::now();
-    let _ = batch_extract_bytes(owned_contents_1, &config_1).await.unwrap();
+    let _ = batch_extract_bytes(owned_contents_1, &config_1).await.expect("Async operation failed");
     let duration_1 = start.elapsed();
 
     let config_full = ExtractionConfig {
@@ -483,7 +483,7 @@ async fn test_batch_scales_with_cpu_count() {
         .collect();
 
     let start = Instant::now();
-    let _ = batch_extract_bytes(owned_contents_full, &config_full).await.unwrap();
+    let _ = batch_extract_bytes(owned_contents_full, &config_full).await.expect("Async operation failed");
     let duration_full = start.elapsed();
 
     println!(
@@ -522,7 +522,7 @@ async fn test_batch_mixed_document_types() {
     let results = batch_extract_file(paths, &config).await;
 
     assert!(results.is_ok());
-    let results = results.unwrap();
+    let results = results.expect("Operation failed");
     assert_eq!(results.len(), 4);
 
     for (i, result) in results.iter().enumerate() {
@@ -572,7 +572,7 @@ async fn test_batch_accuracy_under_load() {
         .map(|(bytes, mime)| (bytes.to_vec(), mime.to_string()))
         .collect();
 
-    let results = batch_extract_bytes(owned_contents, &config).await.unwrap();
+    let results = batch_extract_bytes(owned_contents, &config).await.expect("Async operation failed");
 
     assert_eq!(results.len(), 100);
 

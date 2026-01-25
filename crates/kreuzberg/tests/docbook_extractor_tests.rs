@@ -11,9 +11,9 @@ fn test_file_path(filename: &str) -> PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     PathBuf::from(manifest_dir)
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .join("test_documents")
         .join("docbook")
         .join(filename)
@@ -72,7 +72,7 @@ async fn test_docbook4_chapter_extraction() {
     let result = extract_docbook4_file("docbook-chapter.docbook").await;
     assert!(result.is_ok(), "Failed to extract DocBook 4 chapter");
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(!result.content.is_empty(), "Content should not be empty");
     assert!(
         result.content.contains("Test Chapter"),
@@ -89,7 +89,7 @@ async fn test_docbook5_reader_extraction() {
     let result = extract_docbook5_file("docbook-reader.docbook").await;
     assert!(result.is_ok(), "Failed to extract DocBook 5 file");
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(!result.content.is_empty(), "Content should not be empty");
     assert!(
         result.content.contains("Pandoc Test Suite"),
@@ -102,7 +102,7 @@ async fn test_docbook_xref_extraction() {
     let result = extract_docbook4_file("docbook-xref.docbook").await;
     assert!(result.is_ok(), "Failed to extract DocBook with xref elements");
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(!result.content.is_empty(), "Content should not be empty");
     assert!(
         result.content.contains("An Example Book"),
@@ -119,7 +119,7 @@ async fn test_docbook_tables_extraction() {
     let result = extract_docbook4_file("tables.docbook4").await;
     assert!(result.is_ok(), "Failed to extract DocBook with tables");
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(!result.content.is_empty(), "Content should not be empty");
     assert!(!result.tables.is_empty(), "Should extract tables from DocBook");
 }
@@ -129,7 +129,7 @@ async fn test_docbook5_tables_extraction() {
     let result = extract_docbook5_file("tables.docbook5").await;
     assert!(result.is_ok(), "Failed to extract DocBook 5 with tables");
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(!result.content.is_empty(), "Content should not be empty");
     assert!(!result.tables.is_empty(), "Should extract tables from DocBook 5");
 }
@@ -139,7 +139,7 @@ async fn test_docbook_metadata_extraction() {
     let result = extract_docbook5_file("docbook-reader.docbook").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(!result.content.is_empty());
 }
 
@@ -148,7 +148,7 @@ async fn test_docbook_section_hierarchy() {
     let result = extract_docbook4_file("docbook-chapter.docbook").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     let content = &result.content;
 
     assert!(content.contains("Like a Sect1"));
@@ -162,7 +162,7 @@ async fn test_docbook_paragraph_extraction() {
     let result = extract_docbook4_file("docbook-chapter.docbook").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(
         result.content.contains("This chapter uses recursive sections"),
         "Should extract paragraph content"
@@ -183,7 +183,7 @@ async fn test_docbook_paragraph_content() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("Test Article"));
     assert!(result.content.contains("This is a test paragraph"));
     assert!(result.content.contains("another paragraph"));
@@ -205,7 +205,7 @@ def hello():
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("def hello"));
     assert!(result.content.contains("print"));
 }
@@ -229,7 +229,7 @@ async fn test_docbook_mixed_content() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("Test Book"));
     assert!(result.content.contains("Chapter 1"));
     assert!(result.content.contains("Section 1.1"));
@@ -259,7 +259,7 @@ async fn test_docbook_namespaced_5x_parsing() {
     let result = extract_docbook_bytes(docbook5.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("DocBook 5 Article"));
     assert!(result.content.contains("Welcome to DocBook 5"));
 }
@@ -277,7 +277,7 @@ async fn test_docbook_link_handling() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("example"));
 }
 
@@ -316,7 +316,7 @@ async fn test_docbook_empty_sections() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("Empty Section"));
     assert!(result.content.contains("Section with Content"));
     assert!(result.content.contains("Content here"));
@@ -345,7 +345,7 @@ async fn test_docbook_itemized_list() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("First item"));
     assert!(result.content.contains("Second item"));
     assert!(result.content.contains("Third item"));
@@ -375,7 +375,7 @@ async fn test_docbook_ordered_list() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("First step"));
     assert!(result.content.contains("Second step"));
     assert!(result.content.contains("Third step"));
@@ -397,7 +397,7 @@ async fn test_docbook_blockquote() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("quoted passage"));
     assert!(result.content.contains("> "), "Should contain blockquote marker");
 }
@@ -418,7 +418,7 @@ async fn test_docbook_figure() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("Figure"));
 }
 
@@ -435,7 +435,7 @@ async fn test_docbook_footnote() {
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("text with a footnote"));
     assert!(result.content.contains("footnote content"));
 }
@@ -465,7 +465,7 @@ code example
     let result = extract_docbook_bytes(docbook.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("Introduction paragraph"));
     assert!(result.content.contains("List item 1"));
     assert!(result.content.contains("List item 2"));
@@ -493,7 +493,7 @@ async fn test_docbook_namespaced_lists() {
     let result = extract_docbook_bytes(docbook5.as_bytes(), "application/docbook+xml").await;
     assert!(result.is_ok());
 
-    let result = result.unwrap();
+    let result = result.expect("Operation failed");
     assert!(result.content.contains("Namespaced item 1"));
     assert!(result.content.contains("Namespaced item 2"));
     assert!(result.content.contains("- "));

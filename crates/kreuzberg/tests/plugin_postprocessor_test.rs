@@ -187,26 +187,26 @@ fn test_register_custom_postprocessor() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         let result = reg.register(Arc::clone(&processor) as Arc<dyn PostProcessor>, 100);
         assert!(result.is_ok(), "Failed to register processor: {:?}", result.err());
     }
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 
     assert!(list.contains(&"test-appender".to_string()));
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -224,9 +224,9 @@ fn test_postprocessor_called_during_extraction() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         reg.register(Arc::clone(&processor) as Arc<dyn PostProcessor>, 100)
-            .unwrap();
+            .expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -234,7 +234,7 @@ fn test_postprocessor_called_during_extraction() {
 
     assert!(result.is_ok(), "Extraction failed: {:?}", result.err());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
     assert!(
         extraction_result.content.contains("[APPENDED BY PROCESSOR]"),
         "Processor did not modify content. Content: {}",
@@ -248,8 +248,8 @@ fn test_postprocessor_called_during_extraction() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -265,8 +265,8 @@ fn test_postprocessor_modifies_content() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(processor as Arc<dyn PostProcessor>, 100).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(processor as Arc<dyn PostProcessor>, 100).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -274,14 +274,14 @@ fn test_postprocessor_modifies_content() {
 
     assert!(result.is_ok());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
     let has_lowercase = extraction_result.content.chars().any(|c| c.is_lowercase());
 
     assert!(!has_lowercase, "Content was not fully uppercased");
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -298,9 +298,9 @@ fn test_postprocessor_adds_metadata() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         reg.register(Arc::clone(&processor) as Arc<dyn PostProcessor>, 100)
-            .unwrap();
+            .expect("Operation failed");
     }
 
     assert!(
@@ -313,7 +313,7 @@ fn test_postprocessor_adds_metadata() {
 
     assert!(result.is_ok());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
 
     assert!(
         extraction_result.metadata.additional.contains_key("processed_by"),
@@ -324,12 +324,12 @@ fn test_postprocessor_adds_metadata() {
         "Metadata 'word_count' not added"
     );
 
-    let processed_by = extraction_result.metadata.additional.get("processed_by").unwrap();
-    assert_eq!(processed_by.as_str().unwrap(), "metadata-adder");
+    let processed_by = extraction_result.metadata.additional.get("processed_by").expect("Operation failed");
+    assert_eq!(processed_by.as_str().expect("Failed to extract string from value"), "metadata-adder");
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     assert!(
@@ -350,18 +350,18 @@ fn test_unregister_postprocessor() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         reg.register(Arc::clone(&processor) as Arc<dyn PostProcessor>, 100)
-            .unwrap();
+            .expect("Operation failed");
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.remove("unregister-test").unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.remove("unregister-test").expect("Operation failed");
     }
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 
@@ -373,7 +373,7 @@ fn test_unregister_postprocessor() {
 
     assert!(result.is_ok());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
     assert!(
         !extraction_result.content.contains("[SHOULD NOT APPEAR]"),
         "Unregistered processor still modified content"
@@ -382,8 +382,8 @@ fn test_unregister_postprocessor() {
     assert_eq!(processor.call_count.load(Ordering::SeqCst), 0);
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -393,8 +393,8 @@ fn test_clear_all_postprocessors() {
     let registry = get_post_processor_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let processor1 = Arc::new(AppendTextProcessor {
@@ -410,18 +410,18 @@ fn test_clear_all_postprocessors() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(processor1 as Arc<dyn PostProcessor>, 100).unwrap();
-        reg.register(processor2 as Arc<dyn PostProcessor>, 100).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(processor1 as Arc<dyn PostProcessor>, 100).expect("Operation failed");
+        reg.register(processor2 as Arc<dyn PostProcessor>, 100).expect("Operation failed");
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 
@@ -440,8 +440,8 @@ fn test_postprocessor_error_handling() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(failing_processor as Arc<dyn PostProcessor>, 100).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(failing_processor as Arc<dyn PostProcessor>, 100).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -462,8 +462,8 @@ fn test_postprocessor_error_handling() {
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -473,8 +473,8 @@ fn test_postprocessor_invalid_name() {
     let registry = get_post_processor_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let processor = Arc::new(AppendTextProcessor {
@@ -484,16 +484,16 @@ fn test_postprocessor_invalid_name() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         let result = reg.register(processor, 100);
 
         assert!(result.is_err());
-        assert!(matches!(result.err().unwrap(), KreuzbergError::Validation { .. }));
+        assert!(matches!(result.expect_err("Operation should fail"), KreuzbergError::Validation { .. }));
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -520,10 +520,10 @@ fn test_multiple_postprocessors_execution_order() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(early_processor as Arc<dyn PostProcessor>, 100).unwrap();
-        reg.register(middle_processor as Arc<dyn PostProcessor>, 100).unwrap();
-        reg.register(late_processor as Arc<dyn PostProcessor>, 100).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(early_processor as Arc<dyn PostProcessor>, 100).expect("Operation failed");
+        reg.register(middle_processor as Arc<dyn PostProcessor>, 100).expect("Operation failed");
+        reg.register(late_processor as Arc<dyn PostProcessor>, 100).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -531,15 +531,15 @@ fn test_multiple_postprocessors_execution_order() {
 
     assert!(result.is_ok());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
 
     assert!(extraction_result.metadata.additional.contains_key("processed_by"));
     assert!(!extraction_result.content.chars().any(|c| c.is_lowercase()));
     assert!(extraction_result.content.contains("[LATE]"));
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -557,9 +557,9 @@ fn test_postprocessor_preserves_mime_type() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         reg.register(Arc::clone(&processor) as Arc<dyn PostProcessor>, 100)
-            .unwrap();
+            .expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -567,11 +567,11 @@ fn test_postprocessor_preserves_mime_type() {
 
     assert!(result.is_ok());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
     assert_eq!(extraction_result.mime_type, "text/plain");
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }

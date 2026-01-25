@@ -120,7 +120,7 @@ async fn test_concurrent_batch_extractions() {
     for handle in handles {
         let results = handle.await.expect("Task should not panic");
         assert!(results.is_ok(), "Batch extraction should succeed");
-        let results = results.unwrap();
+        let results = results.expect("Operation failed");
         assert_eq!(results.len(), 20, "Should return all results");
     }
 }
@@ -147,7 +147,7 @@ async fn test_concurrent_extractions_with_cache() {
 
     let test_data = b"Cached content for concurrent access test";
 
-    let _ = extract_bytes(test_data, "text/plain", &config).await.unwrap();
+    let _ = extract_bytes(test_data, "text/plain", &config).await.expect("Async operation failed");
 
     let mut handles = vec![];
     for _ in 0..100 {
@@ -163,7 +163,7 @@ async fn test_concurrent_extractions_with_cache() {
     for handle in handles {
         let result = handle.await.expect("Task should not panic");
         assert!(result.is_ok(), "Cache read should succeed");
-        let extraction = result.unwrap();
+        let extraction = result.expect("Operation failed");
         assert_text_content(&extraction.content, expected_content);
     }
 }
@@ -225,7 +225,7 @@ async fn test_concurrent_ocr_processing() {
     let mut extracted_texts = vec![];
     for result in results {
         assert!(result.is_ok(), "OCR should succeed: {:?}", result.err());
-        let extraction = result.unwrap();
+        let extraction = result.expect("Operation failed");
         assert!(!extraction.content.is_empty(), "OCR should extract text");
         extracted_texts.push(extraction.content);
     }
@@ -394,7 +394,7 @@ async fn test_concurrent_pipeline_processing() {
     for handle in handles {
         let result = handle.await.expect("Task should not panic");
         assert!(result.is_ok(), "Pipeline should succeed");
-        let processed = result.unwrap();
+        let processed = result.expect("Operation failed");
         assert!(processed.content.contains("[processed]"), "Processor should run");
     }
 
@@ -457,7 +457,7 @@ async fn test_extraction_throughput_scales() {
 
     let sequential_start = std::time::Instant::now();
     for _ in 0..20 {
-        let _ = extract_bytes(test_data, "text/plain", &config).await.unwrap();
+        let _ = extract_bytes(test_data, "text/plain", &config).await.expect("Async operation failed");
     }
     let sequential_duration = sequential_start.elapsed();
 

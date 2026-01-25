@@ -240,8 +240,8 @@ fn test_register_custom_validator() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(PassingValidator {
@@ -250,7 +250,7 @@ fn test_register_custom_validator() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         let result = reg.register(Arc::clone(&validator) as Arc<dyn Validator>);
         assert!(result.is_ok(), "Failed to register validator: {:?}", result.err());
     }
@@ -261,15 +261,15 @@ fn test_register_custom_validator() {
     );
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 
     assert!(list.contains(&"test-validator".to_string()));
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -280,8 +280,8 @@ fn test_validator_called_during_extraction() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(MinLengthValidator {
@@ -291,8 +291,8 @@ fn test_validator_called_during_extraction() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&validator) as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&validator) as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -307,8 +307,8 @@ fn test_validator_called_during_extraction() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -319,8 +319,8 @@ fn test_validator_can_reject_invalid_input() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(MinLengthValidator {
@@ -330,8 +330,8 @@ fn test_validator_can_reject_invalid_input() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(validator as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(validator as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -339,7 +339,7 @@ fn test_validator_can_reject_invalid_input() {
 
     assert!(result.is_err(), "Expected validation to fail");
 
-    match result.err().unwrap() {
+    match result.err().expect("Operation failed") {
         KreuzbergError::Validation { message, .. } => {
             assert!(message.contains("Content too short"));
         }
@@ -347,8 +347,8 @@ fn test_validator_can_reject_invalid_input() {
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -359,8 +359,8 @@ fn test_validator_can_pass_valid_input() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(MinLengthValidator {
@@ -370,8 +370,8 @@ fn test_validator_can_pass_valid_input() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(validator as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(validator as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -380,8 +380,8 @@ fn test_validator_can_pass_valid_input() {
     assert!(result.is_ok(), "Validation should have passed: {:?}", result.err());
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -392,8 +392,8 @@ fn test_validator_receives_correct_parameters() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(MimeTypeValidator {
@@ -402,8 +402,8 @@ fn test_validator_receives_correct_parameters() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(validator as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(validator as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -411,12 +411,12 @@ fn test_validator_receives_correct_parameters() {
 
     assert!(result.is_ok(), "Validation failed: {:?}", result.err());
 
-    let extraction_result = result.unwrap();
+    let extraction_result = result.expect("Operation failed");
     assert_eq!(extraction_result.mime_type, "text/plain");
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -427,8 +427,8 @@ fn test_validator_rejects_wrong_mime_type() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(MimeTypeValidator {
@@ -437,8 +437,8 @@ fn test_validator_rejects_wrong_mime_type() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(validator as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(validator as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -446,7 +446,7 @@ fn test_validator_rejects_wrong_mime_type() {
 
     assert!(result.is_err(), "Expected MIME type validation to fail");
 
-    match result.err().unwrap() {
+    match result.err().expect("Operation failed") {
         KreuzbergError::Validation { message, .. } => {
             assert!(message.contains("MIME type"));
             assert!(message.contains("not allowed"));
@@ -455,8 +455,8 @@ fn test_validator_rejects_wrong_mime_type() {
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -466,8 +466,8 @@ fn test_unregister_validator() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(FailingValidator {
@@ -475,17 +475,17 @@ fn test_unregister_validator() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(validator as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(validator as Arc<dyn Validator>).expect("Operation failed");
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.remove("unregister-test").unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.remove("unregister-test").expect("Operation failed");
     }
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 
@@ -501,8 +501,8 @@ fn test_unregister_validator() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -512,8 +512,8 @@ fn test_clear_all_validators() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator1 = Arc::new(FailingValidator {
@@ -525,18 +525,18 @@ fn test_clear_all_validators() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(validator1 as Arc<dyn Validator>).unwrap();
-        reg.register(validator2 as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(validator1 as Arc<dyn Validator>).expect("Operation failed");
+        reg.register(validator2 as Arc<dyn Validator>).expect("Operation failed");
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let list = {
-        let reg = registry.read().unwrap();
+        let reg = registry.read().expect("Operation failed");
         reg.list()
     };
 
@@ -555,8 +555,8 @@ fn test_validator_invalid_name() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(PassingValidator {
@@ -565,16 +565,16 @@ fn test_validator_invalid_name() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         let result = reg.register(validator);
 
         assert!(result.is_err());
-        assert!(matches!(result.err().unwrap(), KreuzbergError::Validation { .. }));
+        assert!(matches!(result.err().expect("Operation failed"), KreuzbergError::Validation { .. }));
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -584,8 +584,8 @@ fn test_validator_initialization_lifecycle() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(PassingValidator {
@@ -599,8 +599,8 @@ fn test_validator_initialization_lifecycle() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&validator) as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&validator) as Arc<dyn Validator>).expect("Operation failed");
     }
 
     assert!(
@@ -609,8 +609,8 @@ fn test_validator_initialization_lifecycle() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     assert!(
@@ -626,8 +626,8 @@ fn test_multiple_validators_execution() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator1 = Arc::new(MinLengthValidator {
@@ -642,9 +642,9 @@ fn test_multiple_validators_execution() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(Arc::clone(&validator1) as Arc<dyn Validator>).unwrap();
-        reg.register(validator2 as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(Arc::clone(&validator1) as Arc<dyn Validator>).expect("Operation failed");
+        reg.register(validator2 as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -654,8 +654,8 @@ fn test_multiple_validators_execution() {
     assert_eq!(validator1.call_count.load(Ordering::SeqCst), 1);
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -666,8 +666,8 @@ fn test_validator_priority_execution_order() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let high_priority = Arc::new(MetadataValidator {
@@ -681,9 +681,9 @@ fn test_validator_priority_execution_order() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(high_priority as Arc<dyn Validator>).unwrap();
-        reg.register(low_priority as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(high_priority as Arc<dyn Validator>).expect("Operation failed");
+        reg.register(low_priority as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -691,7 +691,7 @@ fn test_validator_priority_execution_order() {
 
     assert!(result.is_err(), "Expected high-priority validator to fail");
 
-    match result.err().unwrap() {
+    match result.err().expect("Operation failed") {
         KreuzbergError::Validation { message, .. } => {
             assert!(message.contains("Required metadata key"));
         }
@@ -699,8 +699,8 @@ fn test_validator_priority_execution_order() {
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -711,8 +711,8 @@ fn test_validator_always_fails() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let validator = Arc::new(FailingValidator {
@@ -720,8 +720,8 @@ fn test_validator_always_fails() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.register(validator as Arc<dyn Validator>).unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.register(validator as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -729,7 +729,7 @@ fn test_validator_always_fails() {
 
     assert!(result.is_err(), "Validator should always fail");
 
-    match result.err().unwrap() {
+    match result.err().expect("Operation failed") {
         KreuzbergError::Validation { message, .. } => {
             assert!(message.contains("intentionally failed"));
         }
@@ -737,8 +737,8 @@ fn test_validator_always_fails() {
     }
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }
 
@@ -749,8 +749,8 @@ fn test_validator_registration_order_preserved_for_same_priority() {
     let registry = get_validator_registry();
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 
     let tracker = Arc::new(TrackingValidator {
@@ -759,12 +759,12 @@ fn test_validator_registration_order_preserved_for_same_priority() {
     });
 
     {
-        let mut reg = registry.write().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
         reg.register(Arc::new(FailingValidator {
             name: "order-first".to_string(),
         }) as Arc<dyn Validator>)
-            .unwrap();
-        reg.register(tracker.clone() as Arc<dyn Validator>).unwrap();
+            .expect("Operation failed");
+        reg.register(tracker.clone() as Arc<dyn Validator>).expect("Operation failed");
     }
 
     let config = ExtractionConfig::default();
@@ -777,7 +777,7 @@ fn test_validator_registration_order_preserved_for_same_priority() {
     );
 
     {
-        let mut reg = registry.write().unwrap();
-        reg.shutdown_all().unwrap();
+        let mut reg = registry.write().expect("Operation failed");
+        reg.shutdown_all().expect("Operation failed");
     }
 }

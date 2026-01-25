@@ -486,5 +486,5 @@ async fn test_special_characters_in_metadata() {
 
     let title = result.metadata.additional.get("title").and_then(|v| v.as_str());
     assert!(title.is_some());
-    assert!(title.unwrap().contains("&") || title.unwrap().contains("Part"));
+    assert!(title.expect("Operation failed").contains("&") || title.expect("Operation failed").contains("Part"));
 }

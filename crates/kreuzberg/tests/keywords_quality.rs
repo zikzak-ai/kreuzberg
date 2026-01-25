@@ -189,7 +189,7 @@ Global warming is the long-term heating of Earth's climate system. Climate scien
 #[test]
 fn test_yake_quality_ml_document_default_config() {
     let config = KeywordConfig::yake();
-    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).unwrap();
+    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords with default config");
 
@@ -239,7 +239,7 @@ fn test_yake_quality_ml_document_default_config() {
 #[test]
 fn test_rake_quality_ml_document_default_config() {
     let config = KeywordConfig::rake();
-    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).unwrap();
+    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords with default config");
 
@@ -289,7 +289,7 @@ fn test_rake_quality_ml_document_default_config() {
 #[test]
 fn test_yake_quality_climate_document_default_config() {
     let config = KeywordConfig::yake();
-    let keywords = extract_keywords(CLIMATE_DOC_SAMPLE, &config).unwrap();
+    let keywords = extract_keywords(CLIMATE_DOC_SAMPLE, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords with default config");
 
@@ -331,7 +331,7 @@ fn test_yake_quality_climate_document_default_config() {
 #[test]
 fn test_rake_quality_climate_document_default_config() {
     let config = KeywordConfig::rake();
-    let keywords = extract_keywords(CLIMATE_DOC_SAMPLE, &config).unwrap();
+    let keywords = extract_keywords(CLIMATE_DOC_SAMPLE, &config).expect("Operation failed");
 
     assert!(!keywords.is_empty(), "Should extract keywords with default config");
 
@@ -375,8 +375,8 @@ fn test_yake_vs_rake_quality_comparison() {
     let yake_config = KeywordConfig::yake();
     let rake_config = KeywordConfig::rake();
 
-    let yake_keywords = extract_keywords(ML_DOC_SAMPLE, &yake_config).unwrap();
-    let rake_keywords = extract_keywords(ML_DOC_SAMPLE, &rake_config).unwrap();
+    let yake_keywords = extract_keywords(ML_DOC_SAMPLE, &yake_config).expect("Operation failed");
+    let rake_keywords = extract_keywords(ML_DOC_SAMPLE, &rake_config).expect("Operation failed");
 
     let yake_extracted: Vec<&str> = yake_keywords.iter().map(|k| k.text.as_str()).collect();
     let rake_extracted: Vec<&str> = rake_keywords.iter().map(|k| k.text.as_str()).collect();
@@ -414,7 +414,7 @@ fn test_yake_quality_with_optimized_config() {
         .with_ngram_range(1, 3)
         .with_min_score(0.0);
 
-    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).unwrap();
+    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).expect("Operation failed");
 
     let extracted: Vec<&str> = keywords.iter().map(|k| k.text.as_str()).collect();
     let ground_truth = get_ml_ground_truth();
@@ -441,7 +441,7 @@ fn test_rake_quality_with_optimized_config() {
         .with_ngram_range(1, 3)
         .with_min_score(0.0);
 
-    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).unwrap();
+    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).expect("Operation failed");
 
     let extracted: Vec<&str> = keywords.iter().map(|k| k.text.as_str()).collect();
     let ground_truth = get_ml_ground_truth();
@@ -464,7 +464,7 @@ fn test_rake_quality_with_optimized_config() {
 #[test]
 fn test_extracted_keywords_are_domain_relevant() {
     let config = KeywordConfig::default();
-    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).unwrap();
+    let keywords = extract_keywords(ML_DOC_SAMPLE, &config).expect("Operation failed");
 
     let ml_terms = [
         "machine",

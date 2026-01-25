@@ -74,7 +74,7 @@ async fn test_rtf_accent_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for accent.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert_eq!(extraction.mime_type, "application/rtf");
 
@@ -112,7 +112,7 @@ async fn test_rtf_bookmark_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for bookmark.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     let content = extraction.content.to_lowercase();
 
@@ -137,7 +137,7 @@ async fn test_rtf_footnote_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for footnote.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -176,7 +176,7 @@ async fn test_rtf_formatting_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for formatting.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -223,7 +223,7 @@ async fn test_rtf_heading_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for heading.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -269,7 +269,7 @@ async fn test_rtf_image_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for image.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -301,7 +301,7 @@ async fn test_rtf_link_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for link.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -328,7 +328,7 @@ async fn test_rtf_list_complex_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for list_complex.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -381,7 +381,7 @@ async fn test_rtf_list_simple_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for list_simple.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -422,7 +422,7 @@ async fn test_rtf_table_error_codes_extraction() {
         result.is_ok(),
         "RTF extraction should succeed for table_error_codes.rtf"
     );
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         extraction.mime_type == "application/rtf",
@@ -448,7 +448,7 @@ async fn test_rtf_table_simple_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for table_simple.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(
         extraction.mime_type == "application/rtf",
@@ -470,7 +470,7 @@ async fn test_rtf_unicode_extraction() {
     let result = extract_file(&path, Some("application/rtf"), &config).await;
 
     assert!(result.is_ok(), "RTF extraction should succeed for unicode.rtf");
-    let extraction = result.unwrap();
+    let extraction = result.expect("Operation failed");
 
     assert!(!extraction.content.is_empty(), "Content should not be empty");
 
@@ -493,8 +493,8 @@ async fn test_rtf_extraction_deterministic_unicode() {
 
     assert!(result1.is_ok() && result2.is_ok(), "Both extractions should succeed");
 
-    let extraction1 = result1.unwrap();
-    let extraction2 = result2.unwrap();
+    let extraction1 = result1.expect("Operation failed");
+    let extraction2 = result2.expect("Operation failed");
 
     assert_eq!(
         extraction1.content, extraction2.content,
@@ -514,8 +514,8 @@ async fn test_rtf_extraction_deterministic_list_complex() {
 
     assert!(result1.is_ok() && result2.is_ok(), "Both extractions should succeed");
 
-    let extraction1 = result1.unwrap();
-    let extraction2 = result2.unwrap();
+    let extraction1 = result1.expect("Operation failed");
+    let extraction2 = result2.expect("Operation failed");
 
     assert_eq!(
         extraction1.content, extraction2.content,
@@ -551,7 +551,7 @@ async fn test_rtf_no_critical_content_loss() {
             filename
         );
 
-        let extraction = result.unwrap();
+        let extraction = result.expect("Operation failed");
         assert!(
             !extraction.content.is_empty(),
             "FAIL: CRITICAL - Extracted 0 bytes from {}. RTF extractor lost all content.",
@@ -582,7 +582,7 @@ async fn test_rtf_mime_type_preservation() {
 
         assert!(result.is_ok(), "Extraction should succeed for {}", filename);
 
-        let extraction = result.unwrap();
+        let extraction = result.expect("Operation failed");
         assert_eq!(
             extraction.mime_type, "application/rtf",
             "FAIL: MIME type not preserved for {}",

@@ -7,9 +7,9 @@ use kreuzberg::extraction::excel::read_excel_file;
 fn test_xlsx_full_metadata_extraction() {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     let test_file = workspace_root.join("test_documents/office/excel.xlsx");
 
     if !test_file.exists() {
@@ -17,7 +17,8 @@ fn test_xlsx_full_metadata_extraction() {
         return;
     }
 
-    let result = read_excel_file(test_file.to_str().unwrap()).expect("Should extract XLSX successfully");
+    let file_path = test_file.to_str().expect("File path should be valid UTF-8");
+    let result = read_excel_file(file_path).expect("Should extract XLSX successfully");
 
     assert!(!result.sheets.is_empty(), "Should have at least one sheet");
 
@@ -34,9 +35,9 @@ fn test_xlsx_full_metadata_extraction() {
 fn test_xlsx_multi_sheet_metadata() {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     let test_file = workspace_root.join("test_documents/spreadsheets/excel_multi_sheet.xlsx");
 
     if !test_file.exists() {
@@ -44,7 +45,8 @@ fn test_xlsx_multi_sheet_metadata() {
         return;
     }
 
-    let result = read_excel_file(test_file.to_str().unwrap()).expect("Should extract multi-sheet XLSX successfully");
+    let file_path = test_file.to_str().expect("File path should be valid UTF-8");
+    let result = read_excel_file(file_path).expect("Should extract multi-sheet XLSX successfully");
 
     assert!(
         result.sheets.len() > 1,
@@ -65,9 +67,9 @@ fn test_xlsx_multi_sheet_metadata() {
 fn test_xlsx_minimal_metadata_extraction() {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     let test_file = workspace_root.join("test_documents/spreadsheets/test_01.xlsx");
 
     if !test_file.exists() {
@@ -75,7 +77,8 @@ fn test_xlsx_minimal_metadata_extraction() {
         return;
     }
 
-    let result = read_excel_file(test_file.to_str().unwrap()).expect("Should extract XLSX successfully");
+    let file_path = test_file.to_str().expect("File path should be valid UTF-8");
+    let result = read_excel_file(file_path).expect("Should extract XLSX successfully");
 
     assert!(!result.sheets.is_empty(), "Content should not be empty");
     assert!(

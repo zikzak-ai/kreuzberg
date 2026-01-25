@@ -57,7 +57,7 @@ fn restore_env(saved: Vec<(String, Option<String>)>) {
 fn test_config_precedence_env_over_file() {
     let saved = save_env(&["KREUZBERG_HOST", "KREUZBERG_PORT"]);
 
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     // Create config file with file values
@@ -68,19 +68,19 @@ host = "file-host"
 port = 8001
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
     // Set env vars (should override file)
     set_env("KREUZBERG_HOST", "env-host");
     set_env("KREUZBERG_PORT", "8002");
 
     // Load and apply
-    let mut config = ServerConfig::from_file(&config_path).unwrap();
+    let mut config = ServerConfig::from_file(&config_path).expect("Operation failed");
     assert_eq!(config.host, "file-host");
     assert_eq!(config.port, 8001);
 
     // Apply env overrides
-    config.apply_env_overrides().unwrap();
+    config.apply_env_overrides().expect("Operation failed");
 
     // Verify env vars won (Env > File)
     assert_eq!(config.host, "env-host", "Env HOST should override file HOST");
@@ -93,7 +93,7 @@ port = 8001
 // Test 2: File-only configuration
 #[test]
 fn test_file_only_configuration() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     // Create config with specific values
@@ -107,9 +107,9 @@ max_request_body_bytes = 50000000
 max_multipart_field_bytes = 75000000
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
 
     assert_eq!(config.host, "192.168.1.100");
     assert_eq!(config.port, 9000);
@@ -140,7 +140,7 @@ fn test_env_only_configuration() {
     assert_eq!(config.port, 8000);
 
     // Apply env overrides
-    config.apply_env_overrides().unwrap();
+    config.apply_env_overrides().expect("Operation failed");
 
     // Verify env vars are used
     assert_eq!(config.host, "0.0.0.0");
@@ -171,7 +171,7 @@ fn test_default_configuration() {
 // Test 5: Backward compatibility - file without [server] section
 #[test]
 fn test_backward_compatibility_no_server_section() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     // Create config with only extraction settings (no [server] section)
@@ -183,10 +183,10 @@ use_cache = false
 enable_quality_processing = true
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
     // ServerConfig::from_file should load with defaults for missing [server] section
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
 
     // Verify ServerConfig fields have defaults
     assert_eq!(config.host, "127.0.0.1");
@@ -197,7 +197,7 @@ enable_quality_processing = true
 // Test 6: All three formats - TOML
 #[test]
 fn test_config_format_toml() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -208,9 +208,9 @@ port = 7000
 cors_origins = ["https://test.com"]
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
     assert_eq!(config.host, "10.0.0.1");
     assert_eq!(config.port, 7000);
 }
@@ -218,7 +218,7 @@ cors_origins = ["https://test.com"]
 // Test 7: All three formats - YAML
 #[test]
 fn test_config_format_yaml() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.yaml");
 
     fs::write(
@@ -230,9 +230,9 @@ cors_origins:
   - https://test.com
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
     assert_eq!(config.host, "10.0.0.2");
     assert_eq!(config.port, 7001);
 }
@@ -240,7 +240,7 @@ cors_origins:
 // Test 8: All three formats - JSON
 #[test]
 fn test_config_format_json() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.json");
 
     fs::write(
@@ -252,9 +252,9 @@ fn test_config_format_json() {
 }
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
     assert_eq!(config.host, "10.0.0.3");
     assert_eq!(config.port, 7002);
 }
@@ -262,7 +262,7 @@ fn test_config_format_json() {
 // Test 9: CORS configuration - empty (allow all)
 #[test]
 fn test_cors_configuration_allow_all() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -273,9 +273,9 @@ port = 8000
 # Empty cors_origins means allow all
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
 
     assert!(config.cors_allows_all(), "Empty cors_origins should allow all");
     assert!(config.is_origin_allowed("https://any.com"));
@@ -285,7 +285,7 @@ port = 8000
 // Test 10: CORS configuration - specific origins
 #[test]
 fn test_cors_configuration_specific_origins() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -296,9 +296,9 @@ port = 8000
 cors_origins = ["https://app1.com", "https://app2.com"]
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
 
     assert!(!config.cors_allows_all(), "Specific origins should not allow all");
     assert!(config.is_origin_allowed("https://app1.com"));
@@ -312,7 +312,7 @@ cors_origins = ["https://app1.com", "https://app2.com"]
 fn test_cors_precedence_env_over_file() {
     let saved = save_env(&["KREUZBERG_CORS_ORIGINS"]);
 
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -321,15 +321,15 @@ fn test_cors_precedence_env_over_file() {
 cors_origins = ["https://file.com"]
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
     set_env("KREUZBERG_CORS_ORIGINS", "https://env1.com, https://env2.com");
 
-    let mut config = ServerConfig::from_file(&config_path).unwrap();
+    let mut config = ServerConfig::from_file(&config_path).expect("Operation failed");
     assert_eq!(config.cors_origins.len(), 1);
     assert_eq!(config.cors_origins[0], "https://file.com");
 
-    config.apply_env_overrides().unwrap();
+    config.apply_env_overrides().expect("Operation failed");
 
     assert_eq!(config.cors_origins.len(), 2);
     assert!(config.cors_origins.contains(&"https://env1.com".to_string()));
@@ -342,7 +342,7 @@ cors_origins = ["https://file.com"]
 // Test 12: Legacy max_upload_mb backward compatibility
 #[test]
 fn test_legacy_max_upload_mb_in_file() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -353,9 +353,9 @@ port = 8000
 max_upload_mb = 50
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
 
     assert_eq!(config.max_upload_mb, Some(50));
     // Should be converted to bytes
@@ -373,7 +373,7 @@ fn test_legacy_max_upload_mb_env_override() {
     let mut config = ServerConfig::default();
     assert!(config.max_upload_mb.is_none());
 
-    config.apply_env_overrides().unwrap();
+    config.apply_env_overrides().expect("Operation failed");
 
     assert_eq!(config.max_upload_mb, Some(75));
     assert_eq!(config.max_multipart_field_bytes, 75 * 1_048_576);
@@ -427,7 +427,7 @@ fn test_invalid_env_max_request_body_bytes() {
 fn test_partial_overrides_host_only() {
     let saved = save_env(&["KREUZBERG_HOST", "KREUZBERG_PORT"]);
 
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -437,13 +437,13 @@ host = "file-host"
 port = 8001
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
     set_env("KREUZBERG_HOST", "env-host");
     // Explicitly don't set KREUZBERG_PORT
 
-    let mut config = ServerConfig::from_file(&config_path).unwrap();
-    config.apply_env_overrides().unwrap();
+    let mut config = ServerConfig::from_file(&config_path).expect("Operation failed");
+    config.apply_env_overrides().expect("Operation failed");
 
     assert_eq!(config.host, "env-host", "Host should be overridden by env");
     assert_eq!(config.port, 8001, "Port should keep file value");
@@ -458,7 +458,7 @@ port = 8001
 fn test_partial_overrides_port_only() {
     let saved = save_env(&["KREUZBERG_HOST", "KREUZBERG_PORT"]);
 
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -468,13 +468,13 @@ host = "file-host"
 port = 8001
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
     set_env("KREUZBERG_PORT", "9000");
     // Explicitly don't set KREUZBERG_HOST
 
-    let mut config = ServerConfig::from_file(&config_path).unwrap();
-    config.apply_env_overrides().unwrap();
+    let mut config = ServerConfig::from_file(&config_path).expect("Operation failed");
+    config.apply_env_overrides().expect("Operation failed");
 
     assert_eq!(config.host, "file-host", "Host should keep file value");
     assert_eq!(config.port, 9000, "Port should be overridden by env");
@@ -494,7 +494,7 @@ fn test_complex_scenario_multiple_settings() {
         "KREUZBERG_MAX_REQUEST_BODY_BYTES",
     ]);
 
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -507,7 +507,7 @@ max_request_body_bytes = 50000000
 max_multipart_field_bytes = 75000000
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
     // Override some settings
     set_env("KREUZBERG_HOST", "0.0.0.0");
@@ -515,8 +515,8 @@ max_multipart_field_bytes = 75000000
     set_env("KREUZBERG_CORS_ORIGINS", "https://env.com");
     // Don't set max_request_body_bytes - should keep file value
 
-    let mut config = ServerConfig::from_file(&config_path).unwrap();
-    config.apply_env_overrides().unwrap();
+    let mut config = ServerConfig::from_file(&config_path).expect("Operation failed");
+    config.apply_env_overrides().expect("Operation failed");
 
     assert_eq!(config.host, "0.0.0.0");
     assert_eq!(config.port, 3000);
@@ -565,7 +565,7 @@ fn test_upload_limits_to_mb_conversion() {
 // Test 21: Serialization consistency
 #[test]
 fn test_serialization_consistency() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     let original = r#"
@@ -576,15 +576,15 @@ max_request_body_bytes = 50000000
 max_multipart_field_bytes = 75000000
 "#;
 
-    fs::write(&config_path, original).unwrap();
+    fs::write(&config_path, original).expect("Operation failed");
 
-    let config = ServerConfig::from_file(&config_path).unwrap();
+    let config = ServerConfig::from_file(&config_path).expect("Operation failed");
 
     // Serialize back
-    let serialized = toml::to_string(&config).unwrap();
+    let serialized = toml::to_string(&config).expect("Operation failed");
 
     // Deserialize again
-    let config2: ServerConfig = toml::from_str(&serialized).unwrap();
+    let config2: ServerConfig = toml::from_str(&serialized).expect("Failed to parse string");
 
     // Verify consistency
     assert_eq!(config.host, config2.host);
@@ -600,7 +600,7 @@ max_multipart_field_bytes = 75000000
 fn test_empty_cors_to_specific_via_env() {
     let saved = save_env(&["KREUZBERG_CORS_ORIGINS"]);
 
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -610,14 +610,14 @@ host = "127.0.0.1"
 port = 8000
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let mut config = ServerConfig::from_file(&config_path).unwrap();
+    let mut config = ServerConfig::from_file(&config_path).expect("Operation failed");
     assert!(config.cors_allows_all(), "File config allows all origins");
 
     // Override with specific origins
     set_env("KREUZBERG_CORS_ORIGINS", "https://restricted.com");
-    config.apply_env_overrides().unwrap();
+    config.apply_env_overrides().expect("Operation failed");
 
     assert!(!config.cors_allows_all(), "Should now restrict to specific origin");
     assert!(config.is_origin_allowed("https://restricted.com"));
@@ -630,7 +630,7 @@ port = 8000
 // Test 23: Max upload limits in different formats
 #[test]
 fn test_max_limits_across_formats() {
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
 
     // Test TOML
     let toml_path = dir.path().join("config.toml");
@@ -641,9 +641,9 @@ max_request_body_bytes = 100000000
 max_multipart_field_bytes = 200000000
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let toml_config = ServerConfig::from_file(&toml_path).unwrap();
+    let toml_config = ServerConfig::from_file(&toml_path).expect("Operation failed");
     assert_eq!(toml_config.max_request_body_bytes, 100_000_000);
     assert_eq!(toml_config.max_multipart_field_bytes, 200_000_000);
 
@@ -656,9 +656,9 @@ max_request_body_bytes: 100000000
 max_multipart_field_bytes: 200000000
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let yaml_config = ServerConfig::from_file(&yaml_path).unwrap();
+    let yaml_config = ServerConfig::from_file(&yaml_path).expect("Operation failed");
     assert_eq!(yaml_config.max_request_body_bytes, 100_000_000);
     assert_eq!(yaml_config.max_multipart_field_bytes, 200_000_000);
 
@@ -672,9 +672,9 @@ max_multipart_field_bytes: 200000000
 }
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
-    let json_config = ServerConfig::from_file(&json_path).unwrap();
+    let json_config = ServerConfig::from_file(&json_path).expect("Operation failed");
     assert_eq!(json_config.max_request_body_bytes, 100_000_000);
     assert_eq!(json_config.max_multipart_field_bytes, 200_000_000);
 }
@@ -688,13 +688,13 @@ fn test_port_validation_bounds() {
     // Valid port: 0
     set_env("KREUZBERG_PORT", "0");
     let mut config = ServerConfig::default();
-    config.apply_env_overrides().unwrap();
+    config.apply_env_overrides().expect("Operation failed");
     assert_eq!(config.port, 0);
 
     // Valid port: 65535 (max u16)
     set_env("KREUZBERG_PORT", "65535");
     let mut config = ServerConfig::default();
-    config.apply_env_overrides().unwrap();
+    config.apply_env_overrides().expect("Operation failed");
     assert_eq!(config.port, 65535);
 
     // Invalid port: too large
@@ -719,7 +719,7 @@ fn test_multiple_env_overrides_simultaneous() {
         "KREUZBERG_MAX_MULTIPART_FIELD_BYTES",
     ]);
 
-    let dir = tempdir().unwrap();
+    let dir = tempdir().expect("Operation failed");
     let config_path = dir.path().join("config.toml");
 
     fs::write(
@@ -729,7 +729,7 @@ host = "127.0.0.1"
 port = 8000
 "#,
     )
-    .unwrap();
+    .expect("Operation failed");
 
     // Set all env vars
     set_env("KREUZBERG_HOST", "192.168.1.1");
@@ -738,8 +738,8 @@ port = 8000
     set_env("KREUZBERG_MAX_REQUEST_BODY_BYTES", "150000000");
     set_env("KREUZBERG_MAX_MULTIPART_FIELD_BYTES", "250000000");
 
-    let mut config = ServerConfig::from_file(&config_path).unwrap();
-    config.apply_env_overrides().unwrap();
+    let mut config = ServerConfig::from_file(&config_path).expect("Operation failed");
+    config.apply_env_overrides().expect("Operation failed");
 
     // All should be overridden
     assert_eq!(config.host, "192.168.1.1");

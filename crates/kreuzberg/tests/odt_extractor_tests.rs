@@ -26,9 +26,9 @@ mod helpers;
 fn get_test_file_path(filename: &str) -> PathBuf {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     workspace_root.join(format!("test_documents/odt/{}", filename))
 }
 
@@ -48,9 +48,9 @@ fn ensure_test_file_exists(path: &Path) -> bool {
 async fn test_odt_metadata_extraction() {
     let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap();
+        .expect("Operation failed");
     let test_file = workspace_root.join("test_documents/metadata_test.odt");
 
     if !ensure_test_file_exists(&test_file) {
@@ -615,9 +615,9 @@ async fn test_odt_table_no_duplicate_content() {
 async fn test_odt_comprehensive_table_extraction() {
     let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .parent()
-        .unwrap()
+        .expect("Operation failed")
         .join("test_documents/extraction_test.odt");
 
     if !test_file.exists() {

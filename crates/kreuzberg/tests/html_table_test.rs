@@ -37,7 +37,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "HTML to markdown conversion should succeed");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Basic Table Test ===");
         println!("Input HTML:\n{}", html);
@@ -79,7 +79,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should convert to markdown");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Table Format Test ===");
         println!("Input HTML:\n{}", html);
@@ -143,7 +143,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should convert complex table");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Complex Table Test ===");
         println!("Input HTML:\n{}", html);
@@ -194,7 +194,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle merged cell table");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Merged Cells Test ===");
         println!("Input HTML:\n{}", html);
@@ -248,7 +248,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle multiple tables");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Multiple Tables Test ===");
         println!("Input HTML:\n{}", html);
@@ -303,7 +303,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle mixed header cells");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Mixed Header Cells Test ===");
         println!("Input HTML:\n{}", html);
@@ -349,7 +349,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle table with caption");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Table with Caption Test ===");
         println!("Input HTML:\n{}", html);
@@ -385,7 +385,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle flat table");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Simple Flat Table Test ===");
         println!("Input HTML:\n{}", html);
@@ -421,7 +421,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle empty cells");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Empty Cells Test ===");
         println!("Input HTML:\n{}", html);
@@ -459,7 +459,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle numeric table");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Numeric Data Test ===");
         println!("Input HTML:\n{}", html);
@@ -502,7 +502,7 @@ mod html_table_tests {
         let result = convert_html_to_markdown(html, None, None);
         assert!(result.is_ok(), "Should handle unicode characters");
 
-        let markdown = result.unwrap();
+        let markdown = result.expect("Operation failed");
 
         println!("=== Special Characters Test ===");
         println!("Input HTML:\n{}", html);

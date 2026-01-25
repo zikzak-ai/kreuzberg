@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kreuzberg\Tests;
 
-use Kreuzberg\ExtractionConfig;
-use Kreuzberg\OcrConfig;
+use Kreuzberg\Config\ExtractionConfig;
+use Kreuzberg\Config\OcrConfig;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,14 +21,13 @@ class SerializationTest extends TestCase
     public function testMinimalSerialization(): void
     {
         $config = new ExtractionConfig();
-        $json = json_encode($config);
+        $json = $config->toJson();
 
         $this->assertIsString($json);
 
         $parsed = json_decode($json, associative: true);
-        $this->assertArrayHasKey('use_cache', $parsed);
-        $this->assertArrayHasKey('enable_quality_processing', $parsed);
-        $this->assertArrayHasKey('force_ocr', $parsed);
+        // Default values should not be in serialization
+        $this->assertIsArray($parsed);
     }
 
     /**
@@ -35,16 +36,18 @@ class SerializationTest extends TestCase
     public function testCustomValuesSerialization(): void
     {
         $config = new ExtractionConfig(
-            use_cache: true,
-            enable_quality_processing: false,
-            force_ocr: true
+            useCache: true,
+            enableQualityProcessing: false,
+            forceOcr: true,
         );
 
-        $json = json_encode($config);
+        $json = $config->toJson();
         $parsed = json_decode($json, associative: true);
 
+        // useCache is non-default (true), so it should be in the output
         $this->assertEquals(true, $parsed['use_cache']);
-        $this->assertEquals(false, $parsed['enable_quality_processing']);
+        // enableQualityProcessing is default (false), so it may not be in the output
+        // forceOcr is non-default (true), so it should be in the output
         $this->assertEquals(true, $parsed['force_ocr']);
     }
 
@@ -54,14 +57,16 @@ class SerializationTest extends TestCase
     public function testFieldPreservation(): void
     {
         $config = new ExtractionConfig(
-            use_cache: false,
-            enable_quality_processing: true
+            useCache: false,
+            enableQualityProcessing: true,
         );
 
-        $json = json_encode($config);
+        $json = $config->toJson();
         $parsed = json_decode($json, associative: true);
 
-        $this->assertEquals(false, $parsed['use_cache']);
+        // useCache is default (false), so it should not be in the output
+        $this->assertArrayNotHasKey('use_cache', $parsed);
+        // enableQualityProcessing is non-default (true), so it should be in the output
         $this->assertEquals(true, $parsed['enable_quality_processing']);
     }
 
@@ -71,21 +76,16 @@ class SerializationTest extends TestCase
     public function testRoundTripSerialization(): void
     {
         $config1 = new ExtractionConfig(
-            use_cache: true,
-            enable_quality_processing: false
+            useCache: true,
+            enableQualityProcessing: false,
         );
 
-        $json1 = json_encode($config1);
-        $array1 = json_decode($json1, associative: true);
+        $json1 = $config1->toJson();
+        $config2 = ExtractionConfig::fromJson($json1);
 
-        $config2 = new ExtractionConfig(...$array1);
-        $json2 = json_encode($config2);
-
-        // Parse both JSONs and compare
-        $parsed1 = json_decode($json1, associative: true);
-        $parsed2 = json_decode($json2, associative: true);
-
-        $this->assertEquals($parsed1, $parsed2);
+        // Verify round-trip preserves values
+        $this->assertEquals($config1->useCache, $config2->useCache);
+        $this->assertEquals($config1->enableQualityProcessing, $config2->enableQualityProcessing);
     }
 
     /**
@@ -93,8 +93,8 @@ class SerializationTest extends TestCase
      */
     public function testSnakeCaseFieldNames(): void
     {
-        $config = new ExtractionConfig(use_cache: true);
-        $json = json_encode($config);
+        $config = new ExtractionConfig(useCache: true);
+        $json = $config->toJson();
 
         $this->assertStringContainsString('use_cache', $json);
         $this->assertStringNotContainsString('useCache', $json);
@@ -107,7 +107,7 @@ class SerializationTest extends TestCase
     {
         $ocrConfig = new OcrConfig(
             backend: 'tesseract',
-            language: 'eng'
+            language: 'eng',
         );
 
         $config = new ExtractionConfig(ocr: $ocrConfig);
@@ -126,7 +126,7 @@ class SerializationTest extends TestCase
     {
         $config = new ExtractionConfig(
             ocr: null,
-            chunking: null
+            chunking: null,
         );
 
         $json = json_encode($config);
@@ -141,34 +141,28 @@ class SerializationTest extends TestCase
      */
     public function testImmutabilityDuringSerialization(): void
     {
-        $config = new ExtractionConfig(use_cache: true);
+        $config = new ExtractionConfig(useCache: true);
 
-        $json1 = json_encode($config);
-        $json2 = json_encode($config);
-        $json3 = json_encode($config);
+        $json1 = $config->toJson();
+        $json2 = $config->toJson();
+        $json3 = $config->toJson();
 
         $this->assertEquals($json1, $json2);
         $this->assertEquals($json2, $json3);
     }
 
     /**
-     * Test mandatory fields presence.
+     * Test optional fields omitted when they have default values.
      */
-    public function testMandatoryFields(): void
+    public function testDefaultFieldsOmitted(): void
     {
         $config = new ExtractionConfig();
-        $json = json_encode($config);
-        $parsed = json_decode($json, associative: true);
+        $array = $config->toArray();
 
-        $mandatoryFields = [
-            'use_cache',
-            'enable_quality_processing',
-            'force_ocr',
-        ];
-
-        foreach ($mandatoryFields as $field) {
-            $this->assertArrayHasKey($field, $parsed, "Mandatory field '$field' is missing");
-        }
+        // Default values should be omitted from serialization
+        $this->assertArrayNotHasKey('use_cache', $array);
+        $this->assertArrayNotHasKey('enable_quality_processing', $array);
+        $this->assertArrayNotHasKey('force_ocr', $array);
     }
 
     /**
@@ -177,13 +171,11 @@ class SerializationTest extends TestCase
     public function testDeserialization(): void
     {
         $json = '{"use_cache":true,"enable_quality_processing":false,"force_ocr":true}';
-        $array = json_decode($json, associative: true);
+        $config = ExtractionConfig::fromJson($json);
 
-        $config = new ExtractionConfig(...$array);
-
-        $this->assertTrue($config->use_cache);
-        $this->assertFalse($config->enable_quality_processing);
-        $this->assertTrue($config->force_ocr);
+        $this->assertTrue($config->useCache);
+        $this->assertFalse($config->enableQualityProcessing);
+        $this->assertTrue($config->forceOcr);
     }
 
     /**
@@ -191,10 +183,10 @@ class SerializationTest extends TestCase
      */
     public function testPrettyPrint(): void
     {
-        $config = new ExtractionConfig(use_cache: true);
-        $json = json_encode($config, JSON_PRETTY_PRINT);
+        $config = new ExtractionConfig(useCache: true);
+        $json = $config->toJson();
 
-        // Should have newlines
+        // Should have newlines (toJson uses JSON_PRETTY_PRINT)
         $this->assertStringContainsString("\n", $json);
 
         // Should still be valid JSON

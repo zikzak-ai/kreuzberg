@@ -64,7 +64,7 @@ async fn test_full_hierarchy_extraction() {
         "Pages should be extracted when extract_pages is enabled"
     );
 
-    let pages = result.pages.as_ref().unwrap();
+    let pages = result.pages.as_ref().expect("Operation failed");
     assert!(!pages.is_empty(), "At least one page should be extracted");
 
     // Check that the first page has hierarchy information
@@ -74,7 +74,7 @@ async fn test_full_hierarchy_extraction() {
         "First page should have hierarchy information when hierarchy extraction is enabled"
     );
 
-    let hierarchy = first_page.hierarchy.as_ref().unwrap();
+    let hierarchy = first_page.hierarchy.as_ref().expect("Operation failed");
 
     // Verify hierarchy structure
     assert!(hierarchy.block_count > 0, "Hierarchy should contain at least one block");
@@ -172,7 +172,7 @@ async fn test_hierarchy_disabled() {
     // Verify that pages were extracted
     assert!(result.pages.is_some(), "Pages should be extracted");
 
-    let pages = result.pages.as_ref().unwrap();
+    let pages = result.pages.as_ref().expect("Operation failed");
     assert!(!pages.is_empty(), "At least one page should be extracted");
 
     // Check that the first page does NOT have hierarchy information when disabled
@@ -227,7 +227,7 @@ async fn test_hierarchy_with_explicit_disabled() {
     // Verify that pages were extracted
     assert!(result.pages.is_some(), "Pages should be extracted");
 
-    let pages = result.pages.as_ref().unwrap();
+    let pages = result.pages.as_ref().expect("Operation failed");
     assert!(!pages.is_empty(), "At least one page should be extracted");
 
     // Check that the first page does NOT have hierarchy information when disabled
@@ -282,7 +282,7 @@ async fn test_hierarchy_different_k_clusters() {
 
         assert!(result.pages.is_some(), "Pages should be extracted");
 
-        let pages = result.pages.as_ref().unwrap();
+        let pages = result.pages.as_ref().expect("Operation failed");
         assert!(!pages.is_empty(), "At least one page should be extracted");
 
         let first_page = &pages[0];
@@ -292,7 +292,7 @@ async fn test_hierarchy_different_k_clusters() {
             k
         );
 
-        let hierarchy = first_page.hierarchy.as_ref().unwrap();
+        let hierarchy = first_page.hierarchy.as_ref().expect("Operation failed");
         eprintln!("K={}: {} hierarchy blocks extracted", k, hierarchy.block_count);
         assert!(hierarchy.block_count > 0, "Should have blocks with k={}", k);
     }
