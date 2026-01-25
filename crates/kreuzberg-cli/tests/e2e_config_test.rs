@@ -54,7 +54,6 @@ fn create_test_config(dir: &TempDir, name: &str, content: &str) -> PathBuf {
 
 /// Helper to encode string as base64.
 fn to_base64(input: &str) -> String {
-    use std::str::FromStr;
     // Manual base64 encoding
     const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let bytes = input.as_bytes();
@@ -336,11 +335,10 @@ fn test_cli_content_format_deprecated_warning() {
         .expect("Failed to execute extract with --content-format");
 
     // Command should either succeed or show expected deprecation behavior
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stdout = String::from_utf8_lossy(&output.stdout);
     
     // Note: We're checking that the command doesn't crash; deprecation warning behavior
     // depends on implementation details
-    let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
         output.status.success() || !stdout.is_empty(),
         "Command should succeed or produce output"

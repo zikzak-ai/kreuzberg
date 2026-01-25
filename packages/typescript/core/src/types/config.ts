@@ -23,7 +23,13 @@ export interface OcrConfig {
 export interface ChunkingConfig {
 	maxChars?: number;
 	maxOverlap?: number;
+	/**
+	 * @deprecated Since 4.2.0, use `maxChars` instead
+	 */
 	chunkSize?: number;
+	/**
+	 * @deprecated Since 4.2.0, use `maxOverlap` instead
+	 */
 	chunkOverlap?: number;
 	preset?: string;
 	embedding?: Record<string, unknown>;
