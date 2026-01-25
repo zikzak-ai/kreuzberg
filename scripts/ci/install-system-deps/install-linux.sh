@@ -8,6 +8,13 @@ source "$REPO_ROOT/scripts/lib/retry.sh"
 
 echo "::group::Installing Linux dependencies"
 
+# Workaround for Microsoft package repository outages (403 Forbidden errors)
+# Remove problematic Microsoft repos that are causing apt-get update to fail
+echo "Removing problematic Microsoft package repositories..."
+sudo rm -f /etc/apt/sources.list.d/azure-cli.list 2>/dev/null || true
+sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list 2>/dev/null || true
+echo "✓ Cleaned up Microsoft repositories"
+
 echo "Updating package index..."
 if ! retry_with_backoff sudo apt-get update; then
   echo "::warning::apt-get update failed after retries, continuing anyway..."
