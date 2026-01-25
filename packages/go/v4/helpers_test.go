@@ -12,14 +12,9 @@ import (
 // pdfiumOnce ensures Pdfium is initialized only once across all tests
 var pdfiumOnce sync.Once
 
-// init() runs before any tests in this package and initializes Pdfium
-func init() {
-	// Initialize Pdfium early to avoid "already initialized" errors
-	_ = initializePdfium()
-}
-
 // initializePdfium triggers Pdfium initialization by performing a simple extraction
 // This function is protected by sync.Once to ensure it's only called once
+// Note: Removed init() function to prevent Windows deadlock in FFI mutex
 func initializePdfium() error {
 	var err error
 	pdfiumOnce.Do(func() {
