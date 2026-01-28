@@ -112,6 +112,8 @@ jobs:
         with:
           cache-key-prefix: rust-unit-${{ matrix.os }}
           target: ${{ matrix.target }}
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Cache PDFium
         uses: ./.github/actions/cache-pdfium
@@ -191,6 +193,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: rust-e2e
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Cache PDFium
         uses: ./.github/actions/cache-pdfium
@@ -275,6 +279,8 @@ jobs:
         with:
           cache-key-prefix: system-pdfium-${{ matrix.os }}
           target: ${{ matrix.target }}
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Install Task
         uses: ./.github/actions/install-task
@@ -351,6 +357,8 @@ jobs:
         with:
           cache-key-prefix: cli-${{ matrix.target }}
           target: ${{ matrix.target }}
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Cache PDFium
         uses: ./.github/actions/cache-pdfium

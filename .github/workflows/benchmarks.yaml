@@ -70,7 +70,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-setup
-          use-sccache: true
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Cache PDFium
         uses: ./.github/actions/cache-pdfium
@@ -159,6 +160,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-native
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup ONNX Runtime
         uses: ./.github/actions/setup-onnx-runtime
@@ -219,6 +222,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-python
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
@@ -294,6 +299,7 @@ jobs:
         with:
           cache-key-prefix: benchmarks-node
           use-sccache: 'false'
+          report-stats: 'true'
 
       - name: Setup Node
         uses: ./.github/actions/setup-node-workspace
@@ -369,6 +375,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-wasm
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Node
         uses: ./.github/actions/setup-node-workspace
@@ -434,6 +442,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-ruby
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -453,23 +463,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash
@@ -539,6 +534,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-ruby-batch
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -558,23 +555,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash
@@ -644,6 +626,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-go
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -664,23 +648,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash
@@ -754,6 +723,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-go-batch
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -774,23 +745,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash
@@ -864,6 +820,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-java
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -885,23 +843,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash
@@ -966,6 +909,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-csharp
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -985,23 +930,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash
@@ -1066,6 +996,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-elixir
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
@@ -1140,6 +1072,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-elixir-batch
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
@@ -1214,6 +1148,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-php
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -1234,23 +1170,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash
@@ -1315,6 +1236,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: benchmarks-php-batch
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -1335,23 +1258,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (no caching)"
-
-          # Try building with sccache first (if enabled)
-          if cargo build --release --package kreuzberg-ffi 2>&1 | tee /tmp/build.log; then
-            echo "✓ Build succeeded"
-          else
-            # Check if it was an sccache error (DNS failures, cache storage issues)
-            if grep -q "sccache.*error" /tmp/build.log || grep -q "cache storage failed" /tmp/build.log || grep -q "dns error" /tmp/build.log; then
-              echo "⚠️  sccache failed (likely transient network issue), retrying without cache..."
-              export RUSTC_WRAPPER=""
-              export SCCACHE_GHA_ENABLED=false
-              cargo build --release --package kreuzberg-ffi
-            else
-              # Not an sccache error, propagate the failure
-              exit 1
-            fi
-          fi
+          echo "Building kreuzberg-ffi from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
 
       - name: Set library paths for FFI
         shell: bash

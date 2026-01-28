@@ -25,6 +25,10 @@ inputs:
     description: Enable sccache as the Rust compiler wrapper
     required: false
     default: 'true'
+  report-stats:
+    description: Report sccache statistics after builds
+    required: false
+    default: 'true'
   disable-cache:
     description: Disable build artifact caching (useful for Windows where fingerprints get corrupted)
     required: false
@@ -106,3 +110,8 @@ runs:
     - name: Install cargo-llvm-cov if not cached
       shell: bash
       run: scripts/ci/actions/setup-rust/install-cargo-llvm-cov.sh
+
+    - name: Report sccache statistics
+      if: inputs.use-sccache == 'true' && inputs.report-stats == 'true' && always()
+      shell: bash
+      run: scripts/ci/actions/setup-rust/report-sccache-stats.sh

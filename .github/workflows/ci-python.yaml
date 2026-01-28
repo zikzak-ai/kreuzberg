@@ -110,6 +110,8 @@ jobs:
         with:
           cache-key-prefix: python-${{ matrix.platform }}
           target: ${{ matrix.target }}
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
@@ -161,8 +163,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-py from source (no caching)"
-          cargo build --release --package kreuzberg-py
+          echo "Building kreuzberg-py from source (with sccache fallback)"
+          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-py
 
       - name: Build Python wheels
         id: wheels
@@ -217,6 +219,8 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           cache-key-prefix: python-sdist
+          use-sccache: 'true'
+          report-stats: 'true'
 
       - name: Setup Python
         uses: ./.github/actions/setup-python-env

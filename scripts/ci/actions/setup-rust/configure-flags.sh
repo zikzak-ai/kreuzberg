@@ -9,8 +9,16 @@ if [ "$use_sccache" = "true" ]; then
   if command -v sccache &>/dev/null; then
     sccache_version="$(sccache --version 2>&1 || echo "unknown")"
     echo "sccache is available (version: $sccache_version), enabling as RUSTC_WRAPPER"
-    echo "SCCACHE_GHA_ENABLED=true" >>"$GITHUB_ENV"
-    echo "RUSTC_WRAPPER=sccache" >>"$GITHUB_ENV"
+    {
+      echo "SCCACHE_GHA_ENABLED=true"
+      echo "RUSTC_WRAPPER=sccache"
+      echo "SCCACHE_STARTUP_TIMEOUT=120"
+      echo "SCCACHE_IDLE_TIMEOUT=0"
+      if [[ "$RUNNER_OS" == "Windows" ]]; then
+        echo "SCCACHE_NO_DAEMON=1"
+        echo "SCCACHE_DIR=$RUNNER_TEMP/sccache"
+      fi
+    } >>"$GITHUB_ENV"
   else
     echo "Warning: sccache requested but not found in PATH"
     echo "Checking SCCACHE_PATH environment variable..."
