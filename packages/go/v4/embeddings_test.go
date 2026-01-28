@@ -53,9 +53,6 @@ func TestVectorGenerationCorrectness(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(256),
-			WithEmbedding(
-				WithEmbeddingBatchSize(1),
-			),
 		),
 	)
 
@@ -118,9 +115,6 @@ func TestEmbeddingDimensionVerification(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(128),
-			WithEmbedding(
-				WithEmbeddingBatchSize(2),
-			),
 		),
 	)
 
@@ -184,9 +178,6 @@ func TestBatchOperationPerformance(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(100),
-			WithEmbedding(
-				WithEmbeddingBatchSize(4),
-			),
 		),
 	)
 
@@ -257,9 +248,6 @@ func TestFormatSpecificEmbeddingHandling(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(256),
-			WithEmbedding(
-				WithEmbeddingBatchSize(1),
-			),
 		),
 	)
 
@@ -301,9 +289,6 @@ func TestSimilarityScoreValidation(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(256),
-			WithEmbedding(
-				WithEmbeddingBatchSize(1),
-			),
 		),
 	)
 
@@ -385,10 +370,6 @@ func TestNormalizationCorrectness(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(256),
-			WithEmbedding(
-				WithEmbeddingNormalize(true),
-				WithEmbeddingBatchSize(1),
-			),
 		),
 	)
 
@@ -461,22 +442,12 @@ func TestModelSwitching(t *testing.T) {
 				WithChunking(
 					WithChunkingEnabled(true),
 					WithChunkSize(256),
-					WithEmbedding(
-						WithEmbeddingModel(tc.modelConfig...),
-						WithEmbeddingBatchSize(1),
-					),
 				),
 			)
 
 			// Verify config was properly constructed
 			if config.Chunking == nil {
 				t.Fatal("expected non-nil Chunking config")
-			}
-			if config.Chunking.Embedding == nil {
-				t.Fatal("expected non-nil Embedding config")
-			}
-			if config.Chunking.Embedding.Model == nil {
-				t.Fatal("expected non-nil Embedding Model config")
 			}
 
 			// Test extraction with this model
@@ -535,10 +506,6 @@ func TestMathematicalPropertiesValidation(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(256),
-			WithEmbedding(
-				WithEmbeddingNormalize(true),
-				WithEmbeddingBatchSize(1),
-			),
 		),
 	)
 
@@ -606,9 +573,6 @@ func TestEmbeddingErrorHandling(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(256),
-			WithEmbedding(
-				WithEmbeddingBatchSize(1),
-			),
 		),
 	)
 
@@ -627,9 +591,6 @@ func TestEmbeddingErrorHandling(t *testing.T) {
 		WithChunking(
 			WithChunkingEnabled(true),
 			WithChunkSize(100),
-			WithEmbedding(
-				WithEmbeddingBatchSize(2),
-			),
 		),
 	)
 

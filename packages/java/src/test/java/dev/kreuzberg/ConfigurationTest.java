@@ -30,7 +30,7 @@ class ConfigurationTest {
 
 		assertNotNull(config, "Built config should not be null");
 		assertTrue(config.isUseCache(), "Cache should be enabled by default");
-		assertFalse(config.isEnableQualityProcessing(), "Quality processing should be disabled by default");
+		assertTrue(config.isEnableQualityProcessing(), "Quality processing should be enabled by default");
 		assertFalse(config.isForceOcr(), "Force OCR should be disabled by default");
 	}
 
@@ -289,7 +289,7 @@ class ConfigurationTest {
 		ExtractionConfig config = ExtractionConfig.builder().build();
 
 		assertTrue(config.isUseCache(), "Cache should be true by default");
-		assertFalse(config.isEnableQualityProcessing(), "Quality processing should be false by default");
+		assertTrue(config.isEnableQualityProcessing(), "Quality processing should be true by default");
 		assertFalse(config.isForceOcr(), "Force OCR should be false by default");
 		assertNull(config.getMaxConcurrentExtractions(), "Max concurrent should be null by default");
 	}

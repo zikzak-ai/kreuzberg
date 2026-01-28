@@ -6,9 +6,9 @@ module Kreuzberg
   # @example Start the server
   # @example With block
   module APIProxy
-    Error = Class.new(Kreuzberg::Errors::Error)
-    MissingBinaryError = Class.new(Error)
-    ServerError = Class.new(Error)
+    class Error < Kreuzberg::Errors::Error; end
+    class MissingBinaryError < Error; end
+    class ServerError < Error; end
 
     # API server instance
     class Server

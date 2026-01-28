@@ -6,9 +6,9 @@ require 'json'
 module Kreuzberg
   # @example Start MCP server
   module MCPProxy
-    Error = Class.new(Kreuzberg::Errors::Error)
-    MissingBinaryError = Class.new(Error)
-    ServerError = Class.new(Error)
+    class Error < Kreuzberg::Errors::Error; end
+    class MissingBinaryError < Error; end
+    class ServerError < Error; end
 
     # MCP server instance
     class Server

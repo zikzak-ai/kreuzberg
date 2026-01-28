@@ -44,6 +44,8 @@ public final class ExtractionConfig {
 	private final KeywordConfig keywords;
 	private final PageConfig pages;
 	private final Integer maxConcurrentExtractions;
+	private final EmbeddingConfig embedding;
+	private final ImagePreprocessingConfig imagePreprocessing;
 
 	private ExtractionConfig(Builder builder) {
 		this.useCache = builder.useCache;
@@ -65,6 +67,8 @@ public final class ExtractionConfig {
 		this.keywords = builder.keywords;
 		this.pages = builder.pages;
 		this.maxConcurrentExtractions = builder.maxConcurrentExtractions;
+		this.embedding = builder.embedding;
+		this.imagePreprocessing = builder.imagePreprocessing;
 	}
 
 	public static Builder builder() {
@@ -155,6 +159,26 @@ public final class ExtractionConfig {
 
 	public Integer getMaxConcurrentExtractions() {
 		return maxConcurrentExtractions;
+	}
+
+	/**
+	 * Get the embedding configuration.
+	 *
+	 * @return the embedding configuration, or null if not set
+	 * @since 4.0.0
+	 */
+	public EmbeddingConfig getEmbedding() {
+		return embedding;
+	}
+
+	/**
+	 * Get the image preprocessing configuration.
+	 *
+	 * @return the image preprocessing configuration, or null if not set
+	 * @since 4.0.0
+	 */
+	public ImagePreprocessingConfig getImagePreprocessing() {
+		return imagePreprocessing;
 	}
 
 	/**
@@ -443,6 +467,12 @@ public final class ExtractionConfig {
 		if (maxConcurrentExtractions != null) {
 			map.put("max_concurrent_extractions", maxConcurrentExtractions);
 		}
+		if (embedding != null) {
+			map.put("embedding", embedding.toMap());
+		}
+		if (imagePreprocessing != null) {
+			map.put("image_preprocessing", imagePreprocessing.toMap());
+		}
 		return map;
 	}
 
@@ -511,6 +541,14 @@ public final class ExtractionConfig {
 		if (raw.containsKey("max_concurrent_extractions")) {
 			builder.maxConcurrentExtractions(asInteger(raw.get("max_concurrent_extractions")));
 		}
+		Map<String, Object> embeddingMap = asMap(raw.get("embedding"));
+		if (embeddingMap != null) {
+			builder.embedding(EmbeddingConfig.fromMap(embeddingMap));
+		}
+		Map<String, Object> imagePreprocessingMap = asMap(raw.get("image_preprocessing"));
+		if (imagePreprocessingMap != null) {
+			builder.imagePreprocessing(ImagePreprocessingConfig.fromMap(imagePreprocessingMap));
+		}
 	}
 
 	private static boolean asBoolean(Object value, boolean defaultValue) {
@@ -578,6 +616,8 @@ public final class ExtractionConfig {
 		private KeywordConfig keywords;
 		private PageConfig pages;
 		private Integer maxConcurrentExtractions;
+		private EmbeddingConfig embedding;
+		private ImagePreprocessingConfig imagePreprocessing;
 
 		private Builder() {
 		}
@@ -697,6 +737,32 @@ public final class ExtractionConfig {
 
 		public Builder maxConcurrentExtractions(Integer maxConcurrentExtractions) {
 			this.maxConcurrentExtractions = maxConcurrentExtractions;
+			return this;
+		}
+
+		/**
+		 * Set the embedding configuration.
+		 *
+		 * @param embedding
+		 *            the embedding configuration
+		 * @return this builder for chaining
+		 * @since 4.0.0
+		 */
+		public Builder embedding(EmbeddingConfig embedding) {
+			this.embedding = embedding;
+			return this;
+		}
+
+		/**
+		 * Set the image preprocessing configuration.
+		 *
+		 * @param imagePreprocessing
+		 *            the image preprocessing configuration
+		 * @return this builder for chaining
+		 * @since 4.0.0
+		 */
+		public Builder imagePreprocessing(ImagePreprocessingConfig imagePreprocessing) {
+			this.imagePreprocessing = imagePreprocessing;
 			return this;
 		}
 

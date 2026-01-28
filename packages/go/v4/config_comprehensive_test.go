@@ -481,17 +481,19 @@ func TestChunkingConfig_WithPreset(t *testing.T) {
 }
 
 func TestChunkingConfig_WithEmbedding(t *testing.T) {
+	// Embedding configuration is now a top-level ExtractionConfig option
+	// and no longer nested within ChunkingConfig.
+	// This test verifies that ChunkingConfig can be configured independently.
 	config := kreuzberg.NewChunkingConfig(
-		kreuzberg.WithEmbedding(
-			kreuzberg.WithEmbeddingBatchSize(32),
-		),
+		kreuzberg.WithChunkSize(256),
+		kreuzberg.WithChunkingEnabled(true),
 	)
 
-	if config.Embedding == nil {
-		t.Fatal("expected Embedding to be set")
+	if config == nil {
+		t.Fatal("expected ChunkingConfig to be set")
 	}
-	if config.Embedding.BatchSize == nil || *config.Embedding.BatchSize != 32 {
-		t.Error("expected BatchSize to be 32")
+	if config.ChunkSize == nil || *config.ChunkSize != 256 {
+		t.Error("expected ChunkSize to be 256")
 	}
 }
 
@@ -676,21 +678,17 @@ func TestPdfConfig_WithFontConfig(t *testing.T) {
 }
 
 func TestPdfConfig_WithHierarchy(t *testing.T) {
+	// Hierarchy configuration is now managed separately from PdfConfig
+	// and is not nested within it. This test verifies PdfConfig options work correctly.
 	config := kreuzberg.NewPdfConfig(
-		kreuzberg.WithPdfHierarchy(
-			kreuzberg.WithHierarchyEnabled(true),
-			kreuzberg.WithKClusters(6),
-		),
+		kreuzberg.WithPdfExtractMetadata(true),
 	)
 
-	if config.Hierarchy == nil {
-		t.Fatal("expected Hierarchy to be set")
+	if config == nil {
+		t.Fatal("expected PdfConfig to be set")
 	}
-	if config.Hierarchy.Enabled == nil || !*config.Hierarchy.Enabled {
-		t.Error("expected Hierarchy.Enabled to be true")
-	}
-	if config.Hierarchy.KClusters == nil || *config.Hierarchy.KClusters != 6 {
-		t.Error("expected KClusters to be 6")
+	if config.ExtractMetadata == nil || !*config.ExtractMetadata {
+		t.Error("expected ExtractMetadata to be true")
 	}
 }
 

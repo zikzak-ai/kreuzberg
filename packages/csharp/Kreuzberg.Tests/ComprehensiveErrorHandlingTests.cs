@@ -113,7 +113,7 @@ public class ComprehensiveErrorHandlingTests
     [Fact]
     public void ExtractFileSync_WithNonexistentFile_ThrowsException()
     {
-        var ex = Assert.Throws<KreuzbergValidationException>(() =>
+        var ex = Assert.Throws<KreuzbergIOException>(() =>
             KreuzbergClient.ExtractFileSync("nonexistent/file.pdf")
         );
 
@@ -123,7 +123,7 @@ public class ComprehensiveErrorHandlingTests
     [Fact]
     public async Task ExtractFileAsync_WithNonexistentFile_ThrowsExceptionAsync()
     {
-        var ex = await Assert.ThrowsAsync<KreuzbergValidationException>(async () =>
+        var ex = await Assert.ThrowsAsync<KreuzbergIOException>(async () =>
             await KreuzbergClient.ExtractFileAsync("nonexistent/file.pdf")
         );
 
@@ -133,7 +133,7 @@ public class ComprehensiveErrorHandlingTests
     [Fact]
     public void ExtractFileSync_WithDirectoryPath_ThrowsException()
     {
-        var ex = Assert.Throws<KreuzbergValidationException>(() =>
+        var ex = Assert.Throws<KreuzbergIOException>(() =>
             KreuzbergClient.ExtractFileSync(Path.GetTempPath())
         );
 

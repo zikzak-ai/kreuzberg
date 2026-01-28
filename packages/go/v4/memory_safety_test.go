@@ -353,7 +353,6 @@ func TestConcurrentResultReads(t *testing.T) {
 
 			// Prevent compiler optimizations
 			_ = content
-			_ = success
 		}(i)
 	}
 

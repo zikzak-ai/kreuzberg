@@ -165,6 +165,61 @@ defmodule Kreuzberg.ExtractionConfig do
   ]
 
   @doc """
+  Creates a new ExtractionConfig with all default values.
+
+  ## Examples
+
+      iex> config = Kreuzberg.ExtractionConfig.new()
+      iex> config.use_cache
+      true
+  """
+  @spec new() :: t()
+  def new do
+    %__MODULE__{}
+  end
+
+  @doc """
+  Creates a new ExtractionConfig from keyword list or map.
+
+  ## Parameters
+
+    * `opts` - Keyword list or map (supports string keys from JSON)
+
+  ## Examples
+
+      iex> config = Kreuzberg.ExtractionConfig.new(use_cache: false)
+      iex> config.use_cache
+      false
+
+      iex> config = Kreuzberg.ExtractionConfig.new(%{"output_format" => "markdown"})
+      iex> config.output_format
+      "markdown"
+  """
+  @spec new(keyword() | map()) :: t()
+  def new(opts) when is_list(opts) do
+    opts |> Map.new() |> new()
+  end
+
+  def new(opts) when is_map(opts) and not is_struct(opts) do
+    normalized =
+      opts
+      |> Enum.reduce(%{}, fn
+        {key, value}, acc when is_binary(key) ->
+          atom_key = try do
+            String.to_existing_atom(key)
+          rescue
+            ArgumentError -> key
+          end
+          Map.put(acc, atom_key, value)
+
+        {key, value}, acc ->
+          Map.put(acc, key, value)
+      end)
+
+    struct(__MODULE__, normalized)
+  end
+
+  @doc """
   Converts an ExtractionConfig struct to a map for NIF serialization.
 
   Returns a map containing all configuration fields, both boolean flags and

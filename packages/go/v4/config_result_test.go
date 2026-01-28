@@ -645,7 +645,6 @@ func TestResultToJSON(t *testing.T) {
 	result := &kreuzberg.ExtractionResult{
 		Content:  "test content",
 		MimeType: "text/plain",
-		Success:  true,
 	}
 
 	jsonStr, err := kreuzberg.ResultToJSON(result)
@@ -699,77 +698,73 @@ func TestHierarchyConfigFromJSON(t *testing.T) {
 		check   func(t *testing.T, cfg *kreuzberg.ExtractionConfig)
 	}{
 		{
-			name:    "config with hierarchy enabled",
-			json:    `{"pdf_options": {"hierarchy": {"enabled": true}}}`,
+			name:    "config with pdf extract images",
+			json:    `{"pdf_options": {"extract_images": true}}`,
 			wantErr: false,
 			check: func(t *testing.T, cfg *kreuzberg.ExtractionConfig) {
-				if cfg == nil || cfg.PdfOptions == nil || cfg.PdfOptions.Hierarchy == nil {
-					t.Fatal("hierarchy config should not be nil")
+				if cfg == nil || cfg.PdfOptions == nil {
+					t.Fatal("pdf options should not be nil")
 				}
-				if cfg.PdfOptions.Hierarchy.Enabled == nil || !*cfg.PdfOptions.Hierarchy.Enabled {
-					t.Error("hierarchy enabled should be true")
+				if cfg.PdfOptions.ExtractImages == nil || !*cfg.PdfOptions.ExtractImages {
+					t.Error("extract_images should be true")
 				}
 			},
 		},
 		{
-			name:    "config with hierarchy k_clusters",
-			json:    `{"pdf_options": {"hierarchy": {"enabled": true, "k_clusters": 8}}}`,
+			name:    "config with pdf passwords",
+			json:    `{"pdf_options": {"passwords": ["pass1", "pass2"]}}`,
 			wantErr: false,
 			check: func(t *testing.T, cfg *kreuzberg.ExtractionConfig) {
-				if cfg == nil || cfg.PdfOptions == nil || cfg.PdfOptions.Hierarchy == nil {
-					t.Fatal("hierarchy config should not be nil")
+				if cfg == nil || cfg.PdfOptions == nil {
+					t.Fatal("pdf options should not be nil")
 				}
-				if cfg.PdfOptions.Hierarchy.KClusters == nil || *cfg.PdfOptions.Hierarchy.KClusters != 8 {
-					t.Error("k_clusters should be 8")
+				if len(cfg.PdfOptions.Passwords) != 2 {
+					t.Error("should have 2 passwords")
 				}
 			},
 		},
 		{
-			name:    "config with hierarchy include_bbox",
-			json:    `{"pdf_options": {"hierarchy": {"enabled": true, "include_bbox": false}}}`,
+			name:    "config with pdf extract metadata",
+			json:    `{"pdf_options": {"extract_metadata": true}}`,
 			wantErr: false,
 			check: func(t *testing.T, cfg *kreuzberg.ExtractionConfig) {
-				if cfg == nil || cfg.PdfOptions == nil || cfg.PdfOptions.Hierarchy == nil {
-					t.Fatal("hierarchy config should not be nil")
+				if cfg == nil || cfg.PdfOptions == nil {
+					t.Fatal("pdf options should not be nil")
 				}
-				if cfg.PdfOptions.Hierarchy.IncludeBbox == nil || *cfg.PdfOptions.Hierarchy.IncludeBbox {
-					t.Error("include_bbox should be false")
+				if cfg.PdfOptions.ExtractMetadata == nil || !*cfg.PdfOptions.ExtractMetadata {
+					t.Error("extract_metadata should be true")
 				}
 			},
 		},
 		{
-			name:    "config with hierarchy ocr_coverage_threshold",
-			json:    `{"pdf_options": {"hierarchy": {"enabled": true, "ocr_coverage_threshold": 0.75}}}`,
+			name:    "config with pdf font config",
+			json:    `{"pdf_options": {"font_config": {"enabled": true}}}`,
 			wantErr: false,
 			check: func(t *testing.T, cfg *kreuzberg.ExtractionConfig) {
-				if cfg == nil || cfg.PdfOptions == nil || cfg.PdfOptions.Hierarchy == nil {
-					t.Fatal("hierarchy config should not be nil")
+				if cfg == nil || cfg.PdfOptions == nil || cfg.PdfOptions.FontConfig == nil {
+					t.Fatal("font config should not be nil")
 				}
-				if cfg.PdfOptions.Hierarchy.OcrCoverageThreshold == nil || *cfg.PdfOptions.Hierarchy.OcrCoverageThreshold != 0.75 {
-					t.Error("ocr_coverage_threshold should be 0.75")
+				if !cfg.PdfOptions.FontConfig.Enabled {
+					t.Error("font config enabled should be true")
 				}
 			},
 		},
 		{
-			name:    "config with complete hierarchy",
-			json:    `{"pdf_options": {"hierarchy": {"enabled": true, "k_clusters": 6, "include_bbox": true, "ocr_coverage_threshold": 0.5}}}`,
+			name:    "config with complete pdf options",
+			json:    `{"pdf_options": {"extract_images": true, "extract_metadata": true, "passwords": ["p1"]}}`,
 			wantErr: false,
 			check: func(t *testing.T, cfg *kreuzberg.ExtractionConfig) {
-				if cfg == nil || cfg.PdfOptions == nil || cfg.PdfOptions.Hierarchy == nil {
-					t.Fatal("hierarchy config should not be nil")
+				if cfg == nil || cfg.PdfOptions == nil {
+					t.Fatal("pdf options should not be nil")
 				}
-				h := cfg.PdfOptions.Hierarchy
-				if h.Enabled == nil || !*h.Enabled {
-					t.Error("enabled should be true")
+				if cfg.PdfOptions.ExtractImages == nil || !*cfg.PdfOptions.ExtractImages {
+					t.Error("extract_images should be true")
 				}
-				if h.KClusters == nil || *h.KClusters != 6 {
-					t.Error("k_clusters should be 6")
+				if cfg.PdfOptions.ExtractMetadata == nil || !*cfg.PdfOptions.ExtractMetadata {
+					t.Error("extract_metadata should be true")
 				}
-				if h.IncludeBbox == nil || !*h.IncludeBbox {
-					t.Error("include_bbox should be true")
-				}
-				if h.OcrCoverageThreshold == nil || *h.OcrCoverageThreshold != 0.5 {
-					t.Error("ocr_coverage_threshold should be 0.5")
+				if len(cfg.PdfOptions.Passwords) != 1 || cfg.PdfOptions.Passwords[0] != "p1" {
+					t.Error("passwords should contain p1")
 				}
 			},
 		},

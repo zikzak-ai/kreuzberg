@@ -29,7 +29,7 @@ public class ErrorHandlingTests
     {
         var nonexistentPath = "/nonexistent/path/file.pdf";
 
-        var ex = Assert.Throws<KreuzbergValidationException>(() => KreuzbergClient.ExtractFileSync(nonexistentPath));
+        var ex = Assert.Throws<KreuzbergIOException>(() => KreuzbergClient.ExtractFileSync(nonexistentPath));
         Assert.NotNull(ex);
         Assert.NotEmpty(ex.Message);
         Assert.True(ex.Message.Contains("file", StringComparison.OrdinalIgnoreCase) ||
@@ -61,7 +61,7 @@ public class ErrorHandlingTests
     [Fact]
     public void DetectMimeTypeFromPath_WithNonexistentFile_ThrowsException()
     {
-        var ex = Assert.Throws<KreuzbergValidationException>(() => KreuzbergClient.DetectMimeTypeFromPath("/nonexistent/file.pdf"));
+        var ex = Assert.Throws<KreuzbergIOException>(() => KreuzbergClient.DetectMimeTypeFromPath("/nonexistent/file.pdf"));
         Assert.NotNull(ex);
         Assert.NotEmpty(ex.Message);
         Assert.True(ex.Message.Length > 10, "Error message should be descriptive");

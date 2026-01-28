@@ -5,8 +5,8 @@ require 'open3'
 module Kreuzberg
   # @example
   module CLIProxy
-    Error = Class.new(Kreuzberg::Errors::Error)
-    MissingBinaryError = Class.new(Error)
+    class Error < Kreuzberg::Errors::Error; end
+    class MissingBinaryError < Error; end
 
     # CLI execution error with stderr and exit status
     class CLIExecutionError < Error
