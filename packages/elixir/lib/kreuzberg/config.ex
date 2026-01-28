@@ -145,6 +145,7 @@ defmodule Kreuzberg.ExtractionConfig do
           result_format: result_format
         }
 
+  @derive Jason.Encoder
   defstruct [
     :chunking,
     :ocr,
