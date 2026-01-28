@@ -7,8 +7,35 @@
  */
 
 import { wrapWasmError } from "../adapters/wasm-adapter.js";
-import { hasWasm, isBrowser, isNode } from "../runtime.js";
+import { hasWasm, isBrowser, isEdgeEnvironment, isNode } from "../runtime.js";
 import { initializePdfiumAsync } from "./pdfium-loader.js";
+
+/**
+ * Options for initializing the WASM module.
+ */
+export interface InitWasmOptions {
+	/**
+	 * A pre-loaded WebAssembly.Module for the Kreuzberg WASM binary.
+	 *
+	 * Required in edge environments (Cloudflare Workers, Vercel Edge) where
+	 * the runtime cannot fetch `file://` URLs. Import the `.wasm` file as a
+	 * static import in your worker and pass it here.
+	 *
+	 * @example Cloudflare Workers
+	 * ```typescript
+	 * import wasmModule from '@kreuzberg/wasm/kreuzberg_wasm_bg.wasm';
+	 * import { initWasm } from '@kreuzberg/wasm';
+	 *
+	 * export default {
+	 *   async fetch(request: Request): Promise<Response> {
+	 *     await initWasm({ wasmModule });
+	 *     // ... use extraction functions
+	 *   }
+	 * };
+	 * ```
+	 */
+	wasmModule?: WebAssembly.Module;
+}
 
 /**
  * Load WASM binary from file system in Node.js environment.
@@ -105,9 +132,10 @@ export function getVersion(): string {
  *
  * Multiple calls to initWasm() are safe and will return immediately if already initialized.
  *
+ * @param options - Optional configuration for WASM initialization
  * @throws {Error} If WASM module fails to load or is not supported in the current environment
  *
- * @example Basic Usage
+ * @example Basic Usage (Node.js / Browser)
  * ```typescript
  * import { initWasm } from '@kreuzberg/wasm';
  *
@@ -117,6 +145,21 @@ export function getVersion(): string {
  * }
  *
  * main().catch(console.error);
+ * ```
+ *
+ * @example Cloudflare Workers
+ * ```typescript
+ * import wasmModule from '@kreuzberg/wasm/kreuzberg_wasm_bg.wasm';
+ * import { initWasm, extractBytes } from '@kreuzberg/wasm';
+ *
+ * export default {
+ *   async fetch(request: Request): Promise<Response> {
+ *     await initWasm({ wasmModule });
+ *     const bytes = new Uint8Array(await request.arrayBuffer());
+ *     const result = await extractBytes(bytes, 'application/pdf');
+ *     return new Response(JSON.stringify(result));
+ *   }
+ * };
  * ```
  *
  * @example With Error Handling
@@ -139,7 +182,7 @@ export function getVersion(): string {
  * }
  * ```
  */
-export async function initWasm(): Promise<void> {
+export async function initWasm(options?: InitWasmOptions): Promise<void> {
 	if (isInitialized()) {
 		return;
 	}
@@ -155,29 +198,55 @@ export async function initWasm(): Promise<void> {
 				throw new Error("WebAssembly is not supported in this environment");
 			}
 
-			let wasmModule: unknown;
-			// Use const variables to make imports dynamic and bypass TypeScript's static module resolution.
-			// This allows typecheck to pass when the WASM module hasn't been built yet (e.g., in CI).
-			// Use URL-based resolution for cross-platform compatibility (especially Windows).
+			// Import the wasm-bindgen JS glue module. We try multiple paths to handle:
+			//   - URL-based: ../pkg/ (workspace-linked), ./kreuzberg_wasm.js (legacy)
+			//   - String-based: ./pkg/, ../pkg/ (edge runtimes that can't resolve file:// URLs)
+			// String paths use variable construction to avoid Vite static analysis failures.
 			const baseUrl = new URL(import.meta.url);
-			const pkgUrl = new URL("../pkg/kreuzberg_wasm.js", baseUrl).href;
-			const fallbackUrl = new URL("./kreuzberg_wasm.js", baseUrl).href;
-			try {
-				wasmModule = await import(/* @vite-ignore */ pkgUrl);
-			} catch {
-				wasmModule = await import(/* @vite-ignore */ fallbackUrl);
+			const modulePaths = [
+				new URL("../pkg/kreuzberg_wasm.js", baseUrl).href,
+				new URL("./kreuzberg_wasm.js", baseUrl).href,
+				[".", "pkg", "kreuzberg_wasm.js"].join("/"),
+				["..", "pkg", "kreuzberg_wasm.js"].join("/"),
+			];
+
+			let wasmModule: unknown;
+			let lastError: unknown;
+			for (const modulePath of modulePaths) {
+				try {
+					wasmModule = await import(/* @vite-ignore */ modulePath);
+					break;
+				} catch (e) {
+					lastError = e;
+				}
+			}
+			if (!wasmModule) {
+				throw lastError;
 			}
 			const loadedModule = wasmModule as unknown as WasmModule;
 			setWasmModule(loadedModule);
 
 			if (loadedModule && typeof loadedModule.default === "function") {
-				// In Node.js, load WASM binary from file system to avoid fetch issues
-				// In browsers/Workers, the default() function uses fetch with import.meta.url
-				const wasmBinary = await loadWasmBinaryForNode();
-				if (wasmBinary) {
-					await loadedModule.default(wasmBinary);
+				// If a WebAssembly.Module was provided (e.g. for Cloudflare Workers), use it directly.
+				if (options?.wasmModule) {
+					await loadedModule.default(options.wasmModule);
 				} else {
-					await loadedModule.default();
+					// In Node.js, load WASM binary from file system to avoid fetch issues
+					// In browsers, the default() function uses fetch with import.meta.url
+					const wasmBinary = await loadWasmBinaryForNode();
+					if (wasmBinary) {
+						await loadedModule.default(wasmBinary);
+					} else if (isEdgeEnvironment()) {
+						throw new Error(
+							"Edge environment detected (Cloudflare Workers / Vercel Edge). " +
+								"Cannot automatically load .wasm file because fetch() does not support file:// URLs. " +
+								"Pass the WASM module explicitly:\n\n" +
+								"  import wasmModule from '@kreuzberg/wasm/kreuzberg_wasm_bg.wasm';\n" +
+								"  await initWasm({ wasmModule });\n",
+						);
+					} else {
+						await loadedModule.default();
+					}
 				}
 			}
 

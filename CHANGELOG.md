@@ -31,6 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error type fix**: File-not-found errors now throw `KreuzbergIOException` instead of `KreuzbergValidationException`
   - Aligns with Rust error handling where file access issues are I/O errors
 
+#### WASM / Cloudflare Workers
+- **Edge environment WASM initialization**: Fixed `initWasm()` failing in Cloudflare Workers and Vercel Edge with "Invalid URL string" error
+  - Root cause: `import.meta.url` resolves to `file://` URLs in edge runtimes, which `fetch()` and dynamic `import()` cannot load
+  - Added `initWasm({ wasmModule })` option for explicit WASM module injection in edge environments
+  - Added fallback JS glue module import paths (string-based) for runtimes that cannot resolve `file://` URLs
+  - Added clear error message when edge environment detected without explicit `wasmModule`
+  - Exported `InitWasmOptions` type and `./kreuzberg_wasm_bg.wasm` subpath from `@kreuzberg/wasm`
+
 #### Go Bindings
 - **Test alignment**: Removed references to deprecated `WithEmbedding()` API and `Chunking.Embedding` field
 - **Test fixes**: Updated config_comprehensive_test, config_result_test, embeddings_test, memory_safety_test

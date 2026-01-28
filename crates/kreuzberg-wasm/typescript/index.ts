@@ -109,6 +109,7 @@ export {
 	getInitializationError,
 	getVersion,
 	getWasmModule,
+	type InitWasmOptions,
 	initWasm,
 	isInitialized,
 	type ModuleInfo,

@@ -24,6 +24,7 @@
 		},
 		"./dist/pkg/*": "./dist/pkg/*",
 		"./dist/kreuzberg_wasm.js": "./dist/kreuzberg_wasm.js",
+		"./kreuzberg_wasm_bg.wasm": "./dist/pkg/kreuzberg_wasm_bg.wasm",
 		"./runtime": {
 			"types": "./dist/runtime.d.ts",
 			"import": "./dist/runtime.js",

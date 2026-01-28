@@ -216,3 +216,10 @@ packages/php/tests.xml
 # Go test binaries
 tests/test_apps/go/kreuzberg-test-suite
 tests/test_apps/go/main
+
+# Lock files under test_apps (installed from registry, not workspace)
+tests/test_apps/**/package-lock.json
+tests/test_apps/**/pnpm-lock.yaml
+tests/test_apps/**/Gemfile.lock
+tests/test_apps/**/composer.lock
+tests/test_apps/**/mix.lock
