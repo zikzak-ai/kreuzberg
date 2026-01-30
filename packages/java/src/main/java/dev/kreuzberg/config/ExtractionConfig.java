@@ -8,7 +8,6 @@ import dev.kreuzberg.KreuzbergFFI;
 import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -550,12 +549,12 @@ public final class ExtractionConfig {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "PMD.ReturnEmptyCollectionRatherThanNull"})
 	private static Map<String, Object> asMap(Object value) {
 		if (value instanceof Map) {
 			return (Map<String, Object>) value;
 		}
-		return Collections.emptyMap();
+		return null;
 	}
 
 	public static final class Builder {
