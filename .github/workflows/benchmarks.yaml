@@ -1910,7 +1910,7 @@ jobs:
           retention-days: 30
 
   aggregate-and-publish:
-    name: Aggregate & Publish Results
+    name: Aggregate & Release Results
     needs: [setup, bench-native, bench-python, bench-node, bench-wasm, bench-ruby, bench-ruby-batch, bench-go, bench-go-batch, bench-java, bench-csharp, bench-elixir, bench-elixir-batch, bench-php, bench-php-batch, bench-docling, bench-docling-batch, bench-markitdown, bench-pandoc, bench-unstructured, bench-tika, bench-tika-batch, bench-pymupdf4llm, bench-pdfplumber, bench-pdfplumber-batch, bench-mineru, bench-mineru-batch]
     runs-on: ubuntu-latest
     if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
@@ -1918,8 +1918,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Rust
         uses: ./.github/actions/setup-rust
@@ -2028,67 +2026,21 @@ jobs:
           echo "Data structure summary:"
           jq 'keys' "$AGGREGATED_FILE" | head -20
 
-      - name: Prepare gh-pages branch
+      - name: Create GitHub Release with benchmark results
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
-          echo "=== Preparing gh-pages branch ==="
+          echo "=== Creating GitHub Release with benchmark results ==="
 
-          # Try to fetch the remote gh-pages branch
-          if git fetch origin gh-pages 2>/dev/null; then
-            echo "gh-pages branch exists on remote"
-            git checkout gh-pages
-          else
-            echo "gh-pages branch does not exist on remote, creating new orphan branch"
-            git checkout --orphan gh-pages
-            echo "Orphan branch created"
+          SHORT_SHA="${{ github.sha }}"
+          SHORT_SHA="${SHORT_SHA:0:7}"
+          TAG="benchmark-run-${{ github.run_id }}"
+          DATE=$(date -u +"%Y-%m-%d")
 
-            # Clear the branch of any existing content
-            git rm -rf . 2>/dev/null || true
-
-            # Create initial commit
-            echo "# Benchmark Results" > README.md
-            git add README.md
-            git commit -m "Initial gh-pages branch" || echo "No changes to commit"
-
-            # Push the initial branch to remote
-            echo "Pushing initial gh-pages branch to remote..."
-            git push -u origin gh-pages || {
-              echo "ERROR: Failed to push initial gh-pages branch"
-              exit 1
-            }
-
-            echo "gh-pages branch created and pushed successfully"
-          fi
-
-          # Verify we're on gh-pages
-          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          if [[ "$CURRENT_BRANCH" != "gh-pages" ]]; then
-            echo "ERROR: Not on gh-pages branch (currently on $CURRENT_BRANCH)"
-            exit 1
-          fi
-
-          echo "Successfully on gh-pages branch"
-
-      - name: Update benchmark data
-        run: |
-          set -euo pipefail
-
-          echo "=== Updating benchmark data on gh-pages ==="
-
-          mkdir -p benchmarks/data
-
-          # Copy aggregated data
-          if [[ -f "consolidated-output/aggregated.json" ]]; then
-            cp consolidated-output/aggregated.json benchmarks/data/aggregated.json
-            echo "Copied aggregated.json"
-          else
-            echo "WARNING: consolidated-output/aggregated.json not found"
-            exit 1
-          fi
-
-          # Create metadata file
-          cat > benchmarks/data/metadata.json <<EOF
+          # Create metadata file alongside aggregated data
+          cat > consolidated-output/metadata.json <<EOF
           {
             "updated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
             "commit": "${{ github.sha }}",
@@ -2097,67 +2049,11 @@ jobs:
           }
           EOF
 
-          echo "Metadata file created"
-          ls -lh benchmarks/data/
+          gh release create "$TAG" \
+            --title "Benchmark Results ${DATE} (${SHORT_SHA})" \
+            --notes "Comparative benchmark results from workflow run [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
 
-      - name: Commit and push to gh-pages with retry
-        run: |
-          set -euo pipefail
-
-          echo "=== Committing and pushing to gh-pages with retry logic ==="
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add benchmarks/data/
-
-          # Check if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-
-          git commit -m "chore: update benchmark data from run ${{ github.run_id }}"
-
-          # Retry logic for push
-          MAX_RETRIES=3
-          RETRY_COUNT=0
-          BACKOFF_SECONDS=5
-
-          while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
-            echo "Push attempt $((RETRY_COUNT + 1))/$MAX_RETRIES"
-
-            if git push origin gh-pages; then
-              echo "Successfully pushed to gh-pages"
-              exit 0
-            else
-              RETRY_COUNT=$((RETRY_COUNT + 1))
-
-              if [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; then
-                echo "Push failed. Attempting to resolve conflicts with pull --rebase..."
-
-                # Pull with rebase to resolve any conflicts
-                if git pull --rebase origin gh-pages; then
-                  echo "Successfully rebased local changes"
-                else
-                  echo "ERROR: Failed to rebase. Aborting rebase..."
-                  git rebase --abort || true
-
-                  # Wait before retry
-                  echo "Waiting $BACKOFF_SECONDS seconds before retry..."
-                  sleep $BACKOFF_SECONDS
-                  continue
-                fi
-
-                # Wait before retry
-                echo "Waiting $BACKOFF_SECONDS seconds before retry..."
-                sleep $BACKOFF_SECONDS
-              else
-                echo "ERROR: Failed to push after $MAX_RETRIES attempts"
-                exit 1
-              fi
-            fi
-          done
-
-          echo "ERROR: Push failed after all retries"
-          exit 1
+          **Commit:** ${{ github.sha }}
+          **Date:** ${DATE}" \
+            consolidated-output/aggregated.json \
+            consolidated-output/metadata.json
