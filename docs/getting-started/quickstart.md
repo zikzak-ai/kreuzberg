@@ -421,6 +421,7 @@ Access format-specific metadata from extracted documents:
     ```
 
 Kreuzberg extracts format-specific metadata for:
+
 - **PDF**: page count, title, author, subject, keywords, dates
 - **HTML**: Rich metadata including SEO tags, Open Graph, Twitter Card, structured data, headers, links, images
 - **Excel**: sheet count, sheet names
