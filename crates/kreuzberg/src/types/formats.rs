@@ -2,6 +2,7 @@
 
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use super::extraction::ExtractedImage;
@@ -437,9 +438,9 @@ pub struct LibreOfficeConversionResult {
     /// Converted file bytes
     pub converted_bytes: Vec<u8>,
     /// Original format identifier
-    pub original_format: String,
+    pub original_format: Cow<'static, str>,
     /// Target format identifier
-    pub target_format: String,
+    pub target_format: Cow<'static, str>,
     /// Target MIME type after conversion
-    pub target_mime: String,
+    pub target_mime: Cow<'static, str>,
 }

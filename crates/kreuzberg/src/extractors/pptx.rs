@@ -68,7 +68,7 @@ impl PptxExtractor {
                 Ok(ocr_extraction) => {
                     let extraction_result = ExtractionResult {
                         content: ocr_extraction.content,
-                        mime_type: ocr_extraction.mime_type,
+                        mime_type: ocr_extraction.mime_type.into(),
                         metadata: Metadata::default(),
                         tables: vec![],
                         detected_languages: None,
@@ -176,7 +176,7 @@ impl DocumentExtractor for PptxExtractor {
 
         Ok(ExtractionResult {
             content: pptx_result.content,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata,
             pages: pptx_result.page_contents,
             tables: vec![],
@@ -241,7 +241,7 @@ impl DocumentExtractor for PptxExtractor {
 
         Ok(ExtractionResult {
             content: pptx_result.content,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata,
             pages: pptx_result.page_contents,
             tables: vec![],

@@ -160,7 +160,7 @@ impl OcrBackend for FfiOcrBackend {
 
         Ok(ExtractionResult {
             content: result_text,
-            mime_type: "text/plain".to_string(),
+            mime_type: std::borrow::Cow::Borrowed("text/plain"),
             metadata: kreuzberg::types::Metadata::default(),
             tables: vec![],
             detected_languages: None,

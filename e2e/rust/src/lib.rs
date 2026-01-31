@@ -45,7 +45,7 @@ pub mod assertions {
             return;
         }
 
-        let mime = result.mime_type.as_str();
+        let mime: &str = &result.mime_type;
         let matches = expected.iter().any(|candidate| mime.contains(candidate));
         assert!(matches, "Expected MIME {:?} to match one of {:?}", mime, expected);
     }

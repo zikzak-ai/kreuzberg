@@ -225,7 +225,7 @@ impl DocumentExtractor for MarkdownExtractor {
 
         Ok(ExtractionResult {
             content: extracted_text,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata,
             tables,
             detected_languages: None,

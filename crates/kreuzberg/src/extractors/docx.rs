@@ -309,7 +309,7 @@ impl DocumentExtractor for DocxExtractor {
 
         Ok(ExtractionResult {
             content: text,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 pages: page_structure,
                 keywords: parsed_keywords,

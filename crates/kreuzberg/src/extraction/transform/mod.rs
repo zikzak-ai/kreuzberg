@@ -21,6 +21,8 @@ use crate::types::{Element, ExtractionResult};
 use content::{
     add_page_break, format_table_as_text, process_content, process_hierarchy, process_images, process_tables,
 };
+#[cfg(test)]
+use std::borrow::Cow;
 
 /// Transform an extraction result into semantic elements.
 ///
@@ -263,7 +265,7 @@ mod tests {
         // Create a mock result with pages and hierarchy
         let result = ExtractionResult {
             content: "Full document content".to_string(),
-            mime_type: "application/pdf".to_string(),
+            mime_type: Cow::Borrowed("application/pdf"),
             metadata: test_metadata(Some("Test Document".to_string())),
             tables: vec![],
             detected_languages: None,
@@ -365,7 +367,7 @@ mod tests {
             page_number: Some(1),
             width: Some(640),
             height: Some(480),
-            colorspace: Some("RGB".to_string()),
+            colorspace: Some("RGB".to_string().into()),
             bits_per_component: Some(8),
             is_mask: false,
             description: None,
@@ -374,7 +376,7 @@ mod tests {
 
         let result = ExtractionResult {
             content: "Test content".to_string(),
-            mime_type: "application/pdf".to_string(),
+            mime_type: Cow::Borrowed("application/pdf"),
             metadata: test_metadata(Some("Test".to_string())),
             tables: vec![],
             detected_languages: None,
@@ -422,7 +424,7 @@ mod tests {
         // Create a result without pages
         let result = ExtractionResult {
             content: "Simple text content\n\nSecond paragraph".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: test_metadata(Some("Simple Doc".to_string())),
             tables: vec![],
             detected_languages: None,
@@ -454,7 +456,7 @@ mod tests {
 
         let result = ExtractionResult {
             content: "First paragraph.\n\nSecond paragraph.\n\nThird paragraph.".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: test_metadata(None),
             tables: vec![],
             detected_languages: None,

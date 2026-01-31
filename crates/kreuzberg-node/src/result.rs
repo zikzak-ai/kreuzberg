@@ -300,7 +300,7 @@ impl TryFrom<RustExtractionResult> for JsExtractionResult {
 
         Ok(JsExtractionResult {
             content: val.content,
-            mime_type: val.mime_type,
+            mime_type: val.mime_type.to_string(),
             metadata,
             tables: val
                 .tables
@@ -489,7 +489,7 @@ impl TryFrom<JsExtractionResult> for RustExtractionResult {
 
         Ok(RustExtractionResult {
             content: val.content,
-            mime_type: val.mime_type,
+            mime_type: std::borrow::Cow::Owned(val.mime_type),
             metadata,
             tables: val
                 .tables

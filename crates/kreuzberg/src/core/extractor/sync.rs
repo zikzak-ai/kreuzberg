@@ -187,7 +187,7 @@ pub fn batch_extract_bytes_sync(
         let result = extract_bytes_sync(&content, &mime_type, config);
         results.push(result.unwrap_or_else(|e| ExtractionResult {
             content: format!("Error: {}", e),
-            mime_type: intern_mime_type("text/plain").to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata {
                 error: Some(ErrorMetadata {
                     error_type: format!("{:?}", e),

@@ -188,7 +188,7 @@ pub struct EmailMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArchiveMetadata {
     /// Archive format ("ZIP", "TAR", "7Z", etc.)
-    pub format: String,
+    pub format: Cow<'static, str>,
     /// Total number of files in the archive
     pub file_count: usize,
     /// List of file paths within the archive

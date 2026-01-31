@@ -272,7 +272,7 @@ impl DocumentExtractor for PdfExtractor {
 
         Ok(ExtractionResult {
             content: text,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 #[cfg(feature = "pdf")]
                 title: pdf_metadata.title.clone(),

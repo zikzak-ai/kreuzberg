@@ -67,7 +67,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "test content".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: crate::types::Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -119,7 +119,7 @@ mod tests {
 
         let result = ExtractionResult {
             content: "test".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: crate::types::Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -188,7 +188,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: String::new(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: crate::types::Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -217,7 +217,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "test".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: crate::types::Metadata {
                 additional,
                 ..Default::default()
@@ -249,7 +249,7 @@ mod tests {
 
         let result = ExtractionResult {
             content: "test".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: crate::types::Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -302,7 +302,7 @@ mod tests {
 
         let pdf_result = ExtractionResult {
             content: "test".to_string(),
-            mime_type: "application/pdf".to_string(),
+            mime_type: Cow::Borrowed("application/pdf"),
             metadata: crate::types::Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -315,7 +315,7 @@ mod tests {
 
         let txt_result = ExtractionResult {
             content: "test".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: crate::types::Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -346,7 +346,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "test".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: crate::types::Metadata::default(),
             tables: vec![table],
             detected_languages: None,

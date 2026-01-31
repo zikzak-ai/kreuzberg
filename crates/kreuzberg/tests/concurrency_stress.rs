@@ -17,6 +17,7 @@ use kreuzberg::core::pipeline::run_pipeline;
 use kreuzberg::plugins::registry::{get_document_extractor_registry, get_post_processor_registry};
 use kreuzberg::plugins::{Plugin, PostProcessor, ProcessingStage};
 use kreuzberg::types::{ExtractionResult, Metadata};
+use std::borrow::Cow;
 use std::sync::Arc;
 
 #[cfg(feature = "ocr")]
@@ -378,7 +379,7 @@ async fn test_concurrent_pipeline_processing() {
         handles.push(tokio::spawn(async move {
             let result = ExtractionResult {
                 content: format!("Content {}", i),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: Metadata::default(),
                 tables: vec![],
                 detected_languages: None,

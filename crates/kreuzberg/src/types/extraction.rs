@@ -16,7 +16,7 @@ use super::tables::Table;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExtractionResult {
     pub content: String,
-    pub mime_type: String,
+    pub mime_type: Cow<'static, str>,
     pub metadata: Metadata,
     pub tables: Vec<Table>,
     #[serde(skip_serializing_if = "Option::is_none")]

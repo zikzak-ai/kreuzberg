@@ -121,7 +121,7 @@ impl DocumentExtractor for EpubExtractor {
 
         Ok(ExtractionResult {
             content: extracted_content,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 title: epub_metadata.title,
                 authors: epub_metadata.creator.map(|c| vec![c]),

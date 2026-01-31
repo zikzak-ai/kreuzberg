@@ -20,7 +20,7 @@ use std::collections::HashMap;
 fn build_archive_result(
     extraction_metadata: ExtractedMetadata,
     text_contents: HashMap<String, String>,
-    format_name: &str,
+    format_name: &'static str,
     mime_type: &str,
 ) -> ExtractionResult {
     let file_names: Vec<String> = extraction_metadata
@@ -30,7 +30,7 @@ fn build_archive_result(
         .collect();
 
     let archive_metadata = ArchiveMetadata {
-        format: format_name.to_string(),
+        format: Cow::Borrowed(format_name),
         file_count: extraction_metadata.file_count,
         file_list: file_names,
         total_size: extraction_metadata.total_size as usize,
@@ -69,7 +69,7 @@ fn build_archive_result(
 
     ExtractionResult {
         content: output,
-        mime_type: mime_type.to_string(),
+        mime_type: mime_type.to_string().into(),
         metadata: Metadata {
             format: Some(crate::types::FormatMetadata::Archive(archive_metadata)),
             additional,

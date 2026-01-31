@@ -58,7 +58,7 @@ impl SyncExtractor for XmlExtractor {
 
         Ok(ExtractionResult {
             content: xml_result.content,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: crate::types::Metadata {
                 format: Some(crate::types::FormatMetadata::Xml(crate::types::XmlMetadata {
                     element_count: xml_result.element_count,

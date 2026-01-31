@@ -12,6 +12,7 @@ use kreuzberg::plugins::registry::{DocumentExtractorRegistry, ValidatorRegistry}
 use kreuzberg::plugins::{DocumentExtractor, Plugin, Validator};
 use kreuzberg::types::{ExtractionResult, Metadata};
 use kreuzberg::{KreuzbergError, Result};
+use std::borrow::Cow;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -119,7 +120,7 @@ impl DocumentExtractor for MockExtractor {
     ) -> Result<ExtractionResult> {
         Ok(ExtractionResult {
             content: format!("Extracted by {}: {}", self.name, String::from_utf8_lossy(content)),
-            mime_type: mime_type.to_string(),
+            mime_type: Cow::Owned(mime_type.to_string()),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,

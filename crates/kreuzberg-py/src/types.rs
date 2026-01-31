@@ -505,7 +505,7 @@ impl ExtractionResult {
 
         Ok(Self {
             content: result.content,
-            mime_type: result.mime_type,
+            mime_type: result.mime_type.to_string(),
             metadata,
             tables: tables.unbind(),
             detected_languages,

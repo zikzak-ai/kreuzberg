@@ -45,6 +45,7 @@
 
 use crate::error::{KreuzbergError, Result};
 use crate::types::LibreOfficeConversionResult;
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::env;
 use std::fs as std_fs;
@@ -326,9 +327,9 @@ pub async fn convert_doc_to_docx(doc_bytes: &[u8]) -> Result<LibreOfficeConversi
 
     Ok(LibreOfficeConversionResult {
         converted_bytes,
-        original_format: "doc".to_string(),
-        target_format: "docx".to_string(),
-        target_mime: crate::core::mime::DOCX_MIME_TYPE.to_string(),
+        original_format: Cow::Borrowed("doc"),
+        target_format: Cow::Borrowed("docx"),
+        target_mime: Cow::Borrowed(crate::core::mime::DOCX_MIME_TYPE),
     })
 }
 
@@ -350,9 +351,9 @@ pub async fn convert_ppt_to_pptx(ppt_bytes: &[u8]) -> Result<LibreOfficeConversi
 
     Ok(LibreOfficeConversionResult {
         converted_bytes,
-        original_format: "ppt".to_string(),
-        target_format: "pptx".to_string(),
-        target_mime: crate::core::mime::POWER_POINT_MIME_TYPE.to_string(),
+        original_format: Cow::Borrowed("ppt"),
+        target_format: Cow::Borrowed("pptx"),
+        target_mime: Cow::Borrowed(crate::core::mime::POWER_POINT_MIME_TYPE),
     })
 }
 
@@ -505,9 +506,9 @@ mod tests {
     async fn test_conversion_result_structure() {
         let result = LibreOfficeConversionResult {
             converted_bytes: vec![1, 2, 3],
-            original_format: "doc".to_string(),
-            target_format: "docx".to_string(),
-            target_mime: crate::core::mime::DOCX_MIME_TYPE.to_string(),
+            original_format: Cow::Borrowed("doc"),
+            target_format: Cow::Borrowed("docx"),
+            target_mime: Cow::Borrowed(crate::core::mime::DOCX_MIME_TYPE),
         };
 
         assert_eq!(result.original_format, "doc");

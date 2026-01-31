@@ -128,7 +128,7 @@ impl DocumentExtractor for ImageExtractor {
                 let mut ocr_result = self.extract_with_ocr(content, mime_type, config).await?;
 
                 ocr_result.metadata.format = Some(crate::types::FormatMetadata::Image(image_metadata));
-                ocr_result.mime_type = mime_type.to_string();
+                ocr_result.mime_type = mime_type.to_string().into();
 
                 return Ok(ocr_result);
             }
@@ -141,7 +141,7 @@ impl DocumentExtractor for ImageExtractor {
 
                 return Ok(ExtractionResult {
                     content: content_text,
-                    mime_type: mime_type.to_string(),
+                    mime_type: mime_type.to_string().into(),
                     metadata: Metadata {
                         format: Some(crate::types::FormatMetadata::Image(image_metadata)),
                         ..Default::default()
@@ -161,7 +161,7 @@ impl DocumentExtractor for ImageExtractor {
                 "Image: {} {}x{}",
                 extraction_metadata.format, extraction_metadata.width, extraction_metadata.height
             ),
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 format: Some(crate::types::FormatMetadata::Image(image_metadata)),
                 ..Default::default()

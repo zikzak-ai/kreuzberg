@@ -11,6 +11,7 @@ use kreuzberg::plugins::registry::{
 use kreuzberg::plugins::{DocumentExtractor, Plugin, PostProcessor, ProcessingStage, Validator};
 use kreuzberg::types::{ExtractionResult, Metadata};
 use kreuzberg::{KreuzbergError, Result};
+use std::borrow::Cow;
 use std::sync::Arc;
 
 struct FailingExtractor {
@@ -52,7 +53,7 @@ impl DocumentExtractor for FailingExtractor {
         } else {
             Ok(ExtractionResult {
                 content: "success".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: Metadata::default(),
                 tables: vec![],
                 detected_languages: None,
@@ -299,7 +300,7 @@ fn test_extractor_priority_ordering_complex() {
         async fn extract_bytes(&self, _: &[u8], _: &str, _: &ExtractionConfig) -> Result<ExtractionResult> {
             Ok(ExtractionResult {
                 content: "test".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: Metadata::default(),
                 tables: vec![],
                 detected_languages: None,
@@ -461,7 +462,7 @@ async fn test_processor_execution_order_within_stage() {
 
     let mut result = ExtractionResult {
         content: "start".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -498,7 +499,7 @@ async fn test_processor_error_propagation() {
 
     let mut result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -672,7 +673,7 @@ async fn test_validator_content_validation() {
 
     let short_result = ExtractionResult {
         content: "short".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -688,7 +689,7 @@ async fn test_validator_content_validation() {
 
     let long_result = ExtractionResult {
         content: "this is long enough content".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,

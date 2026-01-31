@@ -24,7 +24,7 @@ use std::borrow::Cow;
 /// * `output_format` - The desired output format
 pub fn apply_output_format(result: &mut ExtractionResult, output_format: OutputFormat) {
     // Check if content was already formatted during extraction
-    let already_formatted = match result.mime_type.as_str() {
+    let already_formatted = match &*result.mime_type {
         "text/markdown" if output_format == OutputFormat::Markdown => true,
         "text/djot" if output_format == OutputFormat::Djot => true,
         _ => false,
@@ -129,7 +129,7 @@ mod tests {
     fn test_apply_output_format_plain() {
         let mut result = ExtractionResult {
             content: "Hello World".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -152,7 +152,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "Hello World".to_string(),
-            mime_type: "text/djot".to_string(),
+            mime_type: Cow::Borrowed("text/djot"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -195,7 +195,7 @@ mod tests {
     fn test_apply_output_format_djot_without_djot_content() {
         let mut result = ExtractionResult {
             content: "Hello World".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -217,7 +217,7 @@ mod tests {
     fn test_apply_output_format_html() {
         let mut result = ExtractionResult {
             content: "Hello World".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -240,7 +240,7 @@ mod tests {
     fn test_apply_output_format_html_escapes_special_chars() {
         let mut result = ExtractionResult {
             content: "<script>alert('XSS')</script>".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -263,7 +263,7 @@ mod tests {
     fn test_apply_output_format_markdown() {
         let mut result = ExtractionResult {
             content: "Hello World".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -293,7 +293,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "Hello World".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata,
             tables: vec![],
             detected_languages: None,
@@ -326,7 +326,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "Hello World".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![table],
             detected_languages: None,
@@ -374,7 +374,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "test".to_string(),
-            mime_type: "text/djot".to_string(),
+            mime_type: Cow::Borrowed("text/djot"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,

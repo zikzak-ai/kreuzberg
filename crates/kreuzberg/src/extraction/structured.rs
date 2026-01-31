@@ -33,12 +33,13 @@
 use crate::error::{KreuzbergError, Result};
 use crate::text::utf8_validation;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StructuredDataResult {
     pub content: String,
-    pub format: String,
+    pub format: Cow<'static, str>,
     pub metadata: HashMap<String, String>,
     pub text_fields: Vec<String>,
 }
@@ -97,7 +98,7 @@ pub fn parse_json(data: &[u8], config: Option<JsonExtractionConfig>) -> Result<S
 
     Ok(StructuredDataResult {
         content,
-        format: "json".to_string(),
+        format: Cow::Borrowed("json"),
         metadata,
         text_fields,
     })
@@ -254,7 +255,7 @@ pub fn parse_yaml(data: &[u8]) -> Result<StructuredDataResult> {
 
     Ok(StructuredDataResult {
         content,
-        format: "yaml".to_string(),
+        format: Cow::Borrowed("yaml"),
         metadata,
         text_fields,
     })
@@ -326,7 +327,7 @@ pub fn parse_toml(data: &[u8]) -> Result<StructuredDataResult> {
 
     Ok(StructuredDataResult {
         content,
-        format: "toml".to_string(),
+        format: Cow::Borrowed("toml"),
         metadata,
         text_fields,
     })

@@ -74,7 +74,7 @@ impl DocumentExtractor for PlainTextExtractor {
 
         Ok(ExtractionResult {
             content: text,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: crate::types::Metadata {
                 format: Some(crate::types::FormatMetadata::Text(crate::types::TextMetadata {
                     line_count,
@@ -169,7 +169,7 @@ impl DocumentExtractor for MarkdownExtractor {
 
         Ok(ExtractionResult {
             content: text_result.content,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: crate::types::Metadata {
                 format: Some(crate::types::FormatMetadata::Text(crate::types::TextMetadata {
                     line_count: text_result.line_count,

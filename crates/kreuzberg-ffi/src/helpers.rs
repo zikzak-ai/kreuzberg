@@ -81,7 +81,7 @@ pub fn to_c_extraction_result(result: ExtractionResult) -> std::result::Result<*
     );
 
     let mime_type_guard = CStringGuard::new(
-        CString::new(mime_type).map_err(|e| format!("Failed to convert MIME type to C string: {}", e))?,
+        CString::new(mime_type.to_string()).map_err(|e| format!("Failed to convert MIME type to C string: {}", e))?,
     );
 
     let language_guard = match &metadata.language {

@@ -230,7 +230,7 @@ impl OcrBackend for TesseractBackend {
 
         Ok(ExtractionResult {
             content: ocr_result.content,
-            mime_type: ocr_result.mime_type,
+            mime_type: ocr_result.mime_type.into(),
             metadata,
             pages: None,
             tables: ocr_result
@@ -304,7 +304,7 @@ impl OcrBackend for TesseractBackend {
 
         Ok(ExtractionResult {
             content: ocr_result.content,
-            mime_type: ocr_result.mime_type,
+            mime_type: ocr_result.mime_type.into(),
             metadata,
             pages: None,
             tables: ocr_result

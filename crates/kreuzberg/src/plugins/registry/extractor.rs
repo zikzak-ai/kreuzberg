@@ -225,6 +225,7 @@ mod tests {
     use crate::plugins::Plugin;
     use crate::types::ExtractionResult;
     use async_trait::async_trait;
+    use std::borrow::Cow;
 
     struct MockExtractor {
         name: String,
@@ -252,7 +253,7 @@ mod tests {
         async fn extract_bytes(&self, _: &[u8], _: &str, _: &ExtractionConfig) -> Result<ExtractionResult> {
             Ok(ExtractionResult {
                 content: "test".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: crate::types::Metadata::default(),
                 tables: vec![],
                 detected_languages: None,
@@ -494,7 +495,7 @@ mod tests {
         async fn extract_bytes(&self, _: &[u8], _: &str, _: &ExtractionConfig) -> Result<ExtractionResult> {
             Ok(ExtractionResult {
                 content: "test".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: crate::types::Metadata::default(),
                 tables: vec![],
                 detected_languages: None,

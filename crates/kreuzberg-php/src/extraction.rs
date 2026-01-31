@@ -168,7 +168,7 @@ pub fn kreuzberg_extract_bytes(
 
                     let rust_result = kreuzberg::types::ExtractionResult {
                         content,
-                        mime_type: mime_type.clone(),
+                        mime_type: std::borrow::Cow::Owned(mime_type.clone()),
                         metadata,
                         tables,
                         detected_languages: None,

@@ -95,7 +95,7 @@ impl DocumentExtractor for RtfExtractor {
 
         Ok(ExtractionResult {
             content: extracted_text,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 additional: metadata_map,
                 ..Default::default()

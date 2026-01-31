@@ -103,7 +103,7 @@ mod tests {
 
         let mut result = ExtractionResult {
 	            content: "This is a longer text that should be split into multiple chunks to test the chunking processor functionality.".to_string(),
-	            mime_type: "text/plain".to_string(),
+	            mime_type: Cow::Borrowed("text/plain"),
 	            metadata: Metadata::default(),
 	            tables: vec![],
 	            detected_languages: None,
@@ -128,7 +128,7 @@ mod tests {
 
         let mut result = ExtractionResult {
             content: "Some text".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -165,7 +165,7 @@ mod tests {
 
         let result = ExtractionResult {
             content: "Sample text".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -197,7 +197,7 @@ mod tests {
 
         let short_result = ExtractionResult {
             content: "Short".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -210,7 +210,7 @@ mod tests {
 
         let long_result = ExtractionResult {
             content: "a".repeat(100000),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,

@@ -7,6 +7,8 @@
 
 use super::rendering::render_block_to_djot;
 use jotdown::Parser;
+#[cfg(test)]
+use std::borrow::Cow;
 
 /// Convert DjotContent back to djot markup.
 ///
@@ -150,7 +152,7 @@ mod tests {
     fn test_extraction_result_to_djot_with_djot_content() {
         let result = ExtractionResult {
             content: "Test content".to_string(),
-            mime_type: "text/djot".to_string(),
+            mime_type: Cow::Borrowed("text/djot"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -191,7 +193,7 @@ mod tests {
     fn test_extraction_result_to_djot_without_djot_content() {
         let result = ExtractionResult {
             content: "Paragraph one\n\nParagraph two".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,

@@ -164,7 +164,7 @@ impl DocumentExtractor for BibtexExtractor {
 
         Ok(ExtractionResult {
             content: formatted_entries,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 additional,
                 ..Default::default()

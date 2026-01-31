@@ -131,7 +131,7 @@ impl DocumentExtractor for ExcelExtractor {
 
         Ok(ExtractionResult {
             content: markdown,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 format: Some(crate::types::FormatMetadata::Excel(excel_metadata)),
                 additional,
@@ -177,7 +177,7 @@ impl DocumentExtractor for ExcelExtractor {
 
         Ok(ExtractionResult {
             content: markdown,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 format: Some(crate::types::FormatMetadata::Excel(excel_metadata)),
                 additional,

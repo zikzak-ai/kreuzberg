@@ -61,7 +61,7 @@ pub enum OcrBackendType {
 ///         // Implement OCR logic here
 ///         Ok(ExtractionResult {
 ///             content: "Extracted text".to_string(),
-///             mime_type: "text/plain".to_string(),
+///             mime_type: Cow::Borrowed("text/plain"),
 ///             metadata: Metadata::default(),
 ///             tables: vec![],
 ///             detected_languages: None,
@@ -142,7 +142,7 @@ pub trait OcrBackend: Plugin {
     ///
     ///     Ok(ExtractionResult {
     ///         content: text,
-    ///         mime_type: "text/plain".to_string(),
+    ///         mime_type: Cow::Borrowed("text/plain"),
     ///         metadata: Metadata::default(),
     ///         tables: vec![],
     ///         detected_languages: None,
@@ -315,7 +315,7 @@ pub trait OcrBackend: Plugin {
 ///     async fn process_image(&self, _: &[u8], _: &OcrConfig) -> Result<ExtractionResult> {
 ///         Ok(ExtractionResult {
 ///             content: "text".to_string(),
-///             mime_type: "text/plain".to_string(),
+///             mime_type: Cow::Borrowed("text/plain"),
 ///             metadata: Metadata::default(),
 ///             tables: vec![],
 ///             detected_languages: None,
@@ -450,6 +450,7 @@ pub fn clear_ocr_backends() -> crate::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::borrow::Cow;
 
     struct MockOcrBackend {
         languages: Vec<String>,
@@ -478,7 +479,7 @@ mod tests {
         async fn process_image(&self, _image_bytes: &[u8], _config: &OcrConfig) -> Result<ExtractionResult> {
             Ok(ExtractionResult {
                 content: "Mocked OCR text".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: crate::types::Metadata::default(),
                 tables: vec![],
                 detected_languages: None,

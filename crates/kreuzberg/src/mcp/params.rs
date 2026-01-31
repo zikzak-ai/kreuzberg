@@ -129,7 +129,7 @@ mod tests {
     fn test_extract_file_params_serialization() {
         let params = ExtractFileParams {
             path: "/test.pdf".to_string(),
-            mime_type: Some("application/pdf".to_string()),
+            mime_type: Some(Cow::Borrowed("application/pdf")),
             config: Some(serde_json::json!({"use_cache": false})),
             r#async: true,
         };

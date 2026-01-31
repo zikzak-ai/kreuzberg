@@ -431,7 +431,7 @@ impl ExtractionResult {
 
         Ok(Self {
             content: result.content,
-            mime_type: result.mime_type,
+            mime_type: result.mime_type.to_string(),
             metadata_json,
             tables,
             detected_languages: result.detected_languages,

@@ -50,7 +50,7 @@ use std::sync::Arc;
 ///         -> Result<ExtractionResult> {
 ///         Ok(ExtractionResult {
 ///             content: String::from_utf8_lossy(content).to_string(),
-///             mime_type: mime_type.to_string(),
+///             mime_type: mime_type.to_string().into(),
 ///             metadata: Metadata::default(),
 ///             tables: vec![],
 ///             detected_languages: None,
@@ -189,6 +189,7 @@ mod tests {
     use crate::types::ExtractionResult;
     use async_trait::async_trait;
     use serial_test::serial;
+    use std::borrow::Cow;
 
     struct MockExtractor {
         mime_types: Vec<&'static str>,
@@ -223,7 +224,7 @@ mod tests {
         ) -> Result<ExtractionResult> {
             Ok(ExtractionResult {
                 content: String::from_utf8_lossy(content).to_string(),
-                mime_type: mime_type.to_string(),
+                mime_type: mime_type.to_string().into(),
                 metadata: crate::types::Metadata::default(),
                 tables: vec![],
                 detected_languages: None,
@@ -362,7 +363,7 @@ mod tests {
             async fn extract_bytes(&self, _: &[u8], _: &str, _: &ExtractionConfig) -> Result<ExtractionResult> {
                 Ok(ExtractionResult {
                     content: String::new(),
-                    mime_type: String::new(),
+                    mime_type: Cow::Borrowed(""),
                     metadata: crate::types::Metadata::default(),
                     tables: vec![],
                     detected_languages: None,
@@ -410,7 +411,7 @@ mod tests {
             async fn extract_bytes(&self, _: &[u8], _: &str, _: &ExtractionConfig) -> Result<ExtractionResult> {
                 Ok(ExtractionResult {
                     content: String::new(),
-                    mime_type: String::new(),
+                    mime_type: Cow::Borrowed(""),
                     metadata: crate::types::Metadata::default(),
                     tables: vec![],
                     detected_languages: None,

@@ -20,7 +20,7 @@ lazy_static! {
 async fn test_run_pipeline_basic() {
     let mut result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -45,7 +45,7 @@ async fn test_run_pipeline_basic() {
 async fn test_pipeline_with_quality_processing() {
     let result = ExtractionResult {
         content: "This is a test document with some meaningful content.".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -68,7 +68,7 @@ async fn test_pipeline_with_quality_processing() {
 async fn test_pipeline_without_quality_processing() {
     let result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -92,7 +92,7 @@ async fn test_pipeline_without_quality_processing() {
 async fn test_pipeline_with_chunking() {
     let result = ExtractionResult {
         content: "This is a long text that should be chunked. ".repeat(100),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -122,7 +122,7 @@ async fn test_pipeline_with_chunking() {
 async fn test_pipeline_without_chunking() {
     let result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -150,7 +150,7 @@ async fn test_pipeline_preserves_metadata() {
 
     let result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata {
             additional,
             ..Default::default()
@@ -188,7 +188,7 @@ async fn test_pipeline_preserves_tables() {
 
     let result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![table],
         detected_languages: None,
@@ -220,7 +220,7 @@ async fn test_pipeline_empty_content() {
 
     let result = ExtractionResult {
         content: String::new(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -243,7 +243,7 @@ async fn test_pipeline_empty_content() {
 async fn test_pipeline_with_all_features() {
     let result = ExtractionResult {
         content: "This is a comprehensive test document. ".repeat(50),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -296,7 +296,7 @@ machine learning that uses neural networks with multiple layers.
 Natural language processing enables computers to understand human language.
             "#
         .to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -343,7 +343,7 @@ async fn test_pipeline_without_keyword_config() {
     }
     let result = ExtractionResult {
         content: "Machine learning and artificial intelligence.".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -381,7 +381,7 @@ async fn test_pipeline_keyword_extraction_short_content() {
 
     let result = ExtractionResult {
         content: "Short text".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -518,7 +518,7 @@ async fn test_postprocessor_runs_before_validator() {
 
     let mut result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -615,7 +615,7 @@ async fn test_quality_processing_runs_before_validator() {
 
     let mut result = ExtractionResult {
         content: "This is meaningful test content for quality scoring.".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -813,7 +813,7 @@ async fn test_multiple_postprocessors_run_before_validator() {
 
     let result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -840,7 +840,7 @@ async fn test_multiple_postprocessors_run_before_validator() {
 async fn test_run_pipeline_with_output_format_plain() {
     let result = ExtractionResult {
         content: "test content".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -866,7 +866,7 @@ async fn test_run_pipeline_with_output_format_djot() {
 
     let result = ExtractionResult {
         content: "test content".to_string(),
-        mime_type: "text/djot".to_string(),
+        mime_type: Cow::Borrowed("text/djot"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -913,7 +913,7 @@ async fn test_run_pipeline_with_output_format_djot() {
 async fn test_run_pipeline_with_output_format_html() {
     let result = ExtractionResult {
         content: "test content".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,
@@ -943,7 +943,7 @@ async fn test_run_pipeline_applies_output_format_last() {
 
     let result = ExtractionResult {
         content: "test".to_string(),
-        mime_type: "text/plain".to_string(),
+        mime_type: Cow::Borrowed("text/plain"),
         metadata: Metadata::default(),
         tables: vec![],
         detected_languages: None,

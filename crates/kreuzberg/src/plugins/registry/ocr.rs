@@ -191,6 +191,7 @@ mod tests {
     use crate::plugins::{OcrBackend, Plugin};
     use crate::types::ExtractionResult;
     use async_trait::async_trait;
+    use std::borrow::Cow;
 
     struct MockOcrBackend {
         name: String,
@@ -217,7 +218,7 @@ mod tests {
         async fn process_image(&self, _: &[u8], _: &OcrConfig) -> Result<ExtractionResult> {
             Ok(ExtractionResult {
                 content: "test".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: crate::types::Metadata::default(),
                 tables: vec![],
                 detected_languages: None,
@@ -344,7 +345,7 @@ mod tests {
         async fn process_image(&self, _: &[u8], _: &OcrConfig) -> Result<ExtractionResult> {
             Ok(ExtractionResult {
                 content: "test".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: crate::types::Metadata::default(),
                 tables: vec![],
                 detected_languages: None,

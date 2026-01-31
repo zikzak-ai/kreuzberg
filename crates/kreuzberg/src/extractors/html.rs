@@ -219,7 +219,7 @@ impl SyncExtractor for HtmlExtractor {
 
         Ok(ExtractionResult {
             content: content_text,
-            mime_type: result_mime_type.to_string(),
+            mime_type: result_mime_type.to_string().into(),
             metadata: Metadata {
                 format: html_metadata.map(|m| crate::types::FormatMetadata::Html(Box::new(m))),
                 ..Default::default()

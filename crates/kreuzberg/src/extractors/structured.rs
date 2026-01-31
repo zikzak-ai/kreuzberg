@@ -81,7 +81,7 @@ impl DocumentExtractor for StructuredExtractor {
 
         Ok(ExtractionResult {
             content: structured_result.content,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 additional,
                 ..Default::default()

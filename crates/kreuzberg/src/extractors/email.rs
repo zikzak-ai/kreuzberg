@@ -75,7 +75,7 @@ impl SyncExtractor for EmailExtractor {
 
         Ok(ExtractionResult {
             content: text,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata: Metadata {
                 format: Some(crate::types::FormatMetadata::Email(email_metadata)),
                 subject: email_result.subject.clone(),

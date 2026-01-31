@@ -108,7 +108,7 @@ impl DocumentExtractor for TypstExtractor {
 
         Ok(ExtractionResult {
             content: text,
-            mime_type: mime_type.to_string(),
+            mime_type: mime_type.to_string().into(),
             metadata,
             tables: Vec::new(),
             detected_languages: None,

@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### OCR
 - **`KREUZBERG_OCR_LANGUAGE="all"` support**: Setting the language to `"all"` or `"*"` automatically detects and uses all installed Tesseract languages from the tessdata directory, eliminating manual enumeration (#344)
 
+### Performance
+
+- **Cow<'static, str> for static string fields**: Converted `ExtractionResult.mime_type`, `ExtractedImage.format`, `ExtractedImage.colorspace`, `HierarchicalBlock.level`, `ArchiveMetadata.format`, `LibreOfficeConversionResult` fields, and `StructuredDataResult.format` from `String` to `Cow<'static, str>`, eliminating heap allocations for values that are always string literals
+- **RST parser allocation reduction**: Replaced `Vec<char>` collects with direct iterator usage, `to_lowercase()` with `eq_ignore_ascii_case()`, and removed intermediate `collect()` before `extend()`
+- **Idiomatic Cow usage in fictionbook extractor**: Replaced 16 instances of `from_utf8_lossy().to_string()` with `.into_owned()`
+- **Reduced unnecessary clones in email extractor**: Replaced `Option::clone().or_else(|| .clone())` with `as_ref().or().cloned()`
+
 ### Fixed
 
 #### Elixir Bindings

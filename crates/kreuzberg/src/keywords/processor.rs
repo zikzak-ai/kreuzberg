@@ -108,7 +108,7 @@ machine learning that uses neural networks with multiple layers.
 
         let mut result = ExtractionResult {
             content: TEST_TEXT.to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -139,7 +139,7 @@ machine learning that uses neural networks with multiple layers.
 
         let mut result = ExtractionResult {
             content: TEST_TEXT.to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -166,7 +166,7 @@ machine learning that uses neural networks with multiple layers.
 
         let mut result = ExtractionResult {
             content: TEST_TEXT.to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -193,7 +193,7 @@ machine learning that uses neural networks with multiple layers.
 
         let mut result = ExtractionResult {
             content: "Short text".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -231,7 +231,7 @@ machine learning that uses neural networks with multiple layers.
 
         let result = ExtractionResult {
             content: TEST_TEXT.to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -258,7 +258,7 @@ machine learning that uses neural networks with multiple layers.
 
         let short_result = ExtractionResult {
             content: "Short text with just a few words".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -271,7 +271,7 @@ machine learning that uses neural networks with multiple layers.
 
         let long_result = ExtractionResult {
             content: "word ".repeat(1000),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,

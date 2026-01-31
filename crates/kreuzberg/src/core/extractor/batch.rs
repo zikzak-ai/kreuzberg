@@ -6,6 +6,7 @@
 use crate::core::config::ExtractionConfig;
 use crate::types::{ErrorMetadata, ExtractionResult, Metadata};
 use crate::{KreuzbergError, Result};
+use std::borrow::Cow;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -108,7 +109,7 @@ pub async fn batch_extract_file(
 
                 results[index] = Some(ExtractionResult {
                     content: format!("Error: {}", e),
-                    mime_type: "text/plain".to_string(),
+                    mime_type: Cow::Borrowed("text/plain"),
                     metadata,
                     tables: vec![],
                     detected_languages: None,
@@ -223,7 +224,7 @@ pub async fn batch_extract_bytes(
 
                 results[index] = Some(ExtractionResult {
                     content: format!("Error: {}", e),
-                    mime_type: "text/plain".to_string(),
+                    mime_type: Cow::Borrowed("text/plain"),
                     metadata,
                     tables: vec![],
                     detected_languages: None,

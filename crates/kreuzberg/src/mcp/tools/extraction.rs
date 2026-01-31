@@ -1,6 +1,7 @@
 //! Document extraction MCP tools.
 
 use base64::prelude::*;
+use std::borrow::Cow;
 use crate::{
     ExtractionConfig, batch_extract_file, batch_extract_file_sync, extract_bytes, extract_bytes_sync, extract_file,
     extract_file_sync, mcp::errors::map_kreuzberg_error_to_mcp, mcp::format::{build_config, format_extraction_result},
@@ -219,7 +220,7 @@ mod tests {
         let server = TestMcpServer::new();
         let params = ExtractFileParams {
             path: get_test_path("pdfs_with_tables/tiny.pdf").to_string(),
-            mime_type: Some("application/pdf".to_string()),
+            mime_type: Some(Cow::Borrowed("application/pdf")),
             config: None,
             r#async: true,
         };
@@ -238,7 +239,7 @@ mod tests {
 
         let params = ExtractBytesParams {
             data: encoded,
-            mime_type: Some("text/plain".to_string()),
+            mime_type: Some(Cow::Borrowed("text/plain")),
             config: None,
             r#async: true,
         };

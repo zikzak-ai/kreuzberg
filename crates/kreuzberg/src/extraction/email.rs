@@ -545,8 +545,8 @@ mod tests {
             b"From: test@example.com\r\nTo: recipient@example.com\r\nSubject: Test Email\r\n\r\nThis is a test email body.";
 
         let result = parse_eml_content(eml_content).unwrap();
-        assert_eq!(result.subject, Some("Test Email".to_string()));
-        assert_eq!(result.from_email, Some("test@example.com".to_string()));
+        assert_eq!(result.subject, Some(Cow::Borrowed("Test Email")));
+        assert_eq!(result.from_email, Some(Cow::Borrowed("test@example.com")));
         assert_eq!(result.to_emails, vec!["recipient@example.com".to_string()]);
         assert_eq!(result.cleaned_text, "This is a test email body.");
     }
@@ -554,8 +554,8 @@ mod tests {
     #[test]
     fn test_build_email_text_output_minimal() {
         let result = EmailExtractionResult {
-            subject: Some("Test".to_string()),
-            from_email: Some("sender@example.com".to_string()),
+            subject: Some(Cow::Borrowed("Test")),
+            from_email: Some(Cow::Borrowed("sender@example.com")),
             to_emails: vec!["recipient@example.com".to_string()],
             cc_emails: vec![],
             bcc_emails: vec![],
@@ -578,8 +578,8 @@ mod tests {
     #[test]
     fn test_build_email_text_output_with_attachments() {
         let result = EmailExtractionResult {
-            subject: Some("Test".to_string()),
-            from_email: Some("sender@example.com".to_string()),
+            subject: Some(Cow::Borrowed("Test")),
+            from_email: Some(Cow::Borrowed("sender@example.com")),
             to_emails: vec!["recipient@example.com".to_string()],
             cc_emails: vec![],
             bcc_emails: vec![],
@@ -589,9 +589,9 @@ mod tests {
             html_content: None,
             cleaned_text: "Hello World".to_string(),
             attachments: vec![EmailAttachment {
-                name: Some("file.txt".to_string()),
-                filename: Some("file.txt".to_string()),
-                mime_type: Some("text/plain".to_string()),
+                name: Some(Cow::Borrowed("file.txt")),
+                filename: Some(Cow::Borrowed("file.txt")),
+                mime_type: Some(Cow::Borrowed("text/plain")),
                 size: Some(1024),
                 is_image: false,
                 data: None,
@@ -605,13 +605,13 @@ mod tests {
 
     #[test]
     fn test_build_metadata() {
-        let subject = Some("Test Subject".to_string());
-        let from_email = Some("sender@example.com".to_string());
+        let subject = Some(Cow::Borrowed("Test Subject"));
+        let from_email = Some(Cow::Borrowed("sender@example.com"));
         let to_emails = vec!["recipient@example.com".to_string()];
         let cc_emails = vec!["cc@example.com".to_string()];
         let bcc_emails = vec!["bcc@example.com".to_string()];
-        let date = Some("2024-01-01T12:00:00Z".to_string());
-        let message_id = Some("<abc123@example.com>".to_string());
+        let date = Some(Cow::Borrowed("2024-01-01T12:00:00Z"));
+        let message_id = Some(Cow::Borrowed("<abc123@example.com>"));
         let attachments = vec![];
 
         let metadata = build_metadata(
@@ -638,17 +638,17 @@ mod tests {
     fn test_build_metadata_with_attachments() {
         let attachments = vec![
             EmailAttachment {
-                name: Some("file1.pdf".to_string()),
-                filename: Some("file1.pdf".to_string()),
-                mime_type: Some("application/pdf".to_string()),
+                name: Some(Cow::Borrowed("file1.pdf")),
+                filename: Some(Cow::Borrowed("file1.pdf")),
+                mime_type: Some(Cow::Borrowed("application/pdf")),
                 size: Some(1024),
                 is_image: false,
                 data: None,
             },
             EmailAttachment {
-                name: Some("image.png".to_string()),
-                filename: Some("image.png".to_string()),
-                mime_type: Some("image/png".to_string()),
+                name: Some(Cow::Borrowed("image.png")),
+                filename: Some(Cow::Borrowed("image.png")),
+                mime_type: Some(Cow::Borrowed("image/png")),
                 size: Some(2048),
                 is_image: true,
                 data: None,
@@ -748,15 +748,15 @@ mod tests {
     #[test]
     fn test_build_email_text_output_with_all_fields() {
         let result = EmailExtractionResult {
-            subject: Some("Complete Email".to_string()),
-            from_email: Some("sender@example.com".to_string()),
+            subject: Some(Cow::Borrowed("Complete Email")),
+            from_email: Some(Cow::Borrowed("sender@example.com")),
             to_emails: vec!["recipient@example.com".to_string()],
             cc_emails: vec!["cc@example.com".to_string()],
             bcc_emails: vec!["bcc@example.com".to_string()],
-            date: Some("2024-01-01T12:00:00Z".to_string()),
-            message_id: Some("<msg123@example.com>".to_string()),
-            plain_text: Some("Plain text body".to_string()),
-            html_content: Some("<html><body>HTML body</body></html>".to_string()),
+            date: Some(Cow::Borrowed("2024-01-01T12:00:00Z")),
+            message_id: Some(Cow::Borrowed("<msg123@example.com>")),
+            plain_text: Some(Cow::Borrowed("Plain text body")),
+            html_content: Some(Cow::Borrowed("<html><body>HTML body</body></html>")),
             cleaned_text: "Cleaned body text".to_string(),
             attachments: vec![],
             metadata: HashMap::new(),
@@ -775,8 +775,8 @@ mod tests {
     #[test]
     fn test_build_email_text_output_empty_attachments() {
         let result = EmailExtractionResult {
-            subject: Some("Test".to_string()),
-            from_email: Some("sender@example.com".to_string()),
+            subject: Some(Cow::Borrowed("Test")),
+            from_email: Some(Cow::Borrowed("sender@example.com")),
             to_emails: vec!["recipient@example.com".to_string()],
             cc_emails: vec![],
             bcc_emails: vec![],
@@ -788,7 +788,7 @@ mod tests {
             attachments: vec![EmailAttachment {
                 name: None,
                 filename: None,
-                mime_type: Some("application/octet-stream".to_string()),
+                mime_type: Some(Cow::Borrowed("application/octet-stream")),
                 size: Some(100),
                 is_image: false,
                 data: None,
@@ -808,8 +808,8 @@ mod tests {
 
     #[test]
     fn test_build_metadata_partial_fields() {
-        let subject = Some("Test".to_string());
-        let date = Some("2024-01-01".to_string());
+        let subject = Some(Cow::Borrowed("Test"));
+        let date = Some(Cow::Borrowed("2024-01-01"));
 
         let metadata = build_metadata(&subject, &None, &[], &[], &[], &date, &None, &[]);
 
@@ -848,7 +848,7 @@ mod tests {
         let eml_content = b"From: sender@example.com\r\n\r\nMinimal body";
 
         let result = parse_eml_content(eml_content).unwrap();
-        assert_eq!(result.from_email, Some("sender@example.com".to_string()));
+        assert_eq!(result.from_email, Some(Cow::Borrowed("sender@example.com")));
         assert_eq!(result.cleaned_text, "Minimal body");
     }
 

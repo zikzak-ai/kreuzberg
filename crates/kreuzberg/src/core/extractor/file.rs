@@ -228,7 +228,7 @@ pub(in crate::core::extractor) fn apply_libreoffice_metadata(
     legacy_mime: &str,
     conversion: &LibreOfficeConversionResult,
 ) {
-    result.mime_type = pool_mime_type(legacy_mime);
+    result.mime_type = pool_mime_type(legacy_mime).into();
     result.metadata.additional.insert(
         Cow::Borrowed("libreoffice_conversion"),
         json!({

@@ -374,7 +374,7 @@ fn dict_to_extraction_result(_py: Python<'_>, dict: &Bound<'_, PyAny>) -> Result
 
     Ok(ExtractionResult {
         content,
-        mime_type: "text/plain".to_string(),
+        mime_type: std::borrow::Cow::Borrowed("text/plain"),
         metadata: kreuzberg::types::Metadata {
             additional,
             ..Default::default()

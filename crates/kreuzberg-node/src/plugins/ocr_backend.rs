@@ -132,7 +132,7 @@ impl RustOcrBackend for JsOcrBackend {
 
         Ok(kreuzberg::ExtractionResult {
             content,
-            mime_type,
+            mime_type: std::borrow::Cow::Owned(mime_type),
             metadata,
             tables,
             detected_languages: None,
