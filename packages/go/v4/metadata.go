@@ -3,9 +3,16 @@ package kreuzberg
 import "encoding/json"
 
 var metadataCoreKeys = map[string]struct{}{
-	"language":            {},
-	"date":                {},
+	"title":               {},
 	"subject":             {},
+	"authors":             {},
+	"keywords":            {},
+	"language":            {},
+	"created_at":          {},
+	"modified_at":         {},
+	"created_by":          {},
+	"modified_by":         {},
+	"pages":               {},
 	"format_type":         {},
 	"image_preprocessing": {},
 	"json_schema":         {},
@@ -52,9 +59,34 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 		return &out
 	}
 
-	m.Language = decodeString("language")
-	m.Date = decodeString("date")
+	decodeStringSlice := func(key string) []string {
+		value, exists := raw[key]
+		if !exists {
+			return nil
+		}
+		var out []string
+		if err := json.Unmarshal(value, &out); err != nil {
+			return nil
+		}
+		return out
+	}
+
+	m.Title = decodeString("title")
 	m.Subject = decodeString("subject")
+	m.Authors = decodeStringSlice("authors")
+	m.Keywords = decodeStringSlice("keywords")
+	m.Language = decodeString("language")
+	m.CreatedAt = decodeString("created_at")
+	m.ModifiedAt = decodeString("modified_at")
+	m.CreatedBy = decodeString("created_by")
+	m.ModifiedBy = decodeString("modified_by")
+
+	if value, ok := raw["pages"]; ok {
+		var pages PageStructure
+		if err := json.Unmarshal(value, &pages); err == nil {
+			m.Pages = &pages
+		}
+	}
 
 	if value, ok := raw["image_preprocessing"]; ok {
 		var meta ImagePreprocessingMetadata
@@ -109,14 +141,35 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 func (m Metadata) MarshalJSON() ([]byte, error) {
 	out := make(map[string]any)
 
-	if m.Language != nil {
-		out["language"] = *m.Language
-	}
-	if m.Date != nil {
-		out["date"] = *m.Date
+	if m.Title != nil {
+		out["title"] = *m.Title
 	}
 	if m.Subject != nil {
 		out["subject"] = *m.Subject
+	}
+	if len(m.Authors) > 0 {
+		out["authors"] = m.Authors
+	}
+	if len(m.Keywords) > 0 {
+		out["keywords"] = m.Keywords
+	}
+	if m.Language != nil {
+		out["language"] = *m.Language
+	}
+	if m.CreatedAt != nil {
+		out["created_at"] = *m.CreatedAt
+	}
+	if m.ModifiedAt != nil {
+		out["modified_at"] = *m.ModifiedAt
+	}
+	if m.CreatedBy != nil {
+		out["created_by"] = *m.CreatedBy
+	}
+	if m.ModifiedBy != nil {
+		out["modified_by"] = *m.ModifiedBy
+	}
+	if m.Pages != nil {
+		out["pages"] = m.Pages
 	}
 	if m.ImagePreprocessing != nil {
 		out["image_preprocessing"] = m.ImagePreprocessing

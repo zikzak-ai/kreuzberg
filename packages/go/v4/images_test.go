@@ -256,7 +256,7 @@ func TestBatchImageExtractionFromMultiPageDocuments(t *testing.T) {
 
 	if len(result.Images) > 0 {
 		// Verify image indices are sequential and unique
-		imageIndices := make(map[int]bool)
+		imageIndices := make(map[uint64]bool)
 		for _, img := range result.Images {
 			if imageIndices[img.ImageIndex] {
 				t.Errorf("duplicate image index: %d", img.ImageIndex)

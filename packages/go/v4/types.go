@@ -13,6 +13,7 @@ type ExtractionResult struct {
 	Images            []ExtractedImage `json:"images,omitempty"`
 	Pages             []PageContent    `json:"pages,omitempty"`
 	Elements          []Element        `json:"elements,omitempty"`
+	DjotContent       *DjotContent     `json:"djot_content,omitempty"`
 }
 
 // Table represents a detected table in the source document.
@@ -31,21 +32,21 @@ type Chunk struct {
 
 // ChunkMetadata provides positional information for a chunk.
 type ChunkMetadata struct {
-	ByteStart   uint64  `json:"byte_start"`
-	ByteEnd     uint64  `json:"byte_end"`
-	TokenCount  *int    `json:"token_count,omitempty"`
-	ChunkIndex  int     `json:"chunk_index"`
-	TotalChunks int     `json:"total_chunks"`
-	FirstPage   *uint64 `json:"first_page,omitempty"`
-	LastPage    *uint64 `json:"last_page,omitempty"`
+	ByteStart   uint64   `json:"byte_start"`
+	ByteEnd     uint64   `json:"byte_end"`
+	TokenCount  *uint64  `json:"token_count,omitempty"`
+	ChunkIndex  uint64   `json:"chunk_index"`
+	TotalChunks uint64   `json:"total_chunks"`
+	FirstPage   *uint64  `json:"first_page,omitempty"`
+	LastPage    *uint64  `json:"last_page,omitempty"`
 }
 
 // ExtractedImage represents an extracted image, optionally with nested OCR results.
 type ExtractedImage struct {
 	Data             []byte            `json:"data"`
 	Format           string            `json:"format"`
-	ImageIndex       int               `json:"image_index"`
-	PageNumber       *int              `json:"page_number,omitempty"`
+	ImageIndex       uint64            `json:"image_index"`
+	PageNumber       *uint64           `json:"page_number,omitempty"`
 	Width            *uint32           `json:"width,omitempty"`
 	Height           *uint32           `json:"height,omitempty"`
 	Colorspace       *string           `json:"colorspace,omitempty"`
@@ -57,14 +58,20 @@ type ExtractedImage struct {
 
 // Metadata aggregates document metadata and format-specific payloads.
 type Metadata struct {
-	Language           *string                     `json:"language,omitempty"`
-	Date               *string                     `json:"date,omitempty"`
+	Title              *string                     `json:"title,omitempty"`
 	Subject            *string                     `json:"subject,omitempty"`
+	Authors            []string                    `json:"authors,omitempty"`
+	Keywords           []string                    `json:"keywords,omitempty"`
+	Language           *string                     `json:"language,omitempty"`
+	CreatedAt          *string                     `json:"created_at,omitempty"`
+	ModifiedAt         *string                     `json:"modified_at,omitempty"`
+	CreatedBy          *string                     `json:"created_by,omitempty"`
+	ModifiedBy         *string                     `json:"modified_by,omitempty"`
+	Pages              *PageStructure              `json:"pages,omitempty"`
 	Format             FormatMetadata              `json:"-"`
 	ImagePreprocessing *ImagePreprocessingMetadata `json:"image_preprocessing,omitempty"`
 	JSONSchema         json.RawMessage             `json:"json_schema,omitempty"`
 	Error              *ErrorMetadata              `json:"error,omitempty"`
-	PageStructure      *PageStructure              `json:"page_structure,omitempty"`
 	Additional         map[string]json.RawMessage  `json:"-"`
 }
 
@@ -223,6 +230,46 @@ type TextMetadata struct {
 	CodeBlocks     [][2]string `json:"code_blocks,omitempty"`
 }
 
+// LinkType enumerates link classification types.
+type LinkType string
+
+const (
+	LinkTypeAnchor   LinkType = "anchor"
+	LinkTypeInternal LinkType = "internal"
+	LinkTypeExternal LinkType = "external"
+	LinkTypeEmail    LinkType = "email"
+	LinkTypePhone    LinkType = "phone"
+	LinkTypeOther    LinkType = "other"
+)
+
+// ImageType enumerates image source classification types.
+type ImageType string
+
+const (
+	ImageTypeDataUri  ImageType = "data-uri"
+	ImageTypeInlineSvg ImageType = "inline-svg"
+	ImageTypeExternal ImageType = "external"
+	ImageTypeRelative ImageType = "relative"
+)
+
+// TextDirection enumerates text direction types.
+type TextDirection string
+
+const (
+	TextDirectionLTR  TextDirection = "ltr"
+	TextDirectionRTL  TextDirection = "rtl"
+	TextDirectionAuto TextDirection = "auto"
+)
+
+// StructuredDataType enumerates structured data format types.
+type StructuredDataType string
+
+const (
+	StructuredDataTypeJSONLD  StructuredDataType = "json-ld"
+	StructuredDataTypeMicrodata StructuredDataType = "microdata"
+	StructuredDataTypeRDFa   StructuredDataType = "rdfa"
+)
+
 //revive:disable-next-line var-naming
 type HtmlMetadata struct {
 	Title          *string             `json:"title,omitempty"`
@@ -232,7 +279,7 @@ type HtmlMetadata struct {
 	CanonicalURL   *string             `json:"canonical_url,omitempty"`
 	BaseHref       *string             `json:"base_href,omitempty"`
 	Language       *string             `json:"language,omitempty"`
-	TextDirection  *string             `json:"text_direction,omitempty"`
+	TextDirection  *TextDirection      `json:"text_direction,omitempty"`
 	OpenGraph      map[string]string   `json:"open_graph,omitempty"`
 	TwitterCard    map[string]string   `json:"twitter_card,omitempty"`
 	MetaTags       map[string]string   `json:"meta_tags,omitempty"`
@@ -247,44 +294,41 @@ type HeaderMetadata struct {
 	Level      uint8   `json:"level"`
 	Text       string  `json:"text"`
 	ID         *string `json:"id,omitempty"`
-	Depth      int     `json:"depth"`
-	HTMLOffset int     `json:"html_offset"`
+	Depth      uint64  `json:"depth"`
+	HTMLOffset uint64  `json:"html_offset"`
 }
 
 // LinkMetadata represents a hyperlink in HTML.
 type LinkMetadata struct {
-	Href       string            `json:"href"`
-	Text       string            `json:"text"`
-	Title      *string           `json:"title,omitempty"`
-	LinkType   string            `json:"link_type"`
-	Rel        []string          `json:"rel,omitempty"`
-	Attributes map[string]string `json:"attributes,omitempty"`
+	Href       string      `json:"href"`
+	Text       string      `json:"text"`
+	Title      *string     `json:"title,omitempty"`
+	LinkType   LinkType    `json:"link_type"`
+	Rel        []string    `json:"rel,omitempty"`
+	Attributes [][2]string `json:"attributes,omitempty"`
 }
 
 // HTMLImageMetadata represents an image element in HTML.
 type HTMLImageMetadata struct {
-	Src        string            `json:"src"`
-	Alt        *string           `json:"alt,omitempty"`
-	Title      *string           `json:"title,omitempty"`
-	Dimensions *[2]int           `json:"dimensions,omitempty"`
-	ImageType  string            `json:"image_type"`
-	Attributes map[string]string `json:"attributes,omitempty"`
+	Src        string       `json:"src"`
+	Alt        *string      `json:"alt,omitempty"`
+	Title      *string      `json:"title,omitempty"`
+	Dimensions *[2]uint32   `json:"dimensions,omitempty"`
+	ImageType  ImageType    `json:"image_type"`
+	Attributes [][2]string  `json:"attributes,omitempty"`
 }
 
 // StructuredData represents structured data (JSON-LD, microdata, etc.) in HTML.
 type StructuredData struct {
-	DataType   string  `json:"data_type"`
-	RawJSON    string  `json:"raw_json"`
-	SchemaType *string `json:"schema_type,omitempty"`
+	DataType   StructuredDataType `json:"data_type"`
+	RawJSON    string             `json:"raw_json"`
+	SchemaType *string            `json:"schema_type,omitempty"`
 }
 
 // PptxMetadata summarizes slide decks.
 type PptxMetadata struct {
-	Title       *string  `json:"title,omitempty"`
-	Author      *string  `json:"author,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	Summary     *string  `json:"summary,omitempty"`
-	Fonts       []string `json:"fonts"`
+	SlideCount uint64   `json:"slide_count"`
+	SlideNames []string `json:"slide_names"`
 }
 
 // OcrMetadata records OCR settings/results associated with an extraction.
@@ -299,18 +343,18 @@ type OcrMetadata struct {
 
 // ImagePreprocessingMetadata tracks OCR preprocessing steps.
 type ImagePreprocessingMetadata struct {
-	OriginalDimensions [2]int     `json:"original_dimensions"`
-	OriginalDPI        [2]float64 `json:"original_dpi"`
-	TargetDPI          int        `json:"target_dpi"`
-	ScaleFactor        float64    `json:"scale_factor"`
-	AutoAdjusted       bool       `json:"auto_adjusted"`
-	FinalDPI           int        `json:"final_dpi"`
-	NewDimensions      *[2]int    `json:"new_dimensions,omitempty"`
-	ResampleMethod     string     `json:"resample_method"`
-	DimensionClamped   bool       `json:"dimension_clamped"`
-	CalculatedDPI      *int       `json:"calculated_dpi,omitempty"`
-	SkippedResize      bool       `json:"skipped_resize"`
-	ResizeError        *string    `json:"resize_error,omitempty"`
+	OriginalDimensions [2]uint64     `json:"original_dimensions"`
+	OriginalDPI        [2]float64    `json:"original_dpi"`
+	TargetDPI          uint64        `json:"target_dpi"`
+	ScaleFactor        float64       `json:"scale_factor"`
+	AutoAdjusted       bool          `json:"auto_adjusted"`
+	FinalDPI           uint64        `json:"final_dpi"`
+	NewDimensions      *[2]uint64    `json:"new_dimensions,omitempty"`
+	ResampleMethod     string        `json:"resample_method"`
+	DimensionClamped   bool          `json:"dimension_clamped"`
+	CalculatedDPI      *uint64       `json:"calculated_dpi,omitempty"`
+	SkippedResize      bool          `json:"skipped_resize"`
+	ResizeError        *string       `json:"resize_error,omitempty"`
 }
 
 // ErrorMetadata describes failures in batch operations.
@@ -341,6 +385,8 @@ type PageInfo struct {
 	Title      *string     `json:"title,omitempty"`
 	Dimensions *[2]float64 `json:"dimensions,omitempty"`
 	ImageCount *uint64     `json:"image_count,omitempty"`
+	TableCount *uint64     `json:"table_count,omitempty"`
+	Hidden     *bool       `json:"hidden,omitempty"`
 }
 
 // PageStructure describes the page/slide/sheet structure of a document.
@@ -417,13 +463,13 @@ type BoundingBox struct {
 // ElementMetadata contains metadata for a semantic element.
 type ElementMetadata struct {
 	// PageNumber is the 1-indexed page number.
-	PageNumber *int64 `json:"page_number,omitempty"`
+	PageNumber *uint64 `json:"page_number,omitempty"`
 	// Filename is the source filename or document name.
 	Filename *string `json:"filename,omitempty"`
 	// Coordinates contains bounding box coordinates if available.
 	Coordinates *BoundingBox `json:"coordinates,omitempty"`
 	// ElementIndex is the position index in the element sequence.
-	ElementIndex *int64 `json:"element_index,omitempty"`
+	ElementIndex *uint64 `json:"element_index,omitempty"`
 	// Additional contains custom metadata fields.
 	Additional map[string]string `json:"additional,omitempty"`
 }
@@ -442,4 +488,145 @@ type Element struct {
 	Text string `json:"text"`
 	// Metadata contains element metadata including page number, coordinates, etc.
 	Metadata ElementMetadata `json:"metadata"`
+}
+
+// DjotContent represents a comprehensive Djot document structure with semantic preservation.
+// This type captures the full richness of Djot markup, including block-level structures,
+// inline formatting, attributes, links, images, footnotes, and math expressions.
+type DjotContent struct {
+	// PlainText is plain text representation for backwards compatibility.
+	PlainText string `json:"plain_text"`
+	// Blocks contains structured block-level content.
+	Blocks []FormattedBlock `json:"blocks"`
+	// Metadata contains metadata from YAML frontmatter.
+	Metadata *Metadata `json:"metadata,omitempty"`
+	// Tables contains extracted tables as structured data.
+	Tables []Table `json:"tables,omitempty"`
+	// Images contains extracted images with metadata.
+	Images []DjotImage `json:"images,omitempty"`
+	// Links contains extracted links with URLs.
+	Links []DjotLink `json:"links,omitempty"`
+	// Footnotes contains footnote definitions.
+	Footnotes []Footnote `json:"footnotes,omitempty"`
+	// Attributes maps elements by identifier (if present).
+	Attributes [][2]interface{} `json:"attributes,omitempty"`
+}
+
+// FormattedBlock represents a block-level element in a Djot document.
+// It represents structural elements like headings, paragraphs, lists, code blocks, etc.
+type FormattedBlock struct {
+	// BlockType is the type of block element.
+	BlockType BlockType `json:"block_type"`
+	// Level is the heading level (1-6) for headings, or nesting level for lists.
+	Level *uint `json:"level,omitempty"`
+	// InlineContent contains inline content within the block.
+	InlineContent []InlineElement `json:"inline_content"`
+	// Attributes contains element attributes (classes, IDs, key-value pairs).
+	Attributes *Attributes `json:"attributes,omitempty"`
+	// Language is the language identifier for code blocks.
+	Language *string `json:"language,omitempty"`
+	// Code is the raw code content for code blocks.
+	Code *string `json:"code,omitempty"`
+	// Children contains nested blocks for containers (blockquotes, list items, divs).
+	Children []FormattedBlock `json:"children,omitempty"`
+}
+
+// BlockType represents the types of block-level elements in Djot.
+type BlockType string
+
+const (
+	BlockTypeParagraph          BlockType = "paragraph"
+	BlockTypeHeading            BlockType = "heading"
+	BlockTypeBlockquote         BlockType = "blockquote"
+	BlockTypeCodeBlock          BlockType = "code_block"
+	BlockTypeListItem           BlockType = "list_item"
+	BlockTypeOrderedList        BlockType = "ordered_list"
+	BlockTypeBulletList         BlockType = "bullet_list"
+	BlockTypeTaskList           BlockType = "task_list"
+	BlockTypeDefinitionList     BlockType = "definition_list"
+	BlockTypeDefinitionTerm     BlockType = "definition_term"
+	BlockTypeDefinitionDesc     BlockType = "definition_description"
+	BlockTypeDiv                BlockType = "div"
+	BlockTypeSection            BlockType = "section"
+	BlockTypeThematicBreak      BlockType = "thematic_break"
+	BlockTypeRawBlock           BlockType = "raw_block"
+	BlockTypeMathDisplay        BlockType = "math_display"
+)
+
+// InlineElement represents an inline element within a block.
+// It represents text with formatting, links, images, etc.
+type InlineElement struct {
+	// ElementType is the type of inline element.
+	ElementType InlineType `json:"element_type"`
+	// Content is the text content.
+	Content string `json:"content"`
+	// Attributes contains element attributes.
+	Attributes *Attributes `json:"attributes,omitempty"`
+	// Metadata contains additional metadata (e.g., href for links, src/alt for images).
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+// InlineType represents the types of inline elements in Djot.
+type InlineType string
+
+const (
+	InlineTypeText         InlineType = "text"
+	InlineTypeStrong       InlineType = "strong"
+	InlineTypeEmphasis     InlineType = "emphasis"
+	InlineTypeHighlight    InlineType = "highlight"
+	InlineTypeSubscript    InlineType = "subscript"
+	InlineTypeSuperscript  InlineType = "superscript"
+	InlineTypeInsert       InlineType = "insert"
+	InlineTypeDelete       InlineType = "delete"
+	InlineTypeCode         InlineType = "code"
+	InlineTypeLink         InlineType = "link"
+	InlineTypeImage        InlineType = "image"
+	InlineTypeSpan         InlineType = "span"
+	InlineTypeMath         InlineType = "math"
+	InlineTypeRawInline    InlineType = "raw_inline"
+	InlineTypeFootnoteRef  InlineType = "footnote_ref"
+	InlineTypeSymbol       InlineType = "symbol"
+)
+
+// Attributes represents element attributes in Djot.
+// It represents the attributes attached to elements using {.class #id key="value"} syntax.
+type Attributes struct {
+	// ID is the element ID (#identifier).
+	ID *string `json:"id,omitempty"`
+	// Classes contains CSS classes (.class1 .class2).
+	Classes []string `json:"classes,omitempty"`
+	// KeyValues contains key-value pairs (key="value").
+	KeyValues [][2]string `json:"key_values,omitempty"`
+}
+
+// DjotImage represents an image element in Djot.
+type DjotImage struct {
+	// Src is the image source URL or path.
+	Src string `json:"src"`
+	// Alt is the alternative text.
+	Alt string `json:"alt"`
+	// Title is the optional title.
+	Title *string `json:"title,omitempty"`
+	// Attributes contains element attributes.
+	Attributes *Attributes `json:"attributes,omitempty"`
+}
+
+// DjotLink represents a link element in Djot.
+type DjotLink struct {
+	// URL is the link URL.
+	URL string `json:"url"`
+	// Text is the link text content.
+	Text string `json:"text"`
+	// Title is the optional title.
+	Title *string `json:"title,omitempty"`
+	// Attributes contains element attributes.
+	Attributes *Attributes `json:"attributes,omitempty"`
+}
+
+// Footnote represents a footnote in Djot.
+type Footnote struct {
+	// Label is the footnote label.
+	Label string `json:"label"`
+	// Content contains footnote content blocks.
+	Content []FormattedBlock `json:"content"`
 }

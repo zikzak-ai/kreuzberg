@@ -135,7 +135,7 @@ func TestHtmlMetadataStructure(t *testing.T) {
 		CanonicalURL:   StringPtr("https://example.com/page"),
 		BaseHref:       StringPtr("https://example.com/"),
 		Language:       StringPtr("en"),
-		TextDirection:  StringPtr("ltr"),
+		TextDirection:  TextDirectionPtr(TextDirectionLTR),
 		OpenGraph:      map[string]string{"og:title": "Test"},
 		TwitterCard:    map[string]string{"twitter:card": "summary"},
 		MetaTags:       map[string]string{"custom": "value"},
@@ -324,11 +324,11 @@ func TestLinkMetadataJSON(t *testing.T) {
 		Href:     "https://example.com",
 		Text:     "Example Link",
 		Title:    StringPtr("Example Website"),
-		LinkType: "external",
+		LinkType: LinkTypeExternal,
 		Rel:      []string{"nofollow", "external"},
-		Attributes: map[string]string{
-			"target": "_blank",
-			"class":  "external-link",
+		Attributes: [][2]string{
+			{"target", "_blank"},
+			{"class", "external-link"},
 		},
 	}
 
@@ -351,8 +351,8 @@ func TestLinkMetadataJSON(t *testing.T) {
 		t.Fatalf("unmarshal LinkMetadata failed: %v", err)
 	}
 
-	if output.LinkType != "external" {
-		t.Errorf("LinkMetadata LinkType incorrect: got %s, want external", output.LinkType)
+	if output.LinkType != LinkTypeExternal {
+		t.Errorf("LinkMetadata LinkType incorrect: got %v, want %v", output.LinkType, LinkTypeExternal)
 	}
 }
 
@@ -362,11 +362,11 @@ func TestImageMetadataJSON(t *testing.T) {
 		Src:        "https://example.com/image.jpg",
 		Alt:        StringPtr("Description"),
 		Title:      StringPtr("Image Title"),
-		Dimensions: &[2]int{800, 600},
-		ImageType:  "jpg",
-		Attributes: map[string]string{
-			"loading": "lazy",
-			"class":   "thumbnail",
+		Dimensions: &[2]uint32{800, 600},
+		ImageType:  ImageTypeExternal,
+		Attributes: [][2]string{
+			{"loading", "lazy"},
+			{"class", "thumbnail"},
 		},
 	}
 
@@ -389,8 +389,8 @@ func TestImageMetadataJSON(t *testing.T) {
 		t.Fatalf("unmarshal HTMLImageMetadata failed: %v", err)
 	}
 
-	if output.ImageType != "jpg" {
-		t.Errorf("HTMLImageMetadata ImageType incorrect: got %s, want jpg", output.ImageType)
+	if output.ImageType != ImageTypeExternal {
+		t.Errorf("HTMLImageMetadata ImageType incorrect: got %v, want %v", output.ImageType, ImageTypeExternal)
 	}
 	if output.Dimensions == nil || output.Dimensions[0] != 800 {
 		t.Errorf("HTMLImageMetadata Dimensions incorrect")
@@ -400,7 +400,7 @@ func TestImageMetadataJSON(t *testing.T) {
 // TestStructuredDataJSON serializes and deserializes StructuredData with data_type.
 func TestStructuredDataJSON(t *testing.T) {
 	input := StructuredData{
-		DataType:   "json_ld",
+		DataType:   StructuredDataTypeJSONLD,
 		RawJSON:    `{"@type":"Article","headline":"Test"}`,
 		SchemaType: StringPtr("Article"),
 	}
@@ -424,7 +424,7 @@ func TestStructuredDataJSON(t *testing.T) {
 		t.Fatalf("unmarshal StructuredData failed: %v", err)
 	}
 
-	if output.DataType != "json_ld" {
+	if output.DataType != StructuredDataTypeJSONLD {
 		t.Errorf("StructuredData DataType incorrect")
 	}
 	if output.SchemaType == nil || *output.SchemaType != "Article" {
@@ -821,7 +821,7 @@ func TestLinkMetadataFields(t *testing.T) {
 	link := LinkMetadata{
 		Href:     "https://example.com",
 		Text:     "Example",
-		LinkType: "external",
+		LinkType: LinkTypeExternal,
 	}
 
 	if link.Href != "https://example.com" {
@@ -830,7 +830,7 @@ func TestLinkMetadataFields(t *testing.T) {
 	if link.Text != "Example" {
 		t.Errorf("Text field incorrect")
 	}
-	if link.LinkType != "external" {
+	if link.LinkType != LinkTypeExternal {
 		t.Errorf("LinkType field incorrect")
 	}
 }
@@ -839,13 +839,13 @@ func TestLinkMetadataFields(t *testing.T) {
 func TestHTMLImageMetadataFields(t *testing.T) {
 	img := HTMLImageMetadata{
 		Src:       "image.jpg",
-		ImageType: "jpg",
+		ImageType: ImageTypeExternal,
 	}
 
 	if img.Src != "image.jpg" {
 		t.Errorf("Src field incorrect")
 	}
-	if img.ImageType != "jpg" {
+	if img.ImageType != ImageTypeExternal {
 		t.Errorf("ImageType field incorrect")
 	}
 }
@@ -853,7 +853,7 @@ func TestHTMLImageMetadataFields(t *testing.T) {
 // TestStructuredDataFields verifies StructuredData has expected fields.
 func TestStructuredDataFields(t *testing.T) {
 	sd := StructuredData{
-		DataType: "json_ld",
+		DataType: StructuredDataTypeJSONLD,
 		RawJSON:  `{"@type":"Article"}`,
 	}
 

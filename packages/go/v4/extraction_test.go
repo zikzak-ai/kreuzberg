@@ -167,8 +167,8 @@ func TestMetadataExtractionInResult(t *testing.T) {
 		result := &ExtractionResult{
 			Content: "test",
 			Metadata: Metadata{
-				Language: StringPtr("en"),
-				Date:     StringPtr("2025-01-01"),
+				Language:  StringPtr("en"),
+				CreatedAt: StringPtr("2025-01-01"),
 			},
 		}
 		if result.Metadata.Language == nil || *result.Metadata.Language != "en" {
@@ -319,13 +319,13 @@ func TestImageExtractionInResult(t *testing.T) {
 			ImageIndex: 0,
 			Width:      IntPtr32(800),
 			Height:     IntPtr32(600),
-			PageNumber: IntPtr(1),
+			PageNumber: Uint64Ptr(1),
 		}
 		img2 := ExtractedImage{
 			Data:       []byte("image2"),
 			Format:     "png",
 			ImageIndex: 1,
-			PageNumber: IntPtr(2),
+			PageNumber: Uint64Ptr(2),
 		}
 		result := &ExtractionResult{
 			Images: []ExtractedImage{img1, img2},
@@ -792,7 +792,7 @@ func TestChunkingWithEmbeddings(t *testing.T) {
 		Metadata: ChunkMetadata{
 			ByteStart:  0,
 			ByteEnd:    10,
-			TokenCount: IntPtr(3),
+			TokenCount: Uint64Ptr(3),
 		},
 	}
 
@@ -912,9 +912,8 @@ func TestOCRMetadataExtraction(t *testing.T) {
 // TestPowerPointMetadataExtraction tests PPTX metadata.
 func TestPowerPointMetadataExtraction(t *testing.T) {
 	pptxMeta := &PptxMetadata{
-		Title:  StringPtr("Presentation"),
-		Author: StringPtr("John Doe"),
-		Fonts:  []string{"Arial", "Calibri"},
+		SlideCount: 5,
+		SlideNames: []string{"Intro", "Agenda", "Details", "Summary", "Q&A"},
 	}
 
 	result := &ExtractionResult{
@@ -930,8 +929,11 @@ func TestPowerPointMetadataExtraction(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected PPTX metadata")
 	}
-	if len(meta.Fonts) != 2 {
-		t.Fatalf("expected 2 fonts")
+	if meta.SlideCount != 5 {
+		t.Fatalf("expected 5 slides, got %d", meta.SlideCount)
+	}
+	if len(meta.SlideNames) != 5 {
+		t.Fatalf("expected 5 slide names")
 	}
 }
 
@@ -964,7 +966,7 @@ func TestHtmlMetadataExtraction(t *testing.T) {
 // TestImagePreprocessingMetadata tests image preprocessing information.
 func TestImagePreprocessingMetadata(t *testing.T) {
 	preprocessing := &ImagePreprocessingMetadata{
-		OriginalDimensions: [2]int{1024, 2048},
+		OriginalDimensions: [2]uint64{1024, 2048},
 		OriginalDPI:        [2]float64{72.0, 72.0},
 		TargetDPI:          300,
 		ScaleFactor:        1.5,

@@ -385,11 +385,6 @@ func convertCResult(cRes *C.CExtractionResult) (*ExtractionResult, error) {
 			result.Metadata.Language = stringPtr(lang)
 		}
 	}
-	if result.Metadata.Date == nil && cRes.date != nil {
-		if date := C.GoString(cRes.date); date != "" {
-			result.Metadata.Date = stringPtr(date)
-		}
-	}
 	if result.Metadata.Subject == nil && cRes.subject != nil {
 		if subj := C.GoString(cRes.subject); subj != "" {
 			result.Metadata.Subject = stringPtr(subj)

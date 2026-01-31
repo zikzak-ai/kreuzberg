@@ -15,8 +15,8 @@ import "C"
 // Returns -1 if there is an error (check the error return value).
 // This method provides efficient access to page count metadata without JSON parsing.
 func (r *ExtractionResult) GetPageCount() (int, error) {
-	if r.Metadata.PageStructure != nil {
-		return int(r.Metadata.PageStructure.TotalCount), nil
+	if r.Metadata.Pages != nil {
+		return int(r.Metadata.Pages.TotalCount), nil
 	}
 	return 0, nil
 }

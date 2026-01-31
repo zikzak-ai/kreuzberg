@@ -59,3 +59,27 @@ func Uint32Ptr(v uint32) *uint32 {
 func Uint64Ptr(v uint64) *uint64 {
 	return &v
 }
+
+// TextDirectionPtr returns a pointer to a TextDirection value.
+// Useful for setting optional TextDirection fields in metadata structs.
+func TextDirectionPtr(v TextDirection) *TextDirection {
+	return &v
+}
+
+// LinkTypePtr returns a pointer to a LinkType value.
+// Useful for setting optional LinkType fields in metadata structs.
+func LinkTypePtr(v LinkType) *LinkType {
+	return &v
+}
+
+// ImageTypePtr returns a pointer to an ImageType value.
+// Useful for setting optional ImageType fields in metadata structs.
+func ImageTypePtr(v ImageType) *ImageType {
+	return &v
+}
+
+// StructuredDataTypePtr returns a pointer to a StructuredDataType value.
+// Useful for setting optional StructuredDataType fields in metadata structs.
+func StructuredDataTypePtr(v StructuredDataType) *StructuredDataType {
+	return &v
+}

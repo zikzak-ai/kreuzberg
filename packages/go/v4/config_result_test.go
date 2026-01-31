@@ -417,7 +417,7 @@ func TestResultGetPageCount(t *testing.T) {
 			result: &kreuzberg.ExtractionResult{
 				Content: "test",
 				Metadata: kreuzberg.Metadata{
-					PageStructure: &kreuzberg.PageStructure{
+					Pages: &kreuzberg.PageStructure{
 						TotalCount: 42,
 					},
 				},
