@@ -87,6 +87,7 @@ mod tests {
     use super::*;
     use crate::core::config::LanguageDetectionConfig;
     use crate::types::Metadata;
+    use std::borrow::Cow;
 
     #[tokio::test]
     async fn test_language_detector_processor() {

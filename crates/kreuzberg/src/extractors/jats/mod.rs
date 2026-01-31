@@ -274,7 +274,7 @@ mod tests {
 
         let (metadata, _content, _title, _tables) = extract_jats_all_in_one(jats).expect("Metadata extraction failed");
         assert_eq!(metadata.title, "Main Title");
-        assert_eq!(metadata.subtitle, Some(Cow::Borrowed("A Systematic Review")));
+        assert_eq!(metadata.subtitle, Some("A Systematic Review".to_string()));
     }
 
     #[test]
@@ -338,8 +338,8 @@ mod tests {
 </article>"#;
 
         let (metadata, _content, _title, _tables) = extract_jats_all_in_one(jats).expect("Metadata extraction failed");
-        assert_eq!(metadata.doi, Some(Cow::Borrowed("10.1371/journal.pmed.0020124")));
-        assert_eq!(metadata.pii, Some(Cow::Borrowed("05-PLME-RA-0071R2")));
+        assert_eq!(metadata.doi, Some("10.1371/journal.pmed.0020124".to_string()));
+        assert_eq!(metadata.pii, Some("05-PLME-RA-0071R2".to_string()));
     }
 
     #[test]
@@ -384,8 +384,8 @@ mod tests {
 
         let (metadata, _content, _title, _tables) = extract_jats_all_in_one(jats).expect("Metadata extraction failed");
         assert!(metadata.publication_date.is_some());
-        assert_eq!(metadata.volume, Some(Cow::Borrowed("2")));
-        assert_eq!(metadata.issue, Some(Cow::Borrowed("4")));
+        assert_eq!(metadata.volume, Some("2".to_string()));
+        assert_eq!(metadata.issue, Some("4".to_string()));
         assert!(metadata.pages.is_some());
     }
 
@@ -532,7 +532,7 @@ mod tests {
             extract_jats_all_in_one(jats).expect("Metadata extraction failed");
         assert_eq!(metadata_extracted.title, "Sample Article");
         assert_eq!(metadata_extracted.authors.len(), 1);
-        assert_eq!(metadata_extracted.doi, Some(Cow::Borrowed("10.1234/test")));
+        assert_eq!(metadata_extracted.doi, Some("10.1234/test".to_string()));
         assert_eq!(metadata_extracted.keywords.len(), 1);
         assert!(metadata_extracted.abstract_text.is_some());
     }
@@ -567,7 +567,7 @@ mod tests {
 </article>"#;
 
         let (metadata, _content, _title, _tables) = extract_jats_all_in_one(jats).expect("Metadata extraction failed");
-        assert_eq!(metadata.journal_title, Some(Cow::Borrowed("Nature Medicine")));
+        assert_eq!(metadata.journal_title, Some("Nature Medicine".to_string()));
     }
 
     #[test]
@@ -582,7 +582,7 @@ mod tests {
 </article>"#;
 
         let (metadata, _content, _title, _tables) = extract_jats_all_in_one(jats).expect("Metadata extraction failed");
-        assert_eq!(metadata.article_type, Some(Cow::Borrowed("research-article")));
+        assert_eq!(metadata.article_type, Some("research-article".to_string()));
     }
 
     #[test]
@@ -632,20 +632,20 @@ mod tests {
         let (metadata, _content, _title, _tables) = extract_jats_all_in_one(jats).expect("Metadata extraction failed");
 
         assert_eq!(metadata.title, "Full Metadata Test");
-        assert_eq!(metadata.subtitle, Some(Cow::Borrowed("A Complete Example")));
+        assert_eq!(metadata.subtitle, Some("A Complete Example".to_string()));
         assert_eq!(metadata.authors.len(), 1);
         assert!(metadata.authors[0].contains("Author"));
         assert_eq!(metadata.affiliations.len(), 1);
         assert!(metadata.affiliations[0].contains("Testing"));
-        assert_eq!(metadata.doi, Some(Cow::Borrowed("10.1234/full-test")));
-        assert_eq!(metadata.pii, Some(Cow::Borrowed("TEST-001")));
+        assert_eq!(metadata.doi, Some("10.1234/full-test".to_string()));
+        assert_eq!(metadata.pii, Some("TEST-001".to_string()));
         assert_eq!(metadata.keywords.len(), 2);
         assert!(metadata.publication_date.is_some());
-        assert_eq!(metadata.volume, Some(Cow::Borrowed("5")));
-        assert_eq!(metadata.issue, Some(Cow::Borrowed("3")));
+        assert_eq!(metadata.volume, Some("5".to_string()));
+        assert_eq!(metadata.issue, Some("3".to_string()));
         assert!(metadata.pages.is_some());
-        assert_eq!(metadata.journal_title, Some(Cow::Borrowed("Test Journal")));
-        assert_eq!(metadata.article_type, Some(Cow::Borrowed("research-article")));
+        assert_eq!(metadata.journal_title, Some("Test Journal".to_string()));
+        assert_eq!(metadata.article_type, Some("research-article".to_string()));
         assert!(metadata.abstract_text.is_some());
         assert!(metadata.corresponding_author.is_some());
     }

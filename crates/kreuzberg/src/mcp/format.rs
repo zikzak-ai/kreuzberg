@@ -83,6 +83,7 @@ pub(super) fn format_extraction_result(result: &KreuzbergResult) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::borrow::Cow;
 
     #[test]
     fn test_build_config_with_no_config() {

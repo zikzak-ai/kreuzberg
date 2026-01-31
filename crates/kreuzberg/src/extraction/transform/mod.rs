@@ -367,7 +367,7 @@ mod tests {
             page_number: Some(1),
             width: Some(640),
             height: Some(480),
-            colorspace: Some("RGB".to_string().into()),
+            colorspace: Some("RGB".to_string()),
             bits_per_component: Some(8),
             is_mask: false,
             description: None,

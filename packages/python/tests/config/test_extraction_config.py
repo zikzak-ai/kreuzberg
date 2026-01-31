@@ -136,7 +136,7 @@ def test_extraction_config_html_options_valid() -> None:
         "wrap_width": 80,
         "heading_style": "atx",
     }
-    config = ExtractionConfig(html_options=options)
+    config = ExtractionConfig(html_options=options)  # type: ignore[arg-type]
     assert config.html_options == options
 
 

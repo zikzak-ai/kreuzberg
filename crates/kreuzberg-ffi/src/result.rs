@@ -368,6 +368,7 @@ pub unsafe extern "C" fn kreuzberg_result_get_metadata_field(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::borrow::Cow;
     use std::ffi::CStr;
 
     fn create_test_result() -> ExtractionResult {
@@ -389,7 +390,7 @@ mod tests {
 
         ExtractionResult {
             content: "Sample content for testing".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata,
             tables: vec![],
             detected_languages: Some(vec!["en".to_string(), "de".to_string()]),

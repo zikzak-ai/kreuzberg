@@ -180,7 +180,7 @@ pub fn batch_extract_bytes_sync(
     config: &ExtractionConfig,
 ) -> Result<Vec<ExtractionResult>> {
     use crate::types::{ErrorMetadata, Metadata};
-    use crate::utils::intern_mime_type;
+    use std::borrow::Cow;
 
     let mut results = Vec::with_capacity(contents.len());
     for (content, mime_type) in contents {

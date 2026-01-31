@@ -1,6 +1,7 @@
 use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 use kreuzberg::types::{Chunk, ChunkMetadata, ExtractionResult, Metadata, PageStructure, PageUnitType};
 use kreuzberg_ffi::{CExtractionResultView, kreuzberg_get_result_view};
+use std::borrow::Cow;
 use std::ffi::CString;
 use std::hint;
 use std::mem;
@@ -63,7 +64,7 @@ fn create_test_result(content_size: usize, chunk_count: usize) -> ExtractionResu
 
     ExtractionResult {
         content,
-        mime_type: "application/pdf".to_string(),
+        mime_type: Cow::Borrowed("application/pdf"),
         metadata,
         tables: vec![],
         detected_languages: Some(vec!["en".to_string(), "de".to_string()]),
@@ -109,7 +110,7 @@ fn bench_copy_based_approach(c: &mut Criterion) {
 
             b.iter(|| {
                 let content_cstr = CString::new(result.content.as_str()).unwrap();
-                let mime_cstr = CString::new(result.mime_type.as_str()).unwrap();
+                let mime_cstr = CString::new(&*result.mime_type).unwrap();
                 let language_cstr = result
                     .metadata
                     .language

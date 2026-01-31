@@ -87,6 +87,7 @@ mod tests {
     use super::*;
     use crate::core::config::ChunkingConfig;
     use crate::types::Metadata;
+    use std::borrow::Cow;
 
     #[tokio::test]
     async fn test_chunking_processor() {

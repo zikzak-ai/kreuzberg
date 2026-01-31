@@ -12,6 +12,7 @@ use js_sys::{Promise, Reflect};
 use kreuzberg::plugins::{OcrBackend, OcrBackendType, Plugin};
 #[allow(unused_imports)]
 use kreuzberg::{ExtractionResult, KreuzbergError, OcrConfig};
+use std::borrow::Cow;
 use std::sync::Arc;
 use wasm_bindgen::prelude::*;
 #[allow(unused_imports)]
@@ -156,7 +157,7 @@ impl OcrBackend for JsOcrBackendWrapper {
 
         Ok(ExtractionResult {
             content,
-            mime_type: std::borrow::Cow::Owned(mime_type),
+            mime_type: Cow::Owned(mime_type),
             metadata,
             tables,
             detected_languages: None,
@@ -194,7 +195,7 @@ impl OcrBackend for JsOcrBackendWrapper {
     async fn process_image(&self, _image_bytes: &[u8], _config: &OcrConfig) -> kreuzberg::Result<ExtractionResult> {
         Ok(ExtractionResult {
             content: String::new(),
-            mime_type: "image/jpeg".to_string(),
+            mime_type: Cow::Borrowed("image/jpeg"),
             metadata: Default::default(),
             tables: vec![],
             detected_languages: None,
@@ -209,7 +210,7 @@ impl OcrBackend for JsOcrBackendWrapper {
     async fn process_file(&self, _path: &std::path::Path, _config: &OcrConfig) -> kreuzberg::Result<ExtractionResult> {
         Ok(ExtractionResult {
             content: String::new(),
-            mime_type: "image/jpeg".to_string(),
+            mime_type: Cow::Borrowed("image/jpeg"),
             metadata: Default::default(),
             tables: vec![],
             detected_languages: None,

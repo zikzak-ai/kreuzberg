@@ -54,9 +54,10 @@ impl OcrBackend for MockOcrBackend {
             return Err(KreuzbergError::validation("Empty image data".to_string()));
         }
 
+        use std::borrow::Cow;
         Ok(ExtractionResult {
             content: format!("{} (lang: {})", self.return_text, config.language),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -152,9 +153,10 @@ impl OcrBackend for ValidatingOcrBackend {
             )));
         }
 
+        use std::borrow::Cow;
         Ok(ExtractionResult {
             content: format!("Processed {} bytes", image_bytes.len()),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -214,9 +216,10 @@ impl OcrBackend for MetadataOcrBackend {
             serde_json::json!(config.language),
         );
 
+        use std::borrow::Cow;
         Ok(ExtractionResult {
             content: "OCR processed text".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata,
             tables: vec![],
             detected_languages: None,

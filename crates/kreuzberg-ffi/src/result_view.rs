@@ -398,6 +398,7 @@ pub unsafe extern "C" fn kreuzberg_view_get_mime_type(
 mod tests {
     use super::*;
     use kreuzberg::types::{Metadata, PageStructure, PageUnitType};
+    use std::borrow::Cow;
     use std::mem;
 
     fn create_test_result() -> ExtractionResult {
@@ -419,7 +420,7 @@ mod tests {
 
         ExtractionResult {
             content: "Sample content for zero-copy testing".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata,
             tables: vec![],
             detected_languages: Some(vec!["en".to_string(), "de".to_string()]),
@@ -712,7 +713,7 @@ mod tests {
     fn test_view_all_counts_zero() {
         let result = ExtractionResult {
             content: "Minimal content".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,

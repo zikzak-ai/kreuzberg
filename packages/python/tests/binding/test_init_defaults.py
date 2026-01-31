@@ -214,7 +214,7 @@ def test_extraction_config_html_options_roundtrip() -> None:
         "heading_style": "atx",
         "preprocessing": {"enabled": True, "preset": "aggressive"},
     }
-    config = ExtractionConfig(html_options=options)
+    config = ExtractionConfig(html_options=options)  # type: ignore[arg-type]
     assert config.html_options == options
 
     config.html_options = None

@@ -541,9 +541,10 @@ mod tests {
     #[test]
     fn test_from_rust_populates_basic_fields() {
         with_py(|py| {
+            use std::borrow::Cow;
             let rust_result = kreuzberg::ExtractionResult {
                 content: "hello".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: kreuzberg::Metadata::default(),
                 tables: Vec::new(),
                 detected_languages: Some(vec!["en".to_string()]),
@@ -570,9 +571,10 @@ mod tests {
     #[test]
     fn test_metadata_setter_overrides_dictionary() {
         with_py(|py| {
+            use std::borrow::Cow;
             let mut rust_result = kreuzberg::ExtractionResult {
                 content: "data".to_string(),
-                mime_type: "text/plain".to_string(),
+                mime_type: Cow::Borrowed("text/plain"),
                 metadata: kreuzberg::Metadata::default(),
                 tables: Vec::new(),
                 detected_languages: None,

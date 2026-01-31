@@ -213,6 +213,7 @@ pub fn to_c_extraction_result(result: ExtractionResult) -> std::result::Result<*
 mod tests {
     use super::*;
     use kreuzberg::types::{Chunk, ChunkMetadata, ExtractionResult, Metadata, Table};
+    use std::borrow::Cow;
     use std::ffi::CStr;
 
     #[test]
@@ -352,7 +353,7 @@ mod tests {
     fn test_to_c_extraction_result_basic() {
         let result = ExtractionResult {
             content: "Test content".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -391,7 +392,7 @@ mod tests {
     fn test_to_c_extraction_result_with_null_bytes() {
         let result = ExtractionResult {
             content: "Test\0content with null".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![],
             detected_languages: None,
@@ -440,7 +441,7 @@ mod tests {
 
         let result = ExtractionResult {
             content: "Test content".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata,
             tables: vec![],
             detected_languages: Some(vec!["en".to_string(), "de".to_string()]),
@@ -519,7 +520,7 @@ mod tests {
 
         let result = ExtractionResult {
             content: "Test content".to_string(),
-            mime_type: "text/plain".to_string(),
+            mime_type: Cow::Borrowed("text/plain"),
             metadata: Metadata::default(),
             tables: vec![table],
             detected_languages: None,
