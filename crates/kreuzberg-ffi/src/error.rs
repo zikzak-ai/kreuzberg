@@ -540,6 +540,62 @@ pub extern "C" fn kreuzberg_get_error_details() -> CErrorDetails {
     }
 }
 
+/// Heap-allocated variant of `kreuzberg_get_error_details` that returns a pointer.
+///
+/// This is the preferred variant for language bindings (Java, Go, C#) where
+/// returning structs by value across FFI boundaries causes ABI issues,
+/// particularly on ARM64.
+///
+/// The returned pointer must be freed with `kreuzberg_free_error_details()`.
+/// Returns NULL if allocation fails.
+///
+/// # C Signature
+///
+/// ```c
+/// CErrorDetails* kreuzberg_get_error_details_ptr(void);
+/// ```
+#[unsafe(no_mangle)]
+pub extern "C" fn kreuzberg_get_error_details_ptr() -> *mut CErrorDetails {
+    let details = kreuzberg_get_error_details();
+    Box::into_raw(Box::new(details))
+}
+
+/// Frees a `CErrorDetails` pointer returned by `kreuzberg_get_error_details_ptr()`.
+///
+/// This function frees all internal string fields and the struct itself.
+/// Passing NULL is a no-op.
+///
+/// # C Signature
+///
+/// ```c
+/// void kreuzberg_free_error_details(CErrorDetails* details);
+/// ```
+#[unsafe(no_mangle)]
+pub extern "C" fn kreuzberg_free_error_details(details: *mut CErrorDetails) {
+    if details.is_null() {
+        return;
+    }
+    unsafe {
+        let details = Box::from_raw(details);
+        // Free all non-null string fields
+        if !details.message.is_null() {
+            let _ = CString::from_raw(details.message);
+        }
+        if !details.error_type.is_null() {
+            let _ = CString::from_raw(details.error_type);
+        }
+        if !details.source_file.is_null() {
+            let _ = CString::from_raw(details.source_file);
+        }
+        if !details.source_function.is_null() {
+            let _ = CString::from_raw(details.source_function);
+        }
+        if !details.context_info.is_null() {
+            let _ = CString::from_raw(details.context_info);
+        }
+    }
+}
+
 /// Classifies an error based on the error message string.
 ///
 /// Analyzes an error message and attempts to classify it into one of the standard

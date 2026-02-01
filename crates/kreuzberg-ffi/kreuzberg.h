@@ -1209,6 +1209,38 @@ const char *kreuzberg_error_code_description(uint32_t code);
 struct CErrorDetails kreuzberg_get_error_details(void);
 
 /**
+ * Heap-allocated variant of `kreuzberg_get_error_details` that returns a pointer.
+ *
+ * This is the preferred variant for language bindings (Java, Go, C#) where
+ * returning structs by value across FFI boundaries causes ABI issues,
+ * particularly on ARM64.
+ *
+ * The returned pointer must be freed with `kreuzberg_free_error_details()`.
+ * Returns NULL if allocation fails.
+ *
+ * # C Signature
+ *
+ * ```c
+ * CErrorDetails* kreuzberg_get_error_details_ptr(void);
+ * ```
+ */
+struct CErrorDetails *kreuzberg_get_error_details_ptr(void);
+
+/**
+ * Frees a `CErrorDetails` pointer returned by `kreuzberg_get_error_details_ptr()`.
+ *
+ * This function frees all internal string fields and the struct itself.
+ * Passing NULL is a no-op.
+ *
+ * # C Signature
+ *
+ * ```c
+ * void kreuzberg_free_error_details(CErrorDetails* details);
+ * ```
+ */
+void kreuzberg_free_error_details(struct CErrorDetails *details);
+
+/**
  * Classifies an error based on the error message string.
  *
  * Analyzes an error message and attempts to classify it into one of the standard

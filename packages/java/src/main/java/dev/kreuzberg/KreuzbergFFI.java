@@ -106,6 +106,7 @@ public final class KreuzbergFFI {
 	public static final MethodHandle KREUZBERG_RESULT_GET_DETECTED_LANGUAGE;
 	public static final MethodHandle KREUZBERG_RESULT_GET_METADATA_FIELD;
 	public static final MethodHandle KREUZBERG_GET_ERROR_DETAILS;
+	public static final MethodHandle KREUZBERG_FREE_ERROR_DETAILS;
 	public static final MethodHandle KREUZBERG_CLASSIFY_ERROR;
 	public static final MethodHandle KREUZBERG_ERROR_CODE_NAME;
 	public static final MethodHandle KREUZBERG_ERROR_CODE_DESCRIPTION;
@@ -363,8 +364,11 @@ public final class KreuzbergFFI {
 			KREUZBERG_RESULT_GET_METADATA_FIELD = linkFunction("kreuzberg_result_get_metadata_field",
 					FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-			KREUZBERG_GET_ERROR_DETAILS = linkFunction("kreuzberg_get_error_details",
+			KREUZBERG_GET_ERROR_DETAILS = linkFunction("kreuzberg_get_error_details_ptr",
 					FunctionDescriptor.of(ValueLayout.ADDRESS));
+
+			KREUZBERG_FREE_ERROR_DETAILS = linkFunction("kreuzberg_free_error_details",
+					FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
 
 			KREUZBERG_CLASSIFY_ERROR = linkFunction("kreuzberg_classify_error",
 					FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS));

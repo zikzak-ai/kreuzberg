@@ -80,13 +80,13 @@ pub struct ChunkingConfig {
     /// Maximum characters per chunk
     ///
     /// Default: 1000
-    #[serde(default = "default_chunk_size", alias = "max_chars")]
+    #[serde(default = "default_chunk_size", rename = "max_chars", alias = "max_characters")]
     pub max_characters: usize,
 
     /// Overlap between chunks in characters
     ///
     /// Default: 200
-    #[serde(default = "default_chunk_overlap", alias = "max_overlap")]
+    #[serde(default = "default_chunk_overlap", rename = "max_overlap", alias = "overlap")]
     pub overlap: usize,
 
     /// Whether to trim whitespace from chunk boundaries

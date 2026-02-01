@@ -154,9 +154,14 @@ public final class ErrorUtils {
 				return result;
 			}
 
-			String errorMsg = KreuzbergFFI.readCString(detailsPtr);
-			if (errorMsg != null) {
-				result.put("message", errorMsg);
+			try {
+				String errorMsg = KreuzbergFFI.readCString(detailsPtr);
+				if (errorMsg != null) {
+					result.put("message", errorMsg);
+				}
+			} finally {
+				// Free the heap-allocated CErrorDetails struct and its string fields
+				KreuzbergFFI.KREUZBERG_FREE_ERROR_DETAILS.invoke(detailsPtr);
 			}
 
 			return result;
