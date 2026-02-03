@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+#### MIME Type Detection
+- **DOCX/XLSX/PPTX files detected as ZIP via `detect_mime_type_from_bytes`**: Fixed Office Open XML files (DOCX, XLSX, PPTX) being incorrectly detected as `application/zip` when using bytes-based MIME detection. The function now inspects ZIP contents for Office format markers (`word/document.xml`, `xl/workbook.xml`, `ppt/presentation.xml`) to correctly identify these formats. (#350)
+
 #### Java Bindings
 - **Format-specific metadata missing in `getMetadataMap()`**: Fixed `sheet_count`, `sheet_names`, and other format-specific metadata fields not being accessible via `ExtractionResult.getMetadataMap()`. The `ResultParser.buildMetadata()` method now properly propagates flattened format metadata (e.g., Excel, PPTX) to the `Metadata.additional` map.
 

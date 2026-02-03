@@ -324,6 +324,9 @@ pub fn detect_or_validate(path: Option<&Path>, mime_type: Option<&str>) -> Resul
 /// Uses magic byte signatures to detect file type from content.
 /// Falls back to `infer` crate for comprehensive detection.
 ///
+/// For ZIP-based files, inspects contents to distinguish Office Open XML
+/// formats (DOCX, XLSX, PPTX) from plain ZIP archives.
+///
 /// # Arguments
 ///
 /// * `content` - Raw file bytes
@@ -338,6 +341,13 @@ pub fn detect_or_validate(path: Option<&Path>, mime_type: Option<&str>) -> Resul
 pub fn detect_mime_type_from_bytes(content: &[u8]) -> Result<String> {
     if let Some(kind) = infer::get(content) {
         let mime_type = kind.mime_type();
+
+        // Check if ZIP is actually an Office Open XML format
+        if mime_type == "application/zip"
+            && let Some(office_mime) = detect_office_format_from_zip(content)
+        {
+            return Ok(office_mime.to_string());
+        }
 
         if SUPPORTED_MIME_TYPES.contains(mime_type) || mime_type.starts_with("image/") {
             return Ok(mime_type.to_string());
@@ -371,6 +381,42 @@ pub fn detect_mime_type_from_bytes(content: &[u8]) -> Result<String> {
     Err(KreuzbergError::UnsupportedFormat(
         "Could not determine MIME type from bytes".to_string(),
     ))
+}
+
+/// Detect Office Open XML format from ZIP content by scanning for marker files.
+///
+/// Office Open XML formats (DOCX, XLSX, PPTX) are ZIP archives containing specific
+/// XML files that identify the format:
+/// - DOCX: contains `word/document.xml`
+/// - XLSX: contains `xl/workbook.xml`
+/// - PPTX: contains `ppt/presentation.xml`
+///
+/// This function scans the ZIP's local file headers without fully parsing the archive,
+/// making it efficient for MIME type detection.
+fn detect_office_format_from_zip(content: &[u8]) -> Option<&'static str> {
+    // Office format markers - these are file paths within the ZIP that identify the format
+    const DOCX_MARKER: &[u8] = b"word/document.xml";
+    const XLSX_MARKER: &[u8] = b"xl/workbook.xml";
+    const PPTX_MARKER: &[u8] = b"ppt/presentation.xml";
+
+    // Check for each marker using a sliding window search
+    if contains_subsequence(content, DOCX_MARKER) {
+        return Some(DOCX_MIME_TYPE);
+    }
+    if contains_subsequence(content, XLSX_MARKER) {
+        return Some(EXCEL_MIME_TYPE);
+    }
+    if contains_subsequence(content, PPTX_MARKER) {
+        return Some(POWER_POINT_MIME_TYPE);
+    }
+
+    None
+}
+
+/// Check if `haystack` contains `needle` as a subsequence.
+#[inline]
+fn contains_subsequence(haystack: &[u8], needle: &[u8]) -> bool {
+    haystack.windows(needle.len()).any(|window| window == needle)
 }
 
 /// Get file extensions for a given MIME type.
@@ -616,5 +662,72 @@ mod tests {
         File::create(&file_path2).unwrap();
         let mime2 = detect_mime_type(&file_path2, true).unwrap();
         assert_eq!(mime2, EXCEL_MIME_TYPE);
+    }
+
+    #[test]
+    fn test_detect_office_format_from_zip_bytes() {
+        // Test DOCX detection - minimal ZIP with word/document.xml marker
+        // This is a valid ZIP local file header with "word/document.xml" as filename
+        let docx_bytes: &[u8] = &[
+            0x50, 0x4b, 0x03, 0x04, // ZIP local file header signature
+            0x14, 0x00, // version needed
+            0x00, 0x00, // general purpose bit flag
+            0x00, 0x00, // compression method (stored)
+            0x00, 0x00, // last mod time
+            0x00, 0x00, // last mod date
+            0x00, 0x00, 0x00, 0x00, // crc-32
+            0x00, 0x00, 0x00, 0x00, // compressed size
+            0x00, 0x00, 0x00, 0x00, // uncompressed size
+            0x11, 0x00, // file name length (17)
+            0x00, 0x00, // extra field length
+            b'w', b'o', b'r', b'd', b'/', b'd', b'o', b'c', b'u', b'm', b'e', b'n', b't', b'.', b'x', b'm',
+            b'l', // "word/document.xml"
+        ];
+        let mime = detect_mime_type_from_bytes(docx_bytes).unwrap();
+        assert_eq!(
+            mime, DOCX_MIME_TYPE,
+            "Should detect DOCX from ZIP with word/document.xml"
+        );
+
+        // Test XLSX detection
+        let xlsx_bytes: &[u8] = &[
+            0x50, 0x4b, 0x03, 0x04, // ZIP signature
+            0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, // file name length (15)
+            0x00, 0x00, // extra field length
+            b'x', b'l', b'/', b'w', b'o', b'r', b'k', b'b', b'o', b'o', b'k', b'.', b'x', b'm',
+            b'l', // "xl/workbook.xml"
+        ];
+        let mime = detect_mime_type_from_bytes(xlsx_bytes).unwrap();
+        assert_eq!(
+            mime, EXCEL_MIME_TYPE,
+            "Should detect XLSX from ZIP with xl/workbook.xml"
+        );
+
+        // Test PPTX detection
+        let pptx_bytes: &[u8] = &[
+            0x50, 0x4b, 0x03, 0x04, // ZIP signature
+            0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x14, 0x00, // file name length (20)
+            0x00, 0x00, // extra field length
+            b'p', b'p', b't', b'/', b'p', b'r', b'e', b's', b'e', b'n', b't', b'a', b't', b'i', b'o', b'n', b'.', b'x',
+            b'm', b'l', // "ppt/presentation.xml"
+        ];
+        let mime = detect_mime_type_from_bytes(pptx_bytes).unwrap();
+        assert_eq!(
+            mime, POWER_POINT_MIME_TYPE,
+            "Should detect PPTX from ZIP with ppt/presentation.xml"
+        );
+
+        // Test plain ZIP (no Office markers)
+        let plain_zip_bytes: &[u8] = &[
+            0x50, 0x4b, 0x03, 0x04, // ZIP signature
+            0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x08, 0x00, // file name length (8)
+            0x00, 0x00, // extra field length
+            b't', b'e', b's', b't', b'.', b't', b'x', b't', // "test.txt"
+        ];
+        let mime = detect_mime_type_from_bytes(plain_zip_bytes).unwrap();
+        assert_eq!(mime, "application/zip", "Plain ZIP should remain as application/zip");
     }
 }
