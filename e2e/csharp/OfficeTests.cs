@@ -132,9 +132,9 @@ namespace Kreuzberg.E2E.Office {
         [SkippableFact]
         public void OfficePptLegacy()
         {
-            TestHelpers.SkipIfLegacyOfficeDisabled("doc/simple.ppt");
-            TestHelpers.SkipIfOfficeTestOnWindows("doc/simple.ppt");
-            var documentPath = TestHelpers.EnsureDocument("doc/simple.ppt", true);
+            TestHelpers.SkipIfLegacyOfficeDisabled("ppt/simple.ppt");
+            TestHelpers.SkipIfOfficeTestOnWindows("ppt/simple.ppt");
+            var documentPath = TestHelpers.EnsureDocument("ppt/simple.ppt", true);
             var config = TestHelpers.BuildConfig(null);
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);

@@ -27,9 +27,9 @@ namespace Kreuzberg.E2E.Structured {
         [SkippableFact]
         public void StructuredJsonSimple()
         {
-            TestHelpers.SkipIfLegacyOfficeDisabled("data_formats/simple.json");
-            TestHelpers.SkipIfOfficeTestOnWindows("data_formats/simple.json");
-            var documentPath = TestHelpers.EnsureDocument("data_formats/simple.json", true);
+            TestHelpers.SkipIfLegacyOfficeDisabled("json/simple.json");
+            TestHelpers.SkipIfOfficeTestOnWindows("json/simple.json");
+            var documentPath = TestHelpers.EnsureDocument("json/simple.json", true);
             var config = TestHelpers.BuildConfig(null);
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);
@@ -41,9 +41,9 @@ namespace Kreuzberg.E2E.Structured {
         [SkippableFact]
         public void StructuredYamlSimple()
         {
-            TestHelpers.SkipIfLegacyOfficeDisabled("data_formats/simple.yaml");
-            TestHelpers.SkipIfOfficeTestOnWindows("data_formats/simple.yaml");
-            var documentPath = TestHelpers.EnsureDocument("data_formats/simple.yaml", true);
+            TestHelpers.SkipIfLegacyOfficeDisabled("yaml/simple.yaml");
+            TestHelpers.SkipIfOfficeTestOnWindows("yaml/simple.yaml");
+            var documentPath = TestHelpers.EnsureDocument("yaml/simple.yaml", true);
             var config = TestHelpers.BuildConfig(null);
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);
