@@ -37,7 +37,7 @@ beforeAll(() => {
 	const resolvedPdfPath = realpathSync(samplePdfPath);
 	samplePdfBytes = new Uint8Array(readFileSync(resolvedPdfPath));
 
-	sampleTextPath = getTestDocumentPath("pandoc/simple_metadata.md");
+	sampleTextPath = getTestDocumentPath("markdown/simple_metadata.md");
 	const resolvedTextPath = realpathSync(sampleTextPath);
 	sampleTextBytes = new Uint8Array(readFileSync(resolvedTextPath));
 });

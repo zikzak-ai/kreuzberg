@@ -392,8 +392,8 @@ describe("Metadata Types - Type Compatibility Tests", () => {
 		});
 
 		it("test_extract_html_file_integration", () => {
-			const htmlPath = getTestDocumentPath("web/taylor_swift.html");
-			const buffer = loadTestDocument("web/taylor_swift.html");
+			const htmlPath = getTestDocumentPath("html/taylor_swift.html");
+			const buffer = loadTestDocument("html/taylor_swift.html");
 
 			const result = extractBytesSync(buffer, "text/html", null);
 

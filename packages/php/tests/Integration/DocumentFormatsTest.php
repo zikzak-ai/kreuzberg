@@ -38,7 +38,7 @@ final class DocumentFormatsTest extends TestCase
     public function it_extracts_pdf_documents(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $this->assertNotEmpty($result->content, 'PDF should have extractable content');
         $this->assertStringContainsString('pdf', strtolower($result->mimeType));
@@ -48,7 +48,7 @@ final class DocumentFormatsTest extends TestCase
     #[Test]
     public function it_extracts_markdown_documents(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -80,7 +80,7 @@ final class DocumentFormatsTest extends TestCase
     #[Test]
     public function it_extracts_docx_documents(): void
     {
-        $filePath = $this->testDocumentsPath . '/office/document.docx';
+        $filePath = $this->testDocumentsPath . '/docx/extraction_test.docx';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -139,7 +139,7 @@ final class DocumentFormatsTest extends TestCase
     public static function provideDocumentFiles(): array
     {
         return [
-            'PDF document' => ['pdfs/code_and_formula.pdf', 'pdf'],
+            'PDF document' => ['pdf/code_and_formula.pdf', 'pdf'],
             'Markdown file' => ['extraction_test.md', 'text'],
             'ODT document' => ['extraction_test.odt', 'odt'],
             'DOCX document' => ['extraction_test.docx', 'docx'],
@@ -150,7 +150,7 @@ final class DocumentFormatsTest extends TestCase
     public function it_extracts_metadata_from_pdf(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $metadata = $result->metadata;
 
@@ -165,7 +165,7 @@ final class DocumentFormatsTest extends TestCase
     #[Test]
     public function it_preserves_text_content_accuracy(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -186,7 +186,7 @@ final class DocumentFormatsTest extends TestCase
     #[Test]
     public function it_handles_different_pdf_versions(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');
@@ -208,7 +208,7 @@ final class DocumentFormatsTest extends TestCase
     #[Test]
     public function it_extracts_from_complex_pdf(): void
     {
-        $complexPdfs = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $complexPdfs = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($complexPdfs)) {
             $this->markTestSkipped('No complex PDFs found for testing');
@@ -231,7 +231,7 @@ final class DocumentFormatsTest extends TestCase
     public function it_detects_correct_mime_types(): void
     {
         $files = [
-            'pdfs/code_and_formula.pdf' => 'pdf',
+            'pdf/code_and_formula.pdf' => 'pdf',
             'extraction_test.md' => 'text',
         ];
 

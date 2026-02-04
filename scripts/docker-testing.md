@@ -107,11 +107,11 @@ The script generates a JSON results file at `/tmp/kreuzberg-docker-test-results.
 
 ### Test Documents Required
 - `test_documents/text/contract.txt`
-- `test_documents/pdfs/searchable.pdf`
-- `test_documents/office/document.docx`
-- `test_documents/web/simple_table.html`
+- `test_documents/pdf/a_brief_introduction_to_neural_networks_neuronalenetze_en_zeta2_2col_dkrieselcom.pdf`
+- `test_documents/docx/word_sample.docx`
+- `test_documents/html/simple_table.html`
 - `test_documents/images/ocr_image.jpg`
-- `test_documents/legacy_office/unit_test_lists.doc`
+- `test_documents/doc/unit_test_lists.doc`
 
 ## Troubleshooting
 

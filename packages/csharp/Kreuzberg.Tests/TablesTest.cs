@@ -34,7 +34,7 @@ public class TablesTest
     [Fact]
     public void TableStructureExtraction_FromPdf_ReturnsRowsColumnsAndHeaders()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             PdfOptions = new PdfConfig
@@ -74,7 +74,7 @@ public class TablesTest
     [Fact]
     public void TableMarkdownConversion_ProducesValidMarkdownFormat()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -106,7 +106,7 @@ public class TablesTest
     [Fact]
     public void TableCellContent_PreservesTextAccurately()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -137,7 +137,7 @@ public class TablesTest
     [Fact]
     public void TableBoundaryDetection_CorrectlyIdentifiesTableRegions()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -176,7 +176,7 @@ public class TablesTest
     [Fact]
     public void TableExtraction_FromPdf_HandlesFormatSpecificFeatures()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             PdfOptions = new PdfConfig
@@ -215,7 +215,7 @@ public class TablesTest
     [Fact]
     public void TableExtraction_FromDocx_HandlesOfficeFormatSpecifics()
     {
-        var docxPath = NativeTestHelper.GetDocumentPath("documents/word_sample.docx");
+        var docxPath = NativeTestHelper.GetDocumentPath("docx/word_sample.docx");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(docxPath, config);
@@ -247,7 +247,7 @@ public class TablesTest
     [Fact]
     public void ComplexTableHandling_WithMergedCells_ExtractsCorrectly()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -282,7 +282,7 @@ public class TablesTest
     [Fact]
     public void NestedTableHandling_ExtractsWithoutHierarchyLoss()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -311,7 +311,7 @@ public class TablesTest
     [Fact]
     public void TableConsistency_RepeatedExtraction_ProducesIdenticalResults()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result1 = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -355,7 +355,7 @@ public class TablesTest
     [Fact]
     public void TablePerformance_WithLargeTable_ExtractsEfficiently()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -391,7 +391,7 @@ public class TablesTest
     [Fact]
     public void TablePerformance_WithMultipleTables_MaintainsMemoryEfficiency()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -427,7 +427,7 @@ public class TablesTest
     [Fact]
     public void MarkdownFormatting_FollowsStandardTableFormat()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -472,7 +472,7 @@ public class TablesTest
     [Fact]
     public void MarkdownFormatting_ProperlyEscapesSpecialCharacters()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -519,7 +519,7 @@ public class TablesTest
     [Fact]
     public void TableExtractionConfig_WithVariousOptions_ExtractsSuccessfully()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
 
         var configWithMetadata = new ExtractionConfig
         {
@@ -578,7 +578,7 @@ public class TablesTest
     [Fact]
     public void TableExtraction_FromDocumentWithoutTables_ReturnsEmptyOrNull()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/fake_memo.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/fake_memo.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -605,7 +605,7 @@ public class TablesTest
     [Fact]
     public void TableStructure_HasAllRequiredFields()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -641,7 +641,7 @@ public class TablesTest
     [Fact]
     public void TableDataTypes_AreValidAndWithinBounds()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);

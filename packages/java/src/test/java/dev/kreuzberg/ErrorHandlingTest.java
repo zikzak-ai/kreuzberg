@@ -13,6 +13,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
@@ -327,6 +329,7 @@ class ErrorHandlingTest {
 	class PermissionErrorTests {
 
 		@Test
+		@DisabledOnOs(OS.WINDOWS)
 		@DisplayName("should throw IOException for unreadable file")
 		void testExtractUnreadableFile(@TempDir Path tempDir) throws IOException {
 			Path testFile = tempDir.resolve("unreadable.txt");

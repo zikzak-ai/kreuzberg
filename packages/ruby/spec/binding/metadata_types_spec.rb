@@ -959,7 +959,7 @@ RSpec.describe 'Kreuzberg Metadata Types' do
 
   describe 'Integration Test: Extract actual HTML file' do
     it 'extracts metadata from actual HTML file' do
-      html_file = test_document_path('web/html.html')
+      html_file = test_document_path('html/html.html')
 
       expect(File.exist?(html_file)).to be(true)
 

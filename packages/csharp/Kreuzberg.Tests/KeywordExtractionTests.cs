@@ -31,7 +31,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithYakeAlgorithm_ReturnsContent()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -50,7 +50,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithYakeAndMaxKeywords_RespectsLimit()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var maxKeywords = 10;
         var config = new ExtractionConfig
         {
@@ -69,7 +69,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithYakeAndMinScore_FiltersKeywords()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -88,7 +88,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithYakeParams_AppliesCustomParameters()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var yakeParams = new Dictionary<string, object?>
         {
             { "window_size", 3 }
@@ -115,7 +115,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithRakeAlgorithm_ReturnsContent()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -134,7 +134,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithRakeAndMaxKeywords_RespectsLimit()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var maxKeywords = 15;
         var config = new ExtractionConfig
         {
@@ -153,7 +153,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithRakeParams_AppliesCustomParameters()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var rakeParams = new Dictionary<string, object?>
         {
             { "min_word_length", 2 },
@@ -187,7 +187,7 @@ public class KeywordExtractionTests
         int minNgram,
         int maxNgram)
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -206,7 +206,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithUnigramRange_ExtractsOnlyUnigrams()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -233,7 +233,7 @@ public class KeywordExtractionTests
     [InlineData("es")]
     public void ExtractKeywords_WithLanguageConfiguration_AcceptsLanguageCode(string languageCode)
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -256,7 +256,7 @@ public class KeywordExtractionTests
     [Fact]
     public async Task ExtractKeywordsAsync_WithValidFile_ReturnsContentAsync()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -278,7 +278,7 @@ public class KeywordExtractionTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
 
         // Can throw either OperationCanceledException or TaskCanceledException (which is a subclass)
         var exceptionThrown = false;
@@ -302,7 +302,7 @@ public class KeywordExtractionTests
     public async Task ExtractKeywordsAsync_WithTimeout_ThrowsOperationCanceledExceptionOnTimeout()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(10));
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
 
         // Timeout scenarios may or may not throw depending on timing, so verify the operation either
         // completes or throws an OperationCanceledException (which includes TaskCanceledException)
@@ -328,8 +328,8 @@ public class KeywordExtractionTests
     {
         var files = new[]
         {
-            NativeTestHelper.GetDocumentPath("misc/readme.org"),
-            NativeTestHelper.GetDocumentPath("misc/simple.epub")
+            NativeTestHelper.GetDocumentPath("org/readme.org"),
+            NativeTestHelper.GetDocumentPath("epub/simple.epub")
         };
 
         var config = new ExtractionConfig
@@ -355,7 +355,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithMinScoreZero_IncludesAllKeywords()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -374,7 +374,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithHighMinScore_FiltersMoreAggressively()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var config = new ExtractionConfig
         {
             Keywords = new KeywordConfig
@@ -480,7 +480,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_WithComplexConfiguration_AllPropertiesApplied()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var yakeParams = new Dictionary<string, object?> { { "window_size", 3 } };
 
         var config = new ExtractionConfig
@@ -505,7 +505,7 @@ public class KeywordExtractionTests
     [Fact]
     public void ExtractKeywords_DifferentAlgorithmsProduceDifferentResults()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
 
         var yakeConfig = new ExtractionConfig
         {

@@ -34,7 +34,7 @@ let sampleTxtBytes: Uint8Array;
 
 beforeAll(() => {
 	// Get test documents
-	samplePdfPath = getTestDocumentPath("pdfs/tiny.pdf");
+	samplePdfPath = getTestDocumentPath("pdf/tiny.pdf");
 	sampleDocxPath = getTestDocumentPath("documents/sample.docx");
 	sampleTxtPath = getTestDocumentPath("text/sample.txt");
 

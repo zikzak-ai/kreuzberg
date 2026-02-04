@@ -58,7 +58,7 @@ mod tests {
     async fn test_detect_mime_type_with_valid_file() {
         let server = TestMcpServer;
         let params = DetectMimeTypeParams {
-            path: get_test_path("pdfs_with_tables/tiny.pdf").to_string(),
+            path: get_test_path("pdf/tiny.pdf").to_string(),
             use_content: true,
         };
 
@@ -82,7 +82,7 @@ mod tests {
     async fn test_detect_mime_type_without_content_detection() {
         let server = TestMcpServer;
         let params = DetectMimeTypeParams {
-            path: get_test_path("pdfs_with_tables/tiny.pdf").to_string(),
+            path: get_test_path("pdf/tiny.pdf").to_string(),
             use_content: false,
         };
 
@@ -110,7 +110,7 @@ mod tests {
     async fn test_detect_mime_type_with_extension_only() {
         let server = TestMcpServer;
 
-        let test_file = get_test_path("pdfs_with_tables/tiny.pdf");
+        let test_file = get_test_path("pdf/tiny.pdf");
 
         if std::path::Path::new(&test_file).exists() {
             let params = DetectMimeTypeParams {
@@ -134,7 +134,7 @@ mod tests {
     async fn test_detect_mime_type_with_content_analysis() {
         let server = TestMcpServer;
 
-        let test_file = get_test_path("pdfs_with_tables/tiny.pdf");
+        let test_file = get_test_path("pdf/tiny.pdf");
 
         if std::path::Path::new(&test_file).exists() {
             let params = DetectMimeTypeParams {

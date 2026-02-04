@@ -104,7 +104,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractDocxFileSync_WithValidDocx_ReturnsContent()
     {
-        var docPath = NativeTestHelper.GetDocumentPath("office/document.docx");
+        var docPath = NativeTestHelper.GetDocumentPath("docx/extraction_test.docx");
         var result = KreuzbergClient.ExtractFileSync(docPath);
 
         Assert.NotNull(result);
@@ -114,7 +114,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractExcelFileSync_WithValidXlsx_ReturnsContent()
     {
-        var excelPath = NativeTestHelper.GetDocumentPath("office/excel.xlsx");
+        var excelPath = NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx");
         var result = KreuzbergClient.ExtractFileSync(excelPath);
 
         Assert.NotNull(result);
@@ -124,7 +124,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractExcelFileSync_WithExcel_ContainsExcelMetadata()
     {
-        var excelPath = NativeTestHelper.GetDocumentPath("office/excel.xlsx");
+        var excelPath = NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx");
         var result = KreuzbergClient.ExtractFileSync(excelPath);
 
         Assert.NotNull(result);
@@ -208,7 +208,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractMarkdownFileSync_WithValidMarkdown_ReturnsStructuredContent()
     {
-        var mdPath = NativeTestHelper.GetDocumentPath("pandoc/simple_metadata.md");
+        var mdPath = NativeTestHelper.GetDocumentPath("markdown/simple_metadata.md");
         var result = KreuzbergClient.ExtractFileSync(mdPath);
 
         Assert.NotNull(result);
@@ -243,7 +243,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractJsonFileSync_WithValidJson_ReturnsContent()
     {
-        var jsonPath = NativeTestHelper.GetDocumentPath("data_formats/simple.json");
+        var jsonPath = NativeTestHelper.GetDocumentPath("json/simple.json");
         var result = KreuzbergClient.ExtractFileSync(jsonPath);
 
         Assert.NotNull(result);
@@ -253,7 +253,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractYamlFileSync_WithValidYaml_ReturnsContent()
     {
-        var yamlPath = NativeTestHelper.GetDocumentPath("data_formats/simple.yaml");
+        var yamlPath = NativeTestHelper.GetDocumentPath("yaml/simple.yaml");
         var result = KreuzbergClient.ExtractFileSync(yamlPath);
 
         Assert.NotNull(result);
@@ -287,8 +287,8 @@ public class ExtractionTests
 
     [Theory]
     [InlineData("pdf/simple.pdf", "application/pdf")]
-    [InlineData("office/document.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")]
-    [InlineData("office/excel.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    [InlineData("docx/extraction_test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")]
+    [InlineData("xlsx/excel_multi_sheet.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
     public void DetectMimeTypeFromPath_WithKnownTypes_ReturnsCorrectMime(string relativePath, string expectedMime)
     {
         var path = NativeTestHelper.GetDocumentPath(relativePath);
@@ -398,7 +398,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractFileSync_WithTableContent_ExtractsTableStructure()
     {
-        var tablePath = NativeTestHelper.GetDocumentPath("tables/simple_table.png");
+        var tablePath = NativeTestHelper.GetDocumentPath("images/simple_table.png");
         // Note: Tesseract OCR backend needs to be registered before use
         // This test extracts tables without requiring a specific OCR backend
         var config = new ExtractionConfig();
@@ -412,7 +412,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractFileSync_WithComplexTable_PreservesStructure()
     {
-        var tablePath = NativeTestHelper.GetDocumentPath("tables/complex_document.png");
+        var tablePath = NativeTestHelper.GetDocumentPath("images/complex_document.png");
         var result = KreuzbergClient.ExtractFileSync(tablePath);
 
         Assert.NotNull(result);
@@ -484,7 +484,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractExcelFileSync_ContainsSheetMetadata()
     {
-        var excelPath = NativeTestHelper.GetDocumentPath("office/excel.xlsx");
+        var excelPath = NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx");
         var result = KreuzbergClient.ExtractFileSync(excelPath);
 
         Assert.NotNull(result);
@@ -500,7 +500,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractDocxFileSync_ContainsDocumentMetadata()
     {
-        var docPath = NativeTestHelper.GetDocumentPath("office/document.docx");
+        var docPath = NativeTestHelper.GetDocumentPath("docx/extraction_test.docx");
         var result = KreuzbergClient.ExtractFileSync(docPath);
 
         Assert.NotNull(result);
@@ -679,7 +679,7 @@ public class ExtractionTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(paths);
@@ -707,7 +707,7 @@ public class ExtractionTests
     public void BatchExtractBytesSync_WithMultipleItems_ReturnsAllResults()
     {
         var pdfPath = NativeTestHelper.GetDocumentPath("pdf/simple.pdf");
-        var docPath = NativeTestHelper.GetDocumentPath("office/document.docx");
+        var docPath = NativeTestHelper.GetDocumentPath("docx/extraction_test.docx");
 
         var items = new[]
         {
@@ -737,7 +737,7 @@ public class ExtractionTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var config = new ExtractionConfig
@@ -840,7 +840,7 @@ public class ExtractionTests
     [Fact]
     public void ExtractEpubFileSync_WithValidEpub_ReturnsContent()
     {
-        var epubPath = NativeTestHelper.GetDocumentPath("misc/simple.epub");
+        var epubPath = NativeTestHelper.GetDocumentPath("epub/simple.epub");
         var result = KreuzbergClient.ExtractFileSync(epubPath);
 
         Assert.NotNull(result);
@@ -938,7 +938,7 @@ public class ExtractionTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var results = await KreuzbergClient.BatchExtractFilesAsync(paths);

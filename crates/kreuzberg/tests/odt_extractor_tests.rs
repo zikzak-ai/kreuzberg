@@ -51,7 +51,7 @@ async fn test_odt_metadata_extraction() {
         .expect("Operation failed")
         .parent()
         .expect("Operation failed");
-    let test_file = workspace_root.join("test_documents/metadata_test.odt");
+    let test_file = workspace_root.join("test_documents/odt/metadata_test.odt");
 
     if !ensure_test_file_exists(&test_file) {
         println!("Skipping metadata test: metadata_test.odt not found");
@@ -618,7 +618,7 @@ async fn test_odt_comprehensive_table_extraction() {
         .expect("Operation failed")
         .parent()
         .expect("Operation failed")
-        .join("test_documents/extraction_test.odt");
+        .join("test_documents/odt/extraction_test.odt");
 
     if !test_file.exists() {
         println!("⚠️  Test document not found at {:?}, skipping", test_file);

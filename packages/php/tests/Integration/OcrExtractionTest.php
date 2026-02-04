@@ -227,7 +227,7 @@ final class OcrExtractionTest extends TestCase
     #[Test]
     public function it_performs_ocr_on_pdf_with_fallback(): void
     {
-        $pdfPath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $pdfPath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($pdfPath)) {
             $this->markTestSkipped("Test PDF not found: {$pdfPath}");
@@ -252,7 +252,7 @@ final class OcrExtractionTest extends TestCase
     #[Test]
     public function it_extracts_images_from_documents_with_ocr(): void
     {
-        $pdfPath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $pdfPath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($pdfPath)) {
             $this->markTestSkipped("Test PDF not found: {$pdfPath}");

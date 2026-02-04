@@ -36,11 +36,11 @@ use kreuzberg::extract_file_sync;
 /// - MIME type is correctly detected
 #[test]
 fn test_pdf_extraction_basic() {
-    if skip_if_missing("pdfs_with_tables/tiny.pdf") {
+    if skip_if_missing("pdf/tiny.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let file_path = get_test_file_path("pdf/tiny.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract PDF successfully");
@@ -59,11 +59,11 @@ fn test_pdf_extraction_basic() {
 /// with real-world document sizes.
 #[test]
 fn test_pdf_extraction_medium() {
-    if skip_if_missing("pdfs_with_tables/medium.pdf") {
+    if skip_if_missing("pdf/medium.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs_with_tables/medium.pdf");
+    let file_path = get_test_file_path("pdf/medium.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract medium PDF successfully");
@@ -82,11 +82,11 @@ fn test_pdf_extraction_medium() {
 /// so we just verify extraction completes without error.
 #[test]
 fn test_pdf_extraction_rotated_pages() {
-    if skip_if_missing("pdfs/ocr_test_rotated_90.pdf") {
+    if skip_if_missing("pdf/ocr_test_rotated_90.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs/ocr_test_rotated_90.pdf");
+    let file_path = get_test_file_path("pdf/ocr_test_rotated_90.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract rotated PDF successfully");
@@ -100,11 +100,11 @@ fn test_pdf_extraction_rotated_pages() {
 /// mathematical formulas, and special formatting.
 #[test]
 fn test_pdf_extraction_code_and_formulas() {
-    if skip_if_missing("pdfs/code_and_formula.pdf") {
+    if skip_if_missing("pdf/code_and_formula.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs/code_and_formula.pdf");
+    let file_path = get_test_file_path("pdf/code_and_formula.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract PDF with code and formulas");
@@ -119,11 +119,11 @@ fn test_pdf_extraction_code_and_formulas() {
 /// This verifies extraction works with RTL content.
 #[test]
 fn test_pdf_extraction_right_to_left() {
-    if skip_if_missing("pdfs/right_to_left_01.pdf") {
+    if skip_if_missing("pdf/right_to_left_01.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs/right_to_left_01.pdf");
+    let file_path = get_test_file_path("pdf/right_to_left_01.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract RTL PDF successfully");
@@ -137,11 +137,11 @@ fn test_pdf_extraction_right_to_left() {
 /// extracted correctly, which is independent of linking strategy.
 #[test]
 fn test_pdf_metadata_extraction() {
-    if skip_if_missing("pdfs_with_tables/tiny.pdf") {
+    if skip_if_missing("pdf/tiny.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let file_path = get_test_file_path("pdf/tiny.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract PDF metadata");
@@ -156,11 +156,11 @@ fn test_pdf_metadata_extraction() {
 /// important for in-memory processing.
 #[test]
 fn test_pdf_extraction_from_bytes() {
-    if skip_if_missing("pdfs_with_tables/tiny.pdf") {
+    if skip_if_missing("pdf/tiny.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let file_path = get_test_file_path("pdf/tiny.pdf");
     let pdf_bytes = std::fs::read(&file_path).expect("Should read PDF file");
 
     let config = ExtractionConfig::default();
@@ -224,13 +224,13 @@ fn test_bundled_pdfium_caching() {
 #[test]
 #[cfg(feature = "bundled-pdfium")]
 fn test_bundled_pdfium_with_pdf_extraction() {
-    if skip_if_missing("pdfs_with_tables/tiny.pdf") {
+    if skip_if_missing("pdf/tiny.pdf") {
         return;
     }
 
     let _lib_path = kreuzberg::pdf::extract_bundled_pdfium().expect("Should extract bundled PDFium library");
 
-    let file_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let file_path = get_test_file_path("pdf/tiny.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract PDF with bundled PDFium");
@@ -244,11 +244,11 @@ fn test_bundled_pdfium_with_pdf_extraction() {
 /// Verifies that custom PDF extraction settings work correctly.
 #[test]
 fn test_pdf_extraction_with_config() {
-    if skip_if_missing("pdfs_with_tables/tiny.pdf") {
+    if skip_if_missing("pdf/tiny.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let file_path = get_test_file_path("pdf/tiny.pdf");
 
     let config = ExtractionConfig::default();
 
@@ -266,11 +266,11 @@ fn test_pdf_extraction_with_config() {
 /// handles these gracefully.
 #[test]
 fn test_pdf_extraction_edge_cases() {
-    if skip_if_missing("pdfs_with_tables/tiny.pdf") {
+    if skip_if_missing("pdf/tiny.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let file_path = get_test_file_path("pdf/tiny.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config);
@@ -284,14 +284,11 @@ fn test_pdf_extraction_edge_cases() {
 #[test]
 #[cfg(feature = "tokio-runtime")]
 fn test_pdf_batch_extraction() {
-    if skip_if_missing("pdfs_with_tables/tiny.pdf") || skip_if_missing("pdfs_with_tables/medium.pdf") {
+    if skip_if_missing("pdf/tiny.pdf") || skip_if_missing("pdf/medium.pdf") {
         return;
     }
 
-    let paths = vec![
-        get_test_file_path("pdfs_with_tables/tiny.pdf"),
-        get_test_file_path("pdfs_with_tables/medium.pdf"),
-    ];
+    let paths = vec![get_test_file_path("pdf/tiny.pdf"), get_test_file_path("pdf/medium.pdf")];
 
     let config = ExtractionConfig::default();
 
@@ -311,11 +308,11 @@ fn test_pdf_batch_extraction() {
 /// characters correctly.
 #[test]
 fn test_pdf_unicode_content() {
-    if skip_if_missing("pdfs/right_to_left_01.pdf") {
+    if skip_if_missing("pdf/right_to_left_01.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs/right_to_left_01.pdf");
+    let file_path = get_test_file_path("pdf/right_to_left_01.pdf");
     let config = ExtractionConfig::default();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract PDF with Unicode content");

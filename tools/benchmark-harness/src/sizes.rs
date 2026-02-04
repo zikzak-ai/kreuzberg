@@ -45,36 +45,12 @@ const FRAMEWORKS: &[(&str, &str, &str)] = &[
         "gem_package",
         "Ruby gem native extension (batch)",
     ),
-    (
-        "kreuzberg-go-batch",
-        "binary_size",
-        "Go binary with CGO (batch)",
-    ),
-    (
-        "kreuzberg-java-batch",
-        "jar_size",
-        "Java JAR with JNI (batch)",
-    ),
-    (
-        "kreuzberg-elixir-batch",
-        "hex_package",
-        "Elixir hex package (batch)",
-    ),
-    (
-        "kreuzberg-php-batch",
-        "php_extension",
-        "PHP extension (batch)",
-    ),
-    (
-        "kreuzberg-python-batch",
-        "pip_package",
-        "Python wheel (batch)",
-    ),
-    (
-        "kreuzberg-node-batch",
-        "npm_package",
-        "Node.js addon (batch)",
-    ),
+    ("kreuzberg-go-batch", "binary_size", "Go binary with CGO (batch)"),
+    ("kreuzberg-java-batch", "jar_size", "Java JAR with JNI (batch)"),
+    ("kreuzberg-elixir-batch", "hex_package", "Elixir hex package (batch)"),
+    ("kreuzberg-php-batch", "php_extension", "PHP extension (batch)"),
+    ("kreuzberg-python-batch", "pip_package", "Python wheel (batch)"),
+    ("kreuzberg-node-batch", "npm_package", "Node.js addon (batch)"),
     ("kreuzberg-wasm-batch", "wasm_bundle", "WASM binary (batch)"),
     // Third-party frameworks
     ("docling", "pip_package", "IBM Docling document processing"),
@@ -148,10 +124,7 @@ fn extract_package_name(framework: &str) -> &str {
 
 /// Measure Python package size using pip show
 fn measure_pip_package(package: &str) -> Result<Option<u64>> {
-    let output = Command::new("pip")
-        .args(["show", "-f", package])
-        .output()
-        .ok();
+    let output = Command::new("pip").args(["show", "-f", package]).output().ok();
 
     if let Some(output) = output {
         if output.status.success() {
@@ -186,8 +159,7 @@ fn measure_npm_package(package: &str) -> Result<Option<u64>> {
             let stdout = String::from_utf8_lossy(&output.stdout);
             // Parse JSON output for size
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(&stdout) {
-                if let Some(size) = json.get(0).and_then(|v| v.get("size")).and_then(|v| v.as_u64())
-                {
+                if let Some(size) = json.get(0).and_then(|v| v.get("size")).and_then(|v| v.as_u64()) {
                     return Ok(Some(size));
                 }
             }

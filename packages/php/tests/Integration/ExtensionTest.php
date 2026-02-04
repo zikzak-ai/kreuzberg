@@ -151,7 +151,7 @@ final class ExtensionTest extends TestCase
 
         // The extension may override reflection metadata, so we check by accessing an actual instance
         $testDocumentsPath = dirname(__DIR__, 4) . DIRECTORY_SEPARATOR . 'test_documents';
-        $pdfPath = $testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $pdfPath = $testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($pdfPath)) {
             $this->markTestSkipped("Test file not found: {$pdfPath}");

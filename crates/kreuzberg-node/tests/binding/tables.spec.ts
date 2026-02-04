@@ -29,9 +29,9 @@ let tinyPdfBytes: Uint8Array;
 
 beforeAll(() => {
 	// Use PDFs with tables for testing
-	tinyPdfPath = getTestDocumentPath("pdfs_with_tables/tiny.pdf");
-	mediumPdfPath = getTestDocumentPath("pdfs_with_tables/medium.pdf");
-	largePdfPath = getTestDocumentPath("pdfs_with_tables/large.pdf");
+	tinyPdfPath = getTestDocumentPath("pdf/tiny.pdf");
+	mediumPdfPath = getTestDocumentPath("pdf/medium.pdf");
+	largePdfPath = getTestDocumentPath("pdf/large.pdf");
 
 	try {
 		// Resolve symlinks to get the actual file path (important for Windows compatibility)

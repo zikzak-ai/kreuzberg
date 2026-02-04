@@ -59,7 +59,7 @@ final class PagesExtractionTest extends TestCase
     #[Test]
     public function it_extracts_pages_from_document(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -82,7 +82,7 @@ final class PagesExtractionTest extends TestCase
     #[Test]
     public function it_provides_page_structure(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -119,7 +119,7 @@ final class PagesExtractionTest extends TestCase
     #[Test]
     public function it_inserts_page_markers_in_content(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -147,7 +147,7 @@ final class PagesExtractionTest extends TestCase
     #[Test]
     public function it_applies_custom_page_marker_format(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -294,7 +294,7 @@ final class PagesExtractionTest extends TestCase
     #[Test]
     public function it_extracts_multiple_pages(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -322,7 +322,7 @@ final class PagesExtractionTest extends TestCase
     #[Test]
     public function it_produces_consistent_page_results(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -353,7 +353,7 @@ final class PagesExtractionTest extends TestCase
     #[Test]
     public function it_extracts_pages_without_markers(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");

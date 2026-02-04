@@ -437,7 +437,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_ReturnsMetadata_WithHtmlMetadataObject()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -455,7 +455,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_KeywordsAsList_NotString()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -473,7 +473,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_OpenGraphAsDictionary_StringToString()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -491,7 +491,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_TwitterCardAsDictionary_StringToString()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -509,7 +509,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_HeadersAsList_OfHeaderMetadata()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -534,7 +534,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_LinksAsList_OfLinkMetadata()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -560,7 +560,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_ImagesAsList_OfHtmlImageMetadata()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -585,7 +585,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_StructuredDataAsList_OfStructuredData()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -767,7 +767,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_FullMetadataExtraction_VerifiesAllFields()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -805,7 +805,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_SerializeResult_AndDeserialize_MaintainsMetadata()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -1017,7 +1017,7 @@ public class MetadataTypesTests
     [Fact]
     public async Task ExtractHtml_AsyncExtraction_CompletesSuccessfully()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }
@@ -1093,7 +1093,7 @@ public class MetadataTypesTests
     [Fact]
     public void ExtractHtml_ConcurrentExtraction_ThreadSafe()
     {
-        var htmlPath = NativeTestHelper.GetDocumentPath("web/html.html");
+        var htmlPath = NativeTestHelper.GetDocumentPath("html/html.html");
         var config = new ExtractionConfig
         {
             HtmlOptions = new HtmlConversionOptions { ExtractMetadata = true }

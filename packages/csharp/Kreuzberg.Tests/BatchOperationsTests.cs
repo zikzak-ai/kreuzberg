@@ -35,7 +35,7 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(files);
@@ -51,8 +51,8 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx"),
-            NativeTestHelper.GetDocumentPath("office/excel.xlsx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx"),
+            NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(files);
@@ -67,7 +67,7 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(files);
@@ -81,7 +81,7 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf")
         };
 
         var config = new ExtractionConfig
@@ -104,7 +104,7 @@ public class BatchOperationsTests
     {
         var files = new[]
         {
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf")
         };
 
         var config = new ExtractionConfig
@@ -129,7 +129,7 @@ public class BatchOperationsTests
     {
         var files = new[]
         {
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf")
         };
 
         var config = new ExtractionConfig
@@ -151,7 +151,7 @@ public class BatchOperationsTests
     public void BatchExtractBytes_WithMultipleDocuments_ReturnsResultsForEachDocument()
     {
         var file1Path = NativeTestHelper.GetDocumentPath("pdf/simple.pdf");
-        var file2Path = NativeTestHelper.GetDocumentPath("office/document.docx");
+        var file2Path = NativeTestHelper.GetDocumentPath("docx/extraction_test.docx");
 
         var bytes1 = File.ReadAllBytes(file1Path);
         var bytes2 = File.ReadAllBytes(file2Path);
@@ -222,7 +222,7 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var results = await KreuzbergClient.BatchExtractFilesAsync(files);
@@ -422,7 +422,7 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(files);
@@ -439,7 +439,7 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(files);
@@ -458,8 +458,8 @@ public class BatchOperationsTests
         var files = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx"),
-            NativeTestHelper.GetDocumentPath("office/excel.xlsx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx"),
+            NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(files);

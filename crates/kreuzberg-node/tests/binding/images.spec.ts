@@ -26,7 +26,7 @@ let pptxPath: string;
 let docxPath: string;
 
 beforeAll(() => {
-	samplePdfPath = getTestDocumentPath("pdfs/embedded_images_tables.pdf");
+	samplePdfPath = getTestDocumentPath("pdf/embedded_images_tables.pdf");
 	// Resolve symlinks to get the actual file path (important for Windows compatibility)
 	samplePdfBytes = new Uint8Array(readFileSync(realpathSync(samplePdfPath)));
 

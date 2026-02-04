@@ -50,4 +50,7 @@ pub use types::{BenchmarkResult, DiskSizeInfo, FrameworkCapabilities, PdfMetadat
 
 // Fixture generation and framework size measurement
 pub use generate::{GenerateConfig, GenerateStats, generate_fixtures};
-pub use sizes::{FrameworkSize, FrameworkSizes, load_framework_sizes as load_sizes_json, measure_framework_sizes, save_framework_sizes};
+pub use sizes::{
+    FrameworkSize, FrameworkSizes, load_framework_sizes as load_sizes_json, measure_framework_sizes,
+    save_framework_sizes,
+};

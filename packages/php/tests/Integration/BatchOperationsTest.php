@@ -58,11 +58,11 @@ final class BatchOperationsTest extends TestCase
     public function it_extracts_multiple_files_in_batch(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         // Add PDF if available
-        $pdfPath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $pdfPath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (file_exists($pdfPath)) {
             $files[] = $pdfPath;
         }
@@ -92,11 +92,11 @@ final class BatchOperationsTest extends TestCase
     public function it_maintains_batch_result_ordering(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         // Add additional files if available
-        $pdfPath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $pdfPath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (file_exists($pdfPath)) {
             $files[] = $pdfPath;
         }
@@ -121,10 +121,10 @@ final class BatchOperationsTest extends TestCase
     public function it_applies_config_to_batch_extraction(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
-        $pdfPath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $pdfPath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (file_exists($pdfPath)) {
             $files[] = $pdfPath;
         }
@@ -157,7 +157,7 @@ final class BatchOperationsTest extends TestCase
     public function it_extracts_batch_files_with_mime_types(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -181,7 +181,7 @@ final class BatchOperationsTest extends TestCase
     public function it_extracts_multiple_byte_arrays_in_batch(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -216,7 +216,7 @@ final class BatchOperationsTest extends TestCase
     public function it_produces_consistent_batch_results(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -239,7 +239,7 @@ final class BatchOperationsTest extends TestCase
     public function it_extracts_single_file_batch(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -275,7 +275,7 @@ final class BatchOperationsTest extends TestCase
     public function it_includes_metadata_in_batch_results(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -300,7 +300,7 @@ final class BatchOperationsTest extends TestCase
     #[Test]
     public function it_handles_large_batch_extraction(): void
     {
-        $file = $this->testDocumentsPath . '/extraction_test.md';
+        $file = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($file)) {
             $this->markTestSkipped("Test file not found: {$file}");
@@ -326,10 +326,10 @@ final class BatchOperationsTest extends TestCase
     public function it_applies_configuration_to_all_batch_files(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
-        $pdfPath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $pdfPath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (file_exists($pdfPath)) {
             $files[] = $pdfPath;
         }
@@ -363,7 +363,7 @@ final class BatchOperationsTest extends TestCase
     public function it_returns_consistent_result_types_in_batch(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {

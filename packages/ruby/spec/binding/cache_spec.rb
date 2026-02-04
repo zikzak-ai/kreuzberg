@@ -4,10 +4,10 @@ require 'spec_helper'
 
 RSpec.describe 'Cache Management' do
   let(:test_pdf) do
-    test_document_path('pdfs/5_level_paging_and_5_level_ept_intel_revision_1_1_may_2017.pdf')
+    test_document_path('pdf/5_level_paging_and_5_level_ept_intel_revision_1_1_may_2017.pdf')
   end
   let(:test_text) { test_document_path('text/contract_test.txt') }
-  let(:test_docx) { test_document_path('documents/contract.docx') }
+  let(:test_docx) { test_document_path('docx/extraction_test.docx') }
 
   before do
     Kreuzberg.clear_cache

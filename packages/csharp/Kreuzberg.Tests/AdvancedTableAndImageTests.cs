@@ -31,7 +31,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractTables_FromPdfWithTables_ReturnsTableStructure()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig();
 
         var result = KreuzbergClient.ExtractFileSync(pdfPath, config);
@@ -43,7 +43,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void Table_HasCellsProperty()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var result = KreuzbergClient.ExtractFileSync(pdfPath);
 
         if (result.Tables != null && result.Tables.Count > 0)
@@ -57,7 +57,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void Table_EachRowHasCells()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var result = KreuzbergClient.ExtractFileSync(pdfPath);
 
         if (result.Tables != null && result.Tables.Count > 0)
@@ -74,7 +74,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void Table_HasMarkdownRepresentation()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var result = KreuzbergClient.ExtractFileSync(pdfPath);
 
         if (result.Tables != null && result.Tables.Count > 0)
@@ -92,7 +92,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void Table_HasPageNumber()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var result = KreuzbergClient.ExtractFileSync(pdfPath);
 
         if (result.Tables != null && result.Tables.Count > 0)
@@ -105,7 +105,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void Table_MarkdownFormattingIsValid()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var result = KreuzbergClient.ExtractFileSync(pdfPath);
 
         if (result.Tables != null && result.Tables.Count > 0)
@@ -127,7 +127,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractTables_WithConfiguration_StillExtractsTables()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             PdfOptions = new PdfConfig
@@ -145,7 +145,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public async Task ExtractTablesAsync_WithAsyncOperation_ReturnsContent()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
 
         var result = await KreuzbergClient.ExtractFileAsync(pdfPath);
 
@@ -158,7 +158,7 @@ public class AdvancedTableAndImageTests
     {
         var files = new[]
         {
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf")
         };
 
         var results = KreuzbergClient.BatchExtractFilesSync(files);
@@ -170,7 +170,7 @@ public class AdvancedTableAndImageTests
     public void Table_EmptyTableIsHandledCorrectly()
     {
         // Test with PDF that might have empty tables
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var result = KreuzbergClient.ExtractFileSync(pdfPath);
 
         if (result.Tables != null)
@@ -190,7 +190,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractImages_FromPdfWithImages_ReturnsImageList()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -209,7 +209,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractedImage_HasFormat()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -235,7 +235,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractedImage_HasDimensions()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -258,7 +258,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractedImage_DimensionsArePositive()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -283,7 +283,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractedImage_HasData()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -306,7 +306,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractImages_WithDifferentDpi_ReturnsImages()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
 
         // Low DPI
         var lowDpiConfig = new ExtractionConfig
@@ -339,7 +339,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractImages_WithoutConfiguration_DoesNotExtractImages()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -357,7 +357,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public async Task ExtractImagesAsync_WithAsyncOperation_ReturnsContent()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -377,7 +377,7 @@ public class AdvancedTableAndImageTests
     {
         var files = new[]
         {
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf")
         };
 
         var config = new ExtractionConfig
@@ -397,7 +397,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractedImage_PageNumberIsValid()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -423,7 +423,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractPages_WithTableExtraction_BothWorkTogether()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Pages = new PageConfig
@@ -441,7 +441,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void PageContent_MayContainTables()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Pages = new PageConfig
@@ -462,7 +462,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void PageContent_MayContainImages()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Pages = new PageConfig
@@ -492,7 +492,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractedImage_FormatIsCaseInsensitive()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -515,7 +515,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractedImage_AspectRatioIsValid()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -546,7 +546,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractImages_WithInvalidDpi_StillExtractsWithDefaults()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -565,7 +565,7 @@ public class AdvancedTableAndImageTests
     [Fact]
     public void ExtractTables_FromDocumentWithoutTables_ReturnsEmptyList()
     {
-        var textPath = NativeTestHelper.GetDocumentPath("misc/readme.org");
+        var textPath = NativeTestHelper.GetDocumentPath("org/readme.org");
         var result = KreuzbergClient.ExtractFileSync(textPath);
 
         Assert.NotNull(result);

@@ -145,7 +145,7 @@ examples/wasm-deno/
 You can copy test documents:
 
 ```bash
-cp /path/to/test_documents/pdfs/fake_memo.pdf fixtures/sample.pdf
+cp /path/to/test_documents/pdf/fake_memo.pdf fixtures/sample.pdf
 ```
 
 ## API Reference

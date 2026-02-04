@@ -57,7 +57,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_extracts_images_from_pdf_with_metadata(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');
@@ -133,7 +133,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_extracts_images_from_docx_documents(): void
     {
-        $filePath = $this->testDocumentsPath . '/office/document.docx';
+        $filePath = $this->testDocumentsPath . '/docx/extraction_test.docx';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -177,7 +177,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_correctly_detects_multiple_image_formats(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');
@@ -241,7 +241,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_includes_image_page_numbers_and_dimensions(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -308,7 +308,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_handles_images_with_missing_metadata_gracefully(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');
@@ -369,7 +369,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_extracts_images_in_batch_from_multiple_documents(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (count($pdfFiles) < 2) {
             $this->markTestSkipped('Need at least 2 PDF files for batch test');
@@ -434,7 +434,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_extracts_images_with_image_extraction_config(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');
@@ -469,7 +469,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_preserves_image_data_integrity(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');
@@ -526,7 +526,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_returns_empty_array_for_documents_without_images(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -566,7 +566,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_skips_image_extraction_when_disabled(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');
@@ -602,7 +602,7 @@ final class ImageExtractionTest extends TestCase
     #[Test]
     public function it_properly_indexes_multiple_images_in_document(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files found for testing');

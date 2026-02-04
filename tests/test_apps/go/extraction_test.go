@@ -559,9 +559,9 @@ func TestFileTypeCoveragePDFs(t *testing.T) {
 		name string
 		path string
 	}{
-		{"Tiny PDF", "pdfs_with_tables/tiny.pdf"},
-		{"Medium PDF", "pdfs_with_tables/medium.pdf"},
-		{"Large PDF", "pdfs_with_tables/large.pdf"},
+		{"Tiny PDF", "pdf/tiny.pdf"},
+		{"Medium PDF", "pdf/medium.pdf"},
+		{"Large PDF", "pdf/large.pdf"},
 	}
 
 	for _, tt := range tests {

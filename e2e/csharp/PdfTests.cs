@@ -164,9 +164,9 @@ namespace Kreuzberg.E2E.Pdf {
         [SkippableFact]
         public void PdfTablesLarge()
         {
-            TestHelpers.SkipIfLegacyOfficeDisabled("pdfs_with_tables/large.pdf");
-            TestHelpers.SkipIfOfficeTestOnWindows("pdfs_with_tables/large.pdf");
-            var documentPath = TestHelpers.EnsureDocument("pdfs_with_tables/large.pdf", true);
+            TestHelpers.SkipIfLegacyOfficeDisabled("pdf/large.pdf");
+            TestHelpers.SkipIfOfficeTestOnWindows("pdf/large.pdf");
+            var documentPath = TestHelpers.EnsureDocument("pdf/large.pdf", true);
             var config = TestHelpers.BuildConfig(null);
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);
@@ -178,9 +178,9 @@ namespace Kreuzberg.E2E.Pdf {
         [SkippableFact]
         public void PdfTablesMedium()
         {
-            TestHelpers.SkipIfLegacyOfficeDisabled("pdfs_with_tables/medium.pdf");
-            TestHelpers.SkipIfOfficeTestOnWindows("pdfs_with_tables/medium.pdf");
-            var documentPath = TestHelpers.EnsureDocument("pdfs_with_tables/medium.pdf", true);
+            TestHelpers.SkipIfLegacyOfficeDisabled("pdf/medium.pdf");
+            TestHelpers.SkipIfOfficeTestOnWindows("pdf/medium.pdf");
+            var documentPath = TestHelpers.EnsureDocument("pdf/medium.pdf", true);
             var config = TestHelpers.BuildConfig(null);
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);
@@ -192,9 +192,9 @@ namespace Kreuzberg.E2E.Pdf {
         [SkippableFact]
         public void PdfTablesSmall()
         {
-            TestHelpers.SkipIfLegacyOfficeDisabled("pdfs_with_tables/tiny.pdf");
-            TestHelpers.SkipIfOfficeTestOnWindows("pdfs_with_tables/tiny.pdf");
-            var documentPath = TestHelpers.EnsureDocument("pdfs_with_tables/tiny.pdf", true);
+            TestHelpers.SkipIfLegacyOfficeDisabled("pdf/tiny.pdf");
+            TestHelpers.SkipIfOfficeTestOnWindows("pdf/tiny.pdf");
+            var documentPath = TestHelpers.EnsureDocument("pdf/tiny.pdf", true);
             var config = TestHelpers.BuildConfig(null);
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);

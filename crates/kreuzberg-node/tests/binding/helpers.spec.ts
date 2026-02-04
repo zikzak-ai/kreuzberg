@@ -168,7 +168,7 @@ describe("Helper Functions and Edge Cases", () => {
 
 	describe("Edge cases", () => {
 		it("should handle very small files", () => {
-			const textPath = getTestDocumentPath("pandoc/simple_metadata.md");
+			const textPath = getTestDocumentPath("markdown/simple_metadata.md");
 			const result = extractFileSync(textPath, null, null);
 
 			expect(result.content).toBeTruthy();

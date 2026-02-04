@@ -81,7 +81,7 @@ public class AsyncOperationsTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var tasks = paths.Select(p => KreuzbergClient.ExtractFileAsync(p)).ToList();
@@ -189,8 +189,8 @@ public class AsyncOperationsTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx"),
-            NativeTestHelper.GetDocumentPath("office/excel.xlsx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx"),
+            NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx")
         };
 
         var tasks = paths.Select(p => KreuzbergClient.ExtractFileAsync(p)).ToList();
@@ -205,7 +205,7 @@ public class AsyncOperationsTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var tasks = paths.Select(p => KreuzbergClient.ExtractFileAsync(p)).ToList();
@@ -294,7 +294,7 @@ public class AsyncOperationsTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var results = new List<ExtractionResult>();
@@ -397,7 +397,7 @@ public class AsyncOperationsTests
             {
                 var extraction = t.Result;
                 return await KreuzbergClient.ExtractFileAsync(
-                    NativeTestHelper.GetDocumentPath("office/document.docx")
+                    NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
                 );
             })
             .Unwrap();
@@ -441,7 +441,7 @@ public class AsyncOperationsTests
         );
 
         var pdf2 = await KreuzbergClient.ExtractFileAsync(
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         );
 
         Assert.NotEqual(pdf1.Content, pdf2.Content);
@@ -523,8 +523,8 @@ public class AsyncOperationsTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx"),
-            NativeTestHelper.GetDocumentPath("office/excel.xlsx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx"),
+            NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx")
         };
 
         // Run sequential first to avoid cold start affecting comparison

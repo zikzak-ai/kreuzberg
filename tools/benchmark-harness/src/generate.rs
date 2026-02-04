@@ -49,9 +49,7 @@ fn get_ground_truth_source(file_type: &str) -> &'static str {
         "docx" | "doc" => "python-docx",
         "pptx" | "ppt" => "python-pptx",
         "xlsx" | "xls" | "xlsm" => "openpyxl",
-        "csv" | "html" | "htm" | "json" | "xml" | "yaml" | "yml" | "txt" | "md" | "markdown" => {
-            "raw_source"
-        }
+        "csv" | "html" | "htm" | "json" | "xml" | "yaml" | "yml" | "txt" | "md" | "markdown" => "raw_source",
         _ => "manual",
     }
 }
@@ -120,11 +118,7 @@ fn scan_directory(dir: &Path, config: &GenerateConfig, stats: &mut GenerateStats
             let file_type = ext.to_lowercase();
             if is_supported_format(&file_type) {
                 if let Err(e) = process_document(&path, &file_type, config, stats) {
-                    eprintln!(
-                        "Warning: Failed to process {}: {}",
-                        path.display(),
-                        e
-                    );
+                    eprintln!("Warning: Failed to process {}: {}", path.display(), e);
                     stats.errors += 1;
                 }
             }
@@ -240,9 +234,9 @@ fn process_document(
 
 fn calculate_relative_path(from: &Path, to: &Path) -> Result<PathBuf> {
     // Get canonical paths
-    let from_dir = from.parent().ok_or_else(|| {
-        Error::Benchmark(format!("Cannot get parent directory of: {}", from.display()))
-    })?;
+    let from_dir = from
+        .parent()
+        .ok_or_else(|| Error::Benchmark(format!("Cannot get parent directory of: {}", from.display())))?;
     let from_abs = fs::canonicalize(from_dir).map_err(|e| {
         Error::Benchmark(format!(
             "Cannot canonicalize fixture directory {}: {}",
@@ -278,10 +272,7 @@ fn build_metadata(doc_path: &Path, config: &GenerateConfig) -> HashMap<String, s
 
     // Add description
     if let Some(stem) = doc_path.file_stem().and_then(|s| s.to_str()) {
-        metadata.insert(
-            "description".to_string(),
-            json!(format!("Document: {}", stem)),
-        );
+        metadata.insert("description".to_string(), json!(format!("Document: {}", stem)));
     }
 
     metadata

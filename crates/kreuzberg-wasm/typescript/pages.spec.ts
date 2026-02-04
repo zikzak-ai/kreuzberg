@@ -22,7 +22,7 @@ beforeAll(async () => {
 	await initWasm();
 
 	// Load test PDF file (path relative to crates/kreuzberg-wasm)
-	const pdfPath = join(process.cwd(), "../../test_documents/pdfs/embedded_images_tables.pdf");
+	const pdfPath = join(process.cwd(), "../../test_documents/pdf/embedded_images_tables.pdf");
 	try {
 		samplePdfBytes = new Uint8Array(readFileSync(pdfPath));
 	} catch {

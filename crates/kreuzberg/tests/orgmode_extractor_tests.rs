@@ -27,7 +27,7 @@ fn get_test_orgmode_path(filename: &str) -> PathBuf {
         .expect("Operation failed")
         .parent()
         .expect("Operation failed");
-    workspace_root.join(format!("test_documents/orgmode/{}", filename))
+    workspace_root.join(format!("test_documents/org/{}", filename))
 }
 
 /// Helper to validate that content contains expected text

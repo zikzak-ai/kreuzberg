@@ -108,7 +108,7 @@ RSpec.describe 'Image Extraction' do
       )
 
       begin
-        docx_path = test_document_path('office/document.docx')
+        docx_path = test_document_path('docx/extraction_test.docx')
         result = Kreuzberg.extract_file_sync(path: docx_path, config: config)
 
         expect(result).not_to be_nil
@@ -126,7 +126,7 @@ RSpec.describe 'Image Extraction' do
       )
 
       begin
-        pptx_path = test_document_path('presentations/simple.pptx')
+        pptx_path = test_document_path('pptx/simple.pptx')
         result = Kreuzberg.extract_file_sync(path: pptx_path, config: config)
 
         expect(result).not_to be_nil

@@ -19,7 +19,7 @@ beforeAll(() => {
 	// Resolve symlinks to get the actual file path (important for Windows compatibility)
 	samplePdfBytes = new Uint8Array(readFileSync(realpathSync(samplePdfPath)));
 
-	sampleTextPath = getTestDocumentPath("pandoc/simple_metadata.md");
+	sampleTextPath = getTestDocumentPath("markdown/simple_metadata.md");
 	sampleTextBytes = new Uint8Array(readFileSync(realpathSync(sampleTextPath)));
 });
 

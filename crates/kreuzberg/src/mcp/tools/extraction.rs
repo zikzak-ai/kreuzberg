@@ -137,7 +137,7 @@ mod tests {
     async fn test_extract_file_sync_with_valid_pdf() {
         let server = TestMcpServer::new();
         let params = ExtractFileParams {
-            path: get_test_path("pdfs_with_tables/tiny.pdf").to_string(),
+            path: get_test_path("pdf/tiny.pdf").to_string(),
             mime_type: None,
             config: None,
                     };
@@ -163,7 +163,7 @@ mod tests {
     async fn test_extract_file_async_with_valid_pdf() {
         let server = TestMcpServer::new();
         let params = ExtractFileParams {
-            path: get_test_path("pdfs_with_tables/tiny.pdf").to_string(),
+            path: get_test_path("pdf/tiny.pdf").to_string(),
             mime_type: None,
             config: None,
                     };
@@ -204,7 +204,7 @@ mod tests {
     async fn test_extract_file_with_mime_type_hint() {
         let server = TestMcpServer::new();
         let params = ExtractFileParams {
-            path: get_test_path("pdfs_with_tables/tiny.pdf").to_string(),
+            path: get_test_path("pdf/tiny.pdf").to_string(),
             mime_type: Some(Cow::Borrowed("application/pdf")),
             config: None,
                     };
@@ -265,7 +265,7 @@ mod tests {
     async fn test_batch_extract_files_sync_with_valid_files() {
         let server = TestMcpServer::new();
         let params = BatchExtractFilesParams {
-            paths: vec![get_test_path("pdfs_with_tables/tiny.pdf").to_string()],
+            paths: vec![get_test_path("pdf/tiny.pdf").to_string()],
             config: None,
                     };
 
@@ -314,7 +314,7 @@ mod tests {
     async fn test_response_includes_metadata() {
         let server = TestMcpServer::new();
 
-        let test_file = get_test_path("pdfs_with_tables/tiny.pdf");
+        let test_file = get_test_path("pdf/tiny.pdf");
 
         if std::path::Path::new(&test_file).exists() {
             let params = ExtractFileParams {
@@ -340,8 +340,8 @@ mod tests {
     async fn test_batch_extract_preserves_file_order() {
         let server = TestMcpServer::new();
 
-        let file1 = get_test_path("pdfs_with_tables/tiny.pdf");
-        let file2 = get_test_path("pdfs_with_tables/medium.pdf");
+        let file1 = get_test_path("pdf/tiny.pdf");
+        let file2 = get_test_path("pdf/medium.pdf");
 
         if std::path::Path::new(&file1).exists() && std::path::Path::new(&file2).exists() {
             let params = BatchExtractFilesParams {

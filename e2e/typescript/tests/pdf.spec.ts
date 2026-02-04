@@ -296,7 +296,7 @@ describe("pdf fixtures", () => {
 	it(
 		"pdf_tables_large",
 		() => {
-			const documentPath = resolveDocument("pdfs_with_tables/large.pdf");
+			const documentPath = resolveDocument("pdf/large.pdf");
 			if (!existsSync(documentPath)) {
 				console.warn("Skipping pdf_tables_large: missing document at", documentPath);
 				return;
@@ -324,7 +324,7 @@ describe("pdf fixtures", () => {
 	it(
 		"pdf_tables_medium",
 		() => {
-			const documentPath = resolveDocument("pdfs_with_tables/medium.pdf");
+			const documentPath = resolveDocument("pdf/medium.pdf");
 			if (!existsSync(documentPath)) {
 				console.warn("Skipping pdf_tables_medium: missing document at", documentPath);
 				return;
@@ -352,7 +352,7 @@ describe("pdf fixtures", () => {
 	it(
 		"pdf_tables_small",
 		() => {
-			const documentPath = resolveDocument("pdfs_with_tables/tiny.pdf");
+			const documentPath = resolveDocument("pdf/tiny.pdf");
 			if (!existsSync(documentPath)) {
 				console.warn("Skipping pdf_tables_small: missing document at", documentPath);
 				return;

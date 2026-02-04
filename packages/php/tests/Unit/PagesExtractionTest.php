@@ -404,7 +404,7 @@ final class PagesExtractionTest extends TestCase
     private function getTestPdfBytes(): string
     {
         $repoRoot = $this->getRepositoryRoot();
-        $testPdfPath = $repoRoot . '/test_documents/pdfs_with_tables/tiny.pdf';
+        $testPdfPath = $repoRoot . '/test_documents/pdf/tiny.pdf';
 
         if (file_exists($testPdfPath)) {
             $content = file_get_contents($testPdfPath);

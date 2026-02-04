@@ -39,8 +39,8 @@ final class BatchProcessingTest extends TestCase
     public function it_extracts_multiple_files_in_batch(): void
     {
         $files = [
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -71,8 +71,8 @@ final class BatchProcessingTest extends TestCase
     public function it_extracts_multiple_byte_arrays_in_batch(): void
     {
         $files = [
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -102,8 +102,8 @@ final class BatchProcessingTest extends TestCase
     public function it_returns_results_in_same_order_as_input(): void
     {
         $files = [
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -132,8 +132,8 @@ final class BatchProcessingTest extends TestCase
     public function it_applies_config_to_all_batch_files(): void
     {
         $files = [
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {
@@ -167,7 +167,7 @@ final class BatchProcessingTest extends TestCase
     #[Test]
     public function it_handles_single_file_batch(): void
     {
-        $files = [$this->testDocumentsPath . '/pdfs/code_and_formula.pdf'];
+        $files = [$this->testDocumentsPath . '/pdf/code_and_formula.pdf'];
 
         if (!file_exists($files[0])) {
             $this->markTestSkipped("Test file not found: {$files[0]}");
@@ -187,7 +187,7 @@ final class BatchProcessingTest extends TestCase
     #[Test]
     public function it_handles_batch_with_nonexistent_file_gracefully(): void
     {
-        $validFile = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $validFile = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($validFile)) {
             $this->markTestSkipped("Test file not found: {$validFile}");
         }
@@ -209,7 +209,7 @@ final class BatchProcessingTest extends TestCase
     #[Test]
     public function it_requires_matching_mime_types_count_for_batch_bytes(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }
@@ -230,10 +230,10 @@ final class BatchProcessingTest extends TestCase
     public function it_processes_multiple_pdfs_in_batch(): void
     {
         $files = [
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
         ];
 
-        $secondPdf = $this->testDocumentsPath . '/pdfs_with_tables/simple.pdf';
+        $secondPdf = $this->testDocumentsPath . '/pdf/simple.pdf';
         if (file_exists($secondPdf)) {
             $files[] = $secondPdf;
         }
@@ -263,8 +263,8 @@ final class BatchProcessingTest extends TestCase
     public function it_handles_batch_with_different_document_types(): void
     {
         $files = [
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         if (file_exists($this->testDocumentsPath . '/extraction_test.odt')) {
@@ -298,8 +298,8 @@ final class BatchProcessingTest extends TestCase
     public function it_batch_extracts_with_method_override_config(): void
     {
         $files = [
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
-            $this->testDocumentsPath . '/extraction_test.md',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
         ];
 
         foreach ($files as $file) {

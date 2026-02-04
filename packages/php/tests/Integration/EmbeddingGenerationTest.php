@@ -60,7 +60,7 @@ final class EmbeddingGenerationTest extends TestCase
     #[Test]
     public function it_generates_embeddings_for_document(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -83,7 +83,7 @@ final class EmbeddingGenerationTest extends TestCase
     #[Test]
     public function it_generates_numeric_embedding_vectors(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -274,7 +274,7 @@ final class EmbeddingGenerationTest extends TestCase
     #[Test]
     public function it_generates_consistent_embeddings(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");

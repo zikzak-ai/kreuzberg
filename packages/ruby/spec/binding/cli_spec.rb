@@ -3,7 +3,7 @@
 RSpec.describe Kreuzberg::CLI do
   describe '.extract' do
     it 'extracts content from a file' do
-      path = test_document_path('documents/simple.odt')
+      path = test_document_path('odt/simple.odt')
       output = described_class.extract(path)
 
       expect(output).to be_a(String)
@@ -11,7 +11,7 @@ RSpec.describe Kreuzberg::CLI do
     end
 
     it 'accepts output format option' do
-      path = test_document_path('documents/simple.odt')
+      path = test_document_path('odt/simple.odt')
       output = described_class.extract(path, output: 'json')
 
       expect(output).to be_a(String)
@@ -19,7 +19,7 @@ RSpec.describe Kreuzberg::CLI do
     end
 
     it 'accepts OCR option' do
-      path = test_document_path('pdfs/100_g_networking_technology_overview_slides_toronto_august_2016.pdf')
+      path = test_document_path('pdf/100_g_networking_technology_overview_slides_toronto_august_2016.pdf')
       output = described_class.extract(path, ocr: false)
 
       expect(output).to be_a(String)
@@ -29,7 +29,7 @@ RSpec.describe Kreuzberg::CLI do
 
   describe '.detect' do
     it 'detects MIME type' do
-      path = test_document_path('documents/simple.odt')
+      path = test_document_path('odt/simple.odt')
       mime_type = described_class.detect(path)
 
       expect(mime_type).to be_a(String)

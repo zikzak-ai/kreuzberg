@@ -235,11 +235,11 @@ fn test_ocr_non_image_data() {
 
 #[test]
 fn test_ocr_extreme_table_threshold() {
-    if skip_if_missing("tables/simple_table.png") {
+    if skip_if_missing("images/simple_table.png") {
         return;
     }
 
-    let file_path = get_test_file_path("tables/simple_table.png");
+    let file_path = get_test_file_path("images/simple_table.png");
     let config = ExtractionConfig {
         ocr: Some(OcrConfig {
             backend: "tesseract".to_string(),

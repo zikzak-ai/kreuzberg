@@ -35,8 +35,8 @@ public class ConcurrencyTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx"),
-            NativeTestHelper.GetDocumentPath("office/excel.xlsx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx"),
+            NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx")
         };
 
         var tasks = paths.Select(path => Task.Run(() => KreuzbergClient.ExtractFileSync(path))).ToList();
@@ -55,7 +55,7 @@ public class ConcurrencyTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var tasks = paths.Select(path => KreuzbergClient.ExtractFileAsync(path)).ToList();
@@ -90,7 +90,7 @@ public class ConcurrencyTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var tasks = new Task[20];
@@ -158,7 +158,7 @@ public class ConcurrencyTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx")
         };
 
         var tasks = new Task[5];
@@ -181,8 +181,8 @@ public class ConcurrencyTests
         var paths = new[]
         {
             NativeTestHelper.GetDocumentPath("pdf/simple.pdf"),
-            NativeTestHelper.GetDocumentPath("office/document.docx"),
-            NativeTestHelper.GetDocumentPath("office/excel.xlsx")
+            NativeTestHelper.GetDocumentPath("docx/extraction_test.docx"),
+            NativeTestHelper.GetDocumentPath("xlsx/excel_multi_sheet.xlsx")
         };
 
         var tasks = new List<Task<IReadOnlyList<ExtractionResult>>>();

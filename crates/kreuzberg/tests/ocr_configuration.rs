@@ -214,11 +214,11 @@ fn test_ocr_psm_single_line() {
 #[test]
 #[cfg(feature = "pdf")]
 fn test_force_ocr_on_text_pdf() {
-    if skip_if_missing("pdfs/fake_memo.pdf") {
+    if skip_if_missing("pdf/fake_memo.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs/fake_memo.pdf");
+    let file_path = get_test_file_path("pdf/fake_memo.pdf");
     let config = ExtractionConfig {
         ocr: Some(OcrConfig {
             backend: "tesseract".to_string(),
@@ -245,11 +245,11 @@ fn test_force_ocr_on_text_pdf() {
 #[test]
 #[cfg(feature = "pdf")]
 fn test_force_ocr_disabled() {
-    if skip_if_missing("pdfs/fake_memo.pdf") {
+    if skip_if_missing("pdf/fake_memo.pdf") {
         return;
     }
 
-    let file_path = get_test_file_path("pdfs/fake_memo.pdf");
+    let file_path = get_test_file_path("pdf/fake_memo.pdf");
     let config = ExtractionConfig {
         ocr: Some(OcrConfig {
             backend: "tesseract".to_string(),
@@ -275,11 +275,11 @@ fn test_force_ocr_disabled() {
 
 #[test]
 fn test_table_detection_enabled() {
-    if skip_if_missing("tables/simple_table.png") {
+    if skip_if_missing("images/simple_table.png") {
         return;
     }
 
-    let file_path = get_test_file_path("tables/simple_table.png");
+    let file_path = get_test_file_path("images/simple_table.png");
     let config = ExtractionConfig {
         ocr: Some(OcrConfig {
             backend: "tesseract".to_string(),
@@ -307,11 +307,11 @@ fn test_table_detection_enabled() {
 
 #[test]
 fn test_table_detection_disabled() {
-    if skip_if_missing("tables/simple_table.png") {
+    if skip_if_missing("images/simple_table.png") {
         return;
     }
 
-    let file_path = get_test_file_path("tables/simple_table.png");
+    let file_path = get_test_file_path("images/simple_table.png");
     let config = ExtractionConfig {
         ocr: Some(OcrConfig {
             backend: "tesseract".to_string(),

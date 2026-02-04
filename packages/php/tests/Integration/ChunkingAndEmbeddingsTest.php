@@ -39,7 +39,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_chunks_document_content(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -77,7 +77,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_respects_chunk_size_configuration(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -118,7 +118,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_creates_overlapping_chunks(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -150,7 +150,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_respects_sentence_boundaries_when_chunking(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -180,7 +180,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_generates_embeddings_for_chunks(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -234,7 +234,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_includes_chunk_metadata(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -269,7 +269,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_chunks_documents_without_embeddings(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -305,7 +305,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_handles_small_documents_with_chunking(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -332,7 +332,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_normalizes_embeddings_when_configured(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -386,8 +386,8 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     public function it_processes_chunks_in_batch_extraction(): void
     {
         $files = [
-            $this->testDocumentsPath . '/extraction_test.md',
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
+            $this->testDocumentsPath . '/markdown/extraction_test.md',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
         ];
 
         foreach ($files as $file) {
@@ -430,7 +430,7 @@ final class ChunkingAndEmbeddingsTest extends TestCase
     #[Test]
     public function it_validates_chunk_content_is_utf8(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");

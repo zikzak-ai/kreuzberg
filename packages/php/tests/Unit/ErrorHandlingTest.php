@@ -101,7 +101,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_throws_exception_for_mismatched_mime_type(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -162,7 +162,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_handles_batch_with_mixed_valid_invalid_files_gracefully(): void
     {
-        $validFile = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $validFile = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($validFile)) {
             $this->markTestSkipped("Test file not found: {$validFile}");
         }
@@ -184,7 +184,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_throws_exception_for_mismatched_batch_bytes_mime_types_count(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");

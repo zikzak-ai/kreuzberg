@@ -3,7 +3,7 @@
 RSpec.describe 'Pages Extraction' do
   describe 'Extract Pages' do
     it 'returns pages array when extractPages is true' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -18,7 +18,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'returns page numbers for each page' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -34,7 +34,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'returns page content for each page' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -50,7 +50,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'returns nil for pages when extractPages is false' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -64,7 +64,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'preserves page order' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -83,7 +83,7 @@ RSpec.describe 'Pages Extraction' do
 
   describe 'Insert Page Markers' do
     it 'inserts page markers when insertPageMarkers is true' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -98,7 +98,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'does not insert markers when insertPageMarkers is false' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -113,7 +113,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'contains page numbers in markers' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -128,7 +128,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'inserts multiple markers for multi-page documents' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -145,7 +145,7 @@ RSpec.describe 'Pages Extraction' do
 
   describe 'Custom Marker Format' do
     it 'uses custom marker format when specified' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       custom_format = '=== PAGE {page_num} ==='
@@ -164,7 +164,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'replaces page_num placeholder in custom format' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       custom_format = '[Page Number: {page_num}]'
@@ -183,7 +183,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'handles simple custom format' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       custom_format = 'PAGE_{page_num}'
@@ -201,7 +201,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'handles custom format with line separators' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       custom_format = "\n---PAGE {page_num}---\n"
@@ -219,7 +219,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'overrides default marker format' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       custom_format = 'CUSTOM_PAGE_{page_num}'
@@ -239,7 +239,7 @@ RSpec.describe 'Pages Extraction' do
 
   describe 'Multi-Page PDF' do
     it 'produces multiple pages from multi-page PDF' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -253,7 +253,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'page numbers are sequential' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -269,7 +269,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'each page has content' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -286,7 +286,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'with markers contains all pages' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -303,7 +303,7 @@ RSpec.describe 'Pages Extraction' do
 
   describe 'Page Content Structure Validation' do
     it 'validates page structure' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -320,7 +320,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'page content has required fields' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -337,7 +337,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'page content with tables preserves table data' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -354,7 +354,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'page content with images preserves image data' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -371,7 +371,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'page content is not empty' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -388,7 +388,7 @@ RSpec.describe 'Pages Extraction' do
 
   describe 'Combined Features' do
     it 'extract pages and insert markers together' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -407,7 +407,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'extract pages with custom marker format' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(
@@ -426,7 +426,7 @@ RSpec.describe 'Pages Extraction' do
     end
 
     it 'page extraction consistency between array and markers' do
-      pdf_file = test_document_path('pdf/sample.pdf')
+      pdf_file = test_document_path('pdf/sample_contract.pdf')
       skip "Test PDF not available at #{pdf_file}" unless File.exist?(pdf_file)
 
       config = Kreuzberg::Config::Extraction.new(

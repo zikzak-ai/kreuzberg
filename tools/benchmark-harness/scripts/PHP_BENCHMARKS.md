@@ -93,7 +93,7 @@ php -d extension=/path/to/kreuzberg.so script.php
 ### Quick Test
 Once the extension is built and loaded, test the PHP benchmark script:
 ```bash
-./tools/benchmark-harness/scripts/kreuzberg_extract.php sync test_documents/pdfs/sample.pdf
+./tools/benchmark-harness/scripts/kreuzberg_extract.php sync test_documents/pdf/sample_contract.pdf
 ```
 
 ### Run Benchmark Harness

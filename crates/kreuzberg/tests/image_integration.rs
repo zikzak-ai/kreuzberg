@@ -153,11 +153,11 @@ fn test_ocr_invoice_image() {
 
 #[test]
 fn test_table_image_simple() {
-    if skip_if_missing("tables/simple_table.png") {
+    if skip_if_missing("images/simple_table.png") {
         return;
     }
 
-    let file_path = get_test_file_path("tables/simple_table.png");
+    let file_path = get_test_file_path("images/simple_table.png");
     let config = test_config_with_ocr();
 
     let result = extract_file_sync(&file_path, None, &config).expect("Should extract table image successfully");
@@ -170,11 +170,11 @@ fn test_table_image_simple() {
 
 #[test]
 fn test_table_image_complex() {
-    if skip_if_missing("tables/complex_document.png") {
+    if skip_if_missing("images/complex_document.png") {
         return;
     }
 
-    let file_path = get_test_file_path("tables/complex_document.png");
+    let file_path = get_test_file_path("images/complex_document.png");
     let config = test_config_with_ocr();
 
     let result =

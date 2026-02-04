@@ -26,7 +26,7 @@ async fn test_pdf_password_protected_async() {
         return;
     }
 
-    let path = get_test_file_path("pdfs/copy_protected.pdf");
+    let path = get_test_file_path("pdf/copy_protected.pdf");
     if !path.exists() {
         tracing::debug!("Skipping test: protected PDF not available");
         return;
@@ -55,7 +55,7 @@ async fn test_legacy_doc_extraction_async() {
         return;
     }
 
-    let path = get_test_file_path("legacy_office/simple.doc");
+    let path = get_test_file_path("doc/simple.doc");
     if !path.exists() {
         tracing::debug!("Skipping test: legacy .doc file not available");
         return;

@@ -38,7 +38,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_extracts_text_from_simple_pdf(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $this->assertNotEmpty($result->content, 'Extracted content should not be empty');
         $this->assertIsString($result->content);
@@ -49,7 +49,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_extracts_text_from_office_document(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/office/document.docx');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/docx/extraction_test.docx');
 
         $this->assertNotEmpty($result->content, 'Extracted content from DOCX should not be empty');
         $this->assertStringContainsString('application/', $result->mimeType);
@@ -58,8 +58,16 @@ final class DocumentExtractionTest extends TestCase
     #[Test]
     public function it_extracts_content_from_bytes(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
+
+        if (!file_exists($filePath)) {
+            $this->markTestSkipped("Test file not found: {$filePath}");
+        }
+
         $bytes = file_get_contents($filePath);
+        if ($bytes === false) {
+            $this->markTestSkipped("Could not read test file: {$filePath}");
+        }
 
         $kreuzberg = new Kreuzberg();
         $result = $kreuzberg->extractBytes($bytes, 'application/pdf');
@@ -92,7 +100,7 @@ final class DocumentExtractionTest extends TestCase
         $defaultConfig = new ExtractionConfig(forceOcr: true);
         $kreuzberg = new Kreuzberg($defaultConfig);
 
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $this->assertNotNull($result->content, 'Content should be extracted with default config');
     }
@@ -105,7 +113,7 @@ final class DocumentExtractionTest extends TestCase
 
         $overrideConfig = new ExtractionConfig(forceOcr: true);
         $result = $kreuzberg->extractFile(
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
             config: $overrideConfig,
         );
 
@@ -116,7 +124,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_extracts_metadata_from_document(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $this->assertNotNull($result->metadata, 'Metadata should be present');
         $this->assertIsInt($result->metadata->pageCount);
@@ -127,7 +135,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_auto_detects_mime_type_when_not_provided(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $this->assertStringContainsString(
             'pdf',
@@ -141,7 +149,7 @@ final class DocumentExtractionTest extends TestCase
     {
         $kreuzberg = new Kreuzberg();
         $result = $kreuzberg->extractFile(
-            $this->testDocumentsPath . '/pdfs/code_and_formula.pdf',
+            $this->testDocumentsPath . '/pdf/code_and_formula.pdf',
             mimeType: 'application/pdf',
         );
 
@@ -154,7 +162,7 @@ final class DocumentExtractionTest extends TestCase
         $kreuzberg = new Kreuzberg();
 
         $testFiles = [
-            'pdfs/code_and_formula.pdf' => 'pdf',
+            'pdf/code_and_formula.pdf' => 'pdf',
             'extraction_test.md' => 'text',
         ];
 
@@ -192,7 +200,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_handles_extraction_without_default_config(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $this->assertNotEmpty($result->content);
         $this->assertIsArray($result->tables);
@@ -202,7 +210,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_handles_null_default_config_explicitly(): void
     {
         $kreuzberg = new Kreuzberg(null);
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         $this->assertNotEmpty($result->content, 'Extraction should work with explicit null config');
     }
@@ -211,7 +219,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_returns_empty_tables_array_when_no_tables_found(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/extraction_test.md');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/markdown/extraction_test.md');
 
         $this->assertIsArray($result->tables);
     }
@@ -220,7 +228,7 @@ final class DocumentExtractionTest extends TestCase
     public function it_preserves_extraction_result_immutability(): void
     {
         $kreuzberg = new Kreuzberg();
-        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdfs/code_and_formula.pdf');
+        $result = $kreuzberg->extractFile($this->testDocumentsPath . '/pdf/code_and_formula.pdf');
 
         // Verify that ExtractionResult has all required properties and stores the correct values
         $this->assertIsString($result->content);

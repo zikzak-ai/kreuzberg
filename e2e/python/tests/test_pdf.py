@@ -177,7 +177,7 @@ def test_pdf_simple_text() -> None:
 def test_pdf_tables_large() -> None:
     """Large PDF with extensive tables to stress table extraction."""
 
-    document_path = helpers.resolve_document("pdfs_with_tables/large.pdf")
+    document_path = helpers.resolve_document("pdf/large.pdf")
     if not document_path.exists():
         pytest.skip(f"Skipping pdf_tables_large: missing document at {document_path}")
 
@@ -193,7 +193,7 @@ def test_pdf_tables_large() -> None:
 def test_pdf_tables_medium() -> None:
     """Medium-sized PDF with multiple tables."""
 
-    document_path = helpers.resolve_document("pdfs_with_tables/medium.pdf")
+    document_path = helpers.resolve_document("pdf/medium.pdf")
     if not document_path.exists():
         pytest.skip(f"Skipping pdf_tables_medium: missing document at {document_path}")
 
@@ -209,7 +209,7 @@ def test_pdf_tables_medium() -> None:
 def test_pdf_tables_small() -> None:
     """Small PDF containing tables to validate table extraction."""
 
-    document_path = helpers.resolve_document("pdfs_with_tables/tiny.pdf")
+    document_path = helpers.resolve_document("pdf/tiny.pdf")
     if not document_path.exists():
         pytest.skip(f"Skipping pdf_tables_small: missing document at {document_path}")
 

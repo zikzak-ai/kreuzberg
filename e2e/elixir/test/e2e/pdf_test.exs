@@ -243,7 +243,7 @@ defmodule E2E.PdfTest do
     test "pdf_tables_large" do
       case E2E.Helpers.run_fixture(
         "pdf_tables_large",
-        "pdfs_with_tables/large.pdf",
+        "pdf/large.pdf",
         nil,
         requirements: [],
         notes: nil,
@@ -266,7 +266,7 @@ defmodule E2E.PdfTest do
     test "pdf_tables_medium" do
       case E2E.Helpers.run_fixture(
         "pdf_tables_medium",
-        "pdfs_with_tables/medium.pdf",
+        "pdf/medium.pdf",
         nil,
         requirements: [],
         notes: nil,
@@ -289,7 +289,7 @@ defmodule E2E.PdfTest do
     test "pdf_tables_small" do
       case E2E.Helpers.run_fixture(
         "pdf_tables_small",
-        "pdfs_with_tables/tiny.pdf",
+        "pdf/tiny.pdf",
         nil,
         requirements: [],
         notes: nil,

@@ -50,7 +50,7 @@ final class ErrorHandlingTest extends TestCase
         $this->expectException(KreuzbergException::class);
 
         try {
-            $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+            $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
             if (!file_exists($filePath)) {
                 $this->markTestSkipped("Test file not found: {$filePath}");
             }
@@ -192,7 +192,7 @@ final class ErrorHandlingTest extends TestCase
     {
         $this->expectException(KreuzbergException::class);
 
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }
@@ -213,7 +213,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_handles_excessive_chunk_overlap_config(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }
@@ -252,7 +252,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_handles_batch_with_invalid_files_gracefully(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }
@@ -279,7 +279,7 @@ final class ErrorHandlingTest extends TestCase
     {
         $this->expectException(KreuzbergException::class);
 
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }
@@ -308,7 +308,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_handles_extraction_with_restrictive_embedding_config(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }
@@ -550,7 +550,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_validates_ocr_configuration(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }
@@ -585,7 +585,7 @@ final class ErrorHandlingTest extends TestCase
     #[Test]
     public function it_validates_embedding_configuration(): void
     {
-        $filePath = $this->testDocumentsPath . '/pdfs/code_and_formula.pdf';
+        $filePath = $this->testDocumentsPath . '/pdf/code_and_formula.pdf';
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
         }

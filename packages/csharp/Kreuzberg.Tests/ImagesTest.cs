@@ -29,7 +29,7 @@ public class ImagesTest
     [Fact]
     public void ExtractImages_FromPdfWithImages_ReturnsImageMetadata()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -49,7 +49,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_ContainsFormat()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -77,7 +77,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_ContainsDimensions()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -111,7 +111,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_ContainsImageIndex()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -135,7 +135,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_ContainsColorspaceInformation()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -161,7 +161,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_ContainsRawData()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -224,7 +224,7 @@ public class ImagesTest
     [Fact]
     public void ImageFormatDetection_SetsCorrectMimeType()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -247,7 +247,7 @@ public class ImagesTest
     [Fact]
     public void ExtractImages_FromDocx_WithImages_ReturnsImages()
     {
-        var docxPath = NativeTestHelper.GetDocumentPath("documents/word_image_anchors.docx");
+        var docxPath = NativeTestHelper.GetDocumentPath("docx/word_image_anchors.docx");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -264,7 +264,7 @@ public class ImagesTest
     [Fact]
     public void ExtractImages_FromDocx_PreservesMetadata()
     {
-        var docxPath = NativeTestHelper.GetDocumentPath("documents/word_sample.docx");
+        var docxPath = NativeTestHelper.GetDocumentPath("docx/word_sample.docx");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -288,7 +288,7 @@ public class ImagesTest
     [Fact]
     public void ImageConfig_WithTargetDpi_AppliesToExtraction()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -309,7 +309,7 @@ public class ImagesTest
     [Fact]
     public void ImageConfig_WithMaxDimension_ConstrainsSize()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -328,7 +328,7 @@ public class ImagesTest
     [Fact]
     public void ImageConfig_WithAutoAdjustDpi_AdjustsAutomatically()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -350,7 +350,7 @@ public class ImagesTest
     [Fact]
     public void ImageConfig_Different_DPI_Settings_AffectExtraction()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
 
         // Test with different DPI settings
         var configLowDPI = new ExtractionConfig
@@ -387,7 +387,7 @@ public class ImagesTest
     [Fact]
     public void ExtractImages_WithDisabledOption_ReturnsNull()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -409,7 +409,7 @@ public class ImagesTest
     [Fact]
     public void ExtractImages_WithoutConfig_ReturnsNull()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         // No images config provided
         var config = new ExtractionConfig();
 
@@ -455,8 +455,8 @@ public class ImagesTest
     {
         var files = new[]
         {
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf"),
-            NativeTestHelper.GetDocumentPath("documents/word_sample.docx")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf"),
+            NativeTestHelper.GetDocumentPath("docx/word_sample.docx")
         };
 
         var config = new ExtractionConfig
@@ -484,9 +484,9 @@ public class ImagesTest
     {
         var files = new[]
         {
-            NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf"),
-            NativeTestHelper.GetDocumentPath("pdfs/google_doc_document.pdf"),
-            NativeTestHelper.GetDocumentPath("documents/word_sample.docx")
+            NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf"),
+            NativeTestHelper.GetDocumentPath("pdf/google_doc_document.pdf"),
+            NativeTestHelper.GetDocumentPath("docx/word_sample.docx")
         };
 
         var config = new ExtractionConfig
@@ -516,7 +516,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_HasRequiredFields()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -542,7 +542,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_OptionalFieldsNullableOrPopulated()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -583,7 +583,7 @@ public class ImagesTest
     [Fact]
     public void ExtractedImage_IsMaskField_DefaultsFalse()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -610,7 +610,7 @@ public class ImagesTest
     [Fact]
     public void ImageExtraction_RepeatedCalls_ProducesConsistentResults()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
         var config = new ExtractionConfig
         {
             Images = new ImageExtractionConfig
@@ -637,7 +637,7 @@ public class ImagesTest
     [Fact]
     public void ImageExtraction_WithDifferentConfigs_ProducesDifferentResults()
     {
-        var pdfPath = NativeTestHelper.GetDocumentPath("pdfs/embedded_images_tables.pdf");
+        var pdfPath = NativeTestHelper.GetDocumentPath("pdf/embedded_images_tables.pdf");
 
         var config1 = new ExtractionConfig
         {

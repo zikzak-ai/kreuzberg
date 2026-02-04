@@ -37,7 +37,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_extracts_tables_from_pdf_with_tables(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -56,7 +56,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_provides_table_markdown_representation(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -91,7 +91,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_includes_table_page_numbers(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -127,7 +127,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_uses_default_config_for_table_extraction(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -199,7 +199,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_extracts_multiple_tables_from_document(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -236,7 +236,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_provides_table_data_structure(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -267,7 +267,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_handles_documents_without_tables(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -286,7 +286,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_extracts_tables_in_batch_processing(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (count($pdfFiles) < 2) {
             $this->markTestSkipped('Not enough PDF files with tables for batch test');
@@ -315,7 +315,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_validates_table_structure_integrity(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -351,7 +351,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_preserves_table_formatting_in_markdown(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -384,7 +384,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_preserves_cell_content_accurately(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -441,7 +441,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_handles_complex_table_structures(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -498,7 +498,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_maintains_markdown_consistency_with_cell_data(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -555,7 +555,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_handles_large_table_extraction(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -614,7 +614,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_accurately_detects_table_headers(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -673,7 +673,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_maintains_consistent_cell_content_across_extractions(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -733,7 +733,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_preserves_special_characters_in_cells(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -780,7 +780,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_correctly_detects_table_boundaries(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -846,7 +846,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_validates_table_data_format_consistency(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');
@@ -907,7 +907,7 @@ final class TableExtractionTest extends TestCase
     #[Test]
     public function it_properly_isolates_multiple_table_extractions(): void
     {
-        $pdfFiles = glob($this->testDocumentsPath . '/pdfs_with_tables/*.pdf');
+        $pdfFiles = glob($this->testDocumentsPath . '/pdf/*.pdf');
 
         if (empty($pdfFiles)) {
             $this->markTestSkipped('No PDF files with tables found');

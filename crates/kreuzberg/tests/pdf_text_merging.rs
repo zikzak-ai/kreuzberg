@@ -24,7 +24,7 @@ use pdfium_render::prelude::*;
 /// - Position order is preserved
 #[test]
 fn test_extract_chars_basic() {
-    let pdf_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let pdf_path = get_test_file_path("pdf/tiny.pdf");
 
     // Load PDF
     let pdfium = Pdfium;
@@ -57,7 +57,7 @@ fn test_extract_chars_basic() {
 /// - Y-coordinates generally decrease as we move down the page
 #[test]
 fn test_extract_chars_preserves_order() {
-    let pdf_path = get_test_file_path("pdfs_with_tables/tiny.pdf");
+    let pdf_path = get_test_file_path("pdf/tiny.pdf");
 
     // Load PDF
     let pdfium = Pdfium;

@@ -56,7 +56,7 @@ class TestDocumentsMigrator:
 
     # Mapping of file extensions to target directories and categories
     EXTENSION_MAPPING = {
-        # PDF variants - consolidate pdf/, pdfs/, pdfs_with_tables/
+        # PDF variants - consolidate pdf/, pdfs/, pdf/
         ".pdf": ("pdf", {}),
 
         # Word documents

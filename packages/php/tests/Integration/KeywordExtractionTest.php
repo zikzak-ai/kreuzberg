@@ -61,7 +61,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_extracts_keywords_from_document(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -94,7 +94,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_respects_max_keywords_limit(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -122,7 +122,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_filters_keywords_by_minimum_score(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -160,7 +160,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_produces_fewer_keywords_with_higher_threshold(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -231,7 +231,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_returns_readonly_keyword_objects(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -360,7 +360,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_extracts_keywords_with_zero_minimum_score(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -386,7 +386,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_handles_large_max_keywords_value(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -415,7 +415,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_returns_valid_keyword_scores(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");
@@ -443,7 +443,7 @@ final class KeywordExtractionTest extends TestCase
     #[Test]
     public function it_produces_consistent_keyword_results(): void
     {
-        $filePath = $this->testDocumentsPath . '/extraction_test.md';
+        $filePath = $this->testDocumentsPath . '/markdown/extraction_test.md';
 
         if (!file_exists($filePath)) {
             $this->markTestSkipped("Test file not found: {$filePath}");

@@ -722,7 +722,7 @@ describe("Large Document Handling (4 tests)", () => {
 	});
 
 	it("should handle documents with many tables", async () => {
-		const bytes = getTestDocument("pdfs_with_tables/large.pdf");
+		const bytes = getTestDocument("pdf/large.pdf");
 		const result = await tryExtraction(bytes, "application/pdf");
 		expect(result === null || result).toBeDefined();
 	});

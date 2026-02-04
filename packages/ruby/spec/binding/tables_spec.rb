@@ -246,7 +246,7 @@ RSpec.describe 'Table Extraction Quality' do
       config = Kreuzberg::Config::Extraction.new
 
       begin
-        result = Kreuzberg.extract_file(path: test_document_path('office/document.docx'), config: config)
+        result = Kreuzberg.extract_file(path: test_document_path('docx/extraction_test.docx'), config: config)
         expect(result).not_to be_nil
       rescue Kreuzberg::Errors::ValidationError
         skip 'DOCX test file not available'

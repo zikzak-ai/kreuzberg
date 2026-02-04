@@ -108,7 +108,7 @@ fn test_ocr_on_table_image() {
     api.set_variable("tessedit_pageseg_mode", "1")
         .expect("Failed to set PSM");
 
-    let (image_data, width, height) = load_test_image("tables/simple_table.png").expect("Failed to load test image");
+    let (image_data, width, height) = load_test_image("images/simple_table.png").expect("Failed to load test image");
     api.set_image(&image_data, width as i32, height as i32, 3, 3 * width as i32)
         .expect("Failed to set image");
 
