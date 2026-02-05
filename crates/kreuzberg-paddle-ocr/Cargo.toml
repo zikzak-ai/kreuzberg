@@ -26,7 +26,8 @@ thiserror = { workspace = true }
 image = { workspace = true }
 
 # Crate-specific dependencies (not in workspace)
-imageproc = "0.25"
+# Disable rayon - OCR parallelism is handled at higher level
+imageproc = { version = "0.25", default-features = false }
 ndarray = "0.17"
 ort = { version = "2.0.0-rc.10", default-features = false, features = ["ndarray"] }
 geo-types = "0.7"
