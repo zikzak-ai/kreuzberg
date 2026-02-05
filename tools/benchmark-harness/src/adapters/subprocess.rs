@@ -14,6 +14,11 @@ use std::process::Stdio;
 use std::time::{Duration, Instant};
 use tokio::process::Command;
 
+/// Minimum duration in seconds for a valid throughput calculation.
+/// Durations below this threshold produce unreliable throughput values
+/// and will result in throughput being set to 0.0 (filtered in aggregation).
+const MIN_VALID_DURATION_SECS: f64 = 0.001; // 1 millisecond
+
 /// Base adapter for subprocess-based extraction
 ///
 /// This adapter spawns a subprocess to perform extraction and monitors
@@ -434,10 +439,10 @@ impl FrameworkAdapter for SubprocessAdapter {
 
         let subprocess_overhead = extraction_duration.map(|ext| duration.saturating_sub(ext));
 
-        let throughput = if duration.as_secs_f64() > 0.0 {
+        let throughput = if duration.as_secs_f64() >= MIN_VALID_DURATION_SECS {
             file_size as f64 / duration.as_secs_f64()
         } else {
-            0.0
+            0.0 // Below minimum threshold - will be filtered in aggregation
         };
 
         let metrics = PerformanceMetrics {
@@ -660,12 +665,6 @@ impl FrameworkAdapter for SubprocessAdapter {
             .map(|(idx, file_path)| {
                 let file_size = std::fs::metadata(file_path).map(|m| m.len()).unwrap_or(0);
 
-                let file_throughput = if avg_duration_per_file > Duration::from_secs(0) {
-                    file_size as f64 / avg_duration_per_file.as_secs_f64()
-                } else {
-                    0.0
-                };
-
                 let file_extension = file_path.extension().and_then(|e| e.to_str()).unwrap_or("").to_string();
 
                 // Use per-file OCR status if available, otherwise Unknown
@@ -673,6 +672,14 @@ impl FrameworkAdapter for SubprocessAdapter {
 
                 // Use per-file extraction time if available from batch JSON
                 let extraction_duration = batch_extraction_times.get(idx).copied().flatten();
+
+                // Prefer per-file extraction time for accurate throughput, fall back to averaged duration
+                let effective_duration = extraction_duration.unwrap_or(avg_duration_per_file);
+                let file_throughput = if effective_duration.as_secs_f64() >= MIN_VALID_DURATION_SECS {
+                    file_size as f64 / effective_duration.as_secs_f64()
+                } else {
+                    0.0 // Below minimum threshold - will be filtered in aggregation
+                };
                 let subprocess_overhead = extraction_duration.map(|ext| avg_duration_per_file.saturating_sub(ext));
 
                 BenchmarkResult {

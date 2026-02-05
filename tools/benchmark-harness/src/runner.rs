@@ -209,12 +209,8 @@ impl BenchmarkRunner {
             }
             Err(e) => {
                 eprintln!("Warning: Failed to measure framework sizes: {}", e);
-                // Fall back to static config if measurement fails entirely
-                crate::config::load_framework_sizes(Path::new("tools/benchmark-harness/config/framework_sizes.json"))
-                    .unwrap_or_else(|e2| {
-                        eprintln!("Warning: Also failed to load static framework sizes: {}", e2);
-                        HashMap::new()
-                    })
+                // No fallback - only use actual measurements
+                HashMap::new()
             }
         };
 

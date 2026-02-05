@@ -7,51 +7,123 @@ use super::ocr_flag;
 ///
 /// Maps framework names to the file extensions they can actually process.
 /// This prevents invalid benchmark combinations (e.g., Pandoc cannot read PDFs).
+/// Format lists are based on comprehensive research of each framework's actual capabilities.
 fn get_supported_formats(framework_name: &str) -> Vec<String> {
     match framework_name {
-        // Pandoc can write to PDF but CANNOT read from PDF
+        // Pandoc: 45+ input formats, but CANNOT read PDF (output only)
+        // See: pandoc --list-input-formats
         "pandoc" => vec![
-            "docx", "doc", "html", "md", "markdown", "pptx", "ppt", "odt", "rst", "epub", "txt",
+            // Office documents
+            "docx", "odt", "pptx", "xlsx", // Markup languages
+            "md", "markdown", "rst", "org", "typst",
+            // Web formats (htm, xml, json are NOT valid pandoc input formats)
+            "html", // Data formats
+            "csv", "tsv", // Scientific/technical
+            "tex", "latex", "bib", "ipynb", // E-books
+            "epub",  // Other documents
+            "rtf", "txt",
         ]
         .into_iter()
         .map(|s| s.to_string())
         .collect(),
 
-        // PDF-only tools
-        "pdfplumber" | "pdfplumber-batch" | "pymupdf4llm" => {
-            vec!["pdf".to_string()]
-        }
+        // pdfplumber: PDF-only (built on pdfminer.six)
+        "pdfplumber" => vec!["pdf".to_string()],
 
-        // Docling supports documents, PDFs, and HTML
-        "docling" | "docling-batch" => vec!["pdf", "docx", "pptx", "xlsx", "html"]
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect(),
+        // PyMuPDF4LLM: PDF, e-books, images, and more via PyMuPDF/fitz
+        // See: https://pymupdf.readthedocs.io/en/latest/how-to-open-a-file.html
+        "pymupdf4llm" => vec![
+            // Documents
+            "pdf",  // E-books
+            "epub", // Vector/text
+            "svg", "txt", // Images (for OCR) - gif and webp NOT supported by PyMuPDF
+            "png", "jpg", "jpeg", "bmp", "tiff", "tif", "pnm", "pgm", "pbm", "ppm",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
 
-        // Tika supports many formats
-        "tika" | "tika-batch" => vec!["pdf", "docx", "doc", "html", "pptx", "ppt", "xlsx", "xls", "md", "txt"]
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect(),
+        // Docling: 15 format types, 38+ extensions
+        // See: https://docling-project.github.io/docling/usage/supported_formats/
+        "docling" => vec![
+            // Office documents
+            "pdf", "docx", "pptx", "xlsx", // Web/markup
+            "html", "htm", "md",  // Data formats
+            "csv", // Images (converted to PDF internally for layout analysis)
+            "png", "jpg", "jpeg", "tiff", "tif", "bmp", "webp",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
 
-        // MarkItDown supports many types
-        "markitdown" => vec!["pdf", "docx", "pptx", "xlsx", "md", "txt", "html"]
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect(),
+        // Tika: 1500+ formats for detection, extensive text extraction
+        // See: https://tika.apache.org/ and tika-mimetypes.xml
+        "tika" => vec![
+            // Office documents (Microsoft)
+            "pdf", "docx", "doc", "pptx", "ppt", "ppsx", "pptm", "xlsx", "xls", "xlsm", "xlsb",
+            // Office documents (OpenDocument)
+            "odt", "ods", // Other documents
+            "rtf", "epub", // Web/markup
+            "html", "htm", "xml", "svg", "md", "txt", // Data formats
+            "csv", "tsv", "json", "yaml", "yml", "toml", // Email
+            "eml", "msg", // Scientific/technical (typst not supported - too new)
+            "tex", "latex", "bib", "rst", "org", "ipynb", // Images (metadata + OCR)
+            "png", "jpg", "jpeg", "gif", "bmp", "tiff", "tif", "webp", "jp2", "pnm", "pgm", "pbm", "ppm",
+            // Archives
+            "zip", "tar", "gz", "7z",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
 
-        // Unstructured supports broad formats
-        "unstructured" => vec!["pdf", "docx", "doc", "html", "pptx", "ppt", "xlsx", "xls", "md", "txt"]
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect(),
+        // MarkItDown: 25+ formats with optional dependencies
+        // See: https://github.com/microsoft/markitdown
+        // Note: MarkItDown OUTPUTS markdown, so md/txt are not conversion inputs
+        "markitdown" => vec![
+            // Office documents
+            "pdf", "docx", "pptx", "xlsx", "xls", // Web/markup (md, txt not valid - outputs markdown)
+            "html", "htm", "xml", // Data formats
+            "csv", "json", // E-books & notebooks
+            "epub", "ipynb", // Email
+            "msg",   // Images (with Azure Document Intelligence)
+            "png", "jpg", "jpeg", "bmp", "tiff", "tif", // Archives
+            "zip",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
 
-        // MinerU supports document formats and PDFs
-        "mineru" | "mineru-batch" => vec!["pdf", "docx", "pptx"].into_iter().map(|s| s.to_string()).collect(),
+        // Unstructured: 31+ partitionable formats
+        // See: https://docs.unstructured.io/ui/supported-file-types
+        "unstructured" => vec![
+            // Office documents (Microsoft)
+            "pdf", "docx", "doc", "pptx", "ppt", "xlsx", "xls", // Office documents (OpenDocument)
+            "odt", // Other documents
+            "rtf", "epub", // Web/markup
+            "html", "htm", "xml", "md", "rst", "org", "txt",
+            // Data formats (json NOT supported for partitioning)
+            "csv", "tsv", // Email
+            "eml", "msg", // Images (requires hi_res strategy)
+            "png", "jpg", "jpeg", "tiff", "tif", "bmp",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
 
-        // Default: broad support (for unknown frameworks)
+        // MinerU: PDF and PNG/JPG images ONLY
+        // See: https://github.com/opendatalab/MinerU - cli/common.py defines actual formats
+        "mineru" => vec![
+            // Documents
+            "pdf", // Images (only png, jpg confirmed in source)
+            "png", "jpg",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect(),
+
+        // Default: common document formats for unknown frameworks
         _ => vec![
-            "pdf", "docx", "doc", "xlsx", "xls", "pptx", "ppt", "txt", "md", "html", "xml", "json", "yaml",
+            "pdf", "docx", "doc", "xlsx", "xls", "pptx", "ppt", "txt", "md", "html", "xml", "json",
         ]
         .into_iter()
         .map(|s| s.to_string())
@@ -70,24 +142,6 @@ pub fn create_docling_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let supported_formats = get_supported_formats("docling");
     Ok(SubprocessAdapter::new(
         "docling",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
-}
-
-/// Creates a subprocess adapter for Docling (open source extraction framework, batch mode)
-pub fn create_docling_batch_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
-    let script_path = get_script_path("docling_extract.py")?;
-    let (command, mut args) = find_python_with_framework("docling")?;
-    args.push(script_path.to_string_lossy().to_string());
-    args.push(ocr_flag(ocr_enabled));
-    args.push("batch".to_string());
-
-    let supported_formats = get_supported_formats("docling-batch");
-    Ok(SubprocessAdapter::with_batch_support(
-        "docling-batch",
         command,
         args,
         vec![],
@@ -270,30 +324,6 @@ pub fn create_tika_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     Ok(SubprocessAdapter::new("tika", command, args, vec![], supported_formats))
 }
 
-/// Creates a subprocess adapter for Apache Tika (batch mode)
-pub fn create_tika_batch_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
-    let jar_path = get_tika_jar_path()?;
-    let script_path = get_script_path("TikaExtract.java")?;
-    let command = find_java()?;
-
-    let args = vec![
-        "-cp".to_string(),
-        jar_path.to_string_lossy().to_string(),
-        script_path.to_string_lossy().to_string(),
-        ocr_flag(ocr_enabled),
-        "batch".to_string(),
-    ];
-
-    let supported_formats = get_supported_formats("tika-batch");
-    Ok(SubprocessAdapter::with_batch_support(
-        "tika-batch",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
-}
-
 /// Creates a subprocess adapter for PyMuPDF4LLM (open source extraction framework)
 pub fn create_pymupdf4llm_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("pymupdf4llm_extract.py")?;
@@ -329,24 +359,6 @@ pub fn create_pdfplumber_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter>
     ))
 }
 
-/// Creates a subprocess adapter for pdfplumber (open source extraction framework, batch mode)
-pub fn create_pdfplumber_batch_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
-    let script_path = get_script_path("pdfplumber_extract.py")?;
-    let (command, mut args) = find_python_with_framework("pdfplumber")?;
-    args.push(script_path.to_string_lossy().to_string());
-    args.push(ocr_flag(ocr_enabled));
-    args.push("batch".to_string());
-
-    let supported_formats = get_supported_formats("pdfplumber-batch");
-    Ok(SubprocessAdapter::with_batch_support(
-        "pdfplumber-batch",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
-}
-
 /// Creates a subprocess adapter for MinerU (open source extraction framework, single-file mode)
 pub fn create_mineru_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("mineru_extract.py")?;
@@ -358,24 +370,6 @@ pub fn create_mineru_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let supported_formats = get_supported_formats("mineru");
     Ok(SubprocessAdapter::new(
         "mineru",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
-}
-
-/// Creates a subprocess adapter for MinerU (open source extraction framework, batch mode)
-pub fn create_mineru_batch_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
-    let script_path = get_script_path("mineru_extract.py")?;
-    let (command, mut args) = find_python_with_framework("mineru")?;
-    args.push(script_path.to_string_lossy().to_string());
-    args.push(ocr_flag(ocr_enabled));
-    args.push("batch".to_string());
-
-    let supported_formats = get_supported_formats("mineru-batch");
-    Ok(SubprocessAdapter::with_batch_support(
-        "mineru-batch",
         command,
         args,
         vec![],
@@ -400,11 +394,8 @@ mod tests {
         let _ = create_markitdown_adapter(true);
         let _ = create_pandoc_adapter();
         let _ = create_tika_adapter(true);
-        let _ = create_tika_batch_adapter(true);
         let _ = create_pymupdf4llm_adapter(true);
         let _ = create_pdfplumber_adapter(true);
-        let _ = create_pdfplumber_batch_adapter(true);
         let _ = create_mineru_adapter(true);
-        let _ = create_mineru_batch_adapter(true);
     }
 }

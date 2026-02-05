@@ -42,32 +42,15 @@ const FRAMEWORKS: &[(&str, &str, &str)] = &[
     ("kreuzberg-csharp", "nuget_package", ".NET NuGet package"),
     ("kreuzberg-elixir", "hex_package", "Elixir hex package with NIF"),
     ("kreuzberg-php", "php_extension", "PHP extension"),
-    // Batch variants (same size as non-batch)
-    (
-        "kreuzberg-ruby-batch",
-        "gem_package",
-        "Ruby gem native extension (batch)",
-    ),
-    ("kreuzberg-go-batch", "binary_size", "Go binary with CGO (batch)"),
-    ("kreuzberg-java-batch", "jar_size", "Java JAR with JNI (batch)"),
-    ("kreuzberg-elixir-batch", "hex_package", "Elixir hex package (batch)"),
-    ("kreuzberg-php-batch", "php_extension", "PHP extension (batch)"),
-    ("kreuzberg-python-batch", "pip_package", "Python wheel (batch)"),
-    ("kreuzberg-node-batch", "npm_package", "Node.js addon (batch)"),
-    ("kreuzberg-wasm-batch", "wasm_bundle", "WASM binary (batch)"),
     // Third-party frameworks
     ("docling", "pip_package", "IBM Docling document processing"),
-    ("docling-batch", "pip_package", "IBM Docling (batch mode)"),
     ("markitdown", "pip_package", "Mark It Down markdown converter"),
     ("pandoc", "binary_size", "Pandoc universal converter"),
     ("unstructured", "pip_package", "Unstructured document processing"),
     ("tika", "jar_size", "Apache Tika content analysis"),
-    ("tika-batch", "jar_size", "Apache Tika (batch mode)"),
     ("pymupdf4llm", "pip_package", "PyMuPDF for LLM"),
     ("pdfplumber", "pip_package", "pdfplumber PDF extraction"),
-    ("pdfplumber-batch", "pip_package", "pdfplumber (batch mode)"),
     ("mineru", "pip_package", "MinerU document intelligence"),
-    ("mineru-batch", "pip_package", "MinerU (batch mode)"),
 ];
 
 /// Measure framework sizes
@@ -601,7 +584,8 @@ mod tests {
 
     #[test]
     fn test_frameworks_list_complete() {
-        assert!(FRAMEWORKS.len() >= 26);
+        // 10 kreuzberg bindings + 8 third-party = 18 total
+        assert_eq!(FRAMEWORKS.len(), 18);
 
         // Check all kreuzberg bindings present
         let names: Vec<&str> = FRAMEWORKS.iter().map(|(n, _, _)| *n).collect();

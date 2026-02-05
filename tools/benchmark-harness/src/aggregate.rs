@@ -332,7 +332,7 @@ fn calculate_percentiles(results: &[&BenchmarkResult]) -> PerformancePercentiles
     let mut throughputs: Vec<f64> = successful
         .iter()
         .map(|r| r.metrics.throughput_bytes_per_sec / 1_000_000.0) // Convert to MB/s
-        .filter(|&v| !v.is_nan() && v.is_finite())
+        .filter(|&v| v > 0.0 && v.is_finite()) // Filter zero values (invalid measurements)
         .collect();
 
     let mut memories: Vec<f64> = successful

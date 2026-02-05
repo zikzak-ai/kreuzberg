@@ -524,98 +524,6 @@ jobs:
           path: benchmark-results/
           retention-days: 30
 
-  bench-ruby-batch:
-    name: kreuzberg-ruby-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.setup.outputs.artifact-name }}
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-deps
-
-      - name: Setup OpenSSL
-        uses: ./.github/actions/setup-openssl
-
-      - name: Setup Rust toolchain
-        uses: ./.github/actions/setup-rust
-        with:
-          cache-key-prefix: benchmarks-ruby-batch
-          use-sccache: 'true'
-          report-stats: 'true'
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.2"
-
-      - name: Setup ONNX Runtime
-        uses: ./.github/actions/setup-onnx-runtime
-        with:
-          ort-version: ${{ env.ORT_VERSION }}
-
-      - name: Install Task
-        uses: ./.github/actions/install-task
-
-      - name: Build FFI library
-        id: ffi
-        shell: bash
-        run: |
-          echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (with sccache fallback)"
-          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
-
-      - name: Set library paths for FFI
-        shell: bash
-        run: |
-          echo "PKG_CONFIG_PATH=${{ github.workspace }}/crates/kreuzberg-ffi:$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
-          echo "LD_LIBRARY_PATH=${{ github.workspace }}/target/release:$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
-
-      - name: Vendor kreuzberg core for Ruby
-        run: scripts/ci/ruby/vendor-kreuzberg-core.sh
-
-      - name: Build Ruby native gem
-        env:
-          PLATFORM: x86_64-linux
-        run: task ruby:build:bindings
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: kreuzberg-ruby-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-kreuzberg-ruby-batch-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
   bench-go:
     name: kreuzberg-go (${{ matrix.mode }})
     needs: setup
@@ -710,103 +618,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: benchmarks-kreuzberg-go-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
-  bench-go-batch:
-    name: kreuzberg-go-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.setup.outputs.artifact-name }}
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-deps
-
-      - name: Setup OpenSSL
-        uses: ./.github/actions/setup-openssl
-
-      - name: Setup Rust toolchain
-        uses: ./.github/actions/setup-rust
-        with:
-          cache-key-prefix: benchmarks-go-batch
-          use-sccache: 'true'
-          report-stats: 'true'
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.25.x"
-          cache-dependency-path: packages/go/v4/go.sum
-
-      - name: Setup ONNX Runtime
-        uses: ./.github/actions/setup-onnx-runtime
-        with:
-          ort-version: ${{ env.ORT_VERSION }}
-
-      - name: Install Task
-        uses: ./.github/actions/install-task
-
-      - name: Build FFI library
-        id: ffi
-        shell: bash
-        run: |
-          echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (with sccache fallback)"
-          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
-
-      - name: Set library paths for FFI
-        shell: bash
-        run: |
-          echo "PKG_CONFIG_PATH=${{ github.workspace }}/crates/kreuzberg-ffi:$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
-          echo "LD_LIBRARY_PATH=${{ github.workspace }}/target/release:$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
-
-      - name: Prime Go modules
-        working-directory: packages/go/v4
-        run: go mod download
-
-      - name: Prime benchmark Go modules
-        working-directory: tools/benchmark-harness/scripts
-        run: go mod download
-
-      - name: Build Go bindings
-        run: task go:build:bindings
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: kreuzberg-go-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          KREUZBERG_BENCHMARK_DEBUG: "true"
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-kreuzberg-go-batch-${{ matrix.mode }}-${{ github.run_id }}
           path: benchmark-results/
           retention-days: 30
 
@@ -1062,82 +873,6 @@ jobs:
           path: benchmark-results/
           retention-days: 30
 
-  bench-elixir-batch:
-    name: kreuzberg-elixir-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.setup.outputs.artifact-name }}
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-deps
-
-      - name: Setup OpenSSL
-        uses: ./.github/actions/setup-openssl
-
-      - name: Setup Rust toolchain
-        uses: ./.github/actions/setup-rust
-        with:
-          cache-key-prefix: benchmarks-elixir-batch
-          use-sccache: 'true'
-          report-stats: 'true'
-
-      - name: Setup Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.17.0"
-          otp-version: "27.0"
-
-      - name: Setup ONNX Runtime
-        uses: ./.github/actions/setup-onnx-runtime
-        with:
-          ort-version: ${{ env.ORT_VERSION }}
-
-      - name: Install Task
-        uses: ./.github/actions/install-task
-
-      - name: Build Elixir bindings
-        env:
-          KREUZBERG_BUILD: "1"
-        run: task elixir:build:bindings
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: kreuzberg-elixir-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-kreuzberg-elixir-batch-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
   bench-php:
     name: kreuzberg-php (${{ matrix.mode }})
     needs: setup
@@ -1226,94 +961,6 @@ jobs:
           path: benchmark-results/
           retention-days: 30
 
-  bench-php-batch:
-    name: kreuzberg-php-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.setup.outputs.artifact-name }}
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-deps
-
-      - name: Setup OpenSSL
-        uses: ./.github/actions/setup-openssl
-
-      - name: Setup Rust toolchain
-        uses: ./.github/actions/setup-rust
-        with:
-          cache-key-prefix: benchmarks-php-batch
-          use-sccache: 'true'
-          report-stats: 'true'
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-          extensions: ffi
-
-      - name: Setup ONNX Runtime
-        uses: ./.github/actions/setup-onnx-runtime
-        with:
-          ort-version: ${{ env.ORT_VERSION }}
-
-      - name: Install Task
-        uses: ./.github/actions/install-task
-
-      - name: Build FFI library
-        id: ffi
-        shell: bash
-        run: |
-          echo "=== Building FFI Library ==="
-          echo "Building kreuzberg-ffi from source (with sccache fallback)"
-          scripts/ci/actions/setup-rust/build-with-sccache-fallback.sh cargo build --release --package kreuzberg-ffi
-
-      - name: Set library paths for FFI
-        shell: bash
-        run: |
-          echo "PKG_CONFIG_PATH=${{ github.workspace }}/crates/kreuzberg-ffi:$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
-          echo "LD_LIBRARY_PATH=${{ github.workspace }}/target/release:$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
-
-      - name: Build PHP bindings
-        run: task php:build:ci
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: kreuzberg-php-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-kreuzberg-php-batch-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
   # Third-party benchmarks are temporarily disabled while kreuzberg variants are stabilized.
   bench-docling:
     name: docling (${{ matrix.mode }})
@@ -1362,57 +1009,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: benchmarks-docling-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
-  bench-docling-batch:
-    name: docling-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download benchmark harness binary
-        uses: actions/download-artifact@v4
-        with:
-          name: benchmark-harness-binary
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Setup Python
-        uses: ./.github/actions/setup-python-env
-        with:
-          python-version: "3.11"
-          cache-prefix: benchmark-python
-
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: docling-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-docling-batch-${{ matrix.mode }}-${{ github.run_id }}
           path: benchmark-results/
           retention-days: 30
 
@@ -1628,57 +1224,6 @@ jobs:
           path: benchmark-results/
           retention-days: 30
 
-  bench-tika-batch:
-    name: tika-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download benchmark harness binary
-        uses: actions/download-artifact@v4
-        with:
-          name: benchmark-harness-binary
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        id: setup-java
-        with:
-          distribution: 'temurin'
-          java-version: '25'
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: tika-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-tika-batch-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
   bench-pymupdf4llm:
     name: pymupdf4llm (${{ matrix.mode }})
     needs: setup
@@ -1782,58 +1327,6 @@ jobs:
           path: benchmark-results/
           retention-days: 30
 
-  bench-pdfplumber-batch:
-    name: pdfplumber-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download benchmark harness binary
-        uses: actions/download-artifact@v4
-        with:
-          name: benchmark-harness-binary
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Setup Python
-        uses: ./.github/actions/setup-python-env
-        with:
-          python-version: "3.11"
-          cache-prefix: benchmark-python
-
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: pdfplumber-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-          OCR_ENABLED: "false"
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-pdfplumber-batch-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
   bench-mineru:
     name: mineru (${{ matrix.mode }})
     needs: setup
@@ -1885,60 +1378,9 @@ jobs:
           path: benchmark-results/
           retention-days: 30
 
-  bench-mineru-batch:
-    name: mineru-batch (${{ matrix.mode }})
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [single-file, batch]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Free disk space
-        run: scripts/ci/benchmarks/free-disk-space.sh
-
-      - name: Download benchmark harness binary
-        uses: actions/download-artifact@v4
-        with:
-          name: benchmark-harness-binary
-          path: target/release
-
-      - name: Restore benchmark binary permissions
-        run: scripts/benchmarks/restore-binary-permissions.sh
-
-      - name: Setup Python
-        uses: ./.github/actions/setup-python-env
-        with:
-          python-version: "3.11"
-          cache-prefix: benchmark-python
-
-
-      - name: Run benchmark
-        env:
-          FRAMEWORK: mineru-batch
-          MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
-        run: scripts/benchmarks/run-benchmark.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmarks-mineru-batch-${{ matrix.mode }}-${{ github.run_id }}
-          path: benchmark-results/
-          retention-days: 30
-
   aggregate-and-publish:
     name: Aggregate & Release Results
-    needs: [setup, bench-native, bench-python, bench-node, bench-wasm, bench-ruby, bench-ruby-batch, bench-go, bench-go-batch, bench-java, bench-csharp, bench-elixir, bench-elixir-batch, bench-php, bench-php-batch, bench-docling, bench-docling-batch, bench-markitdown, bench-pandoc, bench-unstructured, bench-tika, bench-tika-batch, bench-pymupdf4llm, bench-pdfplumber, bench-pdfplumber-batch, bench-mineru, bench-mineru-batch]
+    needs: [setup, bench-native, bench-python, bench-node, bench-wasm, bench-ruby, bench-go, bench-java, bench-csharp, bench-elixir, bench-php, bench-docling, bench-markitdown, bench-pandoc, bench-unstructured, bench-tika, bench-pymupdf4llm, bench-pdfplumber, bench-mineru]
     runs-on: ubuntu-latest
     if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
     permissions:
@@ -1980,17 +1422,6 @@ jobs:
 
           echo "Found $ARTIFACT_COUNT artifact directories"
           find benchmark-artifacts -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Measure framework sizes
-        continue-on-error: true
-        run: |
-          python tools/benchmark-harness/scripts/measure_framework_sizes.py \
-            --output consolidated-output/framework-sizes.json || true
 
       - name: Consolidate results
         run: |
@@ -2063,6 +1494,71 @@ jobs:
           # Display data structure summary
           echo "Data structure summary:"
           jq 'keys' "$AGGREGATED_FILE" | head -20
+
+      - name: Validate framework completeness
+        run: |
+          set -euo pipefail
+
+          AGGREGATED_FILE="consolidated-output/aggregated.json"
+
+          echo "=== Validating framework completeness ==="
+
+          # Define expected framework:mode combinations
+          EXPECTED_FRAMEWORKS=(
+            "kreuzberg-rust:single" "kreuzberg-rust:batch"
+            "kreuzberg-python:single" "kreuzberg-python:batch"
+            "kreuzberg-node:single" "kreuzberg-node:batch"
+            "kreuzberg-wasm:single" "kreuzberg-wasm:batch"
+            "kreuzberg-ruby:single" "kreuzberg-ruby:batch"
+            "kreuzberg-go:single" "kreuzberg-go:batch"
+            "kreuzberg-java:single" "kreuzberg-java:batch"
+            "kreuzberg-csharp:single" "kreuzberg-csharp:batch"
+            "kreuzberg-elixir:single" "kreuzberg-elixir:batch"
+            "kreuzberg-php:single" "kreuzberg-php:batch"
+            "docling:single" "docling:batch"
+            "markitdown:single" "markitdown:batch"
+            "pandoc:single" "pandoc:batch"
+            "unstructured:single" "unstructured:batch"
+            "tika:single" "tika:batch"
+            "pymupdf4llm:single" "pymupdf4llm:batch"
+            "pdfplumber:single" "pdfplumber:batch"
+            "mineru:single" "mineru:batch"
+          )
+
+          # Get actual frameworks from aggregated.json
+          ACTUAL_FRAMEWORKS=$(jq -r '.by_framework_mode | keys[]' "$AGGREGATED_FILE")
+
+          MISSING_COUNT=0
+          MISSING_LIST=""
+
+          for expected in "${EXPECTED_FRAMEWORKS[@]}"; do
+            if ! echo "$ACTUAL_FRAMEWORKS" | grep -qx "$expected"; then
+              MISSING_COUNT=$((MISSING_COUNT + 1))
+              MISSING_LIST="${MISSING_LIST}  - $expected"$'\n'
+            fi
+          done
+
+          echo "Present frameworks ($(echo "$ACTUAL_FRAMEWORKS" | wc -l | tr -d ' ')):"
+          while IFS= read -r framework; do
+            echo "  - $framework"
+          done <<< "$ACTUAL_FRAMEWORKS"
+
+          if [[ $MISSING_COUNT -gt 0 ]]; then
+            echo ""
+            echo "::warning::Missing $MISSING_COUNT expected framework:mode combinations:"
+            echo "$MISSING_LIST"
+
+            # Fail if more than 20% of frameworks are missing (>7 out of 36)
+            TOTAL_EXPECTED=${#EXPECTED_FRAMEWORKS[@]}
+            THRESHOLD=$((TOTAL_EXPECTED * 20 / 100))
+            if [[ $MISSING_COUNT -gt $THRESHOLD ]]; then
+              echo "::error::Too many frameworks missing ($MISSING_COUNT out of $TOTAL_EXPECTED, threshold is $THRESHOLD)"
+              exit 1
+            fi
+          else
+            echo ""
+            echo "All ${#EXPECTED_FRAMEWORKS[@]} expected framework:mode combinations present"
+          fi
 
       - name: Create GitHub Release with benchmark results
         env:
