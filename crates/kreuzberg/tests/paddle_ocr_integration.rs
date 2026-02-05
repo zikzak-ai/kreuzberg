@@ -294,6 +294,231 @@ fn test_cache_dir_explicit_config() {
     assert_eq!(resolved, PathBuf::from("/explicit/path"));
 }
 
+/// Test that OCR elements have proper geometry (quadrilateral bounding boxes).
+#[tokio::test]
+#[ignore = "requires ONNX Runtime and downloaded models"]
+async fn test_paddle_ocr_elements_geometry() {
+    use kreuzberg::types::OcrBoundingGeometry;
+
+    let image_path = test_documents_dir().join("images/test_hello_world.png");
+    assert!(image_path.exists(), "Test image not found: {:?}", image_path);
+
+    let image_bytes = std::fs::read(&image_path).expect("Failed to read image");
+
+    let config = PaddleOcrConfig::new("en").with_cache_dir(test_cache_dir());
+    let backend = PaddleOcrBackend::with_config(config).expect("Failed to create backend");
+
+    let ocr_config = OcrConfig {
+        backend: "paddle-ocr".to_string(),
+        language: "en".to_string(),
+        ..Default::default()
+    };
+
+    let result: kreuzberg::Result<ExtractionResult> = backend.process_image(&image_bytes, &ocr_config).await;
+    assert!(result.is_ok(), "OCR failed: {:?}", result.err());
+
+    let extraction: ExtractionResult = result.unwrap();
+
+    // Check that OCR elements are present
+    assert!(
+        extraction.ocr_elements.is_some(),
+        "Expected ocr_elements to be populated"
+    );
+
+    let elements = extraction.ocr_elements.as_ref().unwrap();
+    assert!(!elements.is_empty(), "Expected at least one OCR element");
+
+    // Verify each element has geometry
+    for element in elements {
+        // Check geometry based on variant
+        match &element.geometry {
+            OcrBoundingGeometry::Quadrilateral { points } => {
+                // Quadrilateral should have 4 points
+                assert_eq!(points.len(), 4, "Quadrilateral should have 4 points");
+                println!("Quadrilateral with 4 points");
+            }
+            OcrBoundingGeometry::Rectangle {
+                left,
+                top,
+                width,
+                height,
+            } => {
+                assert!(*width > 0, "Width should be positive");
+                assert!(*height > 0, "Height should be positive");
+                println!("Rectangle at ({}, {}) size {}x{}", left, top, width, height);
+            }
+        }
+    }
+
+    println!("Found {} OCR elements with valid geometry", elements.len());
+}
+
+/// Test that OCR elements have confidence scores.
+#[tokio::test]
+#[ignore = "requires ONNX Runtime and downloaded models"]
+async fn test_paddle_ocr_elements_confidence() {
+    let image_path = test_documents_dir().join("images/test_hello_world.png");
+    assert!(image_path.exists(), "Test image not found: {:?}", image_path);
+
+    let image_bytes = std::fs::read(&image_path).expect("Failed to read image");
+
+    let config = PaddleOcrConfig::new("en").with_cache_dir(test_cache_dir());
+    let backend = PaddleOcrBackend::with_config(config).expect("Failed to create backend");
+
+    let ocr_config = OcrConfig {
+        backend: "paddle-ocr".to_string(),
+        language: "en".to_string(),
+        ..Default::default()
+    };
+
+    let result: kreuzberg::Result<ExtractionResult> = backend.process_image(&image_bytes, &ocr_config).await;
+    assert!(result.is_ok(), "OCR failed: {:?}", result.err());
+
+    let extraction: ExtractionResult = result.unwrap();
+
+    assert!(
+        extraction.ocr_elements.is_some(),
+        "Expected ocr_elements to be populated"
+    );
+
+    let elements = extraction.ocr_elements.as_ref().unwrap();
+    assert!(!elements.is_empty(), "Expected at least one OCR element");
+
+    // Verify each element has confidence score
+    for element in elements {
+        // Recognition confidence should be between 0 and 1
+        assert!(
+            element.confidence.recognition >= 0.0 && element.confidence.recognition <= 1.0,
+            "Recognition confidence should be between 0 and 1, got {}",
+            element.confidence.recognition
+        );
+
+        // PaddleOCR also provides detection confidence
+        if let Some(det_conf) = element.confidence.detection {
+            assert!(
+                (0.0..=1.0).contains(&det_conf),
+                "Detection confidence should be between 0 and 1, got {}",
+                det_conf
+            );
+        }
+
+        println!(
+            "Element '{}' has recognition confidence: {:.2}%",
+            element.text,
+            element.confidence.recognition * 100.0
+        );
+    }
+}
+
+/// Test rotation detection via angle classification.
+#[tokio::test]
+#[ignore = "requires ONNX Runtime and downloaded models"]
+async fn test_paddle_ocr_rotation_detection() {
+    // Use an image that might have rotated text
+    let image_path = test_documents_dir().join("images/ocr_image.jpg");
+    assert!(image_path.exists(), "Test image not found: {:?}", image_path);
+
+    let image_bytes = std::fs::read(&image_path).expect("Failed to read image");
+
+    // Enable angle classification
+    let config = PaddleOcrConfig::new("en").with_cache_dir(test_cache_dir());
+
+    let backend = PaddleOcrBackend::with_config(config).expect("Failed to create backend");
+
+    let ocr_config = OcrConfig {
+        backend: "paddle-ocr".to_string(),
+        language: "en".to_string(),
+        ..Default::default()
+    };
+
+    let result: kreuzberg::Result<ExtractionResult> = backend.process_image(&image_bytes, &ocr_config).await;
+    assert!(result.is_ok(), "OCR failed: {:?}", result.err());
+
+    let extraction: ExtractionResult = result.unwrap();
+
+    assert!(
+        extraction.ocr_elements.is_some(),
+        "Expected ocr_elements to be populated"
+    );
+
+    let elements = extraction.ocr_elements.as_ref().unwrap();
+
+    // Check that rotation info is populated when available
+    let elements_with_rotation = elements.iter().filter(|e| e.rotation.is_some()).count();
+
+    println!(
+        "Found {} elements total, {} with rotation info",
+        elements.len(),
+        elements_with_rotation
+    );
+
+    // For elements with rotation, verify the angle is valid
+    for element in elements.iter().filter(|e| e.rotation.is_some()) {
+        let rotation = element.rotation.as_ref().unwrap();
+        // Rotation should be in degrees (typically 0, 90, 180, 270)
+        assert!(
+            rotation.angle_degrees >= 0.0 && rotation.angle_degrees < 360.0,
+            "Rotation angle should be between 0 and 360, got {}",
+            rotation.angle_degrees
+        );
+    }
+}
+
+/// Test table reconstruction from OCR elements.
+#[tokio::test]
+#[ignore = "requires ONNX Runtime and downloaded models"]
+async fn test_paddle_ocr_table_reconstruction() {
+    let image_path = test_documents_dir().join("images/simple_table.png");
+    assert!(image_path.exists(), "Test image not found: {:?}", image_path);
+
+    let image_bytes = std::fs::read(&image_path).expect("Failed to read image");
+
+    // Enable table detection
+    let config = PaddleOcrConfig::new("en")
+        .with_cache_dir(test_cache_dir())
+        .with_table_detection(true);
+
+    let backend = PaddleOcrBackend::with_config(config).expect("Failed to create backend");
+
+    let ocr_config = OcrConfig {
+        backend: "paddle-ocr".to_string(),
+        language: "en".to_string(),
+        ..Default::default()
+    };
+
+    let result: kreuzberg::Result<ExtractionResult> = backend.process_image(&image_bytes, &ocr_config).await;
+    assert!(result.is_ok(), "OCR failed: {:?}", result.err());
+
+    let extraction: ExtractionResult = result.unwrap();
+
+    println!(
+        "OCR result (first 500 chars): {}",
+        &extraction.content[..extraction.content.len().min(500)]
+    );
+
+    // Check if tables were detected
+    if !extraction.tables.is_empty() {
+        println!("Found {} tables", extraction.tables.len());
+        for (i, table) in extraction.tables.iter().enumerate() {
+            println!(
+                "Table {}: {} rows x {} cols",
+                i,
+                table.cells.len(),
+                table.cells.first().map(|r| r.len()).unwrap_or(0)
+            );
+        }
+    }
+
+    // OCR elements should also be populated
+    if let Some(elements) = &extraction.ocr_elements {
+        println!("Found {} OCR elements", elements.len());
+
+        // Elements should have text content
+        let non_empty_elements = elements.iter().filter(|e| !e.text.is_empty()).count();
+        assert!(non_empty_elements > 0, "Expected at least one element with text");
+    }
+}
+
 /// Test default cache directory when no explicit config is set.
 #[test]
 fn test_cache_dir_default() {
@@ -309,8 +534,8 @@ fn test_cache_dir_default() {
     let config = PaddleOcrConfig::new("en");
     let resolved = config.resolve_cache_dir();
 
-    // Default should use .kreuzberg/paddle-ocr relative to CWD
-    assert!(resolved.to_string_lossy().contains(".kreuzberg"));
+    // Default should use ~/.cache/kreuzberg/paddle-ocr/
+    assert!(resolved.to_string_lossy().contains("kreuzberg"));
     assert!(resolved.to_string_lossy().contains("paddle-ocr"));
 
     // Restore
