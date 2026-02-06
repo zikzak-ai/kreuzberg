@@ -1,6 +1,6 @@
 #![cfg(all(feature = "tokio-runtime", feature = "office"))]
 
-//! DOCX extractor using docx-lite for high-performance text extraction.
+//! DOCX extractor for high-performance text extraction.
 //!
 //! Supports: Microsoft Word (.docx)
 
@@ -68,7 +68,7 @@ impl Plugin for DocxExtractor {
 ///
 /// # Returns
 /// * `Table` - Converted table with cells and markdown representation
-fn convert_docx_table_to_table(docx_table: &docx_lite::Table, table_index: usize) -> Table {
+fn convert_docx_table_to_table(docx_table: &crate::extraction::docx::parser::Table, table_index: usize) -> Table {
     let cells: Vec<Vec<String>> = docx_table
         .rows
         .iter()
@@ -126,9 +126,7 @@ impl DocumentExtractor for DocxExtractor {
             tokio::task::spawn_blocking(
                 move || -> crate::error::Result<(String, Vec<Table>, Option<Vec<PageBoundary>>)> {
                     let _guard = span.entered();
-                    let cursor = Cursor::new(&content_owned);
-                    let doc = docx_lite::parse_document(cursor)
-                        .map_err(|e| crate::error::KreuzbergError::parsing(format!("DOCX parsing failed: {}", e)))?;
+                    let doc = crate::extraction::docx::parser::parse_document(&content_owned)?;
 
                     let text = doc.extract_text();
 
@@ -147,9 +145,7 @@ impl DocumentExtractor for DocxExtractor {
             .await
             .map_err(|e| crate::error::KreuzbergError::parsing(format!("DOCX extraction task failed: {}", e)))??
         } else {
-            let cursor = Cursor::new(content);
-            let doc = docx_lite::parse_document(cursor)
-                .map_err(|e| crate::error::KreuzbergError::parsing(format!("DOCX parsing failed: {}", e)))?;
+            let doc = crate::extraction::docx::parser::parse_document(content)?;
 
             let text = doc.extract_text();
 
@@ -373,7 +369,7 @@ mod tests {
 
     #[test]
     fn test_convert_docx_table_to_table() {
-        use docx_lite::{Paragraph, Run, Table as DocxTable, TableCell, TableRow};
+        use crate::extraction::docx::parser::{Paragraph, Run, Table as DocxTable, TableCell, TableRow};
 
         let mut table = DocxTable::new();
 

@@ -1,31 +1,21 @@
-//! DOCX (Microsoft Word) text extraction using docx-lite.
+//! DOCX (Microsoft Word) text extraction.
 //!
-//! This module provides high-performance text extraction from DOCX files using the docx-lite
-//! library, which uses streaming XML parsing for efficiency.
+//! This module provides high-performance text extraction from DOCX files using
+//! streaming XML parsing for efficiency.
 //!
 //! Page break detection is best-effort, detecting only explicit page breaks (`<w:br w:type="page"/>`)
 //! in the document XML. This does not account for automatic pagination based on content reflowing.
+
+pub mod parser;
 
 use crate::error::{KreuzbergError, Result};
 use crate::extraction::capacity;
 use crate::types::PageBoundary;
 use std::io::Cursor;
 
-/// Extract text from DOCX bytes using docx-lite.
-///
-/// # Arguments
-/// * `bytes` - The DOCX file contents as bytes
-///
-/// # Returns
-/// * `Ok(String)` - The extracted text content
-/// * `Err(KreuzbergError)` - If extraction fails
-///
-/// # Performance
-/// docx-lite uses streaming XML parsing for minimal memory overhead and high throughput
-/// (~160 MB/s average).
+/// Extract text from DOCX bytes.
 pub fn extract_text(bytes: &[u8]) -> Result<String> {
-    docx_lite::extract_text_from_bytes(bytes)
-        .map_err(|e| KreuzbergError::parsing(format!("DOCX text extraction failed: {}", e)))
+    parser::extract_text_from_bytes(bytes)
 }
 
 /// Extract text and page boundaries from DOCX bytes.

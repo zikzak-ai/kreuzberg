@@ -83,8 +83,22 @@ Test documents and baselines can be regenerated at any time using:
 
 This script processes all test documents and generates fresh baselines using the installed version of Pandoc.
 
+## docx-lite
+
+DOCX XML parser vendored into `crates/kreuzberg/src/extraction/docx/parser.rs`:
+
+- **Source**: https://github.com/v-lawyer/docx-lite
+- **License**: MIT OR Apache-2.0
+- **Authors**: V-Lawyer Team
+- **Version**: 0.2.0 (vendored with modifications)
+- **Usage**: DOCX text extraction parser inlined into kreuzberg core
+- **Modifications**:
+  - Fixed `Paragraph::to_text()` joining text runs without whitespace (#359)
+  - Adapted to kreuzberg's `quick-xml` v0.39 and `zip` v7.x APIs
+  - Removed file-path based APIs (only bytes/reader needed)
+
 ---
 
-**Last Updated**: December 6, 2025
+**Last Updated**: February 6, 2026
 **Pandoc Version Used**: 3.8.3
 **Baseline Generation Date**: December 6, 2025
