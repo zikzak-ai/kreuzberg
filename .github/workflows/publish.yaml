@@ -533,10 +533,12 @@ jobs:
               export OPENSSL_INCLUDE_DIR=/usr/include
             fi
             # Build CLI binary inside manylinux container
+            # Note: before-script-linux CWD is the working-directory (packages/python),
+            # but cargo outputs to the workspace root's target/ dir
             echo "=== Building CLI Binary (Linux) ==="
             cargo build --release --package kreuzberg-cli --features all
-            mkdir -p packages/python/kreuzberg
-            cp target/release/kreuzberg packages/python/kreuzberg/kreuzberg-cli
+            mkdir -p kreuzberg
+            cp ../../target/release/kreuzberg kreuzberg/kreuzberg-cli
 
       - name: Build wheels (native)
         if: matrix.os != 'ubuntu-latest'
