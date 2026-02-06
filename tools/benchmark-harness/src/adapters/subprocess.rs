@@ -19,7 +19,12 @@ use tokio::process::Command;
 /// Minimum duration in seconds for a valid throughput calculation.
 /// Durations below this threshold produce unreliable throughput values
 /// and will result in throughput being set to 0.0 (filtered in aggregation).
-const MIN_VALID_DURATION_SECS: f64 = 0.001; // 1 millisecond
+const MIN_VALID_DURATION_SECS: f64 = 0.000_001; // 1 microsecond
+
+/// Check if verbose benchmark debugging is enabled via BENCHMARK_DEBUG env var.
+fn is_debug_enabled() -> bool {
+    std::env::var("BENCHMARK_DEBUG").is_ok()
+}
 
 /// State for a persistent subprocess that stays alive across multiple extractions
 struct PersistentProcess {
@@ -329,11 +334,12 @@ impl SubprocessAdapter {
             std::env::current_dir().map_err(Error::Io)?.join(file_path)
         };
 
-        let start = Instant::now();
         let mut guard = self.process.lock().await;
         let proc = guard
             .as_mut()
             .ok_or_else(|| Error::Benchmark("Persistent process not started".into()))?;
+
+        let start = Instant::now();
 
         // Send file path
         proc.stdin
@@ -349,14 +355,42 @@ impl SubprocessAdapter {
             .await
             .map_err(|e| Error::Benchmark(format!("Failed to flush stdin: {}", e)))?;
 
+        let write_elapsed = start.elapsed();
+
         // Read one JSON line
         let mut line = String::new();
-        tokio::time::timeout(timeout, proc.stdout.read_line(&mut line))
+        let bytes_read = tokio::time::timeout(timeout, proc.stdout.read_line(&mut line))
             .await
             .map_err(|_| Error::Timeout(format!("Persistent process response exceeded {:?}", timeout)))?
             .map_err(|e| Error::Benchmark(format!("Failed to read from persistent process: {}", e)))?;
 
         let duration = start.elapsed();
+
+        if bytes_read == 0 {
+            return Err(Error::Benchmark(
+                "Persistent process returned empty response (EOF — process may have crashed)".to_string(),
+            ));
+        }
+
+        // Validate response is valid JSON before returning
+        if line.trim().is_empty() {
+            return Err(Error::Benchmark(
+                "Persistent process returned blank line (expected JSON)".to_string(),
+            ));
+        }
+
+        if is_debug_enabled() {
+            eprintln!(
+                "[persistent:{}] write={:.2}ms read={:.2}ms total={:.2}ms bytes={} path={}",
+                self.name,
+                write_elapsed.as_secs_f64() * 1000.0,
+                (duration - write_elapsed).as_secs_f64() * 1000.0,
+                duration.as_secs_f64() * 1000.0,
+                bytes_read,
+                absolute_path.display()
+            );
+        }
+
         Ok((line, duration))
     }
 
@@ -371,6 +405,20 @@ impl SubprocessAdapter {
     /// }
     /// ```
     fn parse_output(&self, stdout: &str) -> Result<serde_json::Value> {
+        if is_debug_enabled() {
+            let preview = if stdout.len() > 300 {
+                format!("{}...[{} bytes total]", &stdout[..300], stdout.len())
+            } else {
+                stdout.to_string()
+            };
+            eprintln!(
+                "[parse_output:{}] raw_len={} preview={}",
+                self.name,
+                stdout.len(),
+                preview.trim()
+            );
+        }
+
         let parsed: serde_json::Value = serde_json::from_str(stdout)
             .map_err(|e| Error::Benchmark(format!("Failed to parse subprocess output as JSON: {}", e)))?;
 
@@ -522,7 +570,14 @@ impl FrameworkAdapter for SubprocessAdapter {
             }
         };
 
-        let samples = monitor.stop().await;
+        // Take a post-extraction snapshot before stopping the monitor.
+        // This provides a fallback memory measurement for sub-millisecond extractions
+        // where the background sampler may not have collected any samples.
+        let post_sample = monitor.snapshot_current_memory();
+        let mut samples = monitor.stop().await;
+        if samples.is_empty() {
+            samples.push(post_sample);
+        }
         let snapshots = monitor.get_snapshots().await;
         let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots);
 
@@ -575,8 +630,17 @@ impl FrameworkAdapter for SubprocessAdapter {
             }
         };
 
-        let extraction_duration = parsed
-            .get("_extraction_time_ms")
+        let extraction_time_raw = parsed.get("_extraction_time_ms");
+        if is_debug_enabled() {
+            eprintln!(
+                "[extract:{}] _extraction_time_ms raw={:?}, keys={:?}",
+                self.name,
+                extraction_time_raw,
+                parsed.as_object().map(|o| o.keys().collect::<Vec<_>>())
+            );
+        }
+
+        let extraction_duration = extraction_time_raw
             .and_then(|v| v.as_f64())
             .map(|ms| Duration::from_secs_f64(ms / 1000.0));
 
@@ -585,8 +649,11 @@ impl FrameworkAdapter for SubprocessAdapter {
 
         let subprocess_overhead = extraction_duration.map(|ext| duration.saturating_sub(ext));
 
-        let throughput = if duration.as_secs_f64() >= MIN_VALID_DURATION_SECS {
-            file_size as f64 / duration.as_secs_f64()
+        // Use extraction_duration for throughput when available (more accurate for persistent mode
+        // where `duration` is just I/O roundtrip). Fall back to wall-clock `duration`.
+        let effective_duration = extraction_duration.unwrap_or(duration);
+        let throughput = if effective_duration.as_secs_f64() >= MIN_VALID_DURATION_SECS {
+            file_size as f64 / effective_duration.as_secs_f64()
         } else {
             0.0 // Below minimum threshold - will be filtered in aggregation
         };
@@ -756,7 +823,12 @@ impl FrameworkAdapter for SubprocessAdapter {
             }
         };
 
-        let samples = monitor.stop().await;
+        // Take a post-extraction snapshot as fallback for fast batch operations
+        let post_sample = monitor.snapshot_current_memory();
+        let mut samples = monitor.stop().await;
+        if samples.is_empty() {
+            samples.push(post_sample);
+        }
         let snapshots = monitor.get_snapshots().await;
         let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots);
 
@@ -974,5 +1046,185 @@ mod tests {
         assert!(adapter.supports_format("pdf"));
         assert!(adapter.supports_format("docx"));
         assert!(!adapter.supports_format("unknown"));
+    }
+
+    #[tokio::test]
+    async fn test_persistent_echo_server() {
+        // Create inline echo server script in temp dir
+        let tmp_dir = tempfile::TempDir::new().unwrap();
+        let script_path = tmp_dir.path().join("echo_server.py");
+        std::fs::write(
+            &script_path,
+            r#"
+import json, sys, time
+for line in sys.stdin:
+    fp = line.strip()
+    if not fp:
+        continue
+    start = time.perf_counter()
+    try:
+        with open(fp, 'r', errors='replace') as f:
+            content = f.read()
+    except Exception as e:
+        content = f"error: {e}"
+    ms = (time.perf_counter() - start) * 1000.0
+    print(json.dumps({"content": content[:1000], "_extraction_time_ms": ms}), flush=True)
+"#,
+        )
+        .unwrap();
+
+        let small_file = tmp_dir.path().join("small.txt");
+        std::fs::write(&small_file, "Hello, small file!").unwrap();
+
+        let medium_file = tmp_dir.path().join("medium.txt");
+        std::fs::write(&medium_file, "x".repeat(100_000)).unwrap(); // 100KB
+
+        let large_file = tmp_dir.path().join("large.txt");
+        std::fs::write(&large_file, "y".repeat(1_000_000)).unwrap(); // 1MB
+
+        // Create persistent adapter pointing to echo server
+        let adapter = SubprocessAdapter::with_persistent_mode(
+            "test-echo",
+            "python3",
+            vec![script_path.to_string_lossy().to_string()],
+            vec![],
+            vec!["txt".to_string()],
+        );
+
+        // Setup (spawns the persistent process)
+        adapter.setup().await.expect("setup should succeed");
+
+        // Warmup extraction (like CI does)
+        let warmup_result = adapter
+            .extract(&small_file, Duration::from_secs(10))
+            .await
+            .expect("warmup should succeed");
+        eprintln!(
+            "Warmup: success={}, duration={:?}, extraction_duration={:?}",
+            warmup_result.success, warmup_result.duration, warmup_result.extraction_duration
+        );
+
+        // Run 3 benchmark iterations like CI (different files to check for desync)
+        let files = [&small_file, &medium_file, &large_file];
+        for (i, file) in files.iter().enumerate() {
+            let result = adapter
+                .extract(file, Duration::from_secs(30))
+                .await
+                .expect("extract should succeed");
+
+            eprintln!(
+                "Iter {}: file={:?} size={} duration={:?} extraction_duration={:?} has_text={}",
+                i + 1,
+                file.file_name().unwrap(),
+                result.file_size,
+                result.duration,
+                result.extraction_duration,
+                result.extracted_text.is_some()
+            );
+
+            assert!(result.success, "Extraction {} should succeed", i + 1);
+            assert!(
+                result.extraction_duration.is_some(),
+                "Iteration {}: extraction_duration should NOT be null",
+                i + 1
+            );
+            assert!(
+                result.extracted_text.is_some(),
+                "Iteration {}: extracted_text should be present",
+                i + 1
+            );
+
+            // Duration should be reasonable
+            assert!(
+                result.duration.as_micros() > 10,
+                "Iteration {}: Duration too short: {:?}",
+                i + 1,
+                result.duration
+            );
+        }
+
+        // Verify durations scale with file size
+        let r_small = adapter.extract(&small_file, Duration::from_secs(10)).await.unwrap();
+        let r_large = adapter.extract(&large_file, Duration::from_secs(30)).await.unwrap();
+        eprintln!(
+            "Small duration: {:?}, Large duration: {:?}",
+            r_small.duration, r_large.duration
+        );
+
+        // Teardown
+        adapter.teardown().await.expect("teardown should succeed");
+    }
+
+    #[tokio::test]
+    async fn test_persistent_kreuzberg_python() {
+        // Test with actual kreuzberg Python script if available
+        let script_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("scripts")
+            .join("kreuzberg_extract.py");
+        if !script_path.exists() {
+            eprintln!("Skipping test: kreuzberg script not found");
+            return;
+        }
+
+        // Check if python3 has kreuzberg installed (skip if not)
+        let check = std::process::Command::new("python3")
+            .arg("-c")
+            .arg("import kreuzberg")
+            .output();
+        if check.is_err() || !check.unwrap().status.success() {
+            eprintln!("Skipping test: kreuzberg not installed in python3");
+            return;
+        }
+
+        let tmp_dir = tempfile::TempDir::new().unwrap();
+        let test_file = tmp_dir.path().join("test.txt");
+        std::fs::write(&test_file, "Hello from kreuzberg benchmark test!").unwrap();
+
+        let adapter = SubprocessAdapter::with_persistent_mode(
+            "kreuzberg-python-test",
+            "python3",
+            vec![
+                script_path.to_string_lossy().to_string(),
+                "--no-ocr".to_string(),
+                "server".to_string(),
+            ],
+            vec![],
+            vec!["txt".to_string()],
+        );
+
+        adapter.setup().await.expect("setup should succeed");
+
+        // Run warmup + 3 iterations (like CI)
+        let warmup = adapter.extract(&test_file, Duration::from_secs(30)).await;
+        eprintln!(
+            "Kreuzberg warmup: {:?}",
+            warmup.as_ref().map(|r| (r.success, r.duration, r.extraction_duration))
+        );
+
+        for i in 0..3 {
+            let result = adapter.extract(&test_file, Duration::from_secs(30)).await;
+            match &result {
+                Ok(r) => {
+                    eprintln!(
+                        "Kreuzberg iter {}: success={} duration={:?} extraction_duration={:?}",
+                        i + 1,
+                        r.success,
+                        r.duration,
+                        r.extraction_duration
+                    );
+                    assert!(r.success, "Kreuzberg iter {} should succeed", i + 1);
+                    assert!(
+                        r.extraction_duration.is_some(),
+                        "Kreuzberg iter {}: extraction_duration must not be null!",
+                        i + 1
+                    );
+                }
+                Err(e) => {
+                    eprintln!("Kreuzberg iter {} failed: {}", i + 1, e);
+                }
+            }
+        }
+
+        adapter.teardown().await.expect("teardown should succeed");
     }
 }

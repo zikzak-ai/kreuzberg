@@ -605,6 +605,35 @@ impl BenchmarkRunner {
             return Err(Error::Benchmark("No frameworks available for benchmarking".to_string()));
         }
 
+        // Pre-flight check: validate all fixture document files exist
+        // This catches missing vendored/test files early with a clear error
+        let mut missing_files = Vec::new();
+        for (fixture_path, fixture) in self.fixtures.fixtures() {
+            let fixture_dir = fixture_path.parent().unwrap_or_else(|| std::path::Path::new("."));
+            let document_path = fixture.resolve_document_path(fixture_dir);
+            if !document_path.exists() {
+                missing_files.push(document_path);
+            }
+        }
+        if !missing_files.is_empty() {
+            let samples: Vec<String> = missing_files
+                .iter()
+                .take(10)
+                .map(|p| format!("  - {}", p.display()))
+                .collect();
+            return Err(Error::Benchmark(format!(
+                "FATAL: {} fixture document(s) not found on disk. Benchmarks require all fixture files to exist.\nFirst {}:\n{}{}",
+                missing_files.len(),
+                samples.len(),
+                samples.join("\n"),
+                if missing_files.len() > 10 {
+                    format!("\n  ... and {} more", missing_files.len() - 10)
+                } else {
+                    String::new()
+                }
+            )));
+        }
+
         for adapter in &frameworks {
             adapter.setup().await?;
         }

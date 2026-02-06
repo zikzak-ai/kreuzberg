@@ -37,7 +37,7 @@ if [ "$OCR_ENABLED" = "true" ]; then
   EXTRA_ARGS+=("--ocr")
 fi
 
-"${HARNESS_PATH}" \
+BENCHMARK_DEBUG=1 "${HARNESS_PATH}" \
   run \
   --fixtures "${FIXTURES_DIR}" \
   --frameworks "${FRAMEWORK}" \

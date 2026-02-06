@@ -321,10 +321,13 @@ impl FrameworkAdapter for NativeAdapter {
             .map(|(file_path, extraction_result)| {
                 let file_size = std::fs::metadata(file_path).map(|m| m.len()).unwrap_or(0);
 
-                // Read per-file extraction timing from metadata, fallback to average
+                // Read per-file extraction timing from metadata, fallback to average.
+                // Note: extraction_duration_ms is u64, so sub-millisecond extractions
+                // truncate to 0ms. Fall back to avg_duration_per_file in that case.
                 let extraction_duration = extraction_result
                     .metadata
                     .extraction_duration_ms
+                    .filter(|&ms| ms > 0)
                     .map(Duration::from_millis)
                     .unwrap_or(avg_duration_per_file);
 
