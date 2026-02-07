@@ -121,6 +121,8 @@ pub struct PerformancePercentiles {
     pub harness_errors: usize,
     /// Number of extractions that timed out
     pub timeouts: usize,
+    /// Number of extractions that returned empty content
+    pub empty_content: usize,
     /// Unique error messages with occurrence counts
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub error_details: HashMap<String, usize>,
@@ -406,6 +408,10 @@ fn calculate_percentiles(results: &[&BenchmarkResult]) -> PerformancePercentiles
         .filter(|r| r.error_kind == ErrorKind::HarnessError)
         .count();
     let timeouts = results.iter().filter(|r| r.error_kind == ErrorKind::Timeout).count();
+    let empty_content = results
+        .iter()
+        .filter(|r| r.error_kind == ErrorKind::EmptyContent)
+        .count();
 
     let mut error_details: HashMap<String, usize> = HashMap::new();
     for result in results.iter().filter(|r| !r.success) {
@@ -453,6 +459,7 @@ fn calculate_percentiles(results: &[&BenchmarkResult]) -> PerformancePercentiles
         framework_errors,
         harness_errors,
         timeouts,
+        empty_content,
         error_details,
         throughput,
         memory,

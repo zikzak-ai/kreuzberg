@@ -54,15 +54,15 @@ defmodule KreuzbergExtract do
       debug_log("File size: #{size} bytes")
     end
 
-    start_time = System.monotonic_time(:millisecond)
+    start_time = System.monotonic_time(:microsecond)
     start_wall = DateTime.utc_now()
     debug_log("Timing start (monotonic): #{start_time}, wall: #{DateTime.to_iso8601(start_wall)}")
 
     result = Kreuzberg.extract_file(file_path, nil, config)
 
-    end_time = System.monotonic_time(:millisecond)
+    end_time = System.monotonic_time(:microsecond)
     end_wall = DateTime.utc_now()
-    duration_ms = end_time - start_time
+    duration_ms = (end_time - start_time) / 1000.0
 
     debug_log("Timing end (monotonic): #{end_time}, wall: #{DateTime.to_iso8601(end_wall)}")
     debug_log("Duration (milliseconds): #{duration_ms}")
@@ -107,15 +107,15 @@ defmodule KreuzbergExtract do
       debug_log("  [#{idx}] #{path} (exists: #{exists}, size: #{size} bytes)")
     end)
 
-    start_time = System.monotonic_time(:millisecond)
+    start_time = System.monotonic_time(:microsecond)
     start_wall = DateTime.utc_now()
     debug_log("Timing start (monotonic): #{start_time}, wall: #{DateTime.to_iso8601(start_wall)}")
 
     result = Kreuzberg.batch_extract_files(file_paths, nil, config)
 
-    end_time = System.monotonic_time(:millisecond)
+    end_time = System.monotonic_time(:microsecond)
     end_wall = DateTime.utc_now()
-    total_duration_ms = end_time - start_time
+    total_duration_ms = (end_time - start_time) / 1000.0
 
     debug_log("Timing end (monotonic): #{end_time}, wall: #{DateTime.to_iso8601(end_wall)}")
     debug_log("Total duration (milliseconds): #{total_duration_ms}")

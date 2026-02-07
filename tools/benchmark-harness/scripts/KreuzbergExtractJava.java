@@ -101,16 +101,18 @@ public final class KreuzbergExtractJava {
             if (filePath.isEmpty()) {
                 continue;
             }
+            long start = System.nanoTime();
             try {
                 Path path = Path.of(filePath);
-                long start = System.nanoTime();
                 ExtractionResult result = Kreuzberg.extractFile(path, null);
                 double elapsedMs = (System.nanoTime() - start) / NANOS_IN_MILLISECOND;
                 String json = toJson(result, elapsedMs);
                 System.out.println(json);
                 System.out.flush();
             } catch (Exception e) {
-                String errorJson = String.format("{\"error\":%s,\"_extraction_time_ms\":0}", quote(e.getMessage()));
+                double elapsedMs = (System.nanoTime() - start) / NANOS_IN_MILLISECOND;
+                String errorJson = String.format("{\"error\":%s,\"_extraction_time_ms\":%.3f}",
+                        quote(fullMessage(e)), elapsedMs);
                 System.out.println(errorJson);
                 System.out.flush();
             }
@@ -251,6 +253,20 @@ public final class KreuzbergExtractJava {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r");
         return "\"" + escaped + "\"";
+    }
+
+    private static String fullMessage(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            String msg = cause.getMessage();
+            if (msg != null && !msg.isEmpty()) {
+                sb.append(": ").append(msg);
+            }
+            cause = cause.getCause();
+        }
+        return sb.toString();
     }
 
     private static void debugLog(String key, String value) {

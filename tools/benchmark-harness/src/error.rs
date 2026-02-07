@@ -50,6 +50,10 @@ pub enum Error {
     #[error("{0}")]
     FrameworkError(String),
 
+    /// Framework returned empty or missing content — ran successfully but produced nothing.
+    #[error("Empty content: {0}")]
+    EmptyContent(String),
+
     /// Timeout error
     #[error("Timeout: {0}")]
     Timeout(String),

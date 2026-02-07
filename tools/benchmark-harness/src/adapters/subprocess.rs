@@ -19,6 +19,7 @@ fn error_to_error_kind(e: &Error) -> ErrorKind {
     match e {
         Error::Timeout(_) => ErrorKind::Timeout,
         Error::FrameworkError(_) => ErrorKind::FrameworkError,
+        Error::EmptyContent(_) => ErrorKind::EmptyContent,
         _ => ErrorKind::HarnessError,
     }
 }
@@ -60,6 +61,7 @@ pub struct SubprocessAdapter {
     working_dir: Option<PathBuf>,
     supported_formats: Vec<String>,
     persistent: bool,
+    max_timeout: Option<Duration>,
     process: Arc<tokio::sync::Mutex<Option<PersistentProcess>>>,
 }
 
@@ -135,6 +137,7 @@ impl SubprocessAdapter {
             working_dir: None,
             supported_formats,
             persistent: false,
+            max_timeout: None,
             process: Arc::new(tokio::sync::Mutex::new(None)),
         }
     }
@@ -166,6 +169,7 @@ impl SubprocessAdapter {
             working_dir: None,
             supported_formats,
             persistent: false,
+            max_timeout: None,
             process: Arc::new(tokio::sync::Mutex::new(None)),
         }
     }
@@ -198,7 +202,23 @@ impl SubprocessAdapter {
             working_dir: None,
             supported_formats,
             persistent: true,
+            max_timeout: None,
             process: Arc::new(tokio::sync::Mutex::new(None)),
+        }
+    }
+
+    /// Set a maximum timeout for this adapter, overriding the global config timeout
+    /// if the adapter's max is lower.
+    pub fn with_max_timeout(mut self, timeout: Duration) -> Self {
+        self.max_timeout = Some(timeout);
+        self
+    }
+
+    /// Get the effective timeout, clamped by the adapter's max_timeout if set.
+    fn effective_timeout(&self, timeout: Duration) -> Duration {
+        match self.max_timeout {
+            Some(max) => timeout.min(max),
+            None => timeout,
         }
     }
 
@@ -458,9 +478,26 @@ impl SubprocessAdapter {
         }
 
         if !parsed.get("content").is_some_and(|v| v.is_string()) {
+            // Check if this is a framework returning empty for unsupported format
+            // (e.g. {"error": "", "_extraction_time_ms": 0} with no content field)
+            let extraction_time = parsed
+                .get("_extraction_time_ms")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0);
+            if extraction_time == 0.0 {
+                return Err(Error::EmptyContent(
+                    "No content extracted (unsupported format or empty result)".to_string(),
+                ));
+            }
             return Err(Error::Benchmark(
                 "Subprocess output missing required 'content' field (must be a string)".to_string(),
             ));
+        }
+
+        // Check for empty/whitespace-only content
+        let content_str = parsed["content"].as_str().unwrap(); // safe: is_string() checked above
+        if content_str.trim().is_empty() {
+            return Err(Error::EmptyContent("Framework returned empty content".to_string()));
         }
 
         Ok(parsed)
@@ -481,6 +518,7 @@ impl FrameworkAdapter for SubprocessAdapter {
     }
 
     async fn extract(&self, file_path: &Path, timeout: Duration) -> Result<BenchmarkResult> {
+        let timeout = self.effective_timeout(timeout);
         let file_size = std::fs::metadata(file_path).map_err(Error::Io)?.len();
 
         let start_time = std::time::Instant::now();
@@ -765,6 +803,7 @@ impl FrameworkAdapter for SubprocessAdapter {
     }
 
     async fn extract_batch(&self, file_paths: &[&Path], timeout: Duration) -> Result<Vec<BenchmarkResult>> {
+        let timeout = self.effective_timeout(timeout);
         // Early return if file_paths is empty
         if file_paths.is_empty() {
             return Ok(Vec::new());
@@ -1194,6 +1233,155 @@ for line in sys.stdin:
 
         // Teardown
         adapter.teardown().await.expect("teardown should succeed");
+    }
+
+    #[test]
+    fn test_parse_output_empty_error_no_content() {
+        // {"error": "", "_extraction_time_ms": 0} → EmptyContent (unsupported format)
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
+        let output = r#"{"error": "", "_extraction_time_ms": 0}"#;
+        let result = adapter.parse_output(output);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            matches!(err, Error::EmptyContent(_)),
+            "Expected EmptyContent, got: {:?}",
+            err
+        );
+        assert!(err.to_string().contains("No content extracted"));
+    }
+
+    #[test]
+    fn test_parse_output_nonempty_error() {
+        // {"error": "something went wrong"} → FrameworkError
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
+        let output = r#"{"error": "something went wrong"}"#;
+        let result = adapter.parse_output(output);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            matches!(err, Error::FrameworkError(_)),
+            "Expected FrameworkError, got: {:?}",
+            err
+        );
+        assert!(err.to_string().contains("something went wrong"));
+    }
+
+    #[test]
+    fn test_parse_output_valid_content() {
+        // Valid output with content field
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
+        let output = r#"{"content": "Hello, world!", "_extraction_time_ms": 42.5}"#;
+        let result = adapter.parse_output(output);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed["content"], "Hello, world!");
+        assert_eq!(parsed["_extraction_time_ms"], 42.5);
+    }
+
+    #[test]
+    fn test_parse_output_missing_content_nonzero_time() {
+        // Missing content with nonzero extraction time → Benchmark error (harness bug)
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
+        let output = r#"{"_extraction_time_ms": 150.0}"#;
+        let result = adapter.parse_output(output);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            matches!(err, Error::Benchmark(_)),
+            "Expected Benchmark error, got: {:?}",
+            err
+        );
+        assert!(err.to_string().contains("missing required 'content' field"));
+    }
+
+    #[test]
+    fn test_max_timeout_clamps_config_timeout() {
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()])
+            .with_max_timeout(Duration::from_secs(120));
+        // Config timeout (900s) should be clamped to max (120s)
+        let effective = adapter.effective_timeout(Duration::from_secs(900));
+        assert_eq!(effective, Duration::from_secs(120));
+    }
+
+    #[test]
+    fn test_max_timeout_passes_lower_config() {
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()])
+            .with_max_timeout(Duration::from_secs(120));
+        // Config timeout (60s) is already lower than max (120s), keep config
+        let effective = adapter.effective_timeout(Duration::from_secs(60));
+        assert_eq!(effective, Duration::from_secs(60));
+    }
+
+    #[test]
+    fn test_max_timeout_none_uses_config() {
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
+        // No max_timeout → config timeout passes through unchanged
+        let effective = adapter.effective_timeout(Duration::from_secs(900));
+        assert_eq!(effective, Duration::from_secs(900));
+    }
+
+    #[test]
+    fn test_with_max_timeout_builder() {
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()])
+            .with_max_timeout(Duration::from_secs(300));
+        assert_eq!(adapter.max_timeout, Some(Duration::from_secs(300)));
+    }
+
+    #[test]
+    fn test_with_max_timeout_builder_persistent() {
+        let adapter = SubprocessAdapter::with_persistent_mode("test", "echo", vec![], vec![], vec!["pdf".to_string()])
+            .with_max_timeout(Duration::from_secs(180));
+        assert_eq!(adapter.max_timeout, Some(Duration::from_secs(180)));
+        assert!(adapter.persistent);
+    }
+
+    #[test]
+    fn test_parse_output_empty_string_content() {
+        // {"content": "", "_extraction_time_ms": 5} → EmptyContent
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
+        let output = r#"{"content": "", "_extraction_time_ms": 5.0}"#;
+        let result = adapter.parse_output(output);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            matches!(err, Error::EmptyContent(_)),
+            "Expected EmptyContent, got: {:?}",
+            err
+        );
+        assert!(err.to_string().contains("empty content"));
+    }
+
+    #[test]
+    fn test_parse_output_whitespace_only_content() {
+        // {"content": "  \n  "} → EmptyContent
+        let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
+        let output = "{\"content\": \"  \\n  \", \"_extraction_time_ms\": 10.0}";
+        let result = adapter.parse_output(output);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            matches!(err, Error::EmptyContent(_)),
+            "Expected EmptyContent, got: {:?}",
+            err
+        );
+    }
+
+    #[test]
+    fn test_error_to_error_kind_mapping() {
+        assert_eq!(error_to_error_kind(&Error::Timeout("test".into())), ErrorKind::Timeout);
+        assert_eq!(
+            error_to_error_kind(&Error::FrameworkError("test".into())),
+            ErrorKind::FrameworkError
+        );
+        assert_eq!(
+            error_to_error_kind(&Error::EmptyContent("test".into())),
+            ErrorKind::EmptyContent
+        );
+        assert_eq!(
+            error_to_error_kind(&Error::Benchmark("test".into())),
+            ErrorKind::HarnessError
+        );
     }
 
     #[tokio::test]

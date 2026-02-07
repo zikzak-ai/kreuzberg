@@ -1,4 +1,5 @@
 use crate::{adapters::subprocess::SubprocessAdapter, error::Result};
+use std::time::Duration;
 use std::{env, path::PathBuf};
 
 use super::ocr_flag;
@@ -30,8 +31,9 @@ fn get_supported_formats(framework_name: &str) -> Vec<String> {
         // pdfplumber: PDF-only (built on pdfminer.six)
         "pdfplumber" => vec!["pdf".to_string()],
 
-        // PyMuPDF4LLM: PDF, e-books, images, and more via PyMuPDF/fitz
+        // PyMuPDF4LLM: PDF + formats via PyMuPDF/fitz
         // See: https://pymupdf.readthedocs.io/en/latest/how-to-open-a-file.html
+        // Note: many non-PDF formats return empty content — tracked as EmptyContent errors
         "pymupdf4llm" => vec![
             // Documents
             "pdf",  // E-books
@@ -142,13 +144,10 @@ pub fn create_docling_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     args.push("server".to_string());
 
     let supported_formats = get_supported_formats("docling");
-    Ok(SubprocessAdapter::with_persistent_mode(
-        "docling",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::with_persistent_mode("docling", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 /// Creates a subprocess adapter for Unstructured (persistent server mode)
@@ -163,13 +162,10 @@ pub fn create_unstructured_adapter(ocr_enabled: bool) -> Result<SubprocessAdapte
     args.push("server".to_string());
 
     let supported_formats = get_supported_formats("unstructured");
-    Ok(SubprocessAdapter::with_persistent_mode(
-        "unstructured",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::with_persistent_mode("unstructured", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 /// Creates a subprocess adapter for MarkItDown (persistent server mode)
@@ -181,13 +177,10 @@ pub fn create_markitdown_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter>
     args.push("server".to_string());
 
     let supported_formats = get_supported_formats("markitdown");
-    Ok(SubprocessAdapter::with_persistent_mode(
-        "markitdown",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::with_persistent_mode("markitdown", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 /// Creates a subprocess adapter for Pandoc (universal document converter)
@@ -203,13 +196,10 @@ pub fn create_pandoc_adapter() -> Result<SubprocessAdapter> {
     let args = vec![script_path.to_string_lossy().to_string()];
 
     let supported_formats = get_supported_formats("pandoc");
-    Ok(SubprocessAdapter::new(
-        "pandoc",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::new("pandoc", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 /// Helper function to get the path to a wrapper script
@@ -334,13 +324,10 @@ pub fn create_tika_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     ];
 
     let supported_formats = get_supported_formats("tika");
-    Ok(SubprocessAdapter::with_persistent_mode(
-        "tika",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::with_persistent_mode("tika", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 /// Creates a subprocess adapter for PyMuPDF4LLM (persistent server mode)
@@ -352,13 +339,10 @@ pub fn create_pymupdf4llm_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter
     args.push("server".to_string());
 
     let supported_formats = get_supported_formats("pymupdf4llm");
-    Ok(SubprocessAdapter::with_persistent_mode(
-        "pymupdf4llm",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::with_persistent_mode("pymupdf4llm", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 /// Creates a subprocess adapter for pdfplumber (persistent server mode)
@@ -370,13 +354,10 @@ pub fn create_pdfplumber_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter>
     args.push("server".to_string());
 
     let supported_formats = get_supported_formats("pdfplumber");
-    Ok(SubprocessAdapter::with_persistent_mode(
-        "pdfplumber",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::with_persistent_mode("pdfplumber", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 /// Creates a subprocess adapter for MinerU (persistent server mode)
@@ -391,13 +372,10 @@ pub fn create_mineru_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     args.push("server".to_string());
 
     let supported_formats = get_supported_formats("mineru");
-    Ok(SubprocessAdapter::with_persistent_mode(
-        "mineru",
-        command,
-        args,
-        vec![],
-        supported_formats,
-    ))
+    Ok(
+        SubprocessAdapter::with_persistent_mode("mineru", command, args, vec![], supported_formats)
+            .with_max_timeout(Duration::from_secs(240)),
+    )
 }
 
 #[cfg(test)]

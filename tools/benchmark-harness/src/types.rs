@@ -33,6 +33,8 @@ pub enum ErrorKind {
     HarnessError,
     /// Extraction timed out (exceeded the configured timeout duration).
     Timeout,
+    /// Framework returned empty or missing content (ran but produced nothing).
+    EmptyContent,
     /// No error occurred
     #[default]
     None,
