@@ -178,6 +178,7 @@ def main() -> None:
         ("crates/kreuzberg", "kreuzberg"),
         ("crates/kreuzberg-ffi", "kreuzberg-ffi"),
         ("crates/kreuzberg-tesseract", "kreuzberg-tesseract"),
+        ("crates/kreuzberg-paddle-ocr", "kreuzberg-paddle-ocr"),
         ("vendor/rb-sys", "rb-sys"),
     ]
 
@@ -190,7 +191,7 @@ def main() -> None:
 
     artifact_dirs: list[str] = [".fastembed_cache", "target"]
     temp_patterns: list[str] = ["*.swp", "*.bak", "*.tmp", "*~"]
-    crate_names: list[str] = ["kreuzberg", "kreuzberg-ffi", "kreuzberg-tesseract", "rb-sys"]
+    crate_names: list[str] = ["kreuzberg", "kreuzberg-ffi", "kreuzberg-tesseract", "kreuzberg-paddle-ocr", "rb-sys"]
 
     for crate_dir in crate_names:
         crate_path: Path = vendor_base / crate_dir

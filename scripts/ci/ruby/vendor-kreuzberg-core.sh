@@ -60,13 +60,14 @@ mkdir -p "$REPO_ROOT/packages/ruby/vendor"
 cp -R "$REPO_ROOT/crates/kreuzberg" "$REPO_ROOT/packages/ruby/vendor/kreuzberg"
 cp -R "$REPO_ROOT/crates/kreuzberg-tesseract" "$REPO_ROOT/packages/ruby/vendor/kreuzberg-tesseract"
 cp -R "$REPO_ROOT/crates/kreuzberg-ffi" "$REPO_ROOT/packages/ruby/vendor/kreuzberg-ffi"
+cp -R "$REPO_ROOT/crates/kreuzberg-paddle-ocr" "$REPO_ROOT/packages/ruby/vendor/kreuzberg-paddle-ocr"
 
 if [ -d "$REPO_ROOT/vendor/rb-sys" ]; then
   cp -R "$REPO_ROOT/vendor/rb-sys" "$REPO_ROOT/packages/ruby/vendor/rb-sys"
 fi
 
 # Clean up build artifacts
-for dir in kreuzberg kreuzberg-tesseract kreuzberg-ffi rb-sys; do
+for dir in kreuzberg kreuzberg-tesseract kreuzberg-ffi kreuzberg-paddle-ocr rb-sys; do
   if [ -d "$REPO_ROOT/packages/ruby/vendor/$dir" ]; then
     rm -rf "$REPO_ROOT/packages/ruby/vendor/$dir/.fastembed_cache"
     rm -rf "$REPO_ROOT/packages/ruby/vendor/$dir/target"
