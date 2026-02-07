@@ -5,6 +5,7 @@
 
 use super::{ArchiveEntry, ArchiveMetadata, TEXT_EXTENSIONS};
 use crate::error::{KreuzbergError, Result};
+use crate::extractors::security::SecurityLimits;
 use std::collections::HashMap;
 use std::io::{Cursor, Read};
 use tar::Archive as TarArchive;
@@ -14,6 +15,7 @@ use tar::Archive as TarArchive;
 /// # Arguments
 ///
 /// * `bytes` - The TAR archive bytes (can be compressed with gzip or bzip2)
+/// * `limits` - Security limits for archive extraction
 ///
 /// # Returns
 ///
@@ -25,8 +27,9 @@ use tar::Archive as TarArchive;
 ///
 /// # Errors
 ///
-/// Returns an error if the TAR archive cannot be read or parsed.
-pub fn extract_tar_metadata(bytes: &[u8]) -> Result<ArchiveMetadata> {
+/// Returns an error if the TAR archive cannot be read or parsed,
+/// or if security limits are exceeded.
+pub fn extract_tar_metadata(bytes: &[u8], limits: &SecurityLimits) -> Result<ArchiveMetadata> {
     let cursor = Cursor::new(bytes);
     let mut archive = TarArchive::new(cursor);
 
@@ -56,6 +59,21 @@ pub fn extract_tar_metadata(bytes: &[u8]) -> Result<ArchiveMetadata> {
         }
 
         file_count += 1;
+
+        if file_count > limits.max_files_in_archive {
+            return Err(KreuzbergError::validation(format!(
+                "TAR archive has too many files: {} (max: {})",
+                file_count, limits.max_files_in_archive
+            )));
+        }
+
+        if total_size > limits.max_archive_size as u64 {
+            return Err(KreuzbergError::validation(format!(
+                "TAR archive total uncompressed size exceeds limit: {} bytes (max: {} bytes)",
+                total_size, limits.max_archive_size
+            )));
+        }
+
         file_list.push(ArchiveEntry { path, size, is_dir });
     }
 
@@ -83,12 +101,14 @@ pub fn extract_tar_metadata(bytes: &[u8]) -> Result<ArchiveMetadata> {
 /// # Errors
 ///
 /// Returns an error if the TAR archive cannot be read or parsed.
-pub fn extract_tar_text_content(bytes: &[u8]) -> Result<HashMap<String, String>> {
+pub fn extract_tar_text_content(bytes: &[u8], limits: &SecurityLimits) -> Result<HashMap<String, String>> {
     let cursor = Cursor::new(bytes);
     let mut archive = TarArchive::new(cursor);
 
     let estimated_text_files = bytes.len().saturating_div(1024 * 10).min(100);
     let mut contents = HashMap::with_capacity(estimated_text_files.max(2));
+    let mut file_count = 0usize;
+    let mut total_content_size = 0usize;
 
     let entries = archive
         .entries()
@@ -97,6 +117,14 @@ pub fn extract_tar_text_content(bytes: &[u8]) -> Result<HashMap<String, String>>
     for entry_result in entries {
         let mut entry =
             entry_result.map_err(|e| KreuzbergError::parsing(format!("Failed to read TAR entry: {}", e)))?;
+
+        file_count += 1;
+        if file_count > limits.max_files_in_archive {
+            return Err(KreuzbergError::validation(format!(
+                "TAR archive has too many files: {} (max: {})",
+                file_count, limits.max_files_in_archive
+            )));
+        }
 
         let path = entry
             .path()
@@ -109,6 +137,13 @@ pub fn extract_tar_text_content(bytes: &[u8]) -> Result<HashMap<String, String>>
             let estimated_size = (entry.size().min(10 * 1024 * 1024)) as usize;
             let mut content = String::with_capacity(estimated_size);
             if entry.read_to_string(&mut content).is_ok() {
+                total_content_size = total_content_size.saturating_add(content.len());
+                if total_content_size > limits.max_content_size {
+                    return Err(KreuzbergError::validation(format!(
+                        "TAR archive text content exceeds limit: {} bytes (max: {} bytes)",
+                        total_content_size, limits.max_content_size
+                    )));
+                }
                 contents.insert(path, content);
             }
         }

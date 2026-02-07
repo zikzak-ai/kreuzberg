@@ -102,6 +102,15 @@ pub struct ExtractionConfig {
     #[serde(default)]
     pub result_format: crate::types::OutputFormat,
 
+    /// Security limits for archive extraction.
+    ///
+    /// Controls maximum archive size, compression ratio, file count, and other
+    /// security thresholds to prevent decompression bomb attacks.
+    /// When `None`, default limits are used (500MB archive, 100:1 ratio, 10K files).
+    #[cfg(feature = "archives")]
+    #[serde(default)]
+    pub security_limits: Option<crate::extractors::security::SecurityLimits>,
+
     /// Content text format (default: Plain).
     ///
     /// Controls the format of the extracted content:
@@ -137,6 +146,8 @@ impl Default for ExtractionConfig {
             #[cfg(feature = "html")]
             html_options: None,
             max_concurrent_extractions: None,
+            #[cfg(feature = "archives")]
+            security_limits: None,
             result_format: crate::types::OutputFormat::Unified,
             output_format: OutputFormat::Plain,
         }

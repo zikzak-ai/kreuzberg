@@ -59,8 +59,12 @@ impl DocumentExtractor for StructuredExtractor {
         _config: &ExtractionConfig,
     ) -> Result<ExtractionResult> {
         let structured_result = match mime_type {
-            "application/json" | "text/json" => crate::extraction::structured::parse_json(content, None)?,
-            "application/x-yaml" | "text/yaml" | "text/x-yaml" => crate::extraction::structured::parse_yaml(content)?,
+            "application/json" | "text/json" | "application/csl+json" => {
+                crate::extraction::structured::parse_json(content, None)?
+            }
+            "application/yaml" | "application/x-yaml" | "text/yaml" | "text/x-yaml" => {
+                crate::extraction::structured::parse_yaml(content)?
+            }
             "application/toml" | "text/toml" => crate::extraction::structured::parse_toml(content)?,
             _ => return Err(crate::KreuzbergError::UnsupportedFormat(mime_type.to_string())),
         };
@@ -112,6 +116,8 @@ impl DocumentExtractor for StructuredExtractor {
         &[
             "application/json",
             "text/json",
+            "application/csl+json",
+            "application/yaml",
             "application/x-yaml",
             "text/yaml",
             "text/x-yaml",
@@ -141,9 +147,10 @@ mod tests {
     fn test_structured_extractor_supported_mime_types() {
         let extractor = StructuredExtractor::new();
         let mime_types = extractor.supported_mime_types();
-        assert_eq!(mime_types.len(), 7);
+        assert_eq!(mime_types.len(), 9);
         assert!(mime_types.contains(&"application/json"));
         assert!(mime_types.contains(&"application/x-yaml"));
         assert!(mime_types.contains(&"application/toml"));
+        assert!(mime_types.contains(&"application/csl+json"));
     }
 }

@@ -72,8 +72,21 @@ pub(super) fn perform_ocr(
         )
     });
 
-    let img = image::load_from_memory(image_bytes)
-        .map_err(|e| OcrError::ImageProcessingFailed(format!("Failed to decode image: {}", e)))?;
+    let img = {
+        // Check for JPEG 2000 format which the image crate doesn't support
+        if crate::extraction::image::is_jp2(image_bytes) || crate::extraction::image::is_j2k(image_bytes) {
+            crate::extraction::image::decode_jp2_to_rgb(image_bytes)
+                .map(image::DynamicImage::ImageRgb8)
+                .map_err(|e| OcrError::ImageProcessingFailed(format!("Failed to decode JP2 image: {}", e)))?
+        } else if crate::extraction::image::is_jbig2(image_bytes) {
+            crate::extraction::image::decode_jbig2_to_gray(image_bytes)
+                .map(image::DynamicImage::ImageLuma8)
+                .map_err(|e| OcrError::ImageProcessingFailed(format!("Failed to decode JBIG2 image: {}", e)))?
+        } else {
+            image::load_from_memory(image_bytes)
+                .map_err(|e| OcrError::ImageProcessingFailed(format!("Failed to decode image: {}", e)))?
+        }
+    };
 
     let rgb_image = img.to_rgb8();
     let (width, height) = rgb_image.dimensions();
@@ -224,7 +237,7 @@ pub(super) fn perform_ocr(
         "tsv" => {
             let tsv = tsv_data_for_tables
                 .as_ref()
-                .expect("TSV data should be extracted when output_format is 'tsv'")
+                .ok_or_else(|| OcrError::ProcessingFailed("TSV data not available".to_string()))?
                 .clone();
             (tsv, "text/plain".to_string())
         }

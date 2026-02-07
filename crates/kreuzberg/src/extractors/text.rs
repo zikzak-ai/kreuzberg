@@ -97,7 +97,15 @@ impl DocumentExtractor for PlainTextExtractor {
     }
 
     fn supported_mime_types(&self) -> &[&str] {
-        &["text/plain", "text/csv", "text/tab-separated-values"]
+        &[
+            "text/plain",
+            "text/csv",
+            "text/tab-separated-values",
+            "text/troff",
+            "text/x-mdoc",
+            "text/x-pod",
+            "text/x-dokuwiki",
+        ]
     }
 
     fn priority(&self) -> i32 {
@@ -192,7 +200,12 @@ impl DocumentExtractor for MarkdownExtractor {
     }
 
     fn supported_mime_types(&self) -> &[&str] {
-        &["text/markdown", "text/x-markdown"]
+        &[
+            "text/markdown",
+            "text/x-markdown",
+            "text/x-markdown-extra",
+            "text/x-multimarkdown",
+        ]
     }
 
     fn priority(&self) -> i32 {
@@ -253,7 +266,15 @@ mod tests {
         assert_eq!(extractor.version(), env!("CARGO_PKG_VERSION"));
         assert_eq!(
             extractor.supported_mime_types(),
-            &["text/plain", "text/csv", "text/tab-separated-values"]
+            &[
+                "text/plain",
+                "text/csv",
+                "text/tab-separated-values",
+                "text/troff",
+                "text/x-mdoc",
+                "text/x-pod",
+                "text/x-dokuwiki",
+            ]
         );
         assert_eq!(extractor.priority(), 50);
     }
@@ -263,7 +284,15 @@ mod tests {
         let extractor = MarkdownExtractor::new();
         assert_eq!(extractor.name(), "markdown-extractor");
         assert_eq!(extractor.version(), env!("CARGO_PKG_VERSION"));
-        assert_eq!(extractor.supported_mime_types(), &["text/markdown", "text/x-markdown"]);
+        assert_eq!(
+            extractor.supported_mime_types(),
+            &[
+                "text/markdown",
+                "text/x-markdown",
+                "text/x-markdown-extra",
+                "text/x-multimarkdown"
+            ]
+        );
         assert_eq!(extractor.priority(), 50);
     }
 }

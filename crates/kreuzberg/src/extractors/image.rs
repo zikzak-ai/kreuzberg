@@ -152,6 +152,7 @@ impl DocumentExtractor for ImageExtractor {
                     chunks: None,
                     images: None,
                     djot_content: None,
+                    elements: None,
                 });
             }
         }
@@ -181,10 +182,23 @@ impl DocumentExtractor for ImageExtractor {
             "image/png",
             "image/jpeg",
             "image/jpg",
+            "image/pjpeg",
             "image/webp",
             "image/bmp",
+            "image/x-bmp",
+            "image/x-ms-bmp",
             "image/tiff",
+            "image/x-tiff",
             "image/gif",
+            "image/jp2",
+            "image/jpx",
+            "image/jpm",
+            "image/mj2",
+            "image/x-jbig2",
+            "image/x-portable-anymap",
+            "image/x-portable-bitmap",
+            "image/x-portable-graymap",
+            "image/x-portable-pixmap",
         ]
     }
 
@@ -222,5 +236,16 @@ mod tests {
     fn test_image_extractor_default() {
         let extractor = ImageExtractor;
         assert_eq!(extractor.name(), "image-extractor");
+    }
+
+    #[test]
+    fn test_image_extractor_supports_alias_mime_types() {
+        let extractor = ImageExtractor::new();
+        let supported = extractor.supported_mime_types();
+        assert!(supported.contains(&"image/pjpeg"));
+        assert!(supported.contains(&"image/x-bmp"));
+        assert!(supported.contains(&"image/x-ms-bmp"));
+        assert!(supported.contains(&"image/x-tiff"));
+        assert!(supported.contains(&"image/x-portable-anymap"));
     }
 }

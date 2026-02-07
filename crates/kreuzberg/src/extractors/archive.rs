@@ -1,17 +1,19 @@
-//! Archive extractors for ZIP, TAR, and 7z formats.
+//! Archive extractors for ZIP, TAR, 7z, and GZIP formats.
 
 use crate::Result;
 use crate::core::config::ExtractionConfig;
 use crate::extraction::archive::{
-    ArchiveMetadata as ExtractedMetadata, extract_7z_metadata, extract_7z_text_content, extract_tar_metadata,
-    extract_tar_text_content, extract_zip_metadata, extract_zip_text_content,
+    ArchiveMetadata as ExtractedMetadata, extract_7z_metadata, extract_7z_text_content, extract_gzip,
+    extract_tar_metadata, extract_tar_text_content, extract_zip_metadata, extract_zip_text_content,
 };
+use crate::extractors::security::ZipBombValidator;
 use crate::plugins::{DocumentExtractor, Plugin};
 use crate::types::{ArchiveMetadata, ExtractionResult, Metadata};
 use ahash::AHashMap;
 use async_trait::async_trait;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::io::Cursor;
 
 /// Build an ExtractionResult from archive metadata and text contents.
 ///
@@ -132,7 +134,7 @@ impl Plugin for ZipExtractor {
 #[async_trait]
 impl DocumentExtractor for ZipExtractor {
     #[cfg_attr(feature = "otel", tracing::instrument(
-        skip(self, content, _config),
+        skip(self, content, config),
         fields(
             extractor.name = self.name(),
             content.size_bytes = content.len(),
@@ -142,10 +144,21 @@ impl DocumentExtractor for ZipExtractor {
         &self,
         content: &[u8],
         mime_type: &str,
-        _config: &ExtractionConfig,
+        config: &ExtractionConfig,
     ) -> Result<ExtractionResult> {
-        let extraction_metadata = extract_zip_metadata(content)?;
-        let text_contents = extract_zip_text_content(content)?;
+        let limits = config.security_limits.clone().unwrap_or_default();
+
+        // Validate ZIP archive for bomb attacks before extraction
+        let cursor = Cursor::new(content);
+        let mut archive = zip::ZipArchive::new(cursor)
+            .map_err(|e| crate::error::KreuzbergError::parsing(format!("Failed to read ZIP archive: {}", e)))?;
+        let validator = ZipBombValidator::new(limits.clone());
+        validator
+            .validate(&mut archive)
+            .map_err(|e| crate::error::KreuzbergError::validation(e.to_string()))?;
+
+        let extraction_metadata = extract_zip_metadata(content, &limits)?;
+        let text_contents = extract_zip_text_content(content, &limits)?;
         Ok(build_archive_result(
             extraction_metadata,
             text_contents,
@@ -210,7 +223,7 @@ impl Plugin for TarExtractor {
 #[async_trait]
 impl DocumentExtractor for TarExtractor {
     #[cfg_attr(feature = "otel", tracing::instrument(
-        skip(self, content, _config),
+        skip(self, content, config),
         fields(
             extractor.name = self.name(),
             content.size_bytes = content.len(),
@@ -220,10 +233,11 @@ impl DocumentExtractor for TarExtractor {
         &self,
         content: &[u8],
         mime_type: &str,
-        _config: &ExtractionConfig,
+        config: &ExtractionConfig,
     ) -> Result<ExtractionResult> {
-        let extraction_metadata = extract_tar_metadata(content)?;
-        let text_contents = extract_tar_text_content(content)?;
+        let limits = config.security_limits.clone().unwrap_or_default();
+        let extraction_metadata = extract_tar_metadata(content, &limits)?;
+        let text_contents = extract_tar_text_content(content, &limits)?;
         Ok(build_archive_result(
             extraction_metadata,
             text_contents,
@@ -293,7 +307,7 @@ impl Plugin for SevenZExtractor {
 #[async_trait]
 impl DocumentExtractor for SevenZExtractor {
     #[cfg_attr(feature = "otel", tracing::instrument(
-        skip(self, content, _config),
+        skip(self, content, config),
         fields(
             extractor.name = self.name(),
             content.size_bytes = content.len(),
@@ -303,10 +317,11 @@ impl DocumentExtractor for SevenZExtractor {
         &self,
         content: &[u8],
         mime_type: &str,
-        _config: &ExtractionConfig,
+        config: &ExtractionConfig,
     ) -> Result<ExtractionResult> {
-        let extraction_metadata = extract_7z_metadata(content)?;
-        let text_contents = extract_7z_text_content(content)?;
+        let limits = config.security_limits.clone().unwrap_or_default();
+        let extraction_metadata = extract_7z_metadata(content, &limits)?;
+        let text_contents = extract_7z_text_content(content, &limits)?;
         Ok(build_archive_result(
             extraction_metadata,
             text_contents,
@@ -317,6 +332,84 @@ impl DocumentExtractor for SevenZExtractor {
 
     fn supported_mime_types(&self) -> &[&str] {
         &["application/x-7z-compressed"]
+    }
+
+    fn priority(&self) -> i32 {
+        50
+    }
+}
+
+/// Gzip archive extractor.
+///
+/// Decompresses gzip files and extracts text content from the compressed data.
+pub struct GzipExtractor;
+
+impl GzipExtractor {
+    /// Create a new gzip extractor.
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl Default for GzipExtractor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Plugin for GzipExtractor {
+    fn name(&self) -> &str {
+        "gzip-extractor"
+    }
+
+    fn version(&self) -> String {
+        env!("CARGO_PKG_VERSION").to_string()
+    }
+
+    fn initialize(&self) -> Result<()> {
+        Ok(())
+    }
+
+    fn shutdown(&self) -> Result<()> {
+        Ok(())
+    }
+
+    fn description(&self) -> &str {
+        "Decompresses and extracts text content from gzip-compressed files"
+    }
+
+    fn author(&self) -> &str {
+        "Kreuzberg Team"
+    }
+}
+
+#[async_trait]
+impl DocumentExtractor for GzipExtractor {
+    #[cfg_attr(feature = "otel", tracing::instrument(
+        skip(self, content, config),
+        fields(
+            extractor.name = self.name(),
+            content.size_bytes = content.len(),
+        )
+    ))]
+    async fn extract_bytes(
+        &self,
+        content: &[u8],
+        mime_type: &str,
+        config: &ExtractionConfig,
+    ) -> Result<ExtractionResult> {
+        let limits = config.security_limits.clone().unwrap_or_default();
+        let (extraction_metadata, text_contents) = extract_gzip(content, &limits)?;
+        Ok(build_archive_result(
+            extraction_metadata,
+            text_contents,
+            "GZIP",
+            mime_type,
+        ))
+    }
+
+    fn supported_mime_types(&self) -> &[&str] {
+        &["application/gzip", "application/x-gzip"]
     }
 
     fn priority(&self) -> i32 {
@@ -447,5 +540,43 @@ mod tests {
         assert!(extractor.supported_mime_types().contains(&"application/x-tar"));
         assert!(extractor.supported_mime_types().contains(&"application/tar"));
         assert_eq!(extractor.priority(), 50);
+    }
+
+    #[test]
+    fn test_gzip_plugin_interface() {
+        let extractor = GzipExtractor::new();
+        assert_eq!(extractor.name(), "gzip-extractor");
+        assert_eq!(extractor.version(), env!("CARGO_PKG_VERSION"));
+        assert!(extractor.supported_mime_types().contains(&"application/gzip"));
+        assert!(extractor.supported_mime_types().contains(&"application/x-gzip"));
+        assert_eq!(extractor.priority(), 50);
+    }
+
+    #[tokio::test]
+    async fn test_gzip_extractor_valid_data() {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+        use std::io::Write;
+
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(b"Hello from gzip extraction!").unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        let extractor = GzipExtractor::new();
+        let config = ExtractionConfig::default();
+        let result = extractor.extract_bytes(&compressed, "application/gzip", &config).await;
+        assert!(result.is_ok());
+        let extraction = result.unwrap();
+        assert!(extraction.content.contains("Hello from gzip extraction!"));
+    }
+
+    #[tokio::test]
+    async fn test_gzip_extractor_invalid_data() {
+        let extractor = GzipExtractor::new();
+        let config = ExtractionConfig::default();
+        let result = extractor
+            .extract_bytes(&[0, 1, 2, 3], "application/gzip", &config)
+            .await;
+        assert!(result.is_err());
     }
 }

@@ -88,6 +88,9 @@ pub mod html;
 #[cfg(feature = "office")]
 pub mod bibtex;
 
+#[cfg(feature = "office")]
+pub mod citation;
+
 #[cfg(all(feature = "tokio-runtime", feature = "office"))]
 pub mod docx;
 
@@ -146,7 +149,7 @@ pub use text::{MarkdownExtractor, PlainTextExtractor};
 pub use image::ImageExtractor;
 
 #[cfg(feature = "archives")]
-pub use archive::{SevenZExtractor, TarExtractor, ZipExtractor};
+pub use archive::{GzipExtractor, SevenZExtractor, TarExtractor, ZipExtractor};
 
 #[cfg(feature = "email")]
 pub use email::EmailExtractor;
@@ -159,6 +162,9 @@ pub use html::HtmlExtractor;
 
 #[cfg(feature = "office")]
 pub use bibtex::BibtexExtractor;
+
+#[cfg(feature = "office")]
+pub use citation::CitationExtractor;
 
 #[cfg(all(feature = "tokio-runtime", feature = "office"))]
 pub use docx::DocxExtractor;
@@ -278,7 +284,11 @@ pub fn register_default_extractors() -> Result<()> {
     registry.register(Arc::new(ImageExtractor::new()))?;
 
     #[cfg(feature = "xml")]
-    registry.register(Arc::new(XmlExtractor::new()))?;
+    {
+        registry.register(Arc::new(XmlExtractor::new()))?;
+        registry.register(Arc::new(JatsExtractor::new()))?;
+        registry.register(Arc::new(DocbookExtractor::new()))?;
+    }
 
     #[cfg(feature = "pdf")]
     registry.register(Arc::new(PdfExtractor::new()))?;
@@ -292,6 +302,7 @@ pub fn register_default_extractors() -> Result<()> {
     {
         registry.register(Arc::new(EnhancedMarkdownExtractor::new()))?;
         registry.register(Arc::new(BibtexExtractor::new()))?;
+        registry.register(Arc::new(CitationExtractor::new()))?;
         registry.register(Arc::new(EpubExtractor::new()))?;
         registry.register(Arc::new(FictionBookExtractor::new()))?;
         registry.register(Arc::new(RtfExtractor::new()))?;
@@ -321,6 +332,7 @@ pub fn register_default_extractors() -> Result<()> {
         registry.register(Arc::new(ZipExtractor::new()))?;
         registry.register(Arc::new(TarExtractor::new()))?;
         registry.register(Arc::new(SevenZExtractor::new()))?;
+        registry.register(Arc::new(GzipExtractor::new()))?;
     }
 
     Ok(())
@@ -362,8 +374,10 @@ mod tests {
 
         #[cfg(feature = "xml")]
         {
-            expected_count += 1;
+            expected_count += 3;
             assert!(extractor_names.contains(&"xml-extractor".to_string()));
+            assert!(extractor_names.contains(&"jats-extractor".to_string()));
+            assert!(extractor_names.contains(&"docbook-extractor".to_string()));
         }
 
         #[cfg(feature = "pdf")]
@@ -380,9 +394,10 @@ mod tests {
 
         #[cfg(feature = "office")]
         {
-            expected_count += 10;
+            expected_count += 11;
             assert!(extractor_names.contains(&"markdown-extractor".to_string()));
             assert!(extractor_names.contains(&"bibtex-extractor".to_string()));
+            assert!(extractor_names.contains(&"citation-extractor".to_string()));
             assert!(extractor_names.contains(&"epub-extractor".to_string()));
             assert!(extractor_names.contains(&"fictionbook-extractor".to_string()));
             assert!(extractor_names.contains(&"rtf-extractor".to_string()));
@@ -416,10 +431,11 @@ mod tests {
 
         #[cfg(feature = "archives")]
         {
-            expected_count += 3;
+            expected_count += 4;
             assert!(extractor_names.contains(&"zip-extractor".to_string()));
             assert!(extractor_names.contains(&"tar-extractor".to_string()));
             assert!(extractor_names.contains(&"7z-extractor".to_string()));
+            assert!(extractor_names.contains(&"gzip-extractor".to_string()));
         }
 
         assert_eq!(

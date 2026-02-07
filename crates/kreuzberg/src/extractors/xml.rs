@@ -96,7 +96,12 @@ impl DocumentExtractor for XmlExtractor {
     }
 
     fn supported_mime_types(&self) -> &[&str] {
-        &["application/xml", "text/xml", "image/svg+xml"]
+        &[
+            "application/xml",
+            "text/xml",
+            "image/svg+xml",
+            "application/x-endnote+xml",
+        ]
     }
 
     fn priority(&self) -> i32 {
@@ -142,7 +147,12 @@ mod tests {
         assert_eq!(extractor.version(), env!("CARGO_PKG_VERSION"));
         assert_eq!(
             extractor.supported_mime_types(),
-            &["application/xml", "text/xml", "image/svg+xml"]
+            &[
+                "application/xml",
+                "text/xml",
+                "image/svg+xml",
+                "application/x-endnote+xml"
+            ]
         );
         assert_eq!(extractor.priority(), 50);
     }

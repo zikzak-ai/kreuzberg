@@ -930,6 +930,7 @@ impl TryFrom<JsExtractionConfig> for ExtractionConfig {
                 })
                 .transpose()?
                 .unwrap_or_default(),
+            security_limits: None,
         })
     }
 }

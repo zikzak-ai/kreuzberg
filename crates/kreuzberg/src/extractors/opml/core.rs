@@ -95,7 +95,7 @@ impl DocumentExtractor for OpmlExtractor {
     }
 
     fn supported_mime_types(&self) -> &[&str] {
-        &["text/x-opml", "application/xml+opml"]
+        &["text/x-opml", "application/xml+opml", "application/x-opml+xml"]
     }
 
     fn priority(&self) -> i32 {
@@ -135,6 +135,7 @@ mod tests {
         let supported = extractor.supported_mime_types();
         assert!(supported.contains(&"text/x-opml"));
         assert!(supported.contains(&"application/xml+opml"));
+        assert!(supported.contains(&"application/x-opml+xml"));
     }
 
     #[tokio::test]

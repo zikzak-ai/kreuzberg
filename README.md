@@ -22,7 +22,7 @@
     <img src="https://img.shields.io/maven-central/v/dev.kreuzberg/kreuzberg?label=Java&color=007ec6" alt="Java">
   </a>
   <a href="https://github.com/kreuzberg-dev/kreuzberg/releases">
-    <img src="https://img.shields.io/github/v/tag/kreuzberg-dev/kreuzberg?label=Go&color=007ec6&filter=v4.2.12" alt="Go">
+    <img src="https://img.shields.io/github/v/tag/kreuzberg-dev/kreuzberg?label=Go&color=007ec6&filter=v4.2.13" alt="Go">
   </a>
   <a href="https://www.nuget.org/packages/Kreuzberg/">
     <img src="https://img.shields.io/nuget/v/Kreuzberg?label=C%23&color=007ec6" alt="C#">
@@ -54,13 +54,13 @@
   </a>
 </div>
 
-Extract text and metadata from a wide range of file formats (50+), generate embeddings and post-process at native speeds without needing a GPU.
+Extract text and metadata from a wide range of file formats (62+), generate embeddings and post-process at native speeds without needing a GPU.
 
 ## Key Features
 
 - **Extensible architecture** – Plugin system for custom OCR backends, validators, post-processors, and document extractors
 - **Polyglot** – Native bindings for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, C#, PHP, and Elixir
-- **50+ file formats** – PDF, Office documents, images, HTML, XML, emails, archives, academic formats across 8 categories
+- **62+ file formats** – PDF, Office documents, images, HTML, XML, emails, archives, academic formats across 8 categories
 - **OCR support** – Tesseract (all languages via native binding), EasyOCR/PaddleOCR (Python), Guten (Node.js), extensible via plugin API
 - **High performance** – Rust core with native PDFium, SIMD optimizations and full parallelism
 - **Flexible deployment** – Use as library, CLI tool, REST API server, or MCP server
@@ -133,7 +133,7 @@ To use embeddings functionality:
 
 ## Supported Formats
 
-50+ file formats across 8 major categories with intelligent format detection and comprehensive metadata extraction.
+60+ file formats across 8 major categories with intelligent format detection and comprehensive metadata extraction.
 
 ### Office Documents
 
@@ -150,7 +150,7 @@ To use embeddings functionality:
 | Category | Formats | Features |
 |----------|---------|----------|
 | **Raster** | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.tiff`, `.tif` | OCR, table detection, EXIF metadata, dimensions, color space |
-| **Advanced** | `.jp2`, `.jpx`, `.jpm`, `.mj2`, `.pnm`, `.pbm`, `.pgm`, `.ppm` | OCR, table detection, format-specific metadata |
+| **Advanced** | `.jp2`, `.jpx`, `.jpm`, `.mj2`, `.jbig2`, `.jb2`, `.pnm`, `.pbm`, `.pgm`, `.ppm` | OCR via hayro-jpeg2000 (pure Rust decoder), JBIG2 support, table detection, format-specific metadata |
 | **Vector** | `.svg` | DOM parsing, embedded text, graphics metadata |
 
 ### Web & Data
@@ -172,8 +172,8 @@ To use embeddings functionality:
 
 | Category | Formats | Features |
 |----------|---------|----------|
-| **Citations** | `.bib`, `.biblatex`, `.ris`, `.enw`, `.csl` | Bibliography parsing, citation extraction |
-| **Scientific** | `.tex`, `.latex`, `.typ`, `.jats`, `.ipynb`, `.docbook` | LaTeX, Jupyter notebooks, PubMed JATS |
+| **Citations** | `.bib`, `.biblatex`, `.ris`, `.nbib`, `.enw`, `.csl` | Structured parsing: RIS (structured), PubMed/MEDLINE, EndNote XML (structured), BibTeX, CSL JSON |
+| **Scientific** | `.tex`, `.latex`, `.typ`, `.jats`, `.nbib`, `.ipynb`, `.docbook` | LaTeX, Jupyter notebooks, PubMed JATS, PubMed/MEDLINE citations |
 | **Documentation** | `.opml`, `.pod`, `.mdoc`, `.troff` | Technical documentation formats |
 
 **[Complete Format Reference →](https://docs.kreuzberg.dev/reference/formats/)**

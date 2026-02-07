@@ -7,7 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [4.2.13] - 2026-02-07
+
+### Added
+
+#### Citation Extraction
+- Added structured citation extraction for RIS (`.ris`), PubMed/MEDLINE (`.nbib`), and EndNote XML (`.enw`) formats via `biblib` crate with rich metadata including authors, DOI, year, keywords, and abstract.
+- Added `CitationExtractor` with priority 60 for `application/x-research-info-systems`, `application/x-pubmed`, and `application/x-endnote+xml` MIME types.
+
+#### JPEG 2000 OCR Support
+- Added full JPEG 2000 image decoding for OCR via `hayro-jpeg2000` (pure Rust, memory-safe decoder). JP2 container and J2K codestream images are now decoded to RGB pixels for Tesseract OCR processing.
+- Added pure Rust JP2 metadata parsing (dimensions, format detection) without external dependencies.
+
+#### JBIG2 Image Support
+- Added JBIG2 bi-level image decoding for OCR via `hayro-jbig2` (pure Rust, memory-safe decoder). JBIG2 is commonly used in scanned PDF documents.
+- Added `image/x-jbig2` MIME type with `.jbig2` and `.jb2` file extension mappings.
+
+#### Gzip Archive Extraction
+- Added `GzipExtractor` for extracting text content from gzip-compressed files (`.gz`) via `flate2`, with decompression size limits to prevent gzip bomb attacks.
+
+#### Extractor Registration
+- Registered `JatsExtractor` and `DocbookExtractor` in the default extractor registry (extractors existed but were never registered).
+
+#### MIME Type & Extension Mappings
+- Added missing MIME types to `SUPPORTED_MIME_TYPES`: `text/x-fictionbook`, `application/x-fictionbook`, `text/x-bibtex`, `text/docbook`.
+- Added missing file extension mappings: `.fb2`, `.opml`, `.dbk`, `.j2k`, `.j2c`.
+
+#### Security
+- Wired `SecurityLimits` into the archive extraction pipeline: ZIP, TAR, 7z, and GZIP extractors now enforce configurable limits for max archive size, file count, compression ratio, and content size.
+- Added `security_limits` field to `ExtractionConfig` for user-configurable archive security thresholds.
+- ZIP archives are now validated with `ZipBombValidator` before extraction.
+- Replaced hardcoded 256 MB gzip decompression limit with configurable `max_archive_size` (default 500 MB).
 
 ### Fixed
 

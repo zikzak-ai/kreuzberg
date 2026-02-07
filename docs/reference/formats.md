@@ -1,6 +1,6 @@
 # Format Support
 
-Kreuzberg supports 50+ file formats across major categories, providing comprehensive document intelligence capabilities through native Rust extractors and LibreOffice conversion.
+Kreuzberg supports 62+ file formats across major categories, providing comprehensive document intelligence capabilities through native Rust extractors and LibreOffice conversion.
 
 ## Overview
 
@@ -69,7 +69,8 @@ All image formats support OCR when configured with `ocr` parameter in `Extractio
 | BMP | `.bmp` | `image/bmp`, `image/x-bmp`, `image/x-ms-bmp` | Native Rust (image-rs) | Yes | Uncompressed format |
 | TIFF | `.tiff`, `.tif` | `image/tiff`, `image/x-tiff` | Native Rust (image-rs) | Yes | Multi-page support |
 | GIF | `.gif` | `image/gif` | Native Rust (image-rs) | Yes | Animation frame extraction |
-| JPEG 2000 | `.jp2`, `.jpx`, `.jpm`, `.mj2` | `image/jp2`, `image/jpx`, `image/jpm`, `image/mj2` | Native Rust (image-rs) | Yes | Advanced JPEG format |
+| JPEG 2000 | `.jp2`, `.jpx`, `.jpm`, `.mj2` | `image/jp2`, `image/jpx`, `image/jpm`, `image/mj2` | Native Rust (hayro-jpeg2000) | Yes | OCR: Pure Rust, memory-safe decoder for JP2 container and J2K codestream formats, table detection, format-specific metadata |
+| JBIG2 | `.jbig2`, `.jb2` | `image/x-jbig2` | Native Rust (hayro-jbig2) | Yes | OCR: Pure Rust bi-level decoder, commonly found in scanned PDFs |
 | PNM Family | `.pnm`, `.pbm`, `.pgm`, `.ppm` | `image/x-portable-anymap`, etc. | Native Rust (image-rs) | Yes | NetPBM formats |
 
 ### Archives
@@ -79,7 +80,7 @@ All image formats support OCR when configured with `ocr` parameter in `Extractio
 | ZIP | `.zip` | `application/zip`, `application/x-zip-compressed` | Native Rust (zip crate) | No | File listing, text content extraction |
 | TAR | `.tar`, `.tgz` | `application/x-tar`, `application/tar`, `application/x-gtar`, `application/x-ustar` | Native Rust (tar crate) | No | Unix archive support, compression detection |
 | 7-Zip | `.7z` | `application/x-7z-compressed` | Native Rust (sevenz-rust) | No | High compression format support |
-| Gzip | `.gz` | `application/gzip` | Native Rust | No | Gzip compression support |
+| Gzip | `.gz` | `application/gzip`, `application/x-gzip` | Native Rust (flate2) | No | Gzip decompression with text extraction |
 
 ### Academic & Publishing (Native)
 
@@ -94,8 +95,9 @@ All image formats support OCR when configured with `ocr` parameter in `Extractio
 | DocBook | - | `application/docbook+xml` | Native (roxmltree) | No | Technical documentation format |
 | JATS | - | `application/x-jats+xml` | Native (roxmltree) | No | Journal article XML format |
 | OPML | - | `application/x-opml+xml` | Native (roxmltree) | No | Outline format |
-| RIS | - | `application/x-research-info-systems` | Native (ris-parser) | No | Citation format |
-| EndNote XML | - | `application/x-endnote+xml` | Native (XML parser) | No | Reference manager format |
+| RIS | `.ris` | `application/x-research-info-systems` | Native (biblib) | No | Structured citation parsing with title, authors, DOI, and abstract extraction |
+| EndNote XML | `.enw` | `application/x-endnote+xml` | Native (biblib) | No | Structured citation parsing with title, authors, DOI, and keywords extraction |
+| PubMed/MEDLINE | `.nbib` | `application/x-pubmed` | Native (biblib) | No | Structured citation parsing with author affiliations, MeSH terms, and abstract |
 | CSL JSON | - | `application/csl+json` | Native (JSON parser) | No | Citation Style Language JSON |
 
 ### Markdown Variants (Native)
@@ -246,7 +248,7 @@ sudo dnf install libreoffice
 
 Kreuzberg automatically detects file formats using:
 
-1. **File Extension Mapping**: 57 formats mapped to MIME types
+1. **File Extension Mapping**: 60+ formats mapped to MIME types
 2. **mime_guess Crate**: Fallback for unknown extensions
 3. **Manual Override**: Explicit MIME type can be provided
 

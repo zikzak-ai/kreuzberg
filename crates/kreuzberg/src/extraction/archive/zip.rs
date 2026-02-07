@@ -4,6 +4,7 @@
 
 use super::{ArchiveEntry, ArchiveMetadata, TEXT_EXTENSIONS};
 use crate::error::{KreuzbergError, Result};
+use crate::extractors::security::SecurityLimits;
 use std::collections::HashMap;
 use std::io::{Cursor, Read};
 use zip::ZipArchive;
@@ -13,6 +14,7 @@ use zip::ZipArchive;
 /// # Arguments
 ///
 /// * `bytes` - The ZIP archive bytes
+/// * `limits` - Security limits for archive extraction
 ///
 /// # Returns
 ///
@@ -24,11 +26,20 @@ use zip::ZipArchive;
 ///
 /// # Errors
 ///
-/// Returns an error if the ZIP archive cannot be read or parsed.
-pub fn extract_zip_metadata(bytes: &[u8]) -> Result<ArchiveMetadata> {
+/// Returns an error if the ZIP archive cannot be read or parsed,
+/// or if security limits are exceeded.
+pub fn extract_zip_metadata(bytes: &[u8], limits: &SecurityLimits) -> Result<ArchiveMetadata> {
     let cursor = Cursor::new(bytes);
     let mut archive =
         ZipArchive::new(cursor).map_err(|e| KreuzbergError::parsing(format!("Failed to read ZIP archive: {}", e)))?;
+
+    if archive.len() > limits.max_files_in_archive {
+        return Err(KreuzbergError::validation(format!(
+            "ZIP archive has too many files: {} (max: {})",
+            archive.len(),
+            limits.max_files_in_archive
+        )));
+    }
 
     let mut file_list = Vec::with_capacity(archive.len());
     let mut total_size = 0u64;
@@ -44,6 +55,13 @@ pub fn extract_zip_metadata(bytes: &[u8]) -> Result<ArchiveMetadata> {
 
         if !is_dir {
             total_size += size;
+        }
+
+        if total_size > limits.max_archive_size as u64 {
+            return Err(KreuzbergError::validation(format!(
+                "ZIP archive total uncompressed size exceeds limit: {} bytes (max: {} bytes)",
+                total_size, limits.max_archive_size
+            )));
         }
 
         file_list.push(ArchiveEntry { path, size, is_dir });
@@ -73,13 +91,22 @@ pub fn extract_zip_metadata(bytes: &[u8]) -> Result<ArchiveMetadata> {
 /// # Errors
 ///
 /// Returns an error if the ZIP archive cannot be read or parsed.
-pub fn extract_zip_text_content(bytes: &[u8]) -> Result<HashMap<String, String>> {
+pub fn extract_zip_text_content(bytes: &[u8], limits: &SecurityLimits) -> Result<HashMap<String, String>> {
     let cursor = Cursor::new(bytes);
     let mut archive =
         ZipArchive::new(cursor).map_err(|e| KreuzbergError::parsing(format!("Failed to read ZIP archive: {}", e)))?;
 
+    if archive.len() > limits.max_files_in_archive {
+        return Err(KreuzbergError::validation(format!(
+            "ZIP archive has too many files: {} (max: {})",
+            archive.len(),
+            limits.max_files_in_archive
+        )));
+    }
+
     let estimated_text_files = archive.len().saturating_mul(3).saturating_div(10).max(2);
     let mut contents = HashMap::with_capacity(estimated_text_files);
+    let mut total_content_size = 0usize;
 
     for i in 0..archive.len() {
         let mut file = archive
@@ -92,6 +119,13 @@ pub fn extract_zip_text_content(bytes: &[u8]) -> Result<HashMap<String, String>>
             let estimated_size = (file.size() as usize).min(10 * 1024 * 1024);
             let mut content = String::with_capacity(estimated_size);
             if file.read_to_string(&mut content).is_ok() {
+                total_content_size = total_content_size.saturating_add(content.len());
+                if total_content_size > limits.max_content_size {
+                    return Err(KreuzbergError::validation(format!(
+                        "ZIP archive text content exceeds limit: {} bytes (max: {} bytes)",
+                        total_content_size, limits.max_content_size
+                    )));
+                }
                 contents.insert(path, content);
             }
         }

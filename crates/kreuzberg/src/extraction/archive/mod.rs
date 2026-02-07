@@ -5,14 +5,17 @@
 //! - ZIP archives
 //! - TAR archives (including compressed TAR.GZ, TAR.BZ2)
 //! - 7Z archives
+//! - GZIP archives
 //!
 //! Each format has its own submodule with specialized extraction logic.
 
+mod gzip;
 mod sevenz;
 mod tar;
 mod zip;
 
 // Re-export all public functions for backward compatibility
+pub use gzip::{decompress_gzip, extract_gzip, extract_gzip_metadata, extract_gzip_text_content};
 pub use sevenz::{extract_7z_metadata, extract_7z_text_content};
 pub use tar::{extract_tar_metadata, extract_tar_text_content};
 pub use zip::{extract_zip_metadata, extract_zip_text_content};
@@ -49,9 +52,14 @@ pub(crate) const TEXT_EXTENSIONS: &[&str] = &[
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::extractors::security::SecurityLimits;
     use ::tar::Builder as TarBuilder;
     use ::zip::write::{FileOptions, ZipWriter};
     use std::io::{Cursor, Write};
+
+    fn default_limits() -> SecurityLimits {
+        SecurityLimits::default()
+    }
 
     #[test]
     fn test_extract_zip_metadata() {
@@ -70,7 +78,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_zip_metadata(&bytes).unwrap();
+        let metadata = extract_zip_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "ZIP");
         assert_eq!(metadata.file_count, 2);
@@ -102,7 +110,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_tar_metadata(&bytes).unwrap();
+        let metadata = extract_tar_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "TAR");
         assert_eq!(metadata.file_count, 2);
@@ -127,7 +135,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let contents = extract_zip_text_content(&bytes).unwrap();
+        let contents = extract_zip_text_content(&bytes, &default_limits()).unwrap();
 
         assert_eq!(contents.len(), 2);
         assert_eq!(contents.get("test.txt").unwrap(), "Hello, World!");
@@ -158,7 +166,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let contents = extract_tar_text_content(&bytes).unwrap();
+        let contents = extract_tar_text_content(&bytes, &default_limits()).unwrap();
 
         assert_eq!(contents.len(), 2);
         assert_eq!(contents.get("test.txt").unwrap(), "Hello, World!");
@@ -168,14 +176,14 @@ mod tests {
     #[test]
     fn test_extract_zip_metadata_invalid() {
         let invalid_bytes = vec![0, 1, 2, 3, 4, 5];
-        let result = extract_zip_metadata(&invalid_bytes);
+        let result = extract_zip_metadata(&invalid_bytes, &default_limits());
         assert!(result.is_err());
     }
 
     #[test]
     fn test_extract_tar_metadata_invalid() {
         let invalid_bytes = vec![0, 1, 2, 3, 4, 5];
-        let result = extract_tar_metadata(&invalid_bytes);
+        let result = extract_tar_metadata(&invalid_bytes, &default_limits());
         assert!(result.is_err());
     }
 
@@ -199,7 +207,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_zip_metadata(&bytes).unwrap();
+        let metadata = extract_zip_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "ZIP");
         assert_eq!(metadata.file_count, 4);
@@ -233,7 +241,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_tar_metadata(&bytes).unwrap();
+        let metadata = extract_tar_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "TAR");
         assert_eq!(metadata.file_count, 2);
@@ -258,7 +266,7 @@ mod tests {
             tar.finish().unwrap();
         }
 
-        let metadata = extract_tar_metadata(&tar_data).unwrap();
+        let metadata = extract_tar_metadata(&tar_data, &default_limits()).unwrap();
         assert_eq!(metadata.format, "TAR");
         assert_eq!(metadata.file_count, 1);
         assert_eq!(metadata.file_list[0].path, "test.txt");
@@ -288,7 +296,7 @@ mod tests {
         };
 
         let bytes = cursor.into_inner();
-        let metadata = extract_7z_metadata(&bytes).unwrap();
+        let metadata = extract_7z_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "7Z");
         assert_eq!(metadata.file_count, 2);
@@ -324,7 +332,7 @@ mod tests {
         }
 
         let outer_bytes = outer_cursor.into_inner();
-        let metadata = extract_zip_metadata(&outer_bytes).unwrap();
+        let metadata = extract_zip_metadata(&outer_bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.file_count, 2);
 
@@ -371,7 +379,7 @@ mod tests {
         }
 
         let outer_bytes = outer_cursor.into_inner();
-        let metadata = extract_tar_metadata(&outer_bytes).unwrap();
+        let metadata = extract_tar_metadata(&outer_bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.file_count, 2);
 
@@ -397,7 +405,7 @@ mod tests {
         let mut corrupted = valid_cursor.into_inner();
         corrupted.truncate(corrupted.len() / 2);
 
-        let result = extract_zip_metadata(&corrupted);
+        let result = extract_zip_metadata(&corrupted, &default_limits());
         assert!(result.is_err());
 
         if let Err(e) = result {
@@ -424,7 +432,7 @@ mod tests {
         let mut corrupted = valid_cursor.into_inner();
         corrupted[100] = 0xFF;
 
-        let result = extract_tar_metadata(&corrupted);
+        let result = extract_tar_metadata(&corrupted, &default_limits());
         assert!(result.is_err());
     }
 
@@ -437,7 +445,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_zip_metadata(&bytes).unwrap();
+        let metadata = extract_zip_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "ZIP");
         assert_eq!(metadata.file_count, 0);
@@ -454,7 +462,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_tar_metadata(&bytes).unwrap();
+        let metadata = extract_tar_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "TAR");
         assert_eq!(metadata.file_count, 0);
@@ -485,7 +493,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let contents = extract_zip_text_content(&bytes).unwrap();
+        let contents = extract_zip_text_content(&bytes, &default_limits()).unwrap();
 
         assert_eq!(contents.len(), 3);
         assert_eq!(contents.get("file1.txt").unwrap(), "Content 1");
@@ -519,7 +527,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let contents = extract_tar_text_content(&bytes).unwrap();
+        let contents = extract_tar_text_content(&bytes, &default_limits()).unwrap();
 
         assert_eq!(contents.len(), 4);
         assert_eq!(contents.get("file1.txt").unwrap(), "Content 1");
@@ -552,7 +560,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_zip_metadata(&bytes).unwrap();
+        let metadata = extract_zip_metadata(&bytes, &default_limits()).unwrap();
 
         let paths: Vec<&str> = metadata.file_list.iter().map(|e| e.path.as_str()).collect();
         assert!(paths.contains(&"root/"));
@@ -579,12 +587,12 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_zip_metadata(&bytes).unwrap();
+        let metadata = extract_zip_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.file_count, 1);
         assert_eq!(metadata.total_size, 10_000);
 
-        let contents = extract_zip_text_content(&bytes).unwrap();
+        let contents = extract_zip_text_content(&bytes, &default_limits()).unwrap();
         assert_eq!(contents.get("large.txt").unwrap().len(), 10_000);
     }
 
@@ -607,12 +615,12 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_zip_metadata(&bytes).unwrap();
+        let metadata = extract_zip_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.file_count, 100);
         assert_eq!(metadata.file_list.len(), 100);
 
-        let contents = extract_zip_text_content(&bytes).unwrap();
+        let contents = extract_zip_text_content(&bytes, &default_limits()).unwrap();
         assert_eq!(contents.len(), 100);
     }
 
@@ -632,12 +640,12 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_zip_metadata(&bytes).unwrap();
+        let metadata = extract_zip_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.file_count, 1);
         assert!(metadata.file_list[0].path.len() > 200);
 
-        let contents = extract_zip_text_content(&bytes).unwrap();
+        let contents = extract_zip_text_content(&bytes, &default_limits()).unwrap();
         assert_eq!(contents.len(), 1);
     }
 
@@ -665,7 +673,7 @@ mod tests {
         };
 
         let bytes = cursor.into_inner();
-        let contents = extract_7z_text_content(&bytes).unwrap();
+        let contents = extract_7z_text_content(&bytes, &default_limits()).unwrap();
 
         assert_eq!(contents.len(), 2);
         assert_eq!(contents.get("test.txt").unwrap(), "Hello 7z text!");
@@ -683,7 +691,7 @@ mod tests {
         };
 
         let bytes = cursor.into_inner();
-        let metadata = extract_7z_metadata(&bytes).unwrap();
+        let metadata = extract_7z_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.format, "7Z");
         assert_eq!(metadata.file_count, 0);
@@ -708,12 +716,12 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let metadata = extract_tar_metadata(&bytes).unwrap();
+        let metadata = extract_tar_metadata(&bytes, &default_limits()).unwrap();
 
         assert_eq!(metadata.file_count, 1);
         assert_eq!(metadata.total_size, 50_000);
 
-        let contents = extract_tar_text_content(&bytes).unwrap();
+        let contents = extract_tar_text_content(&bytes, &default_limits()).unwrap();
         assert_eq!(contents.get("large.txt").unwrap().len(), 50_000);
     }
 
@@ -740,7 +748,7 @@ mod tests {
         }
 
         let bytes = cursor.into_inner();
-        let contents = extract_zip_text_content(&bytes).unwrap();
+        let contents = extract_zip_text_content(&bytes, &default_limits()).unwrap();
 
         assert_eq!(contents.len(), 2);
         assert!(contents.contains_key("document.txt"));
@@ -755,11 +763,119 @@ mod tests {
 
         let invalid_7z_data = vec![0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C, 0x00];
 
-        let result = extract_7z_metadata(&invalid_7z_data);
+        let result = extract_7z_metadata(&invalid_7z_data, &default_limits());
         assert!(result.is_err());
 
         if let Err(e) = result {
             assert!(matches!(e, KreuzbergError::Parsing { .. }));
         }
+    }
+
+    #[test]
+    fn test_extract_gzip_metadata() {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+        use std::io::Write;
+
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(b"Hello from gzip!").unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        let metadata = extract_gzip_metadata(&compressed, &default_limits()).unwrap();
+        assert_eq!(metadata.format, "GZIP");
+        assert_eq!(metadata.file_count, 1);
+        assert_eq!(metadata.total_size, 16);
+    }
+
+    #[test]
+    fn test_extract_gzip_text_content() {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+        use std::io::Write;
+
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(b"Hello from gzip!").unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        let contents = extract_gzip_text_content(&compressed, &default_limits()).unwrap();
+        assert_eq!(contents.len(), 1);
+        assert!(contents.values().next().unwrap().contains("Hello from gzip!"));
+    }
+
+    #[test]
+    fn test_decompress_gzip() {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+        use std::io::Write;
+
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(b"test content").unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        let decompressed = decompress_gzip(&compressed, &default_limits()).unwrap();
+        assert_eq!(String::from_utf8(decompressed).unwrap(), "test content");
+    }
+
+    #[test]
+    fn test_extract_gzip_invalid_data() {
+        let invalid = vec![0, 1, 2, 3, 4, 5];
+        let result = extract_gzip_metadata(&invalid, &default_limits());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_extract_gzip_empty_content() {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+
+        let encoder = GzEncoder::new(Vec::new(), Compression::default());
+        let compressed = encoder.finish().unwrap();
+
+        let metadata = extract_gzip_metadata(&compressed, &default_limits()).unwrap();
+        assert_eq!(metadata.format, "GZIP");
+        assert_eq!(metadata.total_size, 0);
+    }
+
+    #[test]
+    fn test_zip_too_many_files_rejected() {
+        let mut cursor = Cursor::new(Vec::new());
+        {
+            let mut zip = ZipWriter::new(&mut cursor);
+            let options = FileOptions::<'_, ()>::default();
+
+            for i in 0..5 {
+                let filename = format!("file_{}.txt", i);
+                zip.start_file(&filename, options).unwrap();
+                zip.write_all(b"content").unwrap();
+            }
+            zip.finish().unwrap();
+        }
+
+        let bytes = cursor.into_inner();
+        let limits = SecurityLimits {
+            max_files_in_archive: 3,
+            ..SecurityLimits::default()
+        };
+        let result = extract_zip_metadata(&bytes, &limits);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_gzip_bomb_rejected() {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+        use std::io::Write;
+
+        // Create data that exceeds a tiny limit
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(&[b'A'; 1024]).unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        let limits = SecurityLimits {
+            max_archive_size: 100, // 100 bytes limit
+            ..SecurityLimits::default()
+        };
+        let result = extract_gzip_metadata(&compressed, &limits);
+        assert!(result.is_err());
     }
 }

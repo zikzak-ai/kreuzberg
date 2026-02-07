@@ -38,6 +38,7 @@ office = [
     "dep:quick-xml",
     "dep:pulldown-cmark",
     "dep:biblatex",
+    "dep:biblib",
     "dep:org",
     "dep:rtf-parser",
     "dep:rst_parser",
@@ -49,7 +50,7 @@ office = [
 email = ["dep:mail-parser", "dep:msg_parser"]
 html = ["dep:html-to-markdown-rs"]
 xml = ["dep:quick-xml", "dep:roxmltree"]
-archives = ["dep:zip", "dep:tar", "dep:sevenz-rust2", "dep:lzma-rust2"]
+archives = ["dep:zip", "dep:tar", "dep:sevenz-rust2", "dep:lzma-rust2", "dep:flate2"]
 
 ocr = [
     "dep:kreuzberg-tesseract",
@@ -58,6 +59,8 @@ ocr = [
     "dep:fast_image_resize",
     "dep:ndarray",
     "dep:kamadak-exif",
+    "dep:hayro-jpeg2000",
+    "dep:hayro-jbig2",
     "html",
 ]
 language-detection = ["dep:whatlang"]
@@ -76,7 +79,7 @@ mcp-http = ["mcp", "api"]
 
 otel = ["dep:opentelemetry", "dep:opentelemetry_sdk", "dep:tracing-opentelemetry"]
 
-wasm-target = ["pdf", "html", "xml", "email", "language-detection", "chunking", "quality"]
+wasm-target = ["pdf", "html", "xml", "email", "language-detection", "chunking", "quality", "office"]
 wasm-threads = ["dep:wasm-bindgen-rayon"]
 
 full = [
@@ -164,9 +167,16 @@ quick-xml = { version = "0.39.0", features = ["serialize"], optional = true }
 tar = { version = "0.4.44", optional = true }
 sevenz-rust2 = { version = "0.20.1", optional = true }
 lzma-rust2 = { workspace = true, optional = true }
+flate2 = { version = "1.0", optional = true }
 
 pulldown-cmark = { version = "0.13", optional = true }
 biblatex = { version = "0.11", optional = true }
+biblib = { version = "0.3", default-features = false, features = [
+    "ris",
+    "pubmed",
+    "xml",
+    "regex",
+], optional = true }
 org = { version = "0.3", optional = true }
 rtf-parser = { version = "0.4", optional = true }
 rst_parser = { version = "0.4", optional = true }
@@ -181,12 +191,18 @@ image = { workspace = true, default-features = false, features = [
     "bmp",
     "tiff",
     "gif",
+    "pnm",
     "rayon",
 ], optional = true }
 tiff = { version = "0.11", optional = true }
 fast_image_resize = { version = "6.0.0", optional = true }
 ndarray = { version = "0.17.2", optional = true }
 kamadak-exif = { version = "0.6.1", optional = true }
+hayro-jpeg2000 = { version = "0.3", default-features = false, features = [
+    "std",
+    "simd",
+], optional = true }
+hayro-jbig2 = { version = "0.1", default-features = false, features = ["std"], optional = true }
 whatlang = { version = "0.18.0", optional = true }
 text-splitter = { version = "0.29.3", features = ["markdown"], optional = true }
 unicode-normalization = { version = "0.1.25", optional = true }

@@ -8,6 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kreuzberg" Version="4.2.12" />
+    <PackageReference Include="Kreuzberg" Version="4.2.13" />
   </ItemGroup>
 </Project>

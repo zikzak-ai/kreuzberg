@@ -512,7 +512,7 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 
 [[package]]
 name = "benchmark-harness"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "ahash",
  "async-trait",
@@ -545,6 +545,21 @@ dependencies = [
  "strum",
  "unicode-normalization",
  "unscanny",
+]
+
+[[package]]
+name = "biblib"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "877d134cd77e9e3c8b90e848d5e28e3126aa8db8d66a6f97e7af89c468f631a9"
+dependencies = [
+ "compact_str",
+ "either",
+ "itertools 0.14.0",
+ "quick-xml 0.37.5",
+ "regex",
+ "serde",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -1657,7 +1672,7 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "e2e-rust"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "async-trait",
  "hex",
@@ -1989,6 +2004,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c"
 dependencies = [
  "simd-adler32",
+]
+
+[[package]]
+name = "fearless_simd"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fb2907d1f08b2b316b9223ced5b0e89d87028ba8deae9764741dba8ff7f3903"
+dependencies = [
+ "bytemuck",
 ]
 
 [[package]]
@@ -2369,6 +2393,30 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "hayro-ccitt"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2db6494c3070f0e3cd9de52ee1a562ba3b2f832cd17b5537180c28294ca088eb"
+
+[[package]]
+name = "hayro-jbig2"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d7d4358462d3e5aeeb4dcfdea5467821d6551f6cb4607cc037ac99131bc1e32"
+dependencies = [
+ "hayro-ccitt",
+]
+
+[[package]]
+name = "hayro-jpeg2000"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e94b34463cd6309fdfe9a541f07e8343ffe5738534cbca6845960ec41cc077a"
+dependencies = [
+ "fearless_simd",
 ]
 
 [[package]]
@@ -3095,7 +3143,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "ahash",
  "anyhow",
@@ -3104,6 +3152,7 @@ dependencies = [
  "base64 0.22.1",
  "base64-simd",
  "biblatex",
+ "biblib",
  "bitvec",
  "bytes",
  "calamine",
@@ -3116,7 +3165,10 @@ dependencies = [
  "fastembed",
  "fb2",
  "filetime",
+ "flate2",
  "getrandom 0.3.4",
+ "hayro-jbig2",
+ "hayro-jpeg2000",
  "hex",
  "html-to-markdown-rs",
  "image",
@@ -3189,7 +3241,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-cli"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -3205,7 +3257,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-e2e-generator"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -3223,7 +3275,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-ffi"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "ahash",
  "async-trait",
@@ -3241,7 +3293,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-node"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "ahash",
  "async-trait",
@@ -3279,7 +3331,7 @@ dependencies = [
  "image",
  "itertools 0.14.0",
  "js-sys",
- "libloading 0.9.0",
+ "libloading 0.8.9",
  "log",
  "maybe-owned",
  "once_cell",
@@ -3292,7 +3344,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-php"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "ahash",
  "async-trait",
@@ -3307,7 +3359,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-py"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "ahash",
  "async-trait",
@@ -3324,7 +3376,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-tesseract"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "cc",
  "cmake",
@@ -3337,7 +3389,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-wasm"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -3361,7 +3413,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg_rustler"
-version = "4.2.12"
+version = "4.2.13"
 dependencies = [
  "kreuzberg",
  "rustler",
@@ -5442,6 +5494,15 @@ checksum = "eff6510e86862b57b210fd8cbe8ed3f0d7d600b9c2863cd4549a2e033c66e956"
 dependencies = [
  "memchr",
  "serde",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.37.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "331e97a1af0bf59823e6eadffe373d7b27f485be8748f71471c662c1f269b7fb"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]

@@ -80,6 +80,10 @@ static EXT_TO_MIME: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
     m.insert("jpx", "image/jpx");
     m.insert("jpm", "image/jpm");
     m.insert("mj2", "image/mj2");
+    m.insert("j2k", "image/jp2");
+    m.insert("j2c", "image/jp2");
+    m.insert("jbig2", "image/x-jbig2");
+    m.insert("jb2", "image/x-jbig2");
     m.insert("pnm", "image/x-portable-anymap");
     m.insert("pbm", "image/x-portable-bitmap");
     m.insert("pgm", "image/x-portable-graymap");
@@ -108,10 +112,18 @@ static EXT_TO_MIME: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
     m.insert("epub", "application/epub+zip");
     m.insert("rtf", "application/rtf");
     m.insert("bib", "application/x-bibtex");
+    m.insert("ris", "application/x-research-info-systems");
+    m.insert("nbib", "application/x-pubmed");
+    m.insert("enw", "application/x-endnote+xml");
+    m.insert("fb2", "application/x-fictionbook+xml");
+    m.insert("opml", "application/xml+opml");
+    m.insert("dbk", "application/docbook+xml");
     m.insert("ipynb", "application/x-ipynb+json");
     m.insert("tex", "application/x-latex");
     m.insert("latex", "application/x-latex");
     m.insert("typst", "application/x-typst");
+    m.insert("typ", "application/x-typst");
+    m.insert("djot", "text/x-djot");
     m.insert("commonmark", "text/x-commonmark");
 
     m
@@ -137,6 +149,7 @@ static SUPPORTED_MIME_TYPES: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     set.insert("image/tiff");
     set.insert("image/webp");
     set.insert("image/x-bmp");
+    set.insert("image/x-jbig2");
     set.insert("image/x-ms-bmp");
     set.insert("image/x-portable-anymap");
     set.insert("image/x-portable-bitmap");
@@ -146,20 +159,25 @@ static SUPPORTED_MIME_TYPES: Lazy<HashSet<&'static str>> = Lazy::new(|| {
 
     set.insert("application/csl+json");
     set.insert("application/docbook+xml");
+    set.insert("text/docbook");
     set.insert("application/epub+zip");
     set.insert("application/rtf");
     set.insert("application/vnd.oasis.opendocument.text");
     set.insert(DOCX_MIME_TYPE);
     set.insert("application/x-biblatex");
     set.insert("application/x-bibtex");
+    set.insert("text/x-bibtex");
     set.insert("application/x-endnote+xml");
     set.insert("application/x-fictionbook+xml");
+    set.insert("application/x-fictionbook");
+    set.insert("text/x-fictionbook");
     set.insert("application/x-ipynb+json");
     set.insert("application/x-jats+xml");
     set.insert("application/x-latex");
     set.insert("application/xml+opml");
     set.insert("application/x-opml+xml");
     set.insert("application/x-research-info-systems");
+    set.insert("application/x-pubmed");
     set.insert("application/x-typst");
     set.insert("text/csv");
     set.insert("text/tab-separated-values");
@@ -210,7 +228,25 @@ static SUPPORTED_MIME_TYPES: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     set.insert("application/tar");
     set.insert("application/x-gtar");
     set.insert("application/x-ustar");
+    set.insert("application/gzip");
+    set.insert("application/x-gzip");
     set.insert("application/x-7z-compressed");
+
+    set.insert("text/djot");
+    set.insert("text/x-djot");
+
+    // Additional extractor-supported MIME types that must stay in sync
+    set.insert("text/jats");
+    set.insert("application/x-epub+zip");
+    set.insert("application/vnd.epub+zip");
+    set.insert("text/rtf");
+    set.insert("text/prs.fallenstein.rst");
+    set.insert("text/x-tex");
+    set.insert("text/org");
+    set.insert("application/x-org");
+    set.insert("application/xhtml+xml");
+    set.insert("text/x-typst");
+    set.insert("image/jpg");
 
     set
 });
@@ -289,6 +325,15 @@ pub fn validate_mime_type(mime_type: &str) -> Result<String> {
 
     if mime_type.starts_with("image/") {
         return Ok(mime_type.to_string());
+    }
+
+    // Case-insensitive fallback: MIME types are case-insensitive per RFC 2045.
+    // This handles common mismatches like "macroEnabled" vs "macroenabled".
+    let lower = mime_type.to_ascii_lowercase();
+    for supported in SUPPORTED_MIME_TYPES.iter() {
+        if supported.to_ascii_lowercase() == lower {
+            return Ok(supported.to_string());
+        }
     }
 
     Err(KreuzbergError::UnsupportedFormat(mime_type.to_string()))
@@ -621,8 +666,8 @@ mod tests {
         let file_path = dir.path().join("testfile");
         File::create(&file_path).unwrap();
 
-        let result = detect_mime_type(&file_path, true);
-        assert!(result.is_err() || result.is_ok());
+        let _result = detect_mime_type(&file_path, true);
+        // Files without extensions may or may not be detected via mime_guess fallback
     }
 
     #[test]

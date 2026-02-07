@@ -238,7 +238,14 @@ impl DocumentExtractor for MarkdownExtractor {
     }
 
     fn supported_mime_types(&self) -> &[&str] {
-        &["text/markdown", "text/x-markdown", "text/x-gfm", "text/x-commonmark"]
+        &[
+            "text/markdown",
+            "text/x-markdown",
+            "text/x-gfm",
+            "text/x-commonmark",
+            "text/x-markdown-extra",
+            "text/x-multimarkdown",
+        ]
     }
 
     fn priority(&self) -> i32 {
@@ -261,6 +268,8 @@ mod tests {
         assert!(mime_types.contains(&"text/x-markdown"));
         assert!(mime_types.contains(&"text/x-gfm"));
         assert!(mime_types.contains(&"text/x-commonmark"));
+        assert!(mime_types.contains(&"text/x-markdown-extra"));
+        assert!(mime_types.contains(&"text/x-multimarkdown"));
     }
 
     #[test]

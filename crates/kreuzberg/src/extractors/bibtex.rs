@@ -180,7 +180,7 @@ impl DocumentExtractor for BibtexExtractor {
     }
 
     fn supported_mime_types(&self) -> &[&str] {
-        &["application/x-bibtex", "text/x-bibtex"]
+        &["application/x-bibtex", "text/x-bibtex", "application/x-biblatex"]
     }
 
     fn priority(&self) -> i32 {
@@ -199,7 +199,8 @@ mod tests {
 
         assert!(supported.contains(&"application/x-bibtex"));
         assert!(supported.contains(&"text/x-bibtex"));
-        assert_eq!(supported.len(), 2);
+        assert!(supported.contains(&"application/x-biblatex"));
+        assert_eq!(supported.len(), 3);
     }
 
     #[tokio::test]
