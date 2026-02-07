@@ -43,6 +43,7 @@ const MIME_MAP: Record<string, string> = {
 	".ods": "application/vnd.oasis.opendocument.spreadsheet",
 	".rtf": "application/rtf",
 	".epub": "application/epub+zip",
+	".fb2": "application/x-fictionbook+xml",
 	".rst": "text/x-rst",
 	".org": "text/x-org",
 	".bib": "application/x-bibtex",
