@@ -34,7 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### musl Linux Support
 - **Re-enabled musl targets**: Added `x86_64-unknown-linux-musl` and `aarch64-unknown-linux-musl` targets for CLI binaries, Python wheels (musllinux), and Node.js native bindings. Resolves glibc 2.38+ requirement for prebuilt CLI binaries on older distros like Ubuntu 22.04 (#364).
 - **musl CI workflows**: Added dedicated `ci-musl.yaml` workflow for CLI musl build validation with Alpine container smoke tests, and musllinux Python wheel builds to `ci-python.yaml`.
-- **PDFium musl awareness**: Build script now downloads musl-specific PDFium binaries and uses correct C++ standard library (`libc++`) for musl targets.
+- **PDFium musl awareness**: Build script now downloads musl-specific PDFium binaries and uses `libstdc++` consistently for all Linux targets (including musl).
+- **musl C++ cross-compilation**: Added `resolve_cxx_compiler()` and `create_musl_cxx_wrapper()` to `kreuzberg-tesseract` build script for correct C++ header resolution when cross-compiling from glibc host to musl target. Skips `-ldl` linking on musl (not available/needed).
+
+#### Build System
+- **Tesseract 5.5.2**: Bumped vendored Tesseract from 5.5.1 to 5.5.2 with `BUILD_TESSERACT_BINARY=OFF` to skip unnecessary binary compilation.
+- **Leptonica 1.87.0**: Bumped vendored Leptonica from 1.86.0 to 1.87.0.
+- **ONNX Runtime 1.24.1**: Bumped ONNX Runtime from 1.23.2 to 1.24.1.
+- **Dead code cleanup**: Removed unused EMSDK constants and `apply_patches()` function from `kreuzberg-tesseract` build script.
 
 ### Removed
 

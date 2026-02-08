@@ -7,14 +7,8 @@ mod build_tesseract {
     use std::fs;
     use std::path::{Path, PathBuf};
 
-    const LEPTONICA_VERSION: &str = "1.86.0";
-    const TESSERACT_VERSION: &str = "5.5.1";
-    #[allow(dead_code)]
-    const EMSDK_COMMIT: &str = "974d5c096bd56e42045d052a47b28198ce75e2a8";
-    #[allow(dead_code)]
-    const EMSDK_VERSION: &str = "3.1.31";
-    #[allow(dead_code)]
-    const EMSDK_REPOSITORY: &str = "https://github.com/emscripten-core/emsdk.git";
+    const LEPTONICA_VERSION: &str = "1.87.0";
+    const TESSERACT_VERSION: &str = "5.5.2";
 
     fn leptonica_url() -> String {
         format!(
@@ -106,6 +100,77 @@ mod build_tesseract {
 
     fn is_wasm_target(target: &str) -> bool {
         target_matches(target, "wasm32") || target_matches(target, "wasm64")
+    }
+
+    /// Resolve the C++ compiler for CMake, following the cc-rs/Cargo convention:
+    /// 1. Check `CXX` env var (explicit override)
+    /// 2. Check target-specific `CXX_{target}` env var (e.g. `CXX_x86_64_unknown_linux_musl`)
+    /// 3. Fall back to `{fallback}` (e.g. "clang++" or "g++")
+    fn resolve_cxx_compiler(target: &str, fallback: &str) -> String {
+        // 1. Explicit CXX override
+        if let Ok(cxx) = env::var("CXX") {
+            return cxx;
+        }
+
+        // 2. Target-specific CXX (hyphens → underscores, matching cc-rs convention)
+        let target_env = target.replace('-', "_");
+        if let Ok(cxx) = env::var(format!("CXX_{target_env}")) {
+            return cxx;
+        }
+
+        // 3. Default fallback
+        fallback.to_string()
+    }
+
+    /// Create a g++ wrapper script for musl cross-compilation.
+    ///
+    /// When cross-compiling from a glibc host to a musl target, plain g++ picks up
+    /// glibc C headers, producing objects with glibc-versioned symbols (e.g.
+    /// `__isoc23_sscanf@@GLIBC_2.38`) incompatible with musl linking.
+    ///
+    /// This wrapper prepends musl's C header directory via `-isystem` so that musl's
+    /// headers shadow glibc's. Unlike libc++ (which uses wrapper `<stddef.h>` etc.
+    /// with `#include_next`), libstdc++ includes C headers directly from `<cstdlib>`
+    /// etc., so `-isystem` shadowing works correctly without `-nostdinc`.
+    #[cfg(unix)]
+    fn create_musl_cxx_wrapper(target: &str) -> Option<String> {
+        use std::os::unix::fs::PermissionsExt;
+
+        let host = env::var("HOST").unwrap_or_default();
+
+        // Only needed for cross-compilation from glibc host to musl target
+        if !target.contains("musl") || host.contains("musl") {
+            return None;
+        }
+
+        // Detect musl include directory: /usr/include/{arch}-linux-musl
+        let arch = target.split('-').next().unwrap_or("x86_64");
+        let musl_include = format!("/usr/include/{arch}-linux-musl");
+        if !Path::new(&musl_include).exists() {
+            println!("cargo:warning=musl include dir not found at {musl_include}, skipping wrapper");
+            return None;
+        }
+
+        // Write wrapper script to OUT_DIR
+        let out_dir = env::var("OUT_DIR").unwrap();
+        let wrapper_path = format!("{out_dir}/musl-g++.sh");
+        let wrapper_content = format!(
+            "#!/bin/sh\n\
+             # Auto-generated musl-g++ wrapper for cross-compilation.\n\
+             # Prepends musl C headers so they shadow glibc's.\n\
+             exec g++ -isystem \"{musl_include}\" \"$@\"\n"
+        );
+
+        fs::write(&wrapper_path, &wrapper_content).ok()?;
+        fs::set_permissions(&wrapper_path, fs::Permissions::from_mode(0o755)).ok()?;
+
+        println!("cargo:warning=Created musl g++ wrapper at {wrapper_path} (musl headers: {musl_include})");
+        Some(wrapper_path)
+    }
+
+    #[cfg(not(unix))]
+    fn create_musl_cxx_wrapper(_target: &str) -> Option<String> {
+        None
     }
 
     fn prepare_out_dir() -> PathBuf {
@@ -378,6 +443,7 @@ mod build_tesseract {
                     .define("BUILD_TESTS", "OFF")
                     .define("ENABLE_LTO", "OFF")
                     .define("BUILD_PROG", "OFF")
+                    .define("BUILD_TESSERACT_BINARY", "OFF")
                     .define("SW_BUILD", "OFF")
                     .define("LEPT_TIFF_RESULT", "FALSE")
                     .define("INSTALL_CONFIGS", "ON")
@@ -454,32 +520,19 @@ mod build_tesseract {
             cmake_cxx_flags.push_str("-std=c++17 ");
         } else if target_linux {
             cmake_cxx_flags.push_str("-std=c++17 ");
-            if target_musl || env::var("CC").map(|cc| cc.contains("clang")).unwrap_or(false) {
+            if target_musl {
+                // For musl: use g++ with musl-gcc specs (avoids libc++/musl locale
+                // incompatibilities). The wrapper redirects C headers to musl while
+                // keeping libstdc++ intact.
+                let cxx_compiler =
+                    create_musl_cxx_wrapper(&target).unwrap_or_else(|| resolve_cxx_compiler(&target, "g++"));
+                additional_defines.push(("CMAKE_CXX_COMPILER".to_string(), cxx_compiler));
+            } else if env::var("CC").map(|cc| cc.contains("clang")).unwrap_or(false) {
                 cmake_cxx_flags.push_str("-stdlib=libc++ ");
-                let cxx_compiler = env::var("CXX").unwrap_or_else(|_| {
-                    if let Ok(target) = env::var("TARGET") {
-                        if target != env::var("HOST").unwrap_or_default() {
-                            format!("{}-clang++", target)
-                        } else {
-                            "clang++".to_string()
-                        }
-                    } else {
-                        "clang++".to_string()
-                    }
-                });
+                let cxx_compiler = resolve_cxx_compiler(&target, "clang++");
                 additional_defines.push(("CMAKE_CXX_COMPILER".to_string(), cxx_compiler));
             } else {
-                let cxx_compiler = env::var("CXX").unwrap_or_else(|_| {
-                    if let Ok(target) = env::var("TARGET") {
-                        if target != env::var("HOST").unwrap_or_default() {
-                            format!("{}-g++", target)
-                        } else {
-                            "g++".to_string()
-                        }
-                    } else {
-                        "g++".to_string()
-                    }
-                });
+                let cxx_compiler = resolve_cxx_compiler(&target, "g++");
                 additional_defines.push(("CMAKE_CXX_COMPILER".to_string(), cxx_compiler));
             }
         } else if target_windows {
@@ -550,7 +603,10 @@ mod build_tesseract {
         if target_macos {
             println!("cargo:rustc-link-lib=c++");
         } else if target_linux {
-            if target_musl || env::var("CC").map(|cc| cc.contains("clang")).unwrap_or(false) {
+            if target_musl {
+                // musl builds use g++ with libstdc++
+                println!("cargo:rustc-link-lib=stdc++");
+            } else if env::var("CC").map(|cc| cc.contains("clang")).unwrap_or(false) {
                 println!("cargo:rustc-link-lib=c++");
             } else {
                 println!("cargo:rustc-link-lib=stdc++");
@@ -558,7 +614,9 @@ mod build_tesseract {
             }
             println!("cargo:rustc-link-lib=pthread");
             println!("cargo:rustc-link-lib=m");
-            println!("cargo:rustc-link-lib=dl");
+            if !target_musl {
+                println!("cargo:rustc-link-lib=dl");
+            }
         } else if target_windows {
             if target_mingw {
                 println!("cargo:rustc-link-lib=stdc++");
@@ -675,32 +733,6 @@ mod build_tesseract {
         if cache_dir.exists() {
             fs::remove_dir_all(cache_dir).expect("Failed to remove cache directory");
         }
-    }
-
-    #[allow(dead_code)]
-    fn apply_patches(src_dir: &Path, patch_dir: &Path) -> std::io::Result<()> {
-        use std::process::Command;
-
-        let patch_file = patch_dir.join("tesseract.diff");
-        if !patch_file.exists() {
-            println!("cargo:warning=Patch file not found: {}", patch_file.display());
-            return Ok(());
-        }
-
-        println!("cargo:warning=Applying patches from: {}", patch_file.display());
-
-        let output = Command::new("patch")
-            .arg("-p1")
-            .current_dir(src_dir)
-            .stdin(fs::File::open(&patch_file)?)
-            .output()?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            println!("cargo:warning=Patch output: {}", stderr);
-        }
-
-        Ok(())
     }
 
     #[allow(dead_code)]
