@@ -545,3 +545,154 @@ func runBatchExtractionAsync(t *testing.T, relativePaths []string, configJSON []
 	}
 	return results
 }
+
+func assertOcrElements(t *testing.T, result *kreuzberg.ExtractionResult, hasElements *bool, elementsHaveGeometry *bool, elementsHaveConfidence *bool, minCount *int) {
+	t.Helper()
+	ocrElements := result.OcrElements
+	if hasElements != nil && *hasElements {
+		if ocrElements == nil {
+			t.Fatal("expected ocr_elements but got nil")
+		}
+		if len(ocrElements) == 0 {
+			t.Fatal("expected ocr_elements to be non-empty")
+		}
+	}
+	if ocrElements != nil && len(ocrElements) > 0 {
+		if minCount != nil && len(ocrElements) < *minCount {
+			t.Fatalf("expected at least %d ocr_elements, found %d", *minCount, len(ocrElements))
+		}
+		if elementsHaveGeometry != nil && *elementsHaveGeometry {
+			for i, el := range ocrElements {
+				if el.Geometry == nil {
+					t.Fatalf("OCR element %d has no geometry", i)
+				}
+				geomType := strings.ToLower(string(el.Geometry.Type))
+				if geomType != "rectangle" && geomType != "quadrilateral" {
+					t.Fatalf("OCR element %d has invalid geometry type: %s", i, geomType)
+				}
+			}
+		}
+		if elementsHaveConfidence != nil && *elementsHaveConfidence {
+			for i, el := range ocrElements {
+				if el.Confidence == nil {
+					t.Fatalf("OCR element %d has no confidence", i)
+				}
+				if el.Confidence.Recognition <= 0 {
+					t.Fatalf("OCR element %d has invalid confidence recognition: %f", i, el.Confidence.Recognition)
+				}
+			}
+		}
+	}
+}
+
+func getDocumentNodes(document any) []any {
+	if document == nil {
+		return nil
+	}
+	// Check if document is already a slice
+	if nodes, ok := document.([]any); ok {
+		return nodes
+	}
+	// Try to extract nodes field via reflection or type assertion
+	if docMap, ok := document.(map[string]any); ok {
+		if nodes, exists := docMap["nodes"]; exists {
+			if nodeSlice, ok := nodes.([]any); ok {
+				return nodeSlice
+			}
+		}
+	}
+	return nil
+}
+
+func getNodeTypes(nodes []any) map[string]bool {
+	types := make(map[string]bool)
+	for _, node := range nodes {
+		if nodeMap, ok := node.(map[string]any); ok {
+			var nodeType string
+			if nt, exists := nodeMap["node_type"]; exists {
+				if ntStr, ok := nt.(string); ok {
+					nodeType = ntStr
+				}
+			}
+			if nodeType == "" {
+				if nt, exists := nodeMap["type"]; exists {
+					if ntStr, ok := nt.(string); ok {
+						nodeType = ntStr
+					}
+				}
+			}
+			if nodeType != "" {
+				types[nodeType] = true
+			}
+		}
+	}
+	return types
+}
+
+func checkGroups(nodes []any, hasGroups bool) bool {
+	hasGroupNodes := false
+	for _, node := range nodes {
+		if nodeMap, ok := node.(map[string]any); ok {
+			var nodeType string
+			if nt, exists := nodeMap["node_type"]; exists {
+				if ntStr, ok := nt.(string); ok {
+					nodeType = ntStr
+				}
+			}
+			if nodeType == "" {
+				if nt, exists := nodeMap["type"]; exists {
+					if ntStr, ok := nt.(string); ok {
+						nodeType = ntStr
+					}
+				}
+			}
+			if nodeType == "group" {
+				hasGroupNodes = true
+				break
+			}
+		}
+	}
+	return hasGroupNodes == hasGroups
+}
+
+func assertDocument(t *testing.T, result *kreuzberg.ExtractionResult, hasDocument bool, minNodeCount *int, nodeTypesInclude []string, hasGroups *bool) {
+	t.Helper()
+	document := result.Document
+	if !hasDocument {
+		if document != nil {
+			t.Fatalf("expected document to be nil but got %T", document)
+		}
+		return
+	}
+	if document == nil {
+		t.Fatal("expected document but got nil")
+	}
+	nodes := getDocumentNodes(document)
+	if nodes == nil {
+		t.Fatal("expected document.nodes but got nil")
+	}
+	if minNodeCount != nil && len(nodes) < *minNodeCount {
+		t.Fatalf("expected at least %d nodes, found %d", *minNodeCount, len(nodes))
+	}
+	if len(nodeTypesInclude) > 0 {
+		foundTypes := getNodeTypes(nodes)
+		for _, expectedType := range nodeTypesInclude {
+			if !foundTypes[expectedType] {
+				foundList := make([]string, 0, len(foundTypes))
+				for ft := range foundTypes {
+					foundList = append(foundList, ft)
+				}
+				t.Fatalf("expected node type %q not found in %v", expectedType, foundList)
+			}
+		}
+	}
+	if hasGroups != nil {
+		if !checkGroups(nodes, *hasGroups) {
+			if *hasGroups {
+				t.Fatal("expected document to have group nodes but found none")
+			} else {
+				t.Fatal("expected document to not have group nodes but found some")
+			}
+		}
+	}
+}

@@ -449,6 +449,58 @@ export const assertions = {
 		}
 	},
 
+	assertOcrElements(
+		result: ExtractionResult,
+		hasElements?: boolean | null,
+		elementsHaveGeometry?: boolean | null,
+		elementsHaveConfidence?: boolean | null,
+		minCount?: number | null,
+	): void {
+		const ocrElements = (result as unknown as PlainRecord).ocrElements as unknown[] | undefined;
+		if (hasElements) {
+			assertExists(ocrElements, "Expected ocrElements to be defined");
+			if (!Array.isArray(ocrElements)) {
+				throw new Error("Expected ocrElements to be an array");
+			}
+			if (ocrElements.length === 0) {
+				throw new Error("Expected ocrElements to be non-empty");
+			}
+		}
+		if (Array.isArray(ocrElements)) {
+			if (typeof minCount === "number") {
+				assertEquals(
+					ocrElements.length >= minCount,
+					true,
+					`Expected at least ${minCount} ocrElements, got ${ocrElements.length}`,
+				);
+			}
+			if (elementsHaveGeometry) {
+				for (const el of ocrElements) {
+					const geometry = (el as PlainRecord).geometry;
+					assertExists(geometry, "OCR element missing geometry");
+					const type = (geometry as PlainRecord)?.type;
+					assertEquals(
+						["rectangle", "quadrilateral"].includes(type as string),
+						true,
+						`Invalid geometry type: ${type}`,
+					);
+				}
+			}
+			if (elementsHaveConfidence) {
+				for (const el of ocrElements) {
+					const confidence = (el as PlainRecord).confidence;
+					assertExists(confidence, "OCR element missing confidence");
+					const recognition = (confidence as PlainRecord)?.recognition;
+					assertEquals(
+						typeof recognition === "number" && recognition > 0,
+						true,
+						`Invalid confidence recognition: ${recognition}`,
+					);
+				}
+			}
+		}
+	},
+
 	assertDocument(
 		result: ExtractionResult,
 		hasDocument: boolean = false,

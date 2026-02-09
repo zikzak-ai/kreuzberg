@@ -403,6 +403,46 @@ export const assertions = {
 		}
 	},
 
+	assertOcrElements(
+		result: ExtractionResult,
+		hasElements: boolean | null,
+		elementsHaveGeometry: boolean | null,
+		elementsHaveConfidence: boolean | null,
+		minCount: number | null,
+	): void {
+		const ocrElements = (result as unknown as PlainRecord).ocrElements as unknown[] | undefined;
+		if (hasElements) {
+			expect(ocrElements !== undefined && ocrElements !== null).toBe(true);
+			if (!Array.isArray(ocrElements)) {
+				throw new Error("Expected ocrElements to be an array");
+			}
+			if (ocrElements.length === 0) {
+				throw new Error("Expected ocrElements to be non-empty");
+			}
+		}
+		if (Array.isArray(ocrElements)) {
+			if (typeof minCount === "number") {
+				expect(ocrElements.length >= minCount).toBe(true);
+			}
+			if (elementsHaveGeometry) {
+				for (const el of ocrElements) {
+					const geometry = (el as PlainRecord).geometry;
+					expect(geometry !== undefined && geometry !== null).toBe(true);
+					const type = (geometry as PlainRecord)?.type;
+					expect(["rectangle", "quadrilateral"].includes(type as string)).toBe(true);
+				}
+			}
+			if (elementsHaveConfidence) {
+				for (const el of ocrElements) {
+					const confidence = (el as PlainRecord).confidence;
+					expect(confidence !== undefined && confidence !== null).toBe(true);
+					const recognition = (confidence as PlainRecord)?.recognition;
+					expect(typeof recognition === "number" && recognition > 0).toBe(true);
+				}
+			}
+		}
+	},
+
 	assertDocument(
 		result: ExtractionResult,
 		hasDocument: boolean,

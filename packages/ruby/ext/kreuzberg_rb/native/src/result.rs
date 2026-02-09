@@ -332,7 +332,117 @@ pub fn extraction_result_to_ruby(ruby: &Ruby, result: RustExtractionResult) -> R
         for node in doc_structure.nodes {
             let node_hash = ruby.hash_new();
             node_hash.aset("id", node.id.as_ref())?;
-            node_hash.aset("content", node.content.clone())?;
+
+            // Convert NodeContent to hash
+            let content_hash = ruby.hash_new();
+            use kreuzberg::types::NodeContent;
+            match node.content {
+                NodeContent::Title { text } => {
+                    content_hash.aset("node_type", "title")?;
+                    content_hash.aset("text", text)?;
+                }
+                NodeContent::Heading { level, text } => {
+                    content_hash.aset("node_type", "heading")?;
+                    content_hash.aset("level", level as i64)?;
+                    content_hash.aset("text", text)?;
+                }
+                NodeContent::Paragraph { text } => {
+                    content_hash.aset("node_type", "paragraph")?;
+                    content_hash.aset("text", text)?;
+                }
+                NodeContent::List { ordered } => {
+                    content_hash.aset("node_type", "list")?;
+                    content_hash.aset("ordered", if ordered { ruby.qtrue().as_value() } else { ruby.qfalse().as_value() })?;
+                }
+                NodeContent::ListItem { text } => {
+                    content_hash.aset("node_type", "list_item")?;
+                    content_hash.aset("text", text)?;
+                }
+                NodeContent::Table { grid } => {
+                    content_hash.aset("node_type", "table")?;
+                    let grid_hash = ruby.hash_new();
+                    grid_hash.aset("rows", grid.rows as i64)?;
+                    grid_hash.aset("cols", grid.cols as i64)?;
+                    let cells_array = ruby.ary_new();
+                    for cell in grid.cells {
+                        let cell_hash = ruby.hash_new();
+                        cell_hash.aset("content", cell.content)?;
+                        cell_hash.aset("row", cell.row as i64)?;
+                        cell_hash.aset("col", cell.col as i64)?;
+                        cell_hash.aset("row_span", cell.row_span as i64)?;
+                        cell_hash.aset("col_span", cell.col_span as i64)?;
+                        cell_hash.aset("is_header", if cell.is_header { ruby.qtrue().as_value() } else { ruby.qfalse().as_value() })?;
+                        if let Some(bbox) = cell.bbox {
+                            let bbox_hash = ruby.hash_new();
+                            bbox_hash.aset("x0", bbox.x0)?;
+                            bbox_hash.aset("y0", bbox.y0)?;
+                            bbox_hash.aset("x1", bbox.x1)?;
+                            bbox_hash.aset("y1", bbox.y1)?;
+                            cell_hash.aset("bbox", bbox_hash)?;
+                        } else {
+                            cell_hash.aset("bbox", ruby.qnil().as_value())?;
+                        }
+                        cells_array.push(cell_hash)?;
+                    }
+                    grid_hash.aset("cells", cells_array)?;
+                    content_hash.aset("grid", grid_hash)?;
+                }
+                NodeContent::Image { description, image_index } => {
+                    content_hash.aset("node_type", "image")?;
+                    if let Some(desc) = description {
+                        content_hash.aset("description", desc)?;
+                    } else {
+                        content_hash.aset("description", ruby.qnil().as_value())?;
+                    }
+                    if let Some(idx) = image_index {
+                        content_hash.aset("image_index", idx as i64)?;
+                    } else {
+                        content_hash.aset("image_index", ruby.qnil().as_value())?;
+                    }
+                }
+                NodeContent::Code { text, language } => {
+                    content_hash.aset("node_type", "code")?;
+                    content_hash.aset("text", text)?;
+                    if let Some(lang) = language {
+                        content_hash.aset("language", lang)?;
+                    } else {
+                        content_hash.aset("language", ruby.qnil().as_value())?;
+                    }
+                }
+                NodeContent::Quote => {
+                    content_hash.aset("node_type", "quote")?;
+                }
+                NodeContent::Formula { text } => {
+                    content_hash.aset("node_type", "formula")?;
+                    content_hash.aset("text", text)?;
+                }
+                NodeContent::Footnote { text } => {
+                    content_hash.aset("node_type", "footnote")?;
+                    content_hash.aset("text", text)?;
+                }
+                NodeContent::Group { label, heading_level, heading_text } => {
+                    content_hash.aset("node_type", "group")?;
+                    if let Some(lbl) = label {
+                        content_hash.aset("label", lbl)?;
+                    } else {
+                        content_hash.aset("label", ruby.qnil().as_value())?;
+                    }
+                    if let Some(level) = heading_level {
+                        content_hash.aset("heading_level", level as i64)?;
+                    } else {
+                        content_hash.aset("heading_level", ruby.qnil().as_value())?;
+                    }
+                    if let Some(text) = heading_text {
+                        content_hash.aset("heading_text", text)?;
+                    } else {
+                        content_hash.aset("heading_text", ruby.qnil().as_value())?;
+                    }
+                }
+                NodeContent::PageBreak => {
+                    content_hash.aset("node_type", "page_break")?;
+                }
+            }
+            node_hash.aset("content", content_hash)?;
 
             if let Some(parent_idx) = node.parent {
                 node_hash.aset("parent", parent_idx.0 as i64)?;
@@ -380,8 +490,45 @@ pub fn extraction_result_to_ruby(ruby: &Ruby, result: RustExtractionResult) -> R
             let annotations_array = ruby.ary_new();
             for annotation in node.annotations {
                 let ann_hash = ruby.hash_new();
-                ann_hash.aset("key", annotation.key.clone())?;
-                ann_hash.aset("value", annotation.value.clone())?;
+                ann_hash.aset("start", annotation.start as i64)?;
+                ann_hash.aset("end", annotation.end as i64)?;
+
+                // Convert AnnotationKind to hash
+                let kind_hash = ruby.hash_new();
+                use kreuzberg::types::AnnotationKind;
+                match annotation.kind {
+                    AnnotationKind::Bold => {
+                        kind_hash.aset("annotation_type", "bold")?;
+                    }
+                    AnnotationKind::Italic => {
+                        kind_hash.aset("annotation_type", "italic")?;
+                    }
+                    AnnotationKind::Underline => {
+                        kind_hash.aset("annotation_type", "underline")?;
+                    }
+                    AnnotationKind::Strikethrough => {
+                        kind_hash.aset("annotation_type", "strikethrough")?;
+                    }
+                    AnnotationKind::Code => {
+                        kind_hash.aset("annotation_type", "code")?;
+                    }
+                    AnnotationKind::Subscript => {
+                        kind_hash.aset("annotation_type", "subscript")?;
+                    }
+                    AnnotationKind::Superscript => {
+                        kind_hash.aset("annotation_type", "superscript")?;
+                    }
+                    AnnotationKind::Link { url, title } => {
+                        kind_hash.aset("annotation_type", "link")?;
+                        kind_hash.aset("url", url)?;
+                        if let Some(t) = title {
+                            kind_hash.aset("title", t)?;
+                        } else {
+                            kind_hash.aset("title", ruby.qnil().as_value())?;
+                        }
+                    }
+                }
+                ann_hash.aset("kind", kind_hash)?;
                 annotations_array.push(ann_hash)?;
             }
             node_hash.aset("annotations", annotations_array)?;

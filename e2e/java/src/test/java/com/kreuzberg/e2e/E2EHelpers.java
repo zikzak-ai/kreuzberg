@@ -460,6 +460,46 @@ public final class E2EHelpers {
             }
         }
 
+        public static void assertOcrElements(
+                ExtractionResult result,
+                Boolean hasElements,
+                Boolean elementsHaveGeometry,
+                Boolean elementsHaveConfidence,
+                Integer minCount
+        ) {
+            var ocrElements = result.getOcrElements();
+            if (hasElements != null && hasElements) {
+                assertNotNull(ocrElements, "Expected ocr_elements but got null");
+                assertTrue(!ocrElements.isEmpty(), "Expected ocr_elements to be non-empty");
+            }
+            if (ocrElements != null && !ocrElements.isEmpty()) {
+                if (minCount != null) {
+                    assertTrue(ocrElements.size() >= minCount,
+                            String.format("Expected at least %d ocr_elements, found %d", minCount, ocrElements.size()));
+                }
+                if (elementsHaveGeometry != null && elementsHaveGeometry) {
+                    for (int i = 0; i < ocrElements.size(); i++) {
+                        var el = ocrElements.get(i);
+                        assertNotNull(el.getGeometry(),
+                                String.format("OCR element %d has no geometry", i));
+                        var geomType = el.getGeometry().getType().toString().toLowerCase();
+                        assertTrue(geomType.equals("rectangle") || geomType.equals("quadrilateral"),
+                                String.format("OCR element %d has invalid geometry type: %s", i, geomType));
+                    }
+                }
+                if (elementsHaveConfidence != null && elementsHaveConfidence) {
+                    for (int i = 0; i < ocrElements.size(); i++) {
+                        var el = ocrElements.get(i);
+                        assertNotNull(el.getConfidence(),
+                                String.format("OCR element %d has no confidence", i));
+                        assertTrue(el.getConfidence().getRecognition() > 0,
+                                String.format("OCR element %d has invalid confidence recognition: %f",
+                                        i, el.getConfidence().getRecognition()));
+                    }
+                }
+            }
+        }
+
         public static void assertDocument(
                 ExtractionResult result,
                 boolean hasDocument,

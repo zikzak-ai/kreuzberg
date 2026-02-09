@@ -32,7 +32,13 @@ async fn test_csv_basic_extraction() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(extraction.content.contains("Name"), "Should contain 'Name' header");
     assert!(extraction.content.contains("Age"), "Should contain 'Age' header");
@@ -70,7 +76,13 @@ async fn test_csv_with_headers() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(extraction.content.contains("Product"), "Should contain Product header");
     assert!(extraction.content.contains("Price"), "Should contain Price header");
@@ -119,7 +131,13 @@ async fn test_csv_custom_delimiter() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(!extraction.content.is_empty(), "Content should be extracted");
 
@@ -152,7 +170,13 @@ async fn test_tsv_file() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(extraction.content.contains("Name"), "Should contain Name header");
     assert!(extraction.content.contains("Age"), "Should contain Age header");
@@ -187,7 +211,13 @@ async fn test_csv_quoted_fields() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(extraction.content.contains("Smith"), "Should contain Smith");
     assert!(extraction.content.contains("John"), "Should contain John");
@@ -223,7 +253,13 @@ async fn test_csv_special_characters() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(!extraction.content.is_empty(), "Special characters should be handled");
 
@@ -261,7 +297,13 @@ async fn test_csv_large_file() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(!extraction.content.is_empty(), "Large CSV should be processed");
 
@@ -331,7 +373,13 @@ async fn test_csv_headers_only() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(
         extraction.content.contains("Name") || !extraction.content.is_empty(),
@@ -362,7 +410,13 @@ async fn test_csv_blank_lines() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(extraction.content.contains("Alice") || extraction.content.contains("Bob"));
 }
@@ -390,7 +444,13 @@ async fn test_csv_numeric_data() {
         extraction.detected_languages.is_none(),
         "Language detection not enabled"
     );
-    assert!(extraction.tables.is_empty(), "CSV should not have table structures");
+    assert!(!extraction.tables.is_empty(), "CSV should produce table structures");
+    assert_eq!(extraction.tables.len(), 1, "CSV should have one table");
+    assert!(!extraction.tables[0].cells.is_empty(), "Table should have rows");
+    assert!(
+        !extraction.tables[0].markdown.is_empty(),
+        "Table should have markdown representation"
+    );
 
     assert!(extraction.content.contains("Price"), "Should contain Price header");
     assert!(
