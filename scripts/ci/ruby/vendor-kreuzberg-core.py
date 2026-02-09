@@ -121,8 +121,15 @@ def replace_workspace_deps_in_toml(toml_path: Path, workspace_deps: dict[str, ob
         f.write(content)
 
 
-def generate_vendor_cargo_toml(repo_root: Path, workspace_deps: dict[str, object], core_version: str) -> None:
-    """Generate vendor/Cargo.toml with workspace setup."""
+def generate_vendor_cargo_toml(repo_root: Path, workspace_deps: dict[str, object], core_version: str, copied_crates: list[str]) -> None:
+    """Generate vendor/Cargo.toml with workspace setup.
+
+    Args:
+        repo_root: Repository root directory
+        workspace_deps: Workspace dependencies from Cargo.toml
+        core_version: Core version string
+        copied_crates: List of crates that were successfully copied
+    """
 
     deps_lines: list[str] = []
     for name, dep_spec in sorted(workspace_deps.items()):
@@ -130,8 +137,13 @@ def generate_vendor_cargo_toml(repo_root: Path, workspace_deps: dict[str, object
 
     deps_str = "\n".join(deps_lines)
 
+    # Build members list based on actually copied crates
+    members = [name for name in ["kreuzberg", "kreuzberg-ffi", "kreuzberg-tesseract", "kreuzberg-paddle-ocr", "rb-sys"]
+               if name in copied_crates]
+    members_str = ', '.join(f'"{m}"' for m in members)
+
     vendor_toml = f'''[workspace]
-members = ["kreuzberg", "kreuzberg-ffi", "kreuzberg-tesseract", "kreuzberg-paddle-ocr"]
+members = [{members_str}]
 
 [workspace.package]
 version = "{core_version}"
@@ -182,18 +194,24 @@ def main() -> None:
         ("vendor/rb-sys", "rb-sys"),
     ]
 
+    copied_crates: list[str] = []
     for src_rel, dest_name in crates_to_copy:
         src: Path = repo_root / src_rel
         dest: Path = vendor_base / dest_name
         if src.exists():
-            shutil.copytree(src, dest)
-            print(f"Copied {dest_name}")
+            try:
+                shutil.copytree(src, dest)
+                copied_crates.append(dest_name)
+                print(f"Copied {dest_name}")
+            except Exception as e:
+                print(f"Warning: Failed to copy {dest_name}: {e}", file=sys.stderr)
+        else:
+            print(f"Warning: Source directory not found: {src_rel}")
 
     artifact_dirs: list[str] = [".fastembed_cache", "target"]
     temp_patterns: list[str] = ["*.swp", "*.bak", "*.tmp", "*~"]
-    crate_names: list[str] = ["kreuzberg", "kreuzberg-ffi", "kreuzberg-tesseract", "kreuzberg-paddle-ocr", "rb-sys"]
 
-    for crate_dir in crate_names:
+    for crate_dir in copied_crates:
         crate_path: Path = vendor_base / crate_dir
         if crate_path.exists():
             for artifact_dir in artifact_dirs:
@@ -207,7 +225,8 @@ def main() -> None:
 
     print("Cleaned build artifacts")
 
-    for crate_dir in ["kreuzberg", "kreuzberg-ffi", "kreuzberg-tesseract", "kreuzberg-paddle-ocr"]:
+    # Update workspace inheritance in Cargo.toml files
+    for crate_dir in copied_crates:
         crate_toml = vendor_base / crate_dir / "Cargo.toml"
         if crate_toml.exists():
             with open(crate_toml, "r") as f:
@@ -225,21 +244,32 @@ def main() -> None:
             replace_workspace_deps_in_toml(crate_toml, workspace_deps)
             print(f"Updated {crate_dir}/Cargo.toml")
 
-    kreuzberg_toml = vendor_base / "kreuzberg" / "Cargo.toml"
-    if kreuzberg_toml.exists():
-        with open(kreuzberg_toml, "r") as f:
-            content = f.read()
+    # Update path dependencies in kreuzberg crate if tesseract was copied
+    if "kreuzberg" in copied_crates:
+        kreuzberg_toml = vendor_base / "kreuzberg" / "Cargo.toml"
+        if kreuzberg_toml.exists():
+            with open(kreuzberg_toml, "r") as f:
+                content = f.read()
 
-        content = re.sub(
-            r'kreuzberg-tesseract = \{ version = "[^"]*", optional = true \}',
-            'kreuzberg-tesseract = { path = "../kreuzberg-tesseract", optional = true }',
-            content
-        )
+            # Only update tesseract path if it was actually copied
+            if "kreuzberg-tesseract" in copied_crates:
+                content = re.sub(
+                    r'kreuzberg-tesseract = \{ version = "[^"]*", optional = true \}',
+                    'kreuzberg-tesseract = { path = "../kreuzberg-tesseract", optional = true }',
+                    content
+                )
+            # Only update paddle-ocr path if it was actually copied
+            if "kreuzberg-paddle-ocr" in copied_crates:
+                content = re.sub(
+                    r'kreuzberg-paddle-ocr = \{ version = "[^"]*", optional = true \}',
+                    'kreuzberg-paddle-ocr = { path = "../kreuzberg-paddle-ocr", optional = true }',
+                    content
+                )
 
-        with open(kreuzberg_toml, "w") as f:
-            f.write(content)
+            with open(kreuzberg_toml, "w") as f:
+                f.write(content)
 
-    generate_vendor_cargo_toml(repo_root, workspace_deps, core_version)
+    generate_vendor_cargo_toml(repo_root, workspace_deps, core_version, copied_crates)
     print("Generated vendor/Cargo.toml")
 
     # Update native extension Cargo.toml to use vendored crates
@@ -268,10 +298,18 @@ def main() -> None:
         print("Updated native extension Cargo.toml to use vendored crates")
 
     print(f"\nVendoring complete (core version: {core_version})")
-    print("Native extension Cargo.toml uses:")
-    print("  - path '../../../vendor/kreuzberg' for kreuzberg crate")
-    print("  - path '../../../vendor/kreuzberg-ffi' for kreuzberg-ffi crate")
-    print("  - rb-sys from crates.io")
+    print(f"Copied crates: {', '.join(sorted(copied_crates))}")
+
+    if "kreuzberg" in copied_crates and "kreuzberg-ffi" in copied_crates:
+        print("Native extension Cargo.toml uses:")
+        print("  - path '../../../vendor/kreuzberg' for kreuzberg crate")
+        print("  - path '../../../vendor/kreuzberg-ffi' for kreuzberg-ffi crate")
+        if "rb-sys" in copied_crates:
+            print("  - path '../../../vendor/rb-sys' for rb-sys crate")
+        else:
+            print("  - rb-sys from crates.io")
+    else:
+        print("Warning: Some required crates were not copied. Check for missing source directories.")
 
 
 if __name__ == "__main__":
