@@ -166,9 +166,11 @@ mod build_tesseract {
              # Prepends musl C headers so they shadow glibc's.\n\
              # Defines glibc compat macros as 0 for musl -- handles os_defines.h,\n\
              # libc-header-start.h, floatn.h etc. that use __GLIBC_PREREQ().\n\
+             # Also defines __GNUC_PREREQ for floatn.h which checks compiler version.\n\
              exec g++ -isystem \"{musl_include}\" \\\n\
                '-D__GLIBC_PREREQ(maj,min)=0' \\\n\
                '-D__GLIBC_USE(F)=0' \\\n\
+               '-D__GNUC_PREREQ(maj,min)=0' \\\n\
                \"$@\"\n"
         );
 

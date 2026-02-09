@@ -112,6 +112,7 @@ defmodule Kreuzberg.ExtractionConfig do
         "pdf_options" => nil,
         "html_options" => nil,
         "max_concurrent_extractions" => nil,
+        "include_document_structure" => false,
         "use_cache" => true,
         "enable_quality_processing" => true,
         "force_ocr" => false,

@@ -483,6 +483,60 @@ func assertOcrElements(t *testing.T, result *kreuzberg.ExtractionResult, hasElem
 	}
 }
 
+func skipIfPaddleOcrUnavailable(t *testing.T) {
+	t.Helper()
+	flag := os.Getenv("KREUZBERG_PADDLE_OCR_AVAILABLE")
+	if flag == "" || flag == "0" || strings.EqualFold(flag, "false") {
+		t.Skip("Skipping: PaddleOCR not available (set KREUZBERG_PADDLE_OCR_AVAILABLE=1)")
+	}
+}
+
+func assertDocument(t *testing.T, result *kreuzberg.ExtractionResult, hasDocument bool, minNodeCount *int, nodeTypesInclude []string, hasGroups *bool) {
+	t.Helper()
+	doc := result.Document
+	if hasDocument {
+		if doc == nil {
+			t.Fatal("Expected document but got nil")
+		}
+		nodes := doc.Nodes
+		if nodes == nil {
+			t.Fatal("Expected document nodes but got nil")
+		}
+		if minNodeCount != nil && len(nodes) < *minNodeCount {
+			t.Fatalf("Expected at least %d nodes, found %d", *minNodeCount, len(nodes))
+		}
+		if len(nodeTypesInclude) > 0 {
+			types := make(map[string]bool)
+			for _, n := range nodes {
+				if n.Content != nil {
+					types[strings.ToLower(n.Content.NodeType)] = true
+				}
+			}
+			for _, expected := range nodeTypesInclude {
+				if !types[strings.ToLower(expected)] {
+					t.Fatalf("Expected node type %q not found in document", expected)
+				}
+			}
+		}
+		if hasGroups != nil {
+			hasGroupNodes := false
+			for _, n := range nodes {
+				if n.Content != nil && strings.EqualFold(n.Content.NodeType, "group") {
+					hasGroupNodes = true
+					break
+				}
+			}
+			if hasGroupNodes != *hasGroups {
+				t.Fatalf("Expected hasGroups=%v but got %v", *hasGroups, hasGroupNodes)
+			}
+		}
+	} else {
+		if doc != nil {
+			t.Fatal("Expected document to be nil but got a document")
+		}
+	}
+}
+
 func runExtractionBytes(t *testing.T, relativePath string, configJSON []byte) *kreuzberg.ExtractionResult {
 	t.Helper()
 	documentPath := ensureDocument(t, relativePath, true)
@@ -679,10 +733,18 @@ fn render_test(fixture: &Fixture) -> Result<String> {
     writeln!(code, "func {test_name}(t *testing.T) {{")?;
 
     let extraction = fixture.extraction();
+    let doc = fixture.document();
     let method = extraction.method;
     let input_type = extraction.input_type;
-    let doc_path = go_string_literal(&fixture.document().path);
+    let doc_path = go_string_literal(&doc.path);
     let config_literal = render_config_literal(&extraction.config)?;
+
+    // Skip if fixture requires paddle-ocr and it's not available
+    let requires_paddle = fixture.skip().requires_feature.iter().any(|f| f == "paddle-ocr")
+        || doc.requires_external_tool.iter().any(|t| t == "paddle-ocr");
+    if requires_paddle {
+        writeln!(code, "    skipIfPaddleOcrUnavailable(t)")?;
+    }
 
     match (method, input_type) {
         (ExtractionMethod::Sync, InputType::File) => {

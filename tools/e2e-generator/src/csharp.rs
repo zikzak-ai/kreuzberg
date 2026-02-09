@@ -124,6 +124,15 @@ public static class TestHelpers
         }
     }
 
+    public static void SkipIfPaddleOcrUnavailable()
+    {
+        var flag = Environment.GetEnvironmentVariable("KREUZBERG_PADDLE_OCR_AVAILABLE");
+        if (string.IsNullOrWhiteSpace(flag) || flag == "0" || flag.Equals("false", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Xunit.SkipException();
+        }
+    }
+
     public static ExtractionConfig? BuildConfig(string? configJson)
     {
         if (string.IsNullOrWhiteSpace(configJson))
@@ -566,6 +575,102 @@ public static class TestHelpers
             }
         }
     }
+
+    public static void AssertOcrElements(
+        ExtractionResult result,
+        bool? hasElements,
+        bool? hasGeometry,
+        bool? hasConfidence,
+        int? minCount)
+    {
+        var ocrElements = result.OcrElements;
+        if (hasElements == true)
+        {
+            if (ocrElements is null || ocrElements.Count == 0)
+            {
+                throw new XunitException("Expected OCR elements but none found");
+            }
+        }
+        if (ocrElements is not null)
+        {
+            if (hasGeometry == true)
+            {
+                for (var i = 0; i < ocrElements.Count; i++)
+                {
+                    if (ocrElements[i].Geometry is null)
+                    {
+                        throw new XunitException($"OCR element {i} expected to have geometry");
+                    }
+                }
+            }
+            if (hasConfidence == true)
+            {
+                for (var i = 0; i < ocrElements.Count; i++)
+                {
+                    if (ocrElements[i].Confidence is null)
+                    {
+                        throw new XunitException($"OCR element {i} expected to have confidence score");
+                    }
+                }
+            }
+            if (minCount.HasValue && ocrElements.Count < minCount.Value)
+            {
+                throw new XunitException($"Expected at least {minCount.Value} OCR elements, found {ocrElements.Count}");
+            }
+        }
+    }
+
+    public static void AssertDocument(
+        ExtractionResult result,
+        bool hasDocument,
+        int? minNodeCount,
+        IEnumerable<string>? nodeTypesInclude,
+        bool? hasGroups)
+    {
+        var document = result.Document;
+        if (hasDocument)
+        {
+            if (document is null)
+            {
+                throw new XunitException("Expected document but got null");
+            }
+            var nodes = document.Nodes;
+            if (nodes is null)
+            {
+                throw new XunitException("Expected document nodes but got null");
+            }
+            if (minNodeCount.HasValue && nodes.Count < minNodeCount.Value)
+            {
+                throw new XunitException($"Expected at least {minNodeCount.Value} nodes, found {nodes.Count}");
+            }
+            if (nodeTypesInclude is not null)
+            {
+                var foundTypes = nodes.Select(n => n.Content?.NodeType ?? "").ToHashSet();
+                foreach (var expected in nodeTypesInclude)
+                {
+                    if (!foundTypes.Any(t => string.Equals(t, expected, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        throw new XunitException($"Expected node type '{expected}' not found in [{string.Join(", ", foundTypes)}]");
+                    }
+                }
+            }
+            if (hasGroups.HasValue)
+            {
+                var hasGroupNodes = nodes.Any(n => string.Equals(n.Content?.NodeType, "group", StringComparison.OrdinalIgnoreCase));
+                if (hasGroupNodes != hasGroups.Value)
+                {
+                    throw new XunitException($"Expected hasGroups={hasGroups.Value} but got {hasGroupNodes}");
+                }
+            }
+        }
+        else
+        {
+            if (document is not null)
+            {
+                throw new XunitException($"Expected document to be null but got a document");
+            }
+        }
+    }
 }
 "#;
 
@@ -680,6 +785,12 @@ fn render_test(buffer: &mut String, fixture: &Fixture) -> Result<()> {
 
     let doc = fixture.document();
     let config_json = render_config_expression(&extraction.config)?;
+    // Skip if fixture requires paddle-ocr and it's not available
+    let requires_paddle = fixture.skip().requires_feature.iter().any(|f| f == "paddle-ocr")
+        || doc.requires_external_tool.iter().any(|t| t == "paddle-ocr");
+    if requires_paddle {
+        writeln!(buffer, "            TestHelpers.SkipIfPaddleOcrUnavailable();")?;
+    }
     writeln!(
         buffer,
         "            TestHelpers.SkipIfLegacyOfficeDisabled(\"{}\");",

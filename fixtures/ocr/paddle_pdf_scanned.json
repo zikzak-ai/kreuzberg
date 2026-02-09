@@ -3,7 +3,7 @@
 	"category": "ocr",
 	"description": "Scanned PDF requires PaddleOCR to extract text.",
 	"document": {
-		"path": "pdfs/ocr_test.pdf",
+		"path": "pdf/ocr_test.pdf",
 		"media_type": "application/pdf",
 		"requires_external_tool": ["paddle-ocr", "onnxruntime"]
 	},

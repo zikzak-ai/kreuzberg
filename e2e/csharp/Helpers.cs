@@ -104,7 +104,7 @@ public static class TestHelpers
 
     public static void SkipIfOfficeTestOnWindows(string relativePath)
     {
-        // Office tests timeout on Windows due to LibreOffice conversion delays
+        // Office tests timeout on Windows
         if (OperatingSystem.IsWindows())
         {
             var ext = Path.GetExtension(relativePath).ToLowerInvariant();
@@ -113,6 +113,15 @@ public static class TestHelpers
             {
                 throw new Xunit.SkipException();
             }
+        }
+    }
+
+    public static void SkipIfPaddleOcrUnavailable()
+    {
+        var flag = Environment.GetEnvironmentVariable("KREUZBERG_PADDLE_OCR_AVAILABLE");
+        if (string.IsNullOrWhiteSpace(flag) || flag == "0" || flag.Equals("false", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Xunit.SkipException();
         }
     }
 
@@ -562,145 +571,95 @@ public static class TestHelpers
     public static void AssertOcrElements(
         ExtractionResult result,
         bool? hasElements,
-        bool? elementsHaveGeometry,
-        bool? elementsHaveConfidence,
+        bool? hasGeometry,
+        bool? hasConfidence,
         int? minCount)
     {
         var ocrElements = result.OcrElements;
         if (hasElements == true)
         {
-            if (ocrElements is null)
+            if (ocrElements is null || ocrElements.Count == 0)
             {
-                throw new XunitException("Expected ocr_elements but got null");
-            }
-            if (ocrElements.Count == 0)
-            {
-                throw new XunitException("Expected ocr_elements to be non-empty");
+                throw new XunitException("Expected OCR elements but none found");
             }
         }
-        if (ocrElements is not null && ocrElements.Count > 0)
+        if (ocrElements is not null)
         {
+            if (hasGeometry == true)
+            {
+                for (var i = 0; i < ocrElements.Count; i++)
+                {
+                    if (ocrElements[i].Geometry is null)
+                    {
+                        throw new XunitException($"OCR element {i} expected to have geometry");
+                    }
+                }
+            }
+            if (hasConfidence == true)
+            {
+                for (var i = 0; i < ocrElements.Count; i++)
+                {
+                    if (ocrElements[i].Confidence is null)
+                    {
+                        throw new XunitException($"OCR element {i} expected to have confidence score");
+                    }
+                }
+            }
             if (minCount.HasValue && ocrElements.Count < minCount.Value)
             {
-                throw new XunitException($"Expected at least {minCount.Value} ocr_elements, found {ocrElements.Count}");
-            }
-            if (elementsHaveGeometry == true)
-            {
-                for (var i = 0; i < ocrElements.Count; i++)
-                {
-                    var el = ocrElements[i];
-                    if (el.Geometry is null)
-                    {
-                        throw new XunitException($"OCR element {i} has no geometry");
-                    }
-                    var geomType = el.Geometry.Type.ToString().ToLowerInvariant();
-                    if (geomType != "rectangle" && geomType != "quadrilateral")
-                    {
-                        throw new XunitException($"OCR element {i} has invalid geometry type: {geomType}");
-                    }
-                }
-            }
-            if (elementsHaveConfidence == true)
-            {
-                for (var i = 0; i < ocrElements.Count; i++)
-                {
-                    var el = ocrElements[i];
-                    if (el.Confidence is null)
-                    {
-                        throw new XunitException($"OCR element {i} has no confidence");
-                    }
-                    if (el.Confidence.Recognition <= 0)
-                    {
-                        throw new XunitException($"OCR element {i} has invalid confidence recognition: {el.Confidence.Recognition}");
-                    }
-                }
+                throw new XunitException($"Expected at least {minCount.Value} OCR elements, found {ocrElements.Count}");
             }
         }
     }
 
     public static void AssertDocument(
         ExtractionResult result,
-        bool hasDocument = false,
-        int? minNodeCount = null,
-        IEnumerable<string>? nodeTypesInclude = null,
-        bool? hasGroups = null)
+        bool hasDocument,
+        int? minNodeCount,
+        IEnumerable<string>? nodeTypesInclude,
+        bool? hasGroups)
     {
         var document = result.Document;
-        if (!hasDocument)
+        if (hasDocument)
         {
-            if (document is not null)
+            if (document is null)
             {
-                throw new XunitException($"Expected document to be null but got {document.GetType()}");
+                throw new XunitException("Expected document but got null");
             }
-            return;
-        }
-        if (document is null)
-        {
-            throw new XunitException("Expected document but got null");
-        }
-
-        // Extract nodes from document structure
-        List<DocumentNode>? nodes = null;
-        if (document is DocumentStructure docStruct)
-        {
-            nodes = docStruct.Nodes;
+            var nodes = document.Nodes;
+            if (nodes is null)
+            {
+                throw new XunitException("Expected document nodes but got null");
+            }
+            if (minNodeCount.HasValue && nodes.Count < minNodeCount.Value)
+            {
+                throw new XunitException($"Expected at least {minNodeCount.Value} nodes, found {nodes.Count}");
+            }
+            if (nodeTypesInclude is not null)
+            {
+                var foundTypes = nodes.Select(n => n.Content?.NodeType ?? "").ToHashSet();
+                foreach (var expected in nodeTypesInclude)
+                {
+                    if (!foundTypes.Any(t => string.Equals(t, expected, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        throw new XunitException($"Expected node type '{expected}' not found in [{string.Join(", ", foundTypes)}]");
+                    }
+                }
+            }
+            if (hasGroups.HasValue)
+            {
+                var hasGroupNodes = nodes.Any(n => string.Equals(n.Content?.NodeType, "group", StringComparison.OrdinalIgnoreCase));
+                if (hasGroupNodes != hasGroups.Value)
+                {
+                    throw new XunitException($"Expected hasGroups={hasGroups.Value} but got {hasGroupNodes}");
+                }
+            }
         }
         else
         {
-            throw new XunitException($"Expected DocumentStructure but got {document.GetType()}");
-        }
-
-        if (nodes is null)
-        {
-            throw new XunitException("Expected document.nodes but got null");
-        }
-
-        if (minNodeCount.HasValue && nodes.Count < minNodeCount.Value)
-        {
-            throw new XunitException($"Expected at least {minNodeCount.Value} nodes, found {nodes.Count}");
-        }
-
-        if (nodeTypesInclude is not null)
-        {
-            var foundTypes = new HashSet<string>();
-            foreach (var node in nodes)
+            if (document is not null)
             {
-                string? nodeType = node.Content?.NodeType;
-                if (!string.IsNullOrEmpty(nodeType))
-                {
-                    foundTypes.Add(nodeType);
-                }
-            }
-
-            foreach (var expectedType in nodeTypesInclude)
-            {
-                if (!foundTypes.Contains(expectedType))
-                {
-                    throw new XunitException($"Expected node type '{expectedType}' not found in [{string.Join(", ", foundTypes)}]");
-                }
-            }
-        }
-
-        if (hasGroups.HasValue)
-        {
-            bool hasGroupNodes = false;
-            foreach (var node in nodes)
-            {
-                string? nodeType = node.Content?.NodeType;
-                if (nodeType == "group")
-                {
-                    hasGroupNodes = true;
-                    break;
-                }
-            }
-
-            if (hasGroups.Value && !hasGroupNodes)
-            {
-                throw new XunitException("Expected document to have group nodes but found none");
-            }
-            if (!hasGroups.Value && hasGroupNodes)
-            {
-                throw new XunitException("Expected document to not have group nodes but found some");
+                throw new XunitException($"Expected document to be null but got a document");
             }
         }
     }

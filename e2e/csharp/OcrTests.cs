@@ -40,6 +40,7 @@ namespace Kreuzberg.E2E.Ocr {
         [SkippableFact]
         public void OcrPaddleConfidenceFilter()
         {
+            TestHelpers.SkipIfPaddleOcrUnavailable();
             TestHelpers.SkipIfLegacyOfficeDisabled("images/ocr_image.jpg");
             TestHelpers.SkipIfOfficeTestOnWindows("images/ocr_image.jpg");
             var documentPath = TestHelpers.EnsureDocument("images/ocr_image.jpg", true);
@@ -53,6 +54,7 @@ namespace Kreuzberg.E2E.Ocr {
         [SkippableFact]
         public void OcrPaddleImageChinese()
         {
+            TestHelpers.SkipIfPaddleOcrUnavailable();
             TestHelpers.SkipIfLegacyOfficeDisabled("images/chi_sim_image.jpeg");
             TestHelpers.SkipIfOfficeTestOnWindows("images/chi_sim_image.jpeg");
             var documentPath = TestHelpers.EnsureDocument("images/chi_sim_image.jpeg", true);
@@ -66,6 +68,7 @@ namespace Kreuzberg.E2E.Ocr {
         [SkippableFact]
         public void OcrPaddleImageEnglish()
         {
+            TestHelpers.SkipIfPaddleOcrUnavailable();
             TestHelpers.SkipIfLegacyOfficeDisabled("images/test_hello_world.png");
             TestHelpers.SkipIfOfficeTestOnWindows("images/test_hello_world.png");
             var documentPath = TestHelpers.EnsureDocument("images/test_hello_world.png", true);
@@ -80,6 +83,7 @@ namespace Kreuzberg.E2E.Ocr {
         [SkippableFact]
         public void OcrPaddleMarkdown()
         {
+            TestHelpers.SkipIfPaddleOcrUnavailable();
             TestHelpers.SkipIfLegacyOfficeDisabled("images/test_hello_world.png");
             TestHelpers.SkipIfOfficeTestOnWindows("images/test_hello_world.png");
             var documentPath = TestHelpers.EnsureDocument("images/test_hello_world.png", true);
@@ -94,9 +98,10 @@ namespace Kreuzberg.E2E.Ocr {
         [SkippableFact]
         public void OcrPaddlePdfScanned()
         {
-            TestHelpers.SkipIfLegacyOfficeDisabled("pdfs/ocr_test.pdf");
-            TestHelpers.SkipIfOfficeTestOnWindows("pdfs/ocr_test.pdf");
-            var documentPath = TestHelpers.EnsureDocument("pdfs/ocr_test.pdf", true);
+            TestHelpers.SkipIfPaddleOcrUnavailable();
+            TestHelpers.SkipIfLegacyOfficeDisabled("pdf/ocr_test.pdf");
+            TestHelpers.SkipIfOfficeTestOnWindows("pdf/ocr_test.pdf");
+            var documentPath = TestHelpers.EnsureDocument("pdf/ocr_test.pdf", true);
             var config = TestHelpers.BuildConfig("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"language\":\"en\"}}");
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);
@@ -108,6 +113,7 @@ namespace Kreuzberg.E2E.Ocr {
         [SkippableFact]
         public void OcrPaddleStructured()
         {
+            TestHelpers.SkipIfPaddleOcrUnavailable();
             TestHelpers.SkipIfLegacyOfficeDisabled("images/test_hello_world.png");
             TestHelpers.SkipIfOfficeTestOnWindows("images/test_hello_world.png");
             var documentPath = TestHelpers.EnsureDocument("images/test_hello_world.png", true);
@@ -122,6 +128,7 @@ namespace Kreuzberg.E2E.Ocr {
         [SkippableFact]
         public void OcrPaddleTableDetection()
         {
+            TestHelpers.SkipIfPaddleOcrUnavailable();
             TestHelpers.SkipIfLegacyOfficeDisabled("images/simple_table.png");
             TestHelpers.SkipIfOfficeTestOnWindows("images/simple_table.png");
             var documentPath = TestHelpers.EnsureDocument("images/simple_table.png", true);

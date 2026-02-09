@@ -31,6 +31,7 @@ func TestOcrOcrImageNoText(t *testing.T) {
 }
 
 func TestOcrOcrPaddleConfidenceFilter(t *testing.T) {
+	skipIfPaddleOcrUnavailable(t)
 	result := runExtraction(t, "images/ocr_image.jpg", []byte(`{
 "force_ocr": true,
 "ocr": {
@@ -46,6 +47,7 @@ func TestOcrOcrPaddleConfidenceFilter(t *testing.T) {
 }
 
 func TestOcrOcrPaddleImageChinese(t *testing.T) {
+	skipIfPaddleOcrUnavailable(t)
 	result := runExtraction(t, "images/chi_sim_image.jpeg", []byte(`{
 "force_ocr": true,
 "ocr": {
@@ -58,6 +60,7 @@ func TestOcrOcrPaddleImageChinese(t *testing.T) {
 }
 
 func TestOcrOcrPaddleImageEnglish(t *testing.T) {
+	skipIfPaddleOcrUnavailable(t)
 	result := runExtraction(t, "images/test_hello_world.png", []byte(`{
 "force_ocr": true,
 "ocr": {
@@ -71,6 +74,7 @@ func TestOcrOcrPaddleImageEnglish(t *testing.T) {
 }
 
 func TestOcrOcrPaddleMarkdown(t *testing.T) {
+	skipIfPaddleOcrUnavailable(t)
 	result := runExtraction(t, "images/test_hello_world.png", []byte(`{
 "force_ocr": true,
 "ocr": {
@@ -87,7 +91,8 @@ func TestOcrOcrPaddleMarkdown(t *testing.T) {
 }
 
 func TestOcrOcrPaddlePdfScanned(t *testing.T) {
-	result := runExtraction(t, "pdfs/ocr_test.pdf", []byte(`{
+	skipIfPaddleOcrUnavailable(t)
+	result := runExtraction(t, "pdf/ocr_test.pdf", []byte(`{
 "force_ocr": true,
 "ocr": {
 	"backend": "paddle-ocr",
@@ -100,6 +105,7 @@ func TestOcrOcrPaddlePdfScanned(t *testing.T) {
 }
 
 func TestOcrOcrPaddleStructured(t *testing.T) {
+	skipIfPaddleOcrUnavailable(t)
 	result := runExtraction(t, "images/test_hello_world.png", []byte(`{
 "force_ocr": true,
 "ocr": {
@@ -116,6 +122,7 @@ func TestOcrOcrPaddleStructured(t *testing.T) {
 }
 
 func TestOcrOcrPaddleTableDetection(t *testing.T) {
+	skipIfPaddleOcrUnavailable(t)
 	result := runExtraction(t, "images/simple_table.png", []byte(`{
 "force_ocr": true,
 "ocr": {
