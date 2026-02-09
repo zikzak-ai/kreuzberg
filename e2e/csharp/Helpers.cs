@@ -639,18 +639,15 @@ public static class TestHelpers
             throw new XunitException("Expected document but got null");
         }
 
-        // Extract nodes from document (document could be a list or an object with nodes field)
-        List<object>? nodes = null;
-        if (document is IEnumerable<object> enumerable)
+        // Extract nodes from document structure
+        List<DocumentNode>? nodes = null;
+        if (document is DocumentStructure docStruct)
         {
-            nodes = enumerable.ToList();
+            nodes = docStruct.Nodes;
         }
-        else if (document is JsonObject docObj && docObj.TryGetPropertyValue("nodes", out var nodesNode))
+        else
         {
-            if (nodesNode is JsonArray nodesArray)
-            {
-                nodes = nodesArray.Select(n => (object)n!).ToList();
-            }
+            throw new XunitException($"Expected DocumentStructure but got {document.GetType()}");
         }
 
         if (nodes is null)
@@ -668,18 +665,7 @@ public static class TestHelpers
             var foundTypes = new HashSet<string>();
             foreach (var node in nodes)
             {
-                string? nodeType = null;
-                if (node is JsonObject nodeObj)
-                {
-                    if (nodeObj.TryGetPropertyValue("node_type", out var nt))
-                    {
-                        nodeType = nt?.ToString();
-                    }
-                    if (string.IsNullOrEmpty(nodeType) && nodeObj.TryGetPropertyValue("type", out var t))
-                    {
-                        nodeType = t?.ToString();
-                    }
-                }
+                string? nodeType = node.Content?.NodeType;
                 if (!string.IsNullOrEmpty(nodeType))
                 {
                     foundTypes.Add(nodeType);
@@ -700,18 +686,7 @@ public static class TestHelpers
             bool hasGroupNodes = false;
             foreach (var node in nodes)
             {
-                string? nodeType = null;
-                if (node is JsonObject nodeObj)
-                {
-                    if (nodeObj.TryGetPropertyValue("node_type", out var nt))
-                    {
-                        nodeType = nt?.ToString();
-                    }
-                    if (string.IsNullOrEmpty(nodeType) && nodeObj.TryGetPropertyValue("type", out var t))
-                    {
-                        nodeType = t?.ToString();
-                    }
-                }
+                string? nodeType = node.Content?.NodeType;
                 if (nodeType == "group")
                 {
                     hasGroupNodes = true;
