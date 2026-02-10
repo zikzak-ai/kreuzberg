@@ -1219,6 +1219,7 @@ public static class KreuzbergClient
             result.Pages = DeserializeField<List<PageContent>>(cRes.PagesJson);
             result.Elements = DeserializeField<List<Element>>(cRes.ElementsJson);
             result.OcrElements = DeserializeField<List<OcrElement>>(cRes.OcrElementsJson);
+            result.Document = DeserializeField<DocumentStructure>(cRes.DocumentJson);
 
             if (result.Metadata.Pages == null && cRes.PageStructureJson != IntPtr.Zero)
             {

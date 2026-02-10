@@ -411,6 +411,10 @@ func convertCResult(cRes *C.CExtractionResult) (*ExtractionResult, error) {
 		return nil, newSerializationErrorWithContext("failed to decode ocr elements", err, ErrorCodeValidation, nil)
 	}
 
+	if err := decodeJSONCString(cRes.document_json, &result.Document); err != nil {
+		return nil, newSerializationErrorWithContext("failed to decode document structure", err, ErrorCodeValidation, nil)
+	}
+
 	return result, nil
 }
 

@@ -109,29 +109,26 @@ public final class NodeContent {
 	 *            group heading text (for Group nodes)
 	 */
 	@JsonCreator
-	public NodeContent(@JsonProperty("node_type") String nodeType, @JsonProperty("text") String title,
-			@JsonProperty("level") Integer headingLevel, @JsonProperty("text") String headingText,
-			@JsonProperty("text") String paragraphText, @JsonProperty("ordered") Boolean ordered,
-			@JsonProperty("text") String listItemText, @JsonProperty("grid") TableGrid table,
-			@JsonProperty("description") String imageDescription, @JsonProperty("image_index") Integer imageIndex,
-			@JsonProperty("text") String codeText, @JsonProperty("language") String codeLanguage,
-			@JsonProperty("text") String formulaText, @JsonProperty("text") String footnoteText,
+	public NodeContent(@JsonProperty("node_type") String nodeType, @JsonProperty("text") String text,
+			@JsonProperty("level") Integer headingLevel, @JsonProperty("ordered") Boolean ordered,
+			@JsonProperty("grid") TableGrid table, @JsonProperty("description") String imageDescription,
+			@JsonProperty("image_index") Integer imageIndex, @JsonProperty("language") String codeLanguage,
 			@JsonProperty("label") String groupLabel, @JsonProperty("heading_level") Integer groupHeadingLevel,
 			@JsonProperty("heading_text") String groupHeadingText) {
 		this.nodeType = Objects.requireNonNull(nodeType, "nodeType must not be null");
-		this.title = title;
+		this.title = "title".equals(nodeType) ? text : null;
 		this.headingLevel = headingLevel;
-		this.headingText = headingText;
-		this.paragraphText = paragraphText;
+		this.headingText = "heading".equals(nodeType) ? text : null;
+		this.paragraphText = "paragraph".equals(nodeType) ? text : null;
 		this.ordered = ordered;
-		this.listItemText = listItemText;
+		this.listItemText = "list_item".equals(nodeType) ? text : null;
 		this.table = table;
 		this.imageDescription = imageDescription;
 		this.imageIndex = imageIndex;
-		this.codeText = codeText;
+		this.codeText = "code".equals(nodeType) ? text : null;
 		this.codeLanguage = codeLanguage;
-		this.formulaText = formulaText;
-		this.footnoteText = footnoteText;
+		this.formulaText = "formula".equals(nodeType) ? text : null;
+		this.footnoteText = "footnote".equals(nodeType) ? text : null;
 		this.groupLabel = groupLabel;
 		this.groupHeadingLevel = groupHeadingLevel;
 		this.groupHeadingText = groupHeadingText;

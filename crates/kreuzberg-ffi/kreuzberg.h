@@ -223,7 +223,7 @@ typedef struct CErrorDetails {
  * # Memory Layout
  *
  * Must be kept in sync with the Java side's MemoryLayout definition in KreuzbergFFI.java
- * Field order: 14 pointers (8 bytes each) + 1 bool + 7 bytes padding = 120 bytes total
+ * Field order: 15 pointers (8 bytes each) + 1 bool + 7 bytes padding = 128 bytes total
  *
  * The `#[repr(C)]` attribute ensures the struct follows C's memory layout rules:
  * - Fields are laid out in order
@@ -292,6 +292,10 @@ typedef struct CExtractionResult {
    * OCR elements as JSON array (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
    */
   char *ocr_elements_json;
+  /**
+   * Document structure as JSON object (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
+   */
+  char *document_json;
   /**
    * Whether extraction was successful
    */

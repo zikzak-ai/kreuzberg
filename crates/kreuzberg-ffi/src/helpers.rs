@@ -69,7 +69,7 @@ pub fn to_c_extraction_result(result: ExtractionResult) -> std::result::Result<*
         djot_content: _,
         elements,
         ocr_elements,
-        document: _,
+        document,
     } = result;
 
     let sanitized_content = if content.contains('\0') {
@@ -203,6 +203,17 @@ pub fn to_c_extraction_result(result: ExtractionResult) -> std::result::Result<*
         _ => None,
     };
 
+    let document_json_guard = match document {
+        Some(doc) => {
+            let json = serde_json::to_string(&doc)
+                .map_err(|e| format!("Failed to serialize document structure to JSON: {}", e))?;
+            Some(CStringGuard::new(CString::new(json).map_err(|e| {
+                format!("Failed to convert document structure JSON to C string: {}", e)
+            })?))
+        }
+        _ => None,
+    };
+
     Ok(Box::into_raw(Box::new(CExtractionResult {
         content: content_guard.into_raw(),
         mime_type: mime_type_guard.into_raw(),
@@ -218,6 +229,7 @@ pub fn to_c_extraction_result(result: ExtractionResult) -> std::result::Result<*
         pages_json: pages_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
         elements_json: elements_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
         ocr_elements_json: ocr_elements_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
+        document_json: document_json_guard.map_or(ptr::null_mut(), |g| g.into_raw()),
         success: true,
         _padding1: [0u8; 7],
     })))

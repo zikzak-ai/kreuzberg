@@ -223,7 +223,7 @@ typedef struct CErrorDetails {
  * # Memory Layout
  *
  * Must be kept in sync with the Java side's MemoryLayout definition in KreuzbergFFI.java
- * Field order: 13 pointers (8 bytes each) + 1 bool + 7 bytes padding = 112 bytes total
+ * Field order: 15 pointers (8 bytes each) + 1 bool + 7 bytes padding = 128 bytes total
  *
  * The `#[repr(C)]` attribute ensures the struct follows C's memory layout rules:
  * - Fields are laid out in order
@@ -292,6 +292,10 @@ typedef struct CExtractionResult {
    * OCR elements as JSON array (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
    */
   char *ocr_elements_json;
+  /**
+   * Document structure as JSON object (null-terminated string, or NULL if not available, must be freed with kreuzberg_free_string)
+   */
+  char *document_json;
   /**
    * Whether extraction was successful
    */
@@ -830,6 +834,27 @@ int32_t kreuzberg_config_builder_set_use_cache(struct ConfigBuilder *builder,
                                                int32_t use_cache);
 
 /**
+ * Set the include_document_structure field.
+ *
+ * # Arguments
+ *
+ * * `builder` - Non-null pointer to ConfigBuilder
+ * * `include` - 1 for true, 0 for false
+ *
+ * # Returns
+ *
+ * 0 on success, -1 on error (NULL builder)
+ *
+ * # Safety
+ *
+ * This function is meant to be called from C/FFI code. The caller must ensure:
+ * - `builder` must be a valid, non-null pointer previously returned by `kreuzberg_config_builder_new`
+ * - The pointer must be properly aligned and point to a valid ConfigBuilder instance
+ */
+int32_t kreuzberg_config_builder_set_include_document_structure(struct ConfigBuilder *builder,
+                                                                int32_t include);
+
+/**
  * Set OCR configuration from JSON.
  *
  * # Arguments
@@ -1211,6 +1236,38 @@ const char *kreuzberg_error_code_description(uint32_t code);
  * ```
  */
 struct CErrorDetails kreuzberg_get_error_details(void);
+
+/**
+ * Heap-allocated variant of `kreuzberg_get_error_details` that returns a pointer.
+ *
+ * This is the preferred variant for language bindings (Java, Go, C#) where
+ * returning structs by value across FFI boundaries causes ABI issues,
+ * particularly on ARM64.
+ *
+ * The returned pointer must be freed with `kreuzberg_free_error_details()`.
+ * Returns NULL if allocation fails.
+ *
+ * # C Signature
+ *
+ * ```c
+ * CErrorDetails* kreuzberg_get_error_details_ptr(void);
+ * ```
+ */
+struct CErrorDetails *kreuzberg_get_error_details_ptr(void);
+
+/**
+ * Frees a `CErrorDetails` pointer returned by `kreuzberg_get_error_details_ptr()`.
+ *
+ * This function frees all internal string fields and the struct itself.
+ * Passing NULL is a no-op.
+ *
+ * # C Signature
+ *
+ * ```c
+ * void kreuzberg_free_error_details(CErrorDetails* details);
+ * ```
+ */
+void kreuzberg_free_error_details(struct CErrorDetails *details);
 
 /**
  * Classifies an error based on the error message string.
@@ -1630,6 +1687,7 @@ char *kreuzberg_clone_string(const char *s);
  * 11. page_structure_json (FIXED: was missing before PR #3)
  * 12. pages_json (FIXED: was missing before PR #3)
  * 13. elements_json (ADDED: for element-based extraction support)
+ * 14. ocr_elements_json (ADDED: for OCR element output)
  *
  * # Example (C)
  *
@@ -2903,7 +2961,7 @@ int32_t kreuzberg_validate_binarization_method(const char *method);
  *
  * # Arguments
  *
- * * `backend` - C string containing the OCR backend (e.g., "tesseract", "easyocr", "paddleocr")
+ * * `backend` - C string containing the OCR backend (e.g., "tesseract", "easyocr", "paddleocr", "paddle-ocr")
  *
  * # Returns
  *

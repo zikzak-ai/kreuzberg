@@ -1231,10 +1231,12 @@ public final class Kreuzberg {
 		String elementsJson = KreuzbergFFI.readCString(result.get(ValueLayout.ADDRESS, KreuzbergFFI.ELEMENTS_OFFSET));
 		String ocrElementsJson = KreuzbergFFI
 				.readCString(result.get(ValueLayout.ADDRESS, KreuzbergFFI.OCR_ELEMENTS_OFFSET));
-		// DjotContent not yet available from FFI; pass null for now
+		String documentJson = KreuzbergFFI
+				.readCString(result.get(ValueLayout.ADDRESS, KreuzbergFFI.DOCUMENT_JSON_OFFSET));
 
 		return ResultParser.parse(content, mimeType, tablesJson, detectedLanguagesJson, metadataJson, chunksJson,
-				imagesJson, pagesJson, pageStructureJson, elementsJson, ocrElementsJson, null, language, date, subject);
+				imagesJson, pagesJson, pageStructureJson, elementsJson, ocrElementsJson, null, language, date, subject,
+				documentJson);
 	}
 
 	/**

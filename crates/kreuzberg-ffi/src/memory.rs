@@ -217,6 +217,9 @@ pub unsafe extern "C" fn kreuzberg_free_result(result: *mut CExtractionResult) {
         if !result_box.ocr_elements_json.is_null() {
             unsafe { drop(CString::from_raw(result_box.ocr_elements_json)) };
         }
+        if !result_box.document_json.is_null() {
+            unsafe { drop(CString::from_raw(result_box.document_json)) };
+        }
     }
 }
 
@@ -242,6 +245,7 @@ mod tests {
             pages_json: CString::new("[]").unwrap().into_raw(),
             elements_json: CString::new("[]").unwrap().into_raw(),
             ocr_elements_json: ptr::null_mut(),
+            document_json: ptr::null_mut(),
             success: true,
             _padding1: [0u8; 7],
         }))
@@ -264,6 +268,7 @@ mod tests {
             pages_json: ptr::null_mut(),
             elements_json: ptr::null_mut(),
             ocr_elements_json: ptr::null_mut(),
+            document_json: ptr::null_mut(),
             success: true,
             _padding1: [0u8; 7],
         }))
@@ -357,6 +362,7 @@ mod tests {
             pages_json: CString::new("[{\"content\": \"page 1\"}]").unwrap().into_raw(),
             elements_json: ptr::null_mut(),
             ocr_elements_json: ptr::null_mut(),
+            document_json: ptr::null_mut(),
             success: true,
             _padding1: [0u8; 7],
         }));
@@ -385,6 +391,7 @@ mod tests {
                 .unwrap()
                 .into_raw(),
             ocr_elements_json: ptr::null_mut(),
+            document_json: ptr::null_mut(),
             success: true,
             _padding1: [0u8; 7],
         }));

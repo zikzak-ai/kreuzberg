@@ -508,7 +508,7 @@ func assertDocument(t *testing.T, result *kreuzberg.ExtractionResult, hasDocumen
 		if len(nodeTypesInclude) > 0 {
 			types := make(map[string]bool)
 			for _, n := range nodes {
-				if n.Content != nil {
+				if n.Content.NodeType != "" {
 					types[strings.ToLower(n.Content.NodeType)] = true
 				}
 			}
@@ -521,7 +521,7 @@ func assertDocument(t *testing.T, result *kreuzberg.ExtractionResult, hasDocumen
 		if hasGroups != nil {
 			hasGroupNodes := false
 			for _, n := range nodes {
-				if n.Content != nil && strings.EqualFold(n.Content.NodeType, "group") {
+				if n.Content.NodeType != "" && strings.EqualFold(n.Content.NodeType, "group") {
 					hasGroupNodes = true
 					break
 				}

@@ -104,6 +104,14 @@ public final class E2EHelpers {
         return details;
     }
 
+    public static void skipIfPaddleOcrUnavailable() {
+        String flag = System.getenv("KREUZBERG_PADDLE_OCR_AVAILABLE");
+        Assumptions.assumeTrue(
+                flag != null && !flag.isEmpty() && !"0".equals(flag) && !"false".equalsIgnoreCase(flag),
+                "Skipping: PaddleOCR not available (set KREUZBERG_PADDLE_OCR_AVAILABLE=1)"
+        );
+    }
+
     public static void runFixture(
             String fixtureId,
             String relativePath,
@@ -231,7 +239,7 @@ public final class E2EHelpers {
                     String.format("Expected languages %s to be in %s", expected, languages));
 
             if (minConfidence != null) {
-                Map<String, Object> metadata = result.getMetadata();
+                Map<String, Object> metadata = result.getMetadataMap();
                 if (metadata != null && metadata.containsKey("confidence")) {
                     Object confObj = metadata.get("confidence");
                     double confidence = confObj instanceof Number
@@ -248,7 +256,7 @@ public final class E2EHelpers {
                 String path,
                 Map<String, Object> expectation
         ) {
-            Map<String, Object> metadata = result.getMetadata();
+            Map<String, Object> metadata = result.getMetadataMap();
             Object value = fetchMetadataValue(metadata, path);
             assertNotNull(value, String.format("Metadata path '%s' missing", path));
 
@@ -451,7 +459,7 @@ public final class E2EHelpers {
             }
             if (elements != null && typesInclude != null && !typesInclude.isEmpty()) {
                 var types = elements.stream()
-                        .map(el -> el.getType())
+                        .map(el -> el.getElementType().wireValue())
                         .filter(t -> t != null)
                         .toList();
                 for (String expected : typesInclude) {
@@ -460,6 +468,35 @@ public final class E2EHelpers {
                     assertTrue(found,
                             String.format("Expected element types to include '%s', got %s", expected, types));
                 }
+            }
+        }
+
+        public static void assertOcrElements(
+                ExtractionResult result,
+                boolean hasElements,
+                boolean hasGeometry,
+                boolean hasConfidence,
+                Integer minCount
+        ) {
+            var ocrElements = result.getOcrElements();
+            if (hasElements) {
+                assertTrue(!ocrElements.isEmpty(), "Expected OCR elements, but none found");
+            }
+            if (hasGeometry) {
+                for (int i = 0; i < ocrElements.size(); i++) {
+                    assertNotNull(ocrElements.get(i).getGeometry(),
+                            String.format("OCR element %d expected to have geometry", i));
+                }
+            }
+            if (hasConfidence) {
+                for (int i = 0; i < ocrElements.size(); i++) {
+                    assertNotNull(ocrElements.get(i).getConfidence(),
+                            String.format("OCR element %d expected to have confidence score", i));
+                }
+            }
+            if (minCount != null) {
+                assertTrue(ocrElements.size() >= minCount,
+                        String.format("Expected at least %d OCR elements, found %d", minCount, ocrElements.size()));
             }
         }
 
@@ -742,6 +779,17 @@ fn render_test(fixture: &Fixture) -> Result<String> {
     } else {
         "false"
     };
+
+    // Skip if fixture requires paddle-ocr and it's not available
+    let requires_paddle = fixture.skip().requires_feature.iter().any(|f| f == "paddle-ocr")
+        || fixture
+            .document()
+            .requires_external_tool
+            .iter()
+            .any(|t| t == "paddle-ocr");
+    if requires_paddle {
+        writeln!(body, "        E2EHelpers.skipIfPaddleOcrUnavailable();")?;
+    }
 
     // Generate different code based on extraction method and input type
     match (method, input_type) {

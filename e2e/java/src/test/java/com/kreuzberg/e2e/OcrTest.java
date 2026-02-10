@@ -63,6 +63,7 @@ public class OcrTest {
     @Test
     public void ocrPaddleConfidenceFilter() throws Exception {
         JsonNode config = MAPPER.readTree("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"language\":\"en\",\"paddle_ocr_config\":{\"min_confidence\":80.0}}}");
+        E2EHelpers.skipIfPaddleOcrUnavailable();
         E2EHelpers.runFixture(
             "ocr_paddle_confidence_filter",
             "images/ocr_image.jpg",
@@ -80,6 +81,7 @@ public class OcrTest {
     @Test
     public void ocrPaddleImageChinese() throws Exception {
         JsonNode config = MAPPER.readTree("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"language\":\"ch\"}}");
+        E2EHelpers.skipIfPaddleOcrUnavailable();
         E2EHelpers.runFixture(
             "ocr_paddle_image_chinese",
             "images/chi_sim_image.jpeg",
@@ -97,6 +99,7 @@ public class OcrTest {
     @Test
     public void ocrPaddleImageEnglish() throws Exception {
         JsonNode config = MAPPER.readTree("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"language\":\"en\"}}");
+        E2EHelpers.skipIfPaddleOcrUnavailable();
         E2EHelpers.runFixture(
             "ocr_paddle_image_english",
             "images/test_hello_world.png",
@@ -115,6 +118,7 @@ public class OcrTest {
     @Test
     public void ocrPaddleMarkdown() throws Exception {
         JsonNode config = MAPPER.readTree("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"language\":\"en\",\"paddle_ocr_config\":{\"output_format\":\"markdown\"}}}");
+        E2EHelpers.skipIfPaddleOcrUnavailable();
         E2EHelpers.runFixture(
             "ocr_paddle_markdown",
             "images/test_hello_world.png",
@@ -133,6 +137,7 @@ public class OcrTest {
     @Test
     public void ocrPaddlePdfScanned() throws Exception {
         JsonNode config = MAPPER.readTree("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"language\":\"en\"}}");
+        E2EHelpers.skipIfPaddleOcrUnavailable();
         E2EHelpers.runFixture(
             "ocr_paddle_pdf_scanned",
             "pdf/ocr_test.pdf",
@@ -151,6 +156,7 @@ public class OcrTest {
     @Test
     public void ocrPaddleStructured() throws Exception {
         JsonNode config = MAPPER.readTree("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"element_config\":{\"include_elements\":true},\"language\":\"en\"}}");
+        E2EHelpers.skipIfPaddleOcrUnavailable();
         E2EHelpers.runFixture(
             "ocr_paddle_structured",
             "images/test_hello_world.png",
@@ -169,6 +175,7 @@ public class OcrTest {
     @Test
     public void ocrPaddleTableDetection() throws Exception {
         JsonNode config = MAPPER.readTree("{\"force_ocr\":true,\"ocr\":{\"backend\":\"paddle-ocr\",\"language\":\"en\",\"paddle_ocr_config\":{\"enable_table_detection\":true}}}");
+        E2EHelpers.skipIfPaddleOcrUnavailable();
         E2EHelpers.runFixture(
             "ocr_paddle_table_detection",
             "images/simple_table.png",

@@ -139,8 +139,8 @@ mod tests {
         // Test size
         assert_eq!(
             std::mem::size_of::<CExtractionResult>(),
-            120,
-            "CExtractionResult must be exactly 120 bytes"
+            128,
+            "CExtractionResult must be exactly 128 bytes"
         );
 
         // Test alignment
@@ -204,6 +204,7 @@ mod tests {
             pages_json: ptr::null_mut(),
             elements_json: ptr::null_mut(),
             ocr_elements_json: ptr::null_mut(),
+            document_json: ptr::null_mut(),
             success: true,
             _padding1: [0u8; 7],
         }))
@@ -519,6 +520,7 @@ mod tests {
                 pages_json: ptr::null_mut(),
                 elements_json: ptr::null_mut(),
                 ocr_elements_json: ptr::null_mut(),
+                document_json: ptr::null_mut(),
                 success: true,
                 _padding1: [0u8; 7],
             }));
@@ -548,11 +550,12 @@ mod tests {
                 pages_json: CString::new("[{\"page\":1,\"content\":\"test\"}]").unwrap().into_raw(),
                 elements_json: CString::new("[]").unwrap().into_raw(),
                 ocr_elements_json: ptr::null_mut(),
+                document_json: ptr::null_mut(),
                 success: true,
                 _padding1: [0u8; 7],
             }));
 
-            // Should properly free all 13 allocated string fields without leaking memory
+            // Should properly free all 15 allocated string fields without leaking memory
             kreuzberg_free_result(result);
         }
     }
@@ -632,7 +635,7 @@ mod tests {
     /// Test CExtractionResult size exactly matches FFI contract
     #[test]
     fn test_c_extraction_result_size() {
-        assert_eq!(std::mem::size_of::<CExtractionResult>(), 120);
+        assert_eq!(std::mem::size_of::<CExtractionResult>(), 128);
         assert_eq!(std::mem::align_of::<CExtractionResult>(), 8);
     }
 
