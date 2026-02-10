@@ -41,7 +41,7 @@ runs:
       id: cache-models
       with:
         path: ~/.cache/kreuzberg/paddle-ocr
-        key: ${{ inputs.cache-key-suffix }}-${{ runner.os }}-${{ runner.arch }}-v1
+        key: ${{ inputs.cache-key-suffix }}-${{ runner.os }}-${{ runner.arch }}-v2
         restore-keys: |
           ${{ inputs.cache-key-suffix }}-${{ runner.os }}-${{ runner.arch }}-
           ${{ inputs.cache-key-suffix }}-${{ runner.os }}-
@@ -50,7 +50,6 @@ runs:
     - name: Download detection model (det)
       if: contains(inputs.models, 'det') && steps.cache-models.outputs.cache-hit != 'true'
       shell: bash
-      continue-on-error: true
       run: |
         MODEL_URL="https://huggingface.co/Kreuzberg/paddleocr-onnx-models/resolve/main/ch_PP-OCRv4_det_infer.onnx"
         CACHE_DIR="$HOME/.cache/kreuzberg/paddle-ocr"
@@ -60,18 +59,27 @@ runs:
         echo "Downloading detection model from $MODEL_URL"
         mkdir -p "$MODEL_DIR"
 
-        if curl -f -L --progress-bar --connect-timeout 10 --max-time 300 \
-          -o "$MODEL_FILE" "$MODEL_URL"; then
-          echo "Detection model downloaded successfully ($(du -h "$MODEL_FILE" | cut -f1))"
-        else
-          echo "Warning: Failed to download detection model, CI will continue without it"
-          rm -f "$MODEL_FILE"
-        fi
+        for attempt in 1 2 3; do
+          if [ $attempt -gt 1 ]; then
+            backoff=$((5 * 3 ** (attempt - 2)))
+            echo "Retry attempt $attempt/$3 after ${backoff}s backoff..."
+            sleep $backoff
+          fi
+
+          if curl -f -L --progress-bar --connect-timeout 30 --max-time 600 \
+            -o "$MODEL_FILE" "$MODEL_URL"; then
+            echo "Detection model downloaded successfully ($(du -h "$MODEL_FILE" | cut -f1))"
+            exit 0
+          fi
+        done
+
+        echo "ERROR: Failed to download detection model after 3 attempts"
+        rm -f "$MODEL_FILE"
+        exit 1
 
     - name: Download classification model (cls)
       if: contains(inputs.models, 'cls') && steps.cache-models.outputs.cache-hit != 'true'
       shell: bash
-      continue-on-error: true
       run: |
         MODEL_URL="https://huggingface.co/Kreuzberg/paddleocr-onnx-models/resolve/main/ch_ppocr_mobile_v2.0_cls_infer.onnx"
         CACHE_DIR="$HOME/.cache/kreuzberg/paddle-ocr"
@@ -81,18 +89,27 @@ runs:
         echo "Downloading classification model from $MODEL_URL"
         mkdir -p "$MODEL_DIR"
 
-        if curl -f -L --progress-bar --connect-timeout 10 --max-time 300 \
-          -o "$MODEL_FILE" "$MODEL_URL"; then
-          echo "Classification model downloaded successfully ($(du -h "$MODEL_FILE" | cut -f1))"
-        else
-          echo "Warning: Failed to download classification model, CI will continue without it"
-          rm -f "$MODEL_FILE"
-        fi
+        for attempt in 1 2 3; do
+          if [ $attempt -gt 1 ]; then
+            backoff=$((5 * 3 ** (attempt - 2)))
+            echo "Retry attempt $attempt/$3 after ${backoff}s backoff..."
+            sleep $backoff
+          fi
+
+          if curl -f -L --progress-bar --connect-timeout 30 --max-time 600 \
+            -o "$MODEL_FILE" "$MODEL_URL"; then
+            echo "Classification model downloaded successfully ($(du -h "$MODEL_FILE" | cut -f1))"
+            exit 0
+          fi
+        done
+
+        echo "ERROR: Failed to download classification model after 3 attempts"
+        rm -f "$MODEL_FILE"
+        exit 1
 
     - name: Download recognition model (rec)
       if: contains(inputs.models, 'rec') && steps.cache-models.outputs.cache-hit != 'true'
       shell: bash
-      continue-on-error: true
       run: |
         MODEL_URL="https://huggingface.co/Kreuzberg/paddleocr-onnx-models/resolve/main/en_PP-OCRv4_rec_infer.onnx"
         CACHE_DIR="$HOME/.cache/kreuzberg/paddle-ocr"
@@ -102,13 +119,23 @@ runs:
         echo "Downloading recognition model from $MODEL_URL"
         mkdir -p "$MODEL_DIR"
 
-        if curl -f -L --progress-bar --connect-timeout 10 --max-time 300 \
-          -o "$MODEL_FILE" "$MODEL_URL"; then
-          echo "Recognition model downloaded successfully ($(du -h "$MODEL_FILE" | cut -f1))"
-        else
-          echo "Warning: Failed to download recognition model, CI will continue without it"
-          rm -f "$MODEL_FILE"
-        fi
+        for attempt in 1 2 3; do
+          if [ $attempt -gt 1 ]; then
+            backoff=$((5 * 3 ** (attempt - 2)))
+            echo "Retry attempt $attempt/$3 after ${backoff}s backoff..."
+            sleep $backoff
+          fi
+
+          if curl -f -L --progress-bar --connect-timeout 30 --max-time 600 \
+            -o "$MODEL_FILE" "$MODEL_URL"; then
+            echo "Recognition model downloaded successfully ($(du -h "$MODEL_FILE" | cut -f1))"
+            exit 0
+          fi
+        done
+
+        echo "ERROR: Failed to download recognition model after 3 attempts"
+        rm -f "$MODEL_FILE"
+        exit 1
 
     - name: Verify downloaded models
       id: verify-models
@@ -142,9 +169,9 @@ runs:
         fi
 
         if [ ${#AVAILABLE_MODELS[@]} -eq 0 ]; then
-          echo "⚠ No models found in cache directory"
+          echo "ERROR: No models found in cache directory after download"
           echo "available-models=" >> $GITHUB_OUTPUT
-          exit 0
+          exit 1
         fi
 
         AVAILABLE_MODELS_STR=$(IFS=, ; echo "${AVAILABLE_MODELS[*]}")
