@@ -7,18 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace PHPUnit\Framework\Attributes;
+namespace PHPUnit\Event\Test;
 
-use Attribute;
+use PHPUnit\Event\Subscriber;
 
 /**
- * @immutable
- *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
- *
- * @deprecated https://github.com/sebastianbergmann/phpunit/issues/6284
  */
-#[Attribute(Attribute::TARGET_CLASS)]
-final readonly class RunClassInSeparateProcess
+interface CustomTestMethodInvocationUsedSubscriber extends Subscriber
 {
+    public function notify(CustomTestMethodInvocationUsed $event): void;
 }

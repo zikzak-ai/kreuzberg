@@ -112,6 +112,7 @@ final class Generator
             $callOriginalConstructor,
             $arguments,
             $returnValueGeneration,
+            $mockObject,
         );
 
         assert($object instanceof $type);
@@ -287,12 +288,12 @@ final class Generator
      * @throws ReflectionException
      * @throws RuntimeException
      */
-    private function instantiate(DoubledClass $mockClass, bool $callOriginalConstructor = false, array $arguments = [], bool $returnValueGeneration = true): object
+    private function instantiate(DoubledClass $mockClass, bool $callOriginalConstructor, array $arguments, bool $returnValueGeneration, bool $isMockObject): object
     {
         $className = $mockClass->generate();
 
         try {
-            $object = (new ReflectionClass($className))->newInstanceWithoutConstructor();
+            $object = new ReflectionClass($className)->newInstanceWithoutConstructor();
             // @codeCoverageIgnoreStart
         } catch (\ReflectionException $e) {
             throw new ReflectionException(
@@ -310,7 +311,7 @@ final class Generator
          */
         $reflector->getProperty('__phpunit_state')->setValue(
             $object,
-            new TestDoubleState($mockClass->configurableMethods(), $returnValueGeneration),
+            new TestDoubleState($mockClass->configurableMethods(), $returnValueGeneration, $isMockObject),
         );
 
         if ($callOriginalConstructor && $reflector->getConstructor() !== null) {
@@ -837,12 +838,6 @@ final class Generator
      */
     private function properties(?ReflectionClass $class): array
     {
-        if (version_compare('8.4.1', PHP_VERSION, '>')) {
-            // @codeCoverageIgnoreStart
-            return [];
-            // @codeCoverageIgnoreEnd
-        }
-
         if ($class === null) {
             return [];
         }

@@ -130,11 +130,16 @@ tasks:
       - python -c "import shutil, glob, os; [shutil.rmtree(d, ignore_errors=True) for d in ['vendor', 'build', 'coverage']]; [os.remove(f) for f in glob.glob('*.so')]"
 
   update:
-    desc: Update PHP dependencies
-    dir: packages/php
+    desc: Update PHP dependencies to latest versions (including major versions)
     cmds:
-      - echo "Updating PHP dependencies..."
-      - composer update
+      - echo "Updating packages/php dependencies to latest versions..."
+      - cd packages/php && composer outdated --direct --format=json | jq -r '.installed[]? | .name' | grep -v '^$' | xargs -r -I {} composer require {} --dev --no-update --no-interaction || true
+      - cd packages/php && composer update --with-all-dependencies
+      - cd packages/php && echo "Checking remaining outdated dependencies..." && composer outdated --direct || true
+      - echo "Updating e2e/php dependencies to latest versions..."
+      - cd e2e/php && composer outdated --direct --format=json | jq -r '.installed[]? | .name' | grep -v '^$' | xargs -r -I {} composer require {} --dev --no-update --no-interaction || true
+      - cd e2e/php && composer update --with-all-dependencies
+      - cd e2e/php && echo "Checking remaining outdated dependencies..." && composer outdated --direct || true
 
   update:check:
     desc: Check for outdated PHP dependencies
