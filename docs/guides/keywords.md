@@ -442,11 +442,11 @@ async def analyze_research_paper(pdf_path: str):
     keywords = result.metadata.get("keywords", [])
 
     # Sort by relevance (lower score = more relevant for YAKE)
-    sorted_keywords = sorted(keywords, key=lambda k: k.score)
+    sorted_keywords = sorted(keywords, key=lambda k: k["score"])
 
     print("Top Research Keywords:")
     for keyword in sorted_keywords[:10]:
-        print(f"  - {keyword.text} (relevance: {1-keyword.score:.2%})")
+        print(f"  - {keyword["text"]} (relevance: {1-keyword["score"]:.2%})")
 
     return result
 
@@ -485,17 +485,17 @@ async def extract_product_features(product_doc_path: str):
     keywords = result.metadata.get("keywords", [])
 
     # Group features by score tier
-    tier_1 = [k for k in keywords if k.score > 10.0]  # Core features
-    tier_2 = [k for k in keywords if 5.0 < k.score <= 10.0]  # Secondary
-    tier_3 = [k for k in keywords if k.score <= 5.0]  # Tertiary
+    tier_1 = [k for k in keywords if k["score"] > 10.0]  # Core features
+    tier_2 = [k for k in keywords if 5.0 < k["score"] <= 10.0]  # Secondary
+    tier_3 = [k for k in keywords if k["score"]<= 5.0]  # Tertiary
 
     print(f"Core Features ({len(tier_1)}):")
     for k in tier_1:
-        print(f"  - {k.text}")
+        print(f"  - {k['text']}")
 
     print(f"Secondary Features ({len(tier_2)}):")
     for k in tier_2:
-        print(f"  - {k.text}")
+        print(f"  - {k['text']}")
 
     return {
         "core": tier_1,
@@ -533,8 +533,8 @@ class DocumentTagger:
         keywords = result.metadata.get("keywords", [])
 
         # Return just the text, sorted by relevance
-        sorted_keywords = sorted(keywords, key=lambda k: k.score)
-        tags = [k.text for k in sorted_keywords]
+        sorted_keywords = sorted(keywords, key=lambda k: k["score"])
+        tags = [k["text"] for k in sorted_keywords]
 
         return tags
 
@@ -604,8 +604,8 @@ async def compare_algorithms(doc_path: str):
     rake_keywords = rake_result.metadata.get("keywords", [])
 
     # Compare results
-    yake_texts = {k.text for k in yake_keywords}
-    rake_texts = {k.text for k in rake_keywords}
+    yake_texts = {k["text"] for k in yake_keywords}
+    rake_texts = {k["text"] for k in rake_keywords}
 
     common = yake_texts & rake_texts
     yake_only = yake_texts - rake_texts
@@ -1066,10 +1066,10 @@ async def debug_keywords(doc_path: str):
     # Step 3: Verify keywords appear in text
     text_lower = result.content.lower()
     for keyword in keywords[:5]:
-        if keyword.text.lower() in text_lower:
-            print(f"✓ '{keyword.text}' found in text")
+        if keyword["text"].lower() in text_lower:
+            print(f"✓ '{keyword["text]}' found in text")
         else:
-            print(f"✗ '{keyword.text}' NOT in text (check ngram_range)")
+            print(f"✗ '{keyword["text]}' NOT in text (check ngram_range)")
 
     # Step 4: Check algorithm choice
     print(f"\nAlgorithm: {config.keywords.algorithm}")
