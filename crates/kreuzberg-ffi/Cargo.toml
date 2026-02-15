@@ -30,7 +30,7 @@ async-trait = { workspace = true }
 tokio = { workspace = true }
 html-to-markdown-rs = { version = "2.25.0", default-features = false }
 rayon = { version = "1.11", optional = true }
-log = "0.4"
+log = { workspace = true }
 ahash = "0.8"
 ctor = "0.6"
 

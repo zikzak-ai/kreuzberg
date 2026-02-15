@@ -22,7 +22,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Set pdfium and onnxruntime versions (can be overridden via build-arg)
-ARG PDFIUM_VERSION=7529
+ARG PDFIUM_VERSION=7678
 ARG ONNXRUNTIME_VERSION=1.24.1
 ARG TARGETARCH
 ENV PDFIUM_VERSION=${PDFIUM_VERSION}

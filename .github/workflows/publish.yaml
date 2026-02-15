@@ -36,8 +36,8 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  PDFIUM_VERSION: "7578"
-  PDFIUM_STATIC_VERSION: "7442b"
+  PDFIUM_VERSION: "7678"
+  PDFIUM_STATIC_VERSION: "7678"
   ORT_VERSION: "1.24.1"
   MACOSX_DEPLOYMENT_TARGET: "14.0"
 
@@ -1614,7 +1614,7 @@ jobs:
     permissions:
       contents: read
     env:
-      PDFIUM_VERSION: "7529"
+      PDFIUM_VERSION: "7678"
     steps:
       - name: Show initial disk space
         run: echo "=== Initial disk space ===" && df -h /
@@ -2879,7 +2879,7 @@ jobs:
     permissions:
       contents: read
     env:
-      PDFIUM_VERSION: "7529"
+      PDFIUM_VERSION: "7678"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

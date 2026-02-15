@@ -7,7 +7,7 @@ mod bindgen {
     #![allow(non_snake_case)]
     #![allow(dead_code)]
 
-    include!("bindgen/pdfium_7543.rs");
+    include!("bindgen/pdfium_7678.rs");
 
     pub(crate) type size_t = usize;
 }

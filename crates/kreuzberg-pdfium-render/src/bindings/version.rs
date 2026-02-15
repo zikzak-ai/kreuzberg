@@ -3,12 +3,12 @@
 /// The Pdfium `FPDF_*` API release version used by this build.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfiumApiVersion {
-    V7543,
+    V7678,
 }
 
 impl PdfiumApiVersion {
     /// Returns the Pdfium API version this crate was compiled against.
     pub(crate) fn current() -> Self {
-        PdfiumApiVersion::V7543
+        PdfiumApiVersion::V7678
     }
 }
