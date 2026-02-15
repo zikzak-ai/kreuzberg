@@ -72,24 +72,10 @@ impl<'a> PdfFormTextField<'a> {
         self.get_flags_impl().contains(PdfFormFieldFlags::TextMultiline)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not this [PdfFormTextField] is configured as a multi-line text field.
-    #[inline]
-    pub fn set_is_multiline(&self, is_multiline: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::TextMultiline, is_multiline)
-    }
-
     /// Returns `true` if this [PdfFormTextField] is configured as a password field.
     #[inline]
     pub fn is_password(&self) -> bool {
         self.get_flags_impl().contains(PdfFormFieldFlags::TextPassword)
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not this [PdfFormTextField] is configured as a password text field.
-    #[inline]
-    pub fn set_is_password(&self, is_password: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::TextPassword, is_password)
     }
 
     /// Returns `true` if this [PdfFormTextField] represents the path of a file
@@ -100,24 +86,9 @@ impl<'a> PdfFormTextField<'a> {
         self.get_flags_impl().contains(PdfFormFieldFlags::TextFileSelect)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not this [PdfFormTextField] represents the path of a file
-    /// whose contents are to be submitted as the value of the field.
-    ///
-    /// This flag was added in PDF version 1.4.
-    pub fn set_is_file_select(&mut self, is_file_select: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::TextFileSelect, is_file_select)
-    }
-
     /// Returns `true` if text entered into this [PdfFormTextField] should be spell checked.
     pub fn is_spell_checked(&self) -> bool {
         !self.get_flags_impl().contains(PdfFormFieldFlags::TextDoNotSpellCheck)
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not text entered into this [PdfFormTextField] should be spell checked.
-    pub fn set_is_spell_checked(&mut self, is_spell_checked: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::TextDoNotSpellCheck, !is_spell_checked)
     }
 
     /// Returns `true` if the internal area of this [PdfFormTextField] can scroll either
@@ -128,17 +99,6 @@ impl<'a> PdfFormTextField<'a> {
     /// This flag was added in PDF version 1.4.
     pub fn is_scrollable(&self) -> bool {
         !self.get_flags_impl().contains(PdfFormFieldFlags::TextDoNotScroll)
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not the internal area of this [PdfFormTextField] can scroll
-    /// either horizontally or vertically to accommodate text entry longer than what can fit
-    /// within the field's annotation bounds. If set to `false`, no further text entry
-    /// will be accepted once the field's annotation bounds are full.
-    ///
-    /// This flag was added in PDF version 1.4.
-    pub fn set_is_scrollable(&mut self, is_scrollable: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::TextDoNotScroll, !is_scrollable)
     }
 
     /// Returns `true` if this [PdfFormTextField] is "combed", that is, automatically divided
@@ -170,14 +130,6 @@ impl<'a> PdfFormTextField<'a> {
     /// This flag was added in PDF version 1.5.
     pub fn is_rich_text(&self) -> bool {
         self.get_flags_impl().contains(PdfFormFieldFlags::TextRichText)
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not the text in this [PdfFormTextField] is a rich text string.
-    ///
-    /// This flag was added in PDF version 1.5.
-    pub fn set_is_rich_text(&mut self, is_rich_text: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::TextRichText, is_rich_text)
     }
 }
 

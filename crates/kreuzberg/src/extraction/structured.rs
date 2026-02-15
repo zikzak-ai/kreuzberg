@@ -127,8 +127,7 @@ pub fn parse_json(data: &[u8], config: Option<JsonExtractionConfig>) -> Result<S
     // Still extract text fields for metadata population
     let _text_parts = extract_from_json_value(&value, "", &config, &mut metadata, &mut text_fields);
     // Output pretty-printed JSON to preserve structure (matches ground truth format)
-    let content = serde_json::to_string_pretty(&value)
-        .unwrap_or_else(|_| String::from_utf8_lossy(data).to_string());
+    let content = serde_json::to_string_pretty(&value).unwrap_or_else(|_| String::from_utf8_lossy(data).to_string());
 
     Ok(StructuredDataResult {
         content,

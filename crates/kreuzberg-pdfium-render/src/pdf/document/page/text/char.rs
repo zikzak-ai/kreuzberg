@@ -16,17 +16,6 @@ use crate::utils::mem::create_byte_buffer;
 use std::convert::TryInto;
 use std::ffi::c_void;
 
-#[cfg(any(
-    feature = "pdfium_future",
-    feature = "pdfium_7543",
-    feature = "pdfium_7350",
-    feature = "pdfium_7215",
-    feature = "pdfium_7123",
-    feature = "pdfium_6996",
-    feature = "pdfium_6721",
-    feature = "pdfium_6666",
-    feature = "pdfium_6611"
-))]
 use {crate::pdf::document::page::PdfPageObjectOwnership, crate::pdf::document::page::object::text::PdfPageTextObject};
 
 #[cfg(doc)]
@@ -318,17 +307,6 @@ impl<'a> PdfPageTextChar<'a> {
             .contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19)
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611"
-    ))]
     /// Returns the page text object that contains this character.
     pub fn text_object(&self) -> Result<PdfPageTextObject<'_>, PdfiumError> {
         let object_handle = self
@@ -346,57 +324,9 @@ impl<'a> PdfPageTextChar<'a> {
         }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611"
-    ))]
     /// Returns the text rendering mode for this character.
     pub fn render_mode(&self) -> Result<PdfPageTextRenderMode, PdfiumError> {
         self.text_object().map(|text_object| text_object.render_mode())
-    }
-
-    #[cfg(all(
-        any(
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961"
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-        ))
-    ))]
-    /// Returns the text rendering mode for this character.
-    pub fn render_mode(&self) -> Result<PdfPageTextRenderMode, PdfiumError> {
-        PdfPageTextRenderMode::from_pdfium(
-            self.bindings()
-                .FPDFText_GetTextRenderMode(self.text_page_handle, self.index),
-        )
     }
 
     /// Returns the fill color applied to this character.
@@ -615,30 +545,6 @@ impl<'a> PdfPageTextChar<'a> {
         }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-        feature = "pdfium_6043",
-        feature = "pdfium_6015",
-    ))]
     /// Returns `true` if this character is recognized as a hyphen by Pdfium.
     #[inline]
     pub fn is_hyphen(&self) -> Result<bool, PdfiumError> {

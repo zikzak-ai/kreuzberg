@@ -50,16 +50,13 @@ libloading = "0.9"
 bindgen = { version = "0.72", optional = true }
 
 [features]
-default = ["pdfium_7543", "image_latest", "thread_safe"]
+default = ["image_latest", "thread_safe"]
 bindings = ["dep:bindgen"]
 thread_safe = []
 
 # Image
 image_latest = ["image_025"]
 image_025 = ["dep:image_025"]
-
-# Pdfium version (only latest supported)
-pdfium_7543 = []
 
 [lints.rust.unexpected_cfgs]
 level = "allow"

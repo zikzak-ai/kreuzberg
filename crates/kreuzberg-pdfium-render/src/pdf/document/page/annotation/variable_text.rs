@@ -4,19 +4,6 @@ use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotation
 use crate::pdf::points::PdfPoints;
 use std::ffi::c_float;
 
-#[cfg(any(
-    feature = "pdfium_future",
-    feature = "pdfium_7543",
-    feature = "pdfium_7350",
-    feature = "pdfium_7215",
-    feature = "pdfium_7123",
-    feature = "pdfium_6996",
-    feature = "pdfium_6721",
-    feature = "pdfium_6666",
-    feature = "pdfium_6611",
-    feature = "pdfium_6569",
-    feature = "pdfium_6555",
-))]
 use {crate::pdf::color::PdfColor, std::ffi::c_uint};
 
 #[cfg(doc)]
@@ -55,25 +42,8 @@ pub trait PdfPageAnnotationVariableText<'a> {
     /// from the annotation height.
     fn is_font_auto_sized(&self, form: &PdfForm) -> bool;
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-    ))]
     /// Returns the color of the text in this annotation.
     fn font_color(&self, form: &PdfForm) -> Result<PdfColor, PdfiumError>;
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Sets the color of the text in this annotation.
-    fn set_font_color(&mut self, form: &PdfForm, color: PdfColor) -> Result<(), PdfiumError>;
 
     /// Returns the form of justification that should be used when displaying the text
     /// assigned to this annotation.
@@ -110,19 +80,6 @@ where
         }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-    ))]
     fn font_color(&self, form: &PdfForm) -> Result<PdfColor, PdfiumError> {
         let mut red: c_uint = 0;
         let mut green: c_uint = 0;
@@ -136,21 +93,6 @@ where
             &mut blue,
         )) {
             Ok(PdfColor::new(red as u8, green as u8, blue as u8, 255))
-        } else {
-            Err(PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown))
-        }
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    fn set_font_color(&mut self, form: &PdfForm, color: PdfColor) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(self.bindings().FPDFAnnot_SetFontColor(
-            form.handle(),
-            self.handle(),
-            color.red() as c_uint,
-            color.green() as c_uint,
-            color.blue() as c_uint,
-        )) {
-            Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown))
         }

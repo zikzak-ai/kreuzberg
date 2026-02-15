@@ -10,27 +10,7 @@ use crate::bindgen::{
     FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL, IFSDK_PAUSE, size_t,
 };
 
-#[cfg(any(
-    feature = "pdfium_future",
-    feature = "pdfium_7543",
-    feature = "pdfium_7350",
-    feature = "pdfium_7215",
-    feature = "pdfium_7123",
-    feature = "pdfium_6996",
-    feature = "pdfium_6721",
-    feature = "pdfium_6666",
-    feature = "pdfium_6611",
-    feature = "pdfium_6569",
-    feature = "pdfium_6555",
-    feature = "pdfium_6490",
-))]
 use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
-
-#[cfg(feature = "pdfium_use_skia")]
-use crate::bindgen::FPDF_SKIA_CANVAS;
-
-#[cfg(feature = "pdfium_enable_xfa")]
-use crate::bindgen::{FPDF_BSTR, FPDF_RESULT};
 
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -52,8 +32,6 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDF_InitLibrary: unsafe extern "C" fn(),
     extern_FPDF_SetSandBoxPolicy: unsafe extern "C" fn(policy: FPDF_DWORD, enable: FPDF_BOOL),
     extern_FPDF_DestroyLibrary: unsafe extern "C" fn(),
-    #[cfg(all(feature = "pdfium_use_win32", target_os = "windows"))]
-    extern_FPDF_SetPrintMode: unsafe extern "C" fn(mode: c_int),
     extern_FPDF_GetLastError: unsafe extern "C" fn() -> c_ulong,
     extern_FPDF_CreateNewDocument: unsafe extern "C" fn() -> FPDF_DOCUMENT,
     extern_FPDF_LoadDocument: unsafe extern "C" fn(file_path: FPDF_STRING, password: FPDF_BYTESTRING) -> FPDF_DOCUMENT,
@@ -121,24 +99,6 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDF_GetTrailerEnds:
         unsafe extern "C" fn(document: FPDF_DOCUMENT, buffer: *mut c_uint, length: c_ulong) -> c_ulong,
     extern_FPDF_GetDocPermissions: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_ulong,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-    ))]
     extern_FPDF_GetDocUserPermissions: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_ulong,
     extern_FPDF_GetSecurityHandlerRevision: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
     extern_FPDF_GetPageCount: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
@@ -195,29 +155,6 @@ pub(crate) struct DynamicPdfiumBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong,
-    #[cfg(feature = "pdfium_enable_xfa")]
-    extern_FPDF_GetXFAPacketCount: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
-    #[cfg(feature = "pdfium_enable_xfa")]
-    extern_FPDF_GetXFAPacketName:
-        unsafe extern "C" fn(document: FPDF_DOCUMENT, index: c_int, buffer: *mut c_void, buflen: c_ulong) -> c_ulong,
-    #[cfg(feature = "pdfium_enable_xfa")]
-    extern_FPDF_GetXFAPacketContent: unsafe extern "C" fn(
-        document: FPDF_DOCUMENT,
-        index: c_int,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(feature = "pdfium_enable_v8")]
-    extern_FPDF_GetRecommendedV8Flags: unsafe extern "C" fn() -> *const c_char,
-    #[cfg(feature = "pdfium_enable_v8")]
-    extern_FPDF_GetArrayBufferAllocatorSharedInstance: unsafe extern "C" fn() -> *mut c_void,
-    #[cfg(feature = "pdfium_enable_xfa")]
-    extern_FPDF_BStr_Init: unsafe extern "C" fn(bstr: *mut FPDF_BSTR) -> FPDF_RESULT,
-    #[cfg(feature = "pdfium_enable_xfa")]
-    extern_FPDF_BStr_Set: unsafe extern "C" fn(bstr: *mut FPDF_BSTR, cstr: *const c_char, length: c_int) -> FPDF_RESULT,
-    #[cfg(feature = "pdfium_enable_xfa")]
-    extern_FPDF_BStr_Clear: unsafe extern "C" fn(bstr: *mut FPDF_BSTR) -> FPDF_RESULT,
     extern_FPDF_GetPageBoundingBox: unsafe extern "C" fn(page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL,
     extern_FPDF_GetPageSizeByIndexF:
         unsafe extern "C" fn(page: FPDF_DOCUMENT, page_index: c_int, size: *mut FS_SIZEF) -> FPDF_BOOL,
@@ -279,28 +216,6 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDF_StructElement_CountChildren: unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT) -> c_int,
     extern_FPDF_StructElement_GetChildAtIndex:
         unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT, index: c_int) -> FPDF_STRUCTELEMENT,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-    ))]
     extern_FPDF_StructElement_GetChildMarkedContentID:
         unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT, index: c_int) -> c_int,
     extern_FPDF_StructElement_GetParent: unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT) -> FPDF_STRUCTELEMENT,
@@ -315,312 +230,29 @@ pub(crate) struct DynamicPdfiumBindings {
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_GetValue: unsafe extern "C" fn(
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: FPDF_BYTESTRING,
     ) -> FPDF_STRUCTELEMENT_ATTR_VALUE,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    extern_FPDF_StructElement_Attr_GetType:
-        unsafe extern "C" fn(struct_attribute: FPDF_STRUCTELEMENT_ATTR, name: FPDF_BYTESTRING) -> FPDF_OBJECT_TYPE,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_GetType:
         unsafe extern "C" fn(value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> FPDF_OBJECT_TYPE,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    extern_FPDF_StructElement_Attr_GetBooleanValue: unsafe extern "C" fn(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
-        out_value: *mut FPDF_BOOL,
-    ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_GetBooleanValue:
         unsafe extern "C" fn(value: FPDF_STRUCTELEMENT_ATTR_VALUE, out_value: *mut FPDF_BOOL) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    extern_FPDF_StructElement_Attr_GetNumberValue: unsafe extern "C" fn(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
-        out_value: *mut f32,
-    ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_GetNumberValue:
         unsafe extern "C" fn(value: FPDF_STRUCTELEMENT_ATTR_VALUE, out_value: *mut f32) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    extern_FPDF_StructElement_Attr_GetStringValue: unsafe extern "C" fn(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_GetStringValue: unsafe extern "C" fn(
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    extern_FPDF_StructElement_Attr_GetBlobValue: unsafe extern "C" fn(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_GetBlobValue: unsafe extern "C" fn(
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_CountChildren: unsafe extern "C" fn(value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     extern_FPDF_StructElement_Attr_GetChildAtIndex:
         unsafe extern "C" fn(value: FPDF_STRUCTELEMENT_ATTR_VALUE, index: c_int) -> FPDF_STRUCTELEMENT_ATTR_VALUE,
     extern_FPDF_StructElement_GetMarkedContentIdCount:
@@ -634,29 +266,6 @@ pub(crate) struct DynamicPdfiumBindings {
         height: c_double,
     ) -> FPDF_PAGE,
     extern_FPDFPage_Delete: unsafe extern "C" fn(document: FPDF_DOCUMENT, page_index: c_int),
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-        feature = "pdfium_6043",
-    ))]
     extern_FPDF_MovePages: unsafe extern "C" fn(
         document: FPDF_DOCUMENT,
         page_indices: *const c_int,
@@ -742,65 +351,7 @@ pub(crate) struct DynamicPdfiumBindings {
         stride: c_int,
     ) -> FPDF_BITMAP,
     extern_FPDFBitmap_Destroy: unsafe extern "C" fn(bitmap: FPDF_BITMAP),
-    #[cfg(all(feature = "pdfium_use_win32", target_os = "windows"))]
-    extern_FPDF_RenderPage: unsafe extern "C" fn(
-        dc: windows::Win32::Graphics::Gdi::HDC,
-        page: FPDF_PAGE,
-        start_x: c_int,
-        start_y: c_int,
-        size_x: c_int,
-        size_y: c_int,
-        rotate: c_int,
-        flags: c_int,
-    ),
     extern_FPDFBitmap_GetFormat: unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961"
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666"
-        ))
-    ))]
-    extern_FPDFBitmap_FillRect: unsafe extern "C" fn(
-        bitmap: FPDF_BITMAP,
-        left: c_int,
-        top: c_int,
-        width: c_int,
-        height: c_int,
-        color: FPDF_DWORD,
-    ),
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-    ))]
     extern_FPDFBitmap_FillRect: unsafe extern "C" fn(
         bitmap: FPDF_BITMAP,
         left: c_int,
@@ -830,9 +381,6 @@ pub(crate) struct DynamicPdfiumBindings {
         clipping: *const FS_RECTF,
         flags: c_int,
     ),
-    #[cfg(feature = "pdfium_use_skia")]
-    extern_FPDF_RenderPageSkia:
-        unsafe extern "C" fn(canvas: FPDF_SKIA_CANVAS, page: FPDF_PAGE, size_x: c_int, size_y: c_int),
     extern_FPDFAnnot_IsSupportedSubtype: unsafe extern "C" fn(subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL,
     extern_FPDFPage_CreateAnnot:
         unsafe extern "C" fn(page: FPDF_PAGE, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_ANNOTATION,
@@ -945,7 +493,6 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFAnnot_GetFlags: unsafe extern "C" fn(annot: FPDF_ANNOTATION) -> c_int,
     extern_FPDFAnnot_SetFlags: unsafe extern "C" fn(annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL,
     extern_FPDFAnnot_GetFormFieldFlags: unsafe extern "C" fn(handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int,
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     extern_FPDFAnnot_SetFormFieldFlags:
         unsafe extern "C" fn(handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL,
     extern_FPDFAnnot_GetFormFieldAtPoint:
@@ -975,7 +522,6 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL,
     extern_FPDFAnnot_GetFontSize:
         unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION, value: *mut f32) -> FPDF_BOOL,
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     extern_FPDFAnnot_SetFontColor: unsafe extern "C" fn(
         handle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -983,19 +529,6 @@ pub(crate) struct DynamicPdfiumBindings {
         G: c_uint,
         B: c_uint,
     ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-    ))]
     extern_FPDFAnnot_GetFontColor: unsafe extern "C" fn(
         hHandle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -1027,39 +560,7 @@ pub(crate) struct DynamicPdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong,
     extern_FPDFAnnot_SetURI: unsafe extern "C" fn(annot: FPDF_ANNOTATION, uri: *const c_char) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-    ))]
     extern_FPDFAnnot_GetFileAttachment: unsafe extern "C" fn(annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-    ))]
     extern_FPDFAnnot_AddFileAttachment:
         unsafe extern "C" fn(annot: FPDF_ANNOTATION, name: FPDF_WIDESTRING) -> FPDF_ATTACHMENT,
     extern_FPDFDOC_InitFormFillEnvironment:
@@ -1180,18 +681,6 @@ pub(crate) struct DynamicPdfiumBindings {
         rotate: c_int,
         flags: c_int,
     ),
-    #[cfg(feature = "pdfium_use_skia")]
-    extern_FPDF_FFLDrawSkia: unsafe extern "C" fn(
-        hHandle: FPDF_FORMHANDLE,
-        canvas: FPDF_SKIA_CANVAS,
-        page: FPDF_PAGE,
-        start_x: c_int,
-        start_y: c_int,
-        size_x: c_int,
-        size_y: c_int,
-        rotate: c_int,
-        flags: c_int,
-    ),
     extern_FPDF_GetFormType: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
     extern_FORM_SetIndexSelected:
         unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE, index: c_int, selected: FPDF_BOOL) -> FPDF_BOOL,
@@ -1207,31 +696,7 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFJavaScriptAction_GetScript:
         unsafe extern "C" fn(javascript: FPDF_JAVASCRIPT_ACTION, buffer: *mut FPDF_WCHAR, buflen: c_ulong) -> c_ulong,
     extern_FPDF_GetDefaultTTFMap: unsafe extern "C" fn() -> *const FPDF_CharsetFontMap,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-    ))]
     extern_FPDF_GetDefaultTTFMapCount: unsafe extern "C" fn() -> usize,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-    ))]
     extern_FPDF_GetDefaultTTFMapEntry: unsafe extern "C" fn(index: usize) -> *const FPDF_CharsetFontMap,
     extern_FPDF_AddInstalledFont: unsafe extern "C" fn(mapper: *mut c_void, face: *const c_char, charset: c_int),
     extern_FPDF_SetSystemFontInfo: unsafe extern "C" fn(pFontInfo: *mut FPDF_SYSFONTINFO),
@@ -1285,43 +750,8 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFText_ClosePage: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE),
     extern_FPDFText_CountChars: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE) -> c_int,
     extern_FPDFText_GetUnicode: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-    ))]
     extern_FPDFText_GetTextObject: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT,
     extern_FPDFText_IsGenerated: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-        feature = "pdfium_6043",
-        feature = "pdfium_6015",
-    ))]
     extern_FPDFText_IsHyphen: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
     extern_FPDFText_HasUnicodeMapError: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
     extern_FPDFText_GetFontSize: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_double,
@@ -1333,37 +763,6 @@ pub(crate) struct DynamicPdfiumBindings {
         flags: *mut c_int,
     ) -> c_ulong,
     extern_FPDFText_GetFontWeight: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961"
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-        ))
-    ))]
-    extern_FPDFText_GetTextRenderMode:
-        unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_TEXT_RENDERMODE,
     extern_FPDFText_GetFillColor: unsafe extern "C" fn(
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -1470,12 +869,6 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFPage_GetThumbnailAsBitmap: unsafe extern "C" fn(page: FPDF_PAGE) -> FPDF_BITMAP,
     extern_FPDFFormObj_CountObjects: unsafe extern "C" fn(form_object: FPDF_PAGEOBJECT) -> c_int,
     extern_FPDFFormObj_GetObject: unsafe extern "C" fn(form_object: FPDF_PAGEOBJECT, index: c_ulong) -> FPDF_PAGEOBJECT,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215"
-    ))]
     extern_FPDFFormObj_RemoveObject:
         unsafe extern "C" fn(form_object: FPDF_PAGEOBJECT, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL,
     extern_FPDFPageObj_CreateTextObj:
@@ -1510,23 +903,6 @@ pub(crate) struct DynamicPdfiumBindings {
         cid: FPDF_BOOL,
     ) -> FPDF_FONT,
     extern_FPDFText_LoadStandardFont: unsafe extern "C" fn(document: FPDF_DOCUMENT, font: FPDF_BYTESTRING) -> FPDF_FONT,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-    ))]
     extern_FPDFText_LoadCidType2Font: unsafe extern "C" fn(
         document: FPDF_DOCUMENT,
         font_data: *const u8,
@@ -1553,7 +929,6 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFPath_GetDrawMode:
         unsafe extern "C" fn(path: FPDF_PAGEOBJECT, fillmode: *mut c_int, stroke: *mut FPDF_BOOL) -> FPDF_BOOL,
     extern_FPDFPage_InsertObject: unsafe extern "C" fn(page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT),
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     extern_FPDFPage_InsertObjectAtIndex:
         unsafe extern "C" fn(page: FPDF_PAGE, page_object: FPDF_PAGEOBJECT, index: usize) -> FPDF_BOOL,
     extern_FPDFPage_RemoveObject: unsafe extern "C" fn(page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) -> FPDF_BOOL,
@@ -1562,24 +937,8 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFPageObj_Destroy: unsafe extern "C" fn(page_obj: FPDF_PAGEOBJECT),
     extern_FPDFPageObj_HasTransparency: unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL,
     extern_FPDFPageObj_GetType: unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> c_int,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFPageObj_GetIsActive:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, active: *mut FPDF_BOOL) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFPageObj_SetIsActive: unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, active: FPDF_BOOL) -> FPDF_BOOL,
     extern_FPDFPageObj_Transform: unsafe extern "C" fn(
         page_object: FPDF_PAGEOBJECT,
@@ -1590,34 +949,12 @@ pub(crate) struct DynamicPdfiumBindings {
         e: c_double,
         f: c_double,
     ),
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-    ))]
     extern_FPDFPageObj_TransformF:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_GetMatrix:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, matrix: *mut FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_SetMatrix: unsafe extern "C" fn(path: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_NewImageObj: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-    ))]
     extern_FPDFPageObj_GetMarkedContentID: unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> c_int,
     extern_FPDFPageObj_CountMarks: unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> c_int,
     extern_FPDFPageObj_GetMark:
@@ -1626,104 +963,17 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, name: FPDF_BYTESTRING) -> FPDF_PAGEOBJECTMARK,
     extern_FPDFPageObj_RemoveMark:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, mark: FPDF_PAGEOBJECTMARK) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFPageObjMark_GetName: unsafe extern "C" fn(
         mark: FPDF_PAGEOBJECTMARK,
         buffer: *mut FPDF_WCHAR,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    extern_FPDFPageObjMark_GetName: unsafe extern "C" fn(
-        mark: FPDF_PAGEOBJECTMARK,
-        buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
     extern_FPDFPageObjMark_CountParams: unsafe extern "C" fn(mark: FPDF_PAGEOBJECTMARK) -> c_int,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFPageObjMark_GetParamKey: unsafe extern "C" fn(
         mark: FPDF_PAGEOBJECTMARK,
         index: c_ulong,
         buffer: *mut FPDF_WCHAR,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    extern_FPDFPageObjMark_GetParamKey: unsafe extern "C" fn(
-        mark: FPDF_PAGEOBJECTMARK,
-        index: c_ulong,
-        buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
@@ -1731,17 +981,8 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(mark: FPDF_PAGEOBJECTMARK, key: FPDF_BYTESTRING) -> FPDF_OBJECT_TYPE,
     extern_FPDFPageObjMark_GetParamIntValue:
         unsafe extern "C" fn(mark: FPDF_PAGEOBJECTMARK, key: FPDF_BYTESTRING, out_value: *mut c_int) -> FPDF_BOOL,
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
     extern_FPDFPageObjMark_GetParamFloatValue:
         unsafe extern "C" fn(mark: FPDF_PAGEOBJECTMARK, key: FPDF_BYTESTRING, out_value: *mut c_float) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFPageObjMark_GetParamStringValue: unsafe extern "C" fn(
         mark: FPDF_PAGEOBJECTMARK,
         key: FPDF_BYTESTRING,
@@ -1749,90 +990,10 @@ pub(crate) struct DynamicPdfiumBindings {
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    extern_FPDFPageObjMark_GetParamStringValue: unsafe extern "C" fn(
-        mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFPageObjMark_GetParamBlobValue: unsafe extern "C" fn(
         mark: FPDF_PAGEOBJECTMARK,
         key: FPDF_BYTESTRING,
         buffer: *mut c_uchar,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    extern_FPDFPageObjMark_GetParamBlobValue: unsafe extern "C" fn(
-        mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
-        buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
@@ -1843,7 +1004,6 @@ pub(crate) struct DynamicPdfiumBindings {
         key: FPDF_BYTESTRING,
         value: c_int,
     ) -> FPDF_BOOL,
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
     extern_FPDFPageObjMark_SetFloatParam: unsafe extern "C" fn(
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -1858,57 +1018,12 @@ pub(crate) struct DynamicPdfiumBindings {
         key: FPDF_BYTESTRING,
         value: FPDF_BYTESTRING,
     ) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFPageObjMark_SetBlobParam: unsafe extern "C" fn(
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
         key: FPDF_BYTESTRING,
         value: *const c_uchar,
-        value_len: c_ulong,
-    ) -> FPDF_BOOL,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    extern_FPDFPageObjMark_SetBlobParam: unsafe extern "C" fn(
-        document: FPDF_DOCUMENT,
-        page_object: FPDF_PAGEOBJECT,
-        mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
-        value: *mut c_void,
         value_len: c_ulong,
     ) -> FPDF_BOOL,
     extern_FPDFPageObjMark_RemoveParam: unsafe extern "C" fn(
@@ -1964,14 +1079,6 @@ pub(crate) struct DynamicPdfiumBindings {
     ) -> FPDF_BOOL,
     extern_FPDFImageObj_GetImagePixelSize:
         unsafe extern "C" fn(image_object: FPDF_PAGEOBJECT, width: *mut c_uint, height: *mut c_uint) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     extern_FPDFImageObj_GetIccProfileDataDecoded: unsafe extern "C" fn(
         image_object: FPDF_PAGEOBJECT,
         page: FPDF_PAGE,
@@ -2035,73 +1142,8 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(segment: FPDF_PATHSEGMENT, x: *mut f32, y: *mut f32) -> FPDF_BOOL,
     extern_FPDFPathSegment_GetType: unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> c_int,
     extern_FPDFPathSegment_GetClose: unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     extern_FPDFFont_GetBaseFontName: unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     extern_FPDFFont_GetFamilyName: unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize,
-    #[cfg(all(
-        feature = "pdfium_6611",
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-        ))
-    ))]
-    extern_FPDFFont_GetFamilyName:
-        unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: c_ulong) -> c_ulong,
-    #[cfg(all(
-        any(
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961"
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-        ))
-    ))]
-    extern_FPDFFont_GetFontName: unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: c_ulong) -> c_ulong,
     extern_FPDFFont_GetFontData:
         unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut u8, buflen: usize, out_buflen: *mut usize) -> FPDF_BOOL,
     extern_FPDFFont_GetIsEmbedded: unsafe extern "C" fn(font: FPDF_FONT) -> c_int,
@@ -2171,20 +1213,9 @@ pub(crate) struct DynamicPdfiumBindings {
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     extern_FPDFAttachment_GetSubtype:
         unsafe extern "C" fn(attachment: FPDF_ATTACHMENT, buffer: *mut FPDF_WCHAR, buflen: c_ulong) -> c_ulong,
     extern_FPDFCatalog_IsTagged: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_BOOL,
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     extern_FPDFCatalog_SetLanguage:
         unsafe extern "C" fn(document: FPDF_DOCUMENT, language: FPDF_BYTESTRING) -> FPDF_BOOL,
 }
@@ -2210,8 +1241,6 @@ impl DynamicPdfiumBindings {
             extern_FPDF_InitLibrary: *(Self::bind(&library, "FPDF_InitLibrary")?),
             extern_FPDF_SetSandBoxPolicy: *(Self::bind(&library, "FPDF_SetSandBoxPolicy")?),
             extern_FPDF_DestroyLibrary: *(Self::bind(&library, "FPDF_DestroyLibrary")?),
-            #[cfg(all(feature = "pdfium_use_win32", target_os = "windows"))]
-            extern_FPDF_SetPrintMode: *(Self::bind(&library, "FPDF_SetPrintMode")?),
             extern_FPDF_GetLastError: *(Self::bind(&library, "FPDF_GetLastError")?),
             extern_FPDF_CreateNewDocument: *(Self::bind(&library, "FPDF_CreateNewDocument")?),
             extern_FPDF_LoadDocument: *(Self::bind(&library, "FPDF_LoadDocument")?),
@@ -2239,24 +1268,6 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDF_GetTrailerEnds: *(Self::bind(&library, "FPDF_GetTrailerEnds")?),
             extern_FPDF_GetDocPermissions: *(Self::bind(&library, "FPDF_GetDocPermissions")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-                feature = "pdfium_6295",
-            ))]
             extern_FPDF_GetDocUserPermissions: *(Self::bind(&library, "FPDF_GetDocUserPermissions")?),
             extern_FPDF_GetSecurityHandlerRevision: *(Self::bind(&library, "FPDF_GetSecurityHandlerRevision")?),
             extern_FPDF_GetPageCount: *(Self::bind(&library, "FPDF_GetPageCount")?),
@@ -2273,25 +1284,6 @@ impl DynamicPdfiumBindings {
             extern_FPDF_ImportPages: *(Self::bind(&library, "FPDF_ImportPages")?),
             extern_FPDF_ImportNPagesToOne: *(Self::bind(&library, "FPDF_ImportNPagesToOne")?),
             extern_FPDF_GetPageLabel: *(Self::bind(&library, "FPDF_GetPageLabel")?),
-            #[cfg(feature = "pdfium_enable_xfa")]
-            extern_FPDF_GetXFAPacketCount: *(Self::bind(&library, "FPDF_GetXFAPacketCount")?),
-            #[cfg(feature = "pdfium_enable_xfa")]
-            extern_FPDF_GetXFAPacketName: *(Self::bind(&library, "FPDF_GetXFAPacketName")?),
-            #[cfg(feature = "pdfium_enable_xfa")]
-            extern_FPDF_GetXFAPacketContent: *(Self::bind(&library, "FPDF_GetXFAPacketContent")?),
-            #[cfg(feature = "pdfium_enable_v8")]
-            extern_FPDF_GetRecommendedV8Flags: *(Self::bind(&library, "FPDF_GetRecommendedV8Flags")?),
-            #[cfg(feature = "pdfium_enable_v8")]
-            extern_FPDF_GetArrayBufferAllocatorSharedInstance: *(Self::bind(
-                &library,
-                "FPDF_GetArrayBufferAllocatorSharedInstance",
-            )?),
-            #[cfg(feature = "pdfium_enable_xfa")]
-            extern_FPDF_BStr_Init: *(Self::bind(&library, "FPDF_Bstr_Init")?),
-            #[cfg(feature = "pdfium_enable_xfa")]
-            extern_FPDF_BStr_Set: *(Self::bind(&library, "FPDF_Bstr_Set")?),
-            #[cfg(feature = "pdfium_enable_xfa")]
-            extern_FPDF_BStr_Clear: *(Self::bind(&library, "FPDF_Bstr_Clear")?),
             extern_FPDF_GetPageBoundingBox: *(Self::bind(&library, "FPDF_GetPageBoundingBox")?),
             extern_FPDF_GetPageSizeByIndexF: *(Self::bind(&library, "FPDF_GetPageSizeByIndexF")?),
             extern_FPDF_GetPageSizeByIndex: *(Self::bind(&library, "FPDF_GetPageSizeByIndex")?),
@@ -2337,28 +1329,6 @@ impl DynamicPdfiumBindings {
             extern_FPDF_StructElement_GetChildAtIndex: *(Self::bind(&library, "FPDF_StructElement_GetChildAtIndex")?),
             extern_FPDF_StructElement_GetActualText: *(Self::bind(&library, "FPDF_StructElement_GetActualText")?),
             extern_FPDF_StructElement_GetObjType: *(Self::bind(&library, "FPDF_StructElement_GetObjType")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-                feature = "pdfium_6295",
-                feature = "pdfium_6259",
-                feature = "pdfium_6164",
-                feature = "pdfium_6124",
-                feature = "pdfium_6110",
-                feature = "pdfium_6084",
-            ))]
             extern_FPDF_StructElement_GetChildMarkedContentID: *(Self::bind(
                 &library,
                 "FPDF_StructElement_GetChildMarkedContentID",
@@ -2374,20 +1344,6 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDF_StructElement_Attr_GetCount: *(Self::bind(&library, "FPDF_StructElement_Attr_GetCount")?),
             extern_FPDF_StructElement_Attr_GetName: *(Self::bind(&library, "FPDF_StructElement_Attr_GetName")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-            ))]
             extern_FPDF_StructElement_Attr_GetValue: *(Self::bind(&library, "FPDF_StructElement_Attr_GetValue")?),
             extern_FPDF_StructElement_Attr_GetType: *(Self::bind(&library, "FPDF_StructElement_Attr_GetType")?),
             extern_FPDF_StructElement_Attr_GetBooleanValue: *(Self::bind(
@@ -2406,38 +1362,10 @@ impl DynamicPdfiumBindings {
                 &library,
                 "FPDF_StructElement_Attr_GetBlobValue",
             )?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-            ))]
             extern_FPDF_StructElement_Attr_CountChildren: *(Self::bind(
                 &library,
                 "FPDF_StructElement_Attr_CountChildren",
             )?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-            ))]
             extern_FPDF_StructElement_Attr_GetChildAtIndex: *(Self::bind(
                 &library,
                 "FPDF_StructElement_Attr_GetChildAtIndex",
@@ -2452,29 +1380,6 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDFPage_New: *(Self::bind(&library, "FPDFPage_New")?),
             extern_FPDFPage_Delete: *(Self::bind(&library, "FPDFPage_Delete")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-                feature = "pdfium_6295",
-                feature = "pdfium_6259",
-                feature = "pdfium_6164",
-                feature = "pdfium_6124",
-                feature = "pdfium_6110",
-                feature = "pdfium_6084",
-                feature = "pdfium_6043",
-            ))]
             extern_FPDF_MovePages: *(Self::bind(&library, "FPDF_MovePages")?),
             extern_FPDFPage_GetRotation: *(Self::bind(&library, "FPDFPage_GetRotation")?),
             extern_FPDFPage_SetRotation: *(Self::bind(&library, "FPDFPage_SetRotation")?),
@@ -2503,8 +1408,6 @@ impl DynamicPdfiumBindings {
             extern_FPDFBitmap_Create: *(Self::bind(&library, "FPDFBitmap_Create")?),
             extern_FPDFBitmap_CreateEx: *(Self::bind(&library, "FPDFBitmap_CreateEx")?),
             extern_FPDFBitmap_Destroy: *(Self::bind(&library, "FPDFBitmap_Destroy")?),
-            #[cfg(all(feature = "pdfium_use_win32", target_os = "windows"))]
-            extern_FPDF_RenderPage: *(Self::bind(&library, "FPDF_RenderPage")?),
             extern_FPDFBitmap_GetFormat: *(Self::bind(&library, "FPDFBitmap_GetFormat")?),
             extern_FPDFBitmap_FillRect: *(Self::bind(&library, "FPDFBitmap_FillRect")?),
             extern_FPDFBitmap_GetBuffer: *(Self::bind(&library, "FPDFBitmap_GetBuffer")?),
@@ -2513,8 +1416,6 @@ impl DynamicPdfiumBindings {
             extern_FPDFBitmap_GetStride: *(Self::bind(&library, "FPDFBitmap_GetStride")?),
             extern_FPDF_RenderPageBitmap: *(Self::bind(&library, "FPDF_RenderPageBitmap")?),
             extern_FPDF_RenderPageBitmapWithMatrix: *(Self::bind(&library, "FPDF_RenderPageBitmapWithMatrix")?),
-            #[cfg(feature = "pdfium_use_skia")]
-            extern_FPDF_RenderPageSkia: *(Self::bind(&library, "FPDF_RenderPageSkia")?),
             extern_FPDFAnnot_IsSupportedSubtype: *(Self::bind(&library, "FPDFAnnot_IsSupportedSubtype")?),
             extern_FPDFPage_CreateAnnot: *(Self::bind(&library, "FPDFPage_CreateAnnot")?),
             extern_FPDFPage_GetAnnotCount: *(Self::bind(&library, "FPDFPage_GetAnnotCount")?),
@@ -2562,7 +1463,6 @@ impl DynamicPdfiumBindings {
             extern_FPDFAnnot_GetFlags: *(Self::bind(&library, "FPDFAnnot_GetFlags")?),
             extern_FPDFAnnot_SetFlags: *(Self::bind(&library, "FPDFAnnot_SetFlags")?),
             extern_FPDFAnnot_GetFormFieldFlags: *(Self::bind(&library, "FPDFAnnot_GetFormFieldFlags")?),
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
             extern_FPDFAnnot_SetFormFieldFlags: *(Self::bind(&library, "FPDFAnnot_SetFormFieldFlags")?),
             extern_FPDFAnnot_GetFormFieldAtPoint: *(Self::bind(&library, "FPDFAnnot_GetFormFieldAtPoint")?),
             extern_FPDFAnnot_GetFormFieldName: *(Self::bind(&library, "FPDFAnnot_GetFormFieldName")?),
@@ -2572,21 +1472,7 @@ impl DynamicPdfiumBindings {
             extern_FPDFAnnot_GetOptionLabel: *(Self::bind(&library, "FPDFAnnot_GetOptionLabel")?),
             extern_FPDFAnnot_IsOptionSelected: *(Self::bind(&library, "FPDFAnnot_IsOptionSelected")?),
             extern_FPDFAnnot_GetFontSize: *(Self::bind(&library, "FPDFAnnot_GetFontSize")?),
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
             extern_FPDFAnnot_SetFontColor: *(Self::bind(&library, "FPDFAnnot_SetFontColor")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-            ))]
             extern_FPDFAnnot_GetFontColor: *(Self::bind(&library, "FPDFAnnot_GetFontColor")?),
             extern_FPDFAnnot_IsChecked: *(Self::bind(&library, "FPDFAnnot_IsChecked")?),
             extern_FPDFAnnot_SetFocusableSubtypes: *(Self::bind(&library, "FPDFAnnot_SetFocusableSubtypes")?),
@@ -2597,39 +1483,7 @@ impl DynamicPdfiumBindings {
             extern_FPDFAnnot_GetFormControlIndex: *(Self::bind(&library, "FPDFAnnot_GetFormControlIndex")?),
             extern_FPDFAnnot_GetFormFieldExportValue: *(Self::bind(&library, "FPDFAnnot_GetFormFieldExportValue")?),
             extern_FPDFAnnot_SetURI: *(Self::bind(&library, "FPDFAnnot_SetURI")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-            ))]
             extern_FPDFAnnot_GetFileAttachment: *(Self::bind(&library, "FPDFAnnot_GetFileAttachment")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-            ))]
             extern_FPDFAnnot_AddFileAttachment: *(Self::bind(&library, "FPDFAnnot_AddFileAttachment")?),
             extern_FPDFDOC_InitFormFillEnvironment: *(Self::bind(&library, "FPDFDOC_InitFormFillEnvironment")?),
             extern_FPDFDOC_ExitFormFillEnvironment: *(Self::bind(&library, "FPDFDOC_ExitFormFillEnvironment")?),
@@ -2670,8 +1524,6 @@ impl DynamicPdfiumBindings {
             extern_FPDF_SetFormFieldHighlightAlpha: *(Self::bind(&library, "FPDF_SetFormFieldHighlightAlpha")?),
             extern_FPDF_RemoveFormFieldHighlight: *(Self::bind(&library, "FPDF_RemoveFormFieldHighlight")?),
             extern_FPDF_FFLDraw: *(Self::bind(&library, "FPDF_FFLDraw")?),
-            #[cfg(feature = "pdfium_use_skia")]
-            extern_FPDF_FFLDrawSkia: *(Self::bind(&library, "FPDF_FFLDrawSkia")?),
             extern_FPDF_GetFormType: *(Self::bind(&library, "FPDF_GetFormType")?),
             extern_FORM_SetIndexSelected: *(Self::bind(&library, "FORM_SetIndexSelected")?),
             extern_FORM_IsIndexSelected: *(Self::bind(&library, "FORM_IsIndexSelected")?),
@@ -2682,31 +1534,7 @@ impl DynamicPdfiumBindings {
             extern_FPDFJavaScriptAction_GetName: *(Self::bind(&library, "FPDFJavaScriptAction_GetName")?),
             extern_FPDFJavaScriptAction_GetScript: *(Self::bind(&library, "FPDFJavaScriptAction_GetScript")?),
             extern_FPDF_GetDefaultTTFMap: *(Self::bind(&library, "FPDF_GetDefaultTTFMap")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-            ))]
             extern_FPDF_GetDefaultTTFMapCount: *(Self::bind(&library, "FPDF_GetDefaultTTFMapCount")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-            ))]
             extern_FPDF_GetDefaultTTFMapEntry: *(Self::bind(&library, "FPDF_GetDefaultTTFMapEntry")?),
             extern_FPDF_AddInstalledFont: *(Self::bind(&library, "FPDF_AddInstalledFont")?),
             extern_FPDF_SetSystemFontInfo: *(Self::bind(&library, "FPDF_SetSystemFontInfo")?),
@@ -2740,78 +1568,13 @@ impl DynamicPdfiumBindings {
             extern_FPDFText_ClosePage: *(Self::bind(&library, "FPDFText_ClosePage")?),
             extern_FPDFText_CountChars: *(Self::bind(&library, "FPDFText_CountChars")?),
             extern_FPDFText_GetUnicode: *(Self::bind(&library, "FPDFText_GetUnicode")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-            ))]
             extern_FPDFText_GetTextObject: *(Self::bind(&library, "FPDFText_GetTextObject")?),
             extern_FPDFText_IsGenerated: *(Self::bind(&library, "FPDFText_IsGenerated")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-                feature = "pdfium_6295",
-                feature = "pdfium_6259",
-                feature = "pdfium_6164",
-                feature = "pdfium_6124",
-                feature = "pdfium_6110",
-                feature = "pdfium_6084",
-                feature = "pdfium_6043",
-                feature = "pdfium_6015",
-            ))]
             extern_FPDFText_IsHyphen: *(Self::bind(&library, "FPDFText_IsHyphen")?),
             extern_FPDFText_HasUnicodeMapError: *(Self::bind(&library, "FPDFText_HasUnicodeMapError")?),
             extern_FPDFText_GetFontSize: *(Self::bind(&library, "FPDFText_GetFontSize")?),
             extern_FPDFText_GetFontInfo: *(Self::bind(&library, "FPDFText_GetFontInfo")?),
             extern_FPDFText_GetFontWeight: *(Self::bind(&library, "FPDFText_GetFontWeight")?),
-            #[cfg(all(
-                any(
-                    feature = "pdfium_6569",
-                    feature = "pdfium_6555",
-                    feature = "pdfium_6490",
-                    feature = "pdfium_6406",
-                    feature = "pdfium_6337",
-                    feature = "pdfium_6295",
-                    feature = "pdfium_6259",
-                    feature = "pdfium_6164",
-                    feature = "pdfium_6124",
-                    feature = "pdfium_6110",
-                    feature = "pdfium_6084",
-                    feature = "pdfium_6043",
-                    feature = "pdfium_6015",
-                    feature = "pdfium_5961"
-                ),
-                not(any(
-                    feature = "pdfium_future",
-                    feature = "pdfium_7543",
-                    feature = "pdfium_7350",
-                    feature = "pdfium_7215",
-                    feature = "pdfium_7123",
-                    feature = "pdfium_6996",
-                    feature = "pdfium_6721",
-                    feature = "pdfium_6666",
-                    feature = "pdfium_6611",
-                ))
-            ))]
-            extern_FPDFText_GetTextRenderMode: *(Self::bind(&library, "FPDFText_GetTextRenderMode")?),
             extern_FPDFText_GetFillColor: *(Self::bind(&library, "FPDFText_GetFillColor")?),
             extern_FPDFText_GetStrokeColor: *(Self::bind(&library, "FPDFText_GetStrokeColor")?),
             extern_FPDFText_GetCharAngle: *(Self::bind(&library, "FPDFText_GetCharAngle")?),
@@ -2842,12 +1605,6 @@ impl DynamicPdfiumBindings {
             extern_FPDFPage_GetThumbnailAsBitmap: *(Self::bind(&library, "FPDFPage_GetThumbnailAsBitmap")?),
             extern_FPDFFormObj_CountObjects: *(Self::bind(&library, "FPDFFormObj_CountObjects")?),
             extern_FPDFFormObj_GetObject: *(Self::bind(&library, "FPDFFormObj_GetObject")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215"
-            ))]
             extern_FPDFFormObj_RemoveObject: (*Self::bind(&library, "FPDFFormObj_RemoveObject")?),
             extern_FPDFPageObj_CreateTextObj: *(Self::bind(&library, "FPDFPageObj_CreateTextObj")?),
             extern_FPDFTextObj_GetTextRenderMode: *(Self::bind(&library, "FPDFTextObj_GetTextRenderMode")?),
@@ -2861,23 +1618,6 @@ impl DynamicPdfiumBindings {
             extern_FPDFText_SetCharcodes: *(Self::bind(&library, "FPDFText_SetCharcodes")?),
             extern_FPDFText_LoadFont: *(Self::bind(&library, "FPDFText_LoadFont")?),
             extern_FPDFText_LoadStandardFont: *(Self::bind(&library, "FPDFText_LoadStandardFont")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-                feature = "pdfium_6295",
-            ))]
             extern_FPDFText_LoadCidType2Font: *(Self::bind(&library, "FPDFText_LoadCidType2Font")?),
             extern_FPDFFont_Close: *(Self::bind(&library, "FPDFFont_Close")?),
             extern_FPDFPath_MoveTo: *(Self::bind(&library, "FPDFPath_MoveTo")?),
@@ -2887,7 +1627,6 @@ impl DynamicPdfiumBindings {
             extern_FPDFPath_SetDrawMode: *(Self::bind(&library, "FPDFPath_SetDrawMode")?),
             extern_FPDFPath_GetDrawMode: *(Self::bind(&library, "FPDFPath_GetDrawMode")?),
             extern_FPDFPage_InsertObject: *(Self::bind(&library, "FPDFPage_InsertObject")?),
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
             extern_FPDFPage_InsertObjectAtIndex: *(Self::bind(&library, "FPDFPage_InsertObjectAtIndex")?),
             extern_FPDFPage_RemoveObject: *(Self::bind(&library, "FPDFPage_RemoveObject")?),
             extern_FPDFPage_CountObjects: *(Self::bind(&library, "FPDFPage_CountObjects")?),
@@ -2895,51 +1634,13 @@ impl DynamicPdfiumBindings {
             extern_FPDFPageObj_Destroy: *(Self::bind(&library, "FPDFPageObj_Destroy")?),
             extern_FPDFPageObj_HasTransparency: *(Self::bind(&library, "FPDFPageObj_HasTransparency")?),
             extern_FPDFPageObj_GetType: *(Self::bind(&library, "FPDFPageObj_GetType")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996"
-            ))]
             extern_FPDFPageObj_GetIsActive: *(Self::bind(&library, "FPDFPageObj_GetIsActive")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996"
-            ))]
             extern_FPDFPageObj_SetIsActive: *(Self::bind(&library, "FPDFPageObj_SetIsActive")?),
             extern_FPDFPageObj_Transform: *(Self::bind(&library, "FPDFPageObj_Transform")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-            ))]
             extern_FPDFPageObj_TransformF: *(Self::bind(&library, "FPDFPageObj_TransformF")?),
             extern_FPDFPageObj_GetMatrix: *(Self::bind(&library, "FPDFPageObj_GetMatrix")?),
             extern_FPDFPageObj_SetMatrix: *(Self::bind(&library, "FPDFPageObj_SetMatrix")?),
             extern_FPDFPageObj_NewImageObj: *(Self::bind(&library, "FPDFPageObj_NewImageObj")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-            ))]
             extern_FPDFPageObj_GetMarkedContentID: *(Self::bind(&library, "FPDFPageObj_GetMarkedContentID")?),
             extern_FPDFPageObj_CountMarks: *(Self::bind(&library, "FPDFPageObj_CountMarks")?),
             extern_FPDFPageObj_GetMark: *(Self::bind(&library, "FPDFPageObj_GetMark")?),
@@ -2950,12 +1651,10 @@ impl DynamicPdfiumBindings {
             extern_FPDFPageObjMark_GetParamKey: *(Self::bind(&library, "FPDFPageObjMark_GetParamKey")?),
             extern_FPDFPageObjMark_GetParamValueType: *(Self::bind(&library, "FPDFPageObjMark_GetParamValueType")?),
             extern_FPDFPageObjMark_GetParamIntValue: *(Self::bind(&library, "FPDFPageObjMark_GetParamIntValue")?),
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
             extern_FPDFPageObjMark_GetParamFloatValue: *(Self::bind(&library, "FPDFPageObjMark_GetParamFloatValue")?),
             extern_FPDFPageObjMark_GetParamStringValue: *(Self::bind(&library, "FPDFPageObjMark_GetParamStringValue")?),
             extern_FPDFPageObjMark_GetParamBlobValue: *(Self::bind(&library, "FPDFPageObjMark_GetParamBlobValue")?),
             extern_FPDFPageObjMark_SetIntParam: *(Self::bind(&library, "FPDFPageObjMark_SetIntParam")?),
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
             extern_FPDFPageObjMark_SetFloatParam: *(Self::bind(&library, "FPDFPageObjMark_SetFloatParam")?),
             extern_FPDFPageObjMark_SetStringParam: *(Self::bind(&library, "FPDFPageObjMark_SetStringParam")?),
             extern_FPDFPageObjMark_SetBlobParam: *(Self::bind(&library, "FPDFPageObjMark_SetBlobParam")?),
@@ -2972,14 +1671,6 @@ impl DynamicPdfiumBindings {
             extern_FPDFImageObj_GetImageFilter: *(Self::bind(&library, "FPDFImageObj_GetImageFilter")?),
             extern_FPDFImageObj_GetImageMetadata: *(Self::bind(&library, "FPDFImageObj_GetImageMetadata")?),
             extern_FPDFImageObj_GetImagePixelSize: *(Self::bind(&library, "FPDFImageObj_GetImagePixelSize")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996"
-            ))]
             extern_FPDFImageObj_GetIccProfileDataDecoded: *(Self::bind(
                 &library,
                 "FPDFImageObj_GetIccProfileDataDecoded",
@@ -3009,59 +1700,8 @@ impl DynamicPdfiumBindings {
             extern_FPDFPathSegment_GetPoint: *(Self::bind(&library, "FPDFPathSegment_GetPoint")?),
             extern_FPDFPathSegment_GetType: *(Self::bind(&library, "FPDFPathSegment_GetType")?),
             extern_FPDFPathSegment_GetClose: *(Self::bind(&library, "FPDFPathSegment_GetClose")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666"
-            ))]
             extern_FPDFFont_GetBaseFontName: *(Self::bind(&library, "FPDFFont_GetBaseFontName")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-            ))]
             extern_FPDFFont_GetFamilyName: *(Self::bind(&library, "FPDFFont_GetFamilyName")?),
-            #[cfg(all(
-                any(
-                    feature = "pdfium_6569",
-                    feature = "pdfium_6555",
-                    feature = "pdfium_6490",
-                    feature = "pdfium_6406",
-                    feature = "pdfium_6337",
-                    feature = "pdfium_6295",
-                    feature = "pdfium_6259",
-                    feature = "pdfium_6164",
-                    feature = "pdfium_6124",
-                    feature = "pdfium_6110",
-                    feature = "pdfium_6084",
-                    feature = "pdfium_6043",
-                    feature = "pdfium_6015",
-                    feature = "pdfium_5961"
-                ),
-                not(any(
-                    feature = "pdfium_future",
-                    feature = "pdfium_7543",
-                    feature = "pdfium_7350",
-                    feature = "pdfium_7215",
-                    feature = "pdfium_7123",
-                    feature = "pdfium_6996",
-                    feature = "pdfium_6721",
-                    feature = "pdfium_6666",
-                    feature = "pdfium_6611",
-                ))
-            ))]
-            extern_FPDFFont_GetFontName: *(Self::bind(&library, "FPDFFont_GetFontName")?),
             extern_FPDFFont_GetFontData: *(Self::bind(&library, "FPDFFont_GetFontData")?),
             extern_FPDFFont_GetIsEmbedded: *(Self::bind(&library, "FPDFFont_GetIsEmbedded")?),
             extern_FPDFFont_GetFlags: *(Self::bind(&library, "FPDFFont_GetFlags")?),
@@ -3100,19 +1740,8 @@ impl DynamicPdfiumBindings {
             extern_FPDFAttachment_GetStringValue: *(Self::bind(&library, "FPDFAttachment_GetStringValue")?),
             extern_FPDFAttachment_SetFile: *(Self::bind(&library, "FPDFAttachment_SetFile")?),
             extern_FPDFAttachment_GetFile: *(Self::bind(&library, "FPDFAttachment_GetFile")?),
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
             extern_FPDFAttachment_GetSubtype: *(Self::bind(&library, "FPDFAttachment_GetSubtype")?),
             extern_FPDFCatalog_IsTagged: *(Self::bind(&library, "FPDFCatalog_IsTagged")?),
-            #[cfg(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666"
-            ))]
             extern_FPDFCatalog_SetLanguage: *(Self::bind(&library, "FPDFCatalog_SetLanguage")?),
             library,
         })
@@ -3147,14 +1776,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     fn FPDF_DestroyLibrary(&self) {
         unsafe {
             (self.extern_FPDF_DestroyLibrary)();
-        }
-    }
-
-    #[cfg(all(feature = "pdfium_use_win32", target_os = "windows"))]
-    #[allow(non_snake_case)]
-    fn FPDF_SetPrintMode(&self, mode: c_int) {
-        unsafe {
-            (self.extern_FPDF_SetPrintMode)(mode);
         }
     }
 
@@ -3370,24 +1991,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_GetDocPermissions)(document) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
@@ -3597,75 +2200,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_GetPageLabel)(document, page_index, buffer, buflen) }
     }
 
-    #[cfg(feature = "pdfium_enable_xfa")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int {
-        unsafe { (self.extern_FPDF_GetXFAPacketCount)(document) }
-    }
-
-    #[cfg(feature = "pdfium_enable_xfa")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketName(
-        &self,
-        document: FPDF_DOCUMENT,
-        index: c_int,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong {
-        unsafe { (self.extern_FPDF_GetXFAPacketName)(document, index, buffer, buflen) }
-    }
-
-    #[cfg(feature = "pdfium_enable_xfa")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketContent(
-        &self,
-        document: FPDF_DOCUMENT,
-        index: c_int,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDF_GetXFAPacketContent)(document, index, buffer, buflen, out_buflen) }
-    }
-
-    #[cfg(feature = "pdfium_enable_v8")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_GetRecommendedV8Flags(&self) -> *const c_char {
-        unsafe { (self.extern_FPDF_GetRecommendedV8Flags)() }
-    }
-
-    #[cfg(feature = "pdfium_enable_v8")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_GetArrayBufferAllocatorSharedInstance(&self) -> *mut c_void {
-        unsafe { (self.extern_FPDF_GetArrayBufferAllocatorSharedInstance)() }
-    }
-
-    #[cfg(feature = "pdfium_enable_xfa")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
-        unsafe { (self.extern_FPDF_BStr_Init)(bstr) }
-    }
-
-    #[cfg(feature = "pdfium_enable_xfa")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_BStr_Set(&self, bstr: *mut FPDF_BSTR, cstr: *const c_char, length: c_int) -> FPDF_RESULT {
-        unsafe { (self.extern_FPDF_BStr_Set)(bstr, cstr, length) }
-    }
-
-    #[cfg(feature = "pdfium_enable_xfa")]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
-        unsafe { (self.extern_FPDF_BStr_Clear)(bstr) }
-    }
-
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetCharIndexFromTextIndex(&self, text_page: FPDF_TEXTPAGE, nTextIndex: c_int) -> c_int {
@@ -3870,28 +2404,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_StructElement_GetChildAtIndex)(struct_element, index) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetChildMarkedContentID(&self, struct_element: FPDF_STRUCTELEMENT, index: c_int) -> c_int {
@@ -3939,20 +2451,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_StructElement_Attr_GetName)(struct_attribute, index, buffer, buflen, out_buflen) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetValue(
@@ -3965,123 +2463,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_StructElement_Attr_GetValue)(struct_attribute, c_name.as_ptr()) }
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetType(
-        &self,
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: &str,
-    ) -> FPDF_OBJECT_TYPE {
-        let c_name = CString::new(name).unwrap();
-
-        unsafe { (self.extern_FPDF_StructElement_Attr_GetType)(struct_attribute, c_name.as_ptr()) }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetType(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> FPDF_OBJECT_TYPE {
         unsafe { (self.extern_FPDF_StructElement_Attr_GetType)(value) }
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBooleanValue(
-        &self,
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: &str,
-        out_value: *mut FPDF_BOOL,
-    ) -> FPDF_BOOL {
-        let c_name = CString::new(name).unwrap();
-
-        unsafe { (self.extern_FPDF_StructElement_Attr_GetBooleanValue)(struct_attribute, c_name.as_ptr(), out_value) }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetBooleanValue(
@@ -4092,62 +2479,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_StructElement_Attr_GetBooleanValue)(value, out_value) }
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetNumberValue(
-        &self,
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: &str,
-        out_value: *mut f32,
-    ) -> FPDF_BOOL {
-        let c_name = CString::new(name).unwrap();
-
-        unsafe { (self.extern_FPDF_StructElement_Attr_GetNumberValue)(struct_attribute, c_name.as_ptr(), out_value) }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetNumberValue(
@@ -4158,70 +2489,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_StructElement_Attr_GetNumberValue)(value, out_value) }
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    fn FPDF_StructElement_Attr_GetStringValue(
-        &self,
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: &str,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL {
-        let c_name = CString::new(name).unwrap();
-
-        unsafe {
-            (self.extern_FPDF_StructElement_Attr_GetStringValue)(
-                struct_attribute,
-                c_name.as_ptr(),
-                buffer,
-                buflen,
-                out_buflen,
-            )
-        }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetStringValue(
@@ -4234,72 +2501,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_StructElement_Attr_GetStringValue)(value, buffer, buflen, out_buflen) }
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBlobValue(
-        &self,
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: &str,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL {
-        let c_name = CString::new(name).unwrap();
-
-        unsafe {
-            (self.extern_FPDF_StructElement_Attr_GetBlobValue)(
-                struct_attribute,
-                c_name.as_ptr(),
-                buffer,
-                buflen,
-                out_buflen,
-            )
-        }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetBlobValue(
@@ -4312,40 +2513,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_StructElement_Attr_GetBlobValue)(value, buffer, buflen, out_buflen) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int {
         unsafe { (self.extern_FPDF_StructElement_Attr_CountChildren)(value) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetChildAtIndex(
@@ -4378,29 +2551,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPage_Delete)(document, page_index) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-        feature = "pdfium_6043",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_MovePages(
@@ -4660,85 +2810,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFBitmap_Destroy)(bitmap) }
     }
 
-    #[cfg(all(feature = "pdfium_use_win32", target_os = "windows"))]
-    #[allow(non_snake_case)]
-    fn FPDF_RenderPage(
-        &self,
-        dc: windows::Win32::Graphics::Gdi::HDC,
-        page: FPDF_PAGE,
-        start_x: c_int,
-        start_y: c_int,
-        size_x: c_int,
-        size_y: c_int,
-        rotate: c_int,
-        flags: c_int,
-    ) {
-        unsafe {
-            (self.extern_FPDF_RenderPage)(dc, page, start_x, start_y, size_x, size_y, rotate, flags);
-        }
-    }
-
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int {
         unsafe { (self.extern_FPDFBitmap_GetFormat)(bitmap) }
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961"
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666"
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFBitmap_FillRect(
-        &self,
-        bitmap: FPDF_BITMAP,
-        left: c_int,
-        top: c_int,
-        width: c_int,
-        height: c_int,
-        color: FPDF_DWORD,
-    ) {
-        unsafe {
-            (self.extern_FPDFBitmap_FillRect)(bitmap, left, top, width, height, color);
-        }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
@@ -4807,14 +2884,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     ) {
         unsafe {
             (self.extern_FPDF_RenderPageBitmapWithMatrix)(bitmap, page, matrix, clipping, flags);
-        }
-    }
-
-    #[cfg(feature = "pdfium_use_skia")]
-    #[allow(non_snake_case)]
-    fn FPDF_RenderPageSkia(&self, canvas: FPDF_SKIA_CANVAS, page: FPDF_PAGE, size_x: c_int, size_y: c_int) {
-        unsafe {
-            (self.extern_FPDF_RenderPageSkia)(canvas, page, size_x, size_y);
         }
     }
 
@@ -5172,7 +3241,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFAnnot_GetFormFieldFlags)(form, annot) }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFormFieldFlags(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL {
@@ -5251,7 +3319,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFAnnot_GetFontSize)(form, annot, value) }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFontColor(
@@ -5265,19 +3332,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFAnnot_SetFontColor)(handle, annot, R, G, B) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontColor(
@@ -5363,44 +3417,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFAnnot_SetURI)(annot, c_uri.as_ptr()) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT {
         unsafe { (self.extern_FPDFAnnot_GetFileAttachment)(annot) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_AddFileAttachment(&self, annot: FPDF_ANNOTATION, name: FPDF_WIDESTRING) -> FPDF_ATTACHMENT {
@@ -5748,25 +3770,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         }
     }
 
-    #[cfg(feature = "pdfium_use_skia")]
-    #[allow(non_snake_case)]
-    fn FPDF_FFLDrawSkia(
-        &self,
-        form: FPDF_FORMHANDLE,
-        canvas: FPDF_SKIA_CANVAS,
-        page: FPDF_PAGE,
-        start_x: c_int,
-        start_y: c_int,
-        size_x: c_int,
-        size_y: c_int,
-        rotate: c_int,
-        flags: c_int,
-    ) {
-        unsafe {
-            (self.extern_FPDF_FFLDrawSkia)(form, canvas, page, start_x, start_y, size_x, size_y, rotate, flags);
-        }
-    }
-
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
@@ -5843,36 +3846,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDF_GetDefaultTTFMap)() }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMapCount(&self) -> usize {
         unsafe { (self.extern_FPDF_GetDefaultTTFMapCount)() }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap {
@@ -6096,17 +4075,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetUnicode)(text_page, index) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
@@ -6119,30 +4087,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_IsGenerated)(text_page, index) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-        feature = "pdfium_6043",
-        feature = "pdfium_6015",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
@@ -6178,27 +4122,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
         unsafe { (self.extern_FPDFText_GetFontWeight)(text_page, index) }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-        feature = "pdfium_6043",
-        feature = "pdfium_6015",
-        feature = "pdfium_5961"
-    ))]
-    #[allow(non_snake_case)]
-    fn FPDFText_GetTextRenderMode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_TEXT_RENDERMODE {
-        unsafe { (self.extern_FPDFText_GetTextRenderMode)(text_page, index) }
     }
 
     #[inline]
@@ -6469,12 +4392,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFFormObj_GetObject)(form_object, index) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFFormObj_RemoveObject(&self, form_object: FPDF_PAGEOBJECT, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL {
@@ -6586,23 +4503,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_LoadStandardFont)(document, c_font.as_ptr()) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_LoadCidType2Font(
@@ -6685,7 +4585,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPage_InsertObject)(page, page_obj) }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObjectAtIndex(&self, page: FPDF_PAGE, page_object: FPDF_PAGEOBJECT, index: usize) -> FPDF_BOOL {
@@ -6728,28 +4627,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObj_GetType)(page_object) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetIsActive(&self, page_object: FPDF_PAGEOBJECT, active: *mut FPDF_BOOL) -> FPDF_BOOL {
         unsafe { (self.extern_FPDFPageObj_GetIsActive)(page_object, active) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetIsActive(&self, page_object: FPDF_PAGEOBJECT, active: FPDF_BOOL) -> FPDF_BOOL {
@@ -6771,17 +4654,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObj_Transform)(page_object, a, b, c, d, e, f) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_TransformF(&self, page_object: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL {
@@ -6806,17 +4678,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObj_NewImageObj)(document) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
@@ -6849,61 +4710,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObj_RemoveMark)(page_object, mark) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetName(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         buffer: *mut FPDF_WCHAR,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDFPageObjMark_GetName)(mark, buffer, buflen, out_buflen) }
-    }
-
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetName(
-        &self,
-        mark: FPDF_PAGEOBJECTMARK,
-        buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
@@ -6916,14 +4728,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObjMark_CountParams)(mark) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamKey(
@@ -6931,48 +4735,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         mark: FPDF_PAGEOBJECTMARK,
         index: c_ulong,
         buffer: *mut FPDF_WCHAR,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDFPageObjMark_GetParamKey)(mark, index, buffer, buflen, out_buflen) }
-    }
-
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamKey(
-        &self,
-        mark: FPDF_PAGEOBJECTMARK,
-        index: c_ulong,
-        buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
@@ -7000,7 +4762,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObjMark_GetParamIntValue)(mark, c_key.as_ptr(), out_value) }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamFloatValue(
@@ -7014,14 +4775,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObjMark_GetParamFloatValue)(mark, c_key.as_ptr(), out_value) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamStringValue(
@@ -7037,58 +4790,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObjMark_GetParamStringValue)(mark, c_key.as_ptr(), buffer, buflen, out_buflen) }
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamStringValue(
-        &self,
-        mark: FPDF_PAGEOBJECTMARK,
-        key: &str,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL {
-        let c_key = CString::new(key).unwrap();
-
-        unsafe { (self.extern_FPDFPageObjMark_GetParamStringValue)(mark, c_key.as_ptr(), buffer, buflen, out_buflen) }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamBlobValue(
@@ -7096,50 +4797,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
         buffer: *mut c_uchar,
-        buflen: c_ulong,
-        out_buflen: *mut c_ulong,
-    ) -> FPDF_BOOL {
-        let c_key = CString::new(key).unwrap();
-
-        unsafe { (self.extern_FPDFPageObjMark_GetParamBlobValue)(mark, c_key.as_ptr(), buffer, buflen, out_buflen) }
-    }
-
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamBlobValue(
-        &self,
-        mark: FPDF_PAGEOBJECTMARK,
-        key: &str,
-        buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
@@ -7163,7 +4820,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObjMark_SetIntParam)(document, page_object, mark, c_key.as_ptr(), value) }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetFloatParam(
@@ -7198,14 +4854,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetBlobParam(
@@ -7215,53 +4863,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
         value: *const c_uchar,
-        value_len: c_ulong,
-    ) -> FPDF_BOOL {
-        let c_key = CString::new(key).unwrap();
-
-        unsafe {
-            (self.extern_FPDFPageObjMark_SetBlobParam)(document, page_object, mark, c_key.as_ptr(), value, value_len)
-        }
-    }
-
-    #[cfg(all(
-        any(
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961",
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetBlobParam(
-        &self,
-        document: FPDF_DOCUMENT,
-        page_object: FPDF_PAGEOBJECT,
-        mark: FPDF_PAGEOBJECTMARK,
-        key: &str,
-        value: *mut c_void,
         value_len: c_ulong,
     ) -> FPDF_BOOL {
         let c_key = CString::new(key).unwrap();
@@ -7414,14 +5015,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFImageObj_GetImagePixelSize)(image_object, width, height) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetIccProfileDataDecoded(
@@ -7637,77 +5230,16 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPathSegment_GetClose)(segment) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFFont_GetBaseFontName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
         unsafe { (self.extern_FPDFFont_GetBaseFontName)(font, buffer, length) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
         unsafe { (self.extern_FPDFFont_GetFamilyName)(font, buffer, length) }
-    }
-
-    #[cfg(all(
-        feature = "pdfium_6611",
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-        ))
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: c_ulong) -> c_ulong {
-        unsafe { (self.extern_FPDFFont_GetFamilyName)(font, buffer, length) }
-    }
-
-    #[cfg(any(
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-        feature = "pdfium_6259",
-        feature = "pdfium_6164",
-        feature = "pdfium_6124",
-        feature = "pdfium_6110",
-        feature = "pdfium_6084",
-        feature = "pdfium_6043",
-        feature = "pdfium_6015",
-        feature = "pdfium_5961"
-    ))]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(&self, font: FPDF_FONT, buffer: *mut c_char, length: c_ulong) -> c_ulong {
-        unsafe { (self.extern_FPDFFont_GetFontName)(font, buffer, length) }
     }
 
     #[inline]
@@ -7961,7 +5493,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFAttachment_GetFile)(attachment, buffer, buflen, out_buflen) }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAttachment_GetSubtype(
@@ -7979,16 +5510,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFCatalog_IsTagged)(document) }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {

@@ -185,29 +185,23 @@ fn build_bindings_for_one_pdfium_release(release: &str) -> Result<(), BuildError
 
 fn statically_link_pdfium() {
     if let Ok(path) = std::env::var("PDFIUM_STATIC_LIB_PATH") {
-        // Instruct cargo to statically link the given library during the build.
-
         println!("cargo:rustc-link-lib=static=pdfium");
         println!("cargo:rustc-link-search=native={}", path);
 
-        // Link to a C++ standard library during the build.
-        // On musl targets, use static linking for fully portable binaries.
-        // On glibc targets, use dynamic linking (static:-bundle requires nightly).
-
-        #[cfg(feature = "libstdc++")]
-        {
-            let target = std::env::var("TARGET").unwrap_or_default();
+        // Pdfium is C++, so we must also link a C++ standard library.
+        // On musl targets, link stdc++ statically for fully portable binaries.
+        // On glibc Linux targets, link stdc++ dynamically.
+        // On macOS, link libc++ and CoreGraphics framework.
+        let target = std::env::var("TARGET").unwrap_or_default();
+        if target.contains("apple") {
+            println!("cargo:rustc-link-lib=dylib=c++");
+            println!("cargo:rustc-link-lib=framework=CoreGraphics");
+        } else if target.contains("linux") || target.contains("gnu") || target.contains("musl") {
             if target.contains("musl") {
                 println!("cargo:rustc-link-lib=static=stdc++");
             } else {
                 println!("cargo:rustc-link-lib=dylib=stdc++");
             }
         }
-
-        #[cfg(feature = "libc++")]
-        println!("cargo:rustc-link-lib=dylib=c++");
-
-        #[cfg(feature = "core_graphics")]
-        println!("cargo:rustc-link-lib=framework=CoreGraphics");
     }
 }

@@ -737,55 +737,6 @@ impl<'a> PdfFont<'a> {
         self.bindings
     }
 
-    #[cfg(all(
-        any(
-            feature = "pdfium_6611",
-            feature = "pdfium_6569",
-            feature = "pdfium_6555",
-            feature = "pdfium_6490",
-            feature = "pdfium_6406",
-            feature = "pdfium_6337",
-            feature = "pdfium_6295",
-            feature = "pdfium_6259",
-            feature = "pdfium_6164",
-            feature = "pdfium_6124",
-            feature = "pdfium_6110",
-            feature = "pdfium_6084",
-            feature = "pdfium_6043",
-            feature = "pdfium_6015",
-            feature = "pdfium_5961"
-        ),
-        not(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666"
-        ))
-    ))]
-    #[inline]
-    #[deprecated(
-        since = "0.8.22",
-        note = "This function has been renamed in line with upstream Pdfium. Use the PdfFont::family() function instead."
-    )]
-    /// Returns the name of this [PdfFont].
-    pub fn name(&self) -> String {
-        self.family()
-    }
-
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666"
-    ))]
     /// Returns the name of this [PdfFont].
     pub fn name(&self) -> String {
         // Retrieving the font name from Pdfium is a two-step operation. First, we call
@@ -833,51 +784,9 @@ impl<'a> PdfFont<'a> {
         // this will write the font name into the buffer. Unlike most text handling in
         // Pdfium, font names are returned in UTF-8 format.
 
-        #[cfg(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611"
-        ))]
         let buffer_length = self
             .bindings
             .FPDFFont_GetFamilyName(self.handle, std::ptr::null_mut(), 0);
-
-        #[cfg(all(
-            any(
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-                feature = "pdfium_6295",
-                feature = "pdfium_6259",
-                feature = "pdfium_6164",
-                feature = "pdfium_6124",
-                feature = "pdfium_6110",
-                feature = "pdfium_6084",
-                feature = "pdfium_6043",
-                feature = "pdfium_6015",
-                feature = "pdfium_5961"
-            ),
-            not(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-            ))
-        ))]
-        let buffer_length = self.bindings.FPDFFont_GetFontName(self.handle, std::ptr::null_mut(), 0);
 
         if buffer_length == 0 {
             // The font name is not present.
@@ -887,53 +796,9 @@ impl<'a> PdfFont<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        #[cfg(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666",
-            feature = "pdfium_6611"
-        ))]
         let result =
             self.bindings
                 .FPDFFont_GetFamilyName(self.handle, buffer.as_mut_ptr() as *mut c_char, buffer_length);
-
-        #[cfg(all(
-            any(
-                feature = "pdfium_6569",
-                feature = "pdfium_6555",
-                feature = "pdfium_6490",
-                feature = "pdfium_6406",
-                feature = "pdfium_6337",
-                feature = "pdfium_6295",
-                feature = "pdfium_6259",
-                feature = "pdfium_6164",
-                feature = "pdfium_6124",
-                feature = "pdfium_6110",
-                feature = "pdfium_6084",
-                feature = "pdfium_6043",
-                feature = "pdfium_6015",
-                feature = "pdfium_5961"
-            ),
-            not(any(
-                feature = "pdfium_future",
-                feature = "pdfium_7543",
-                feature = "pdfium_7350",
-                feature = "pdfium_7215",
-                feature = "pdfium_7123",
-                feature = "pdfium_6996",
-                feature = "pdfium_6721",
-                feature = "pdfium_6666",
-                feature = "pdfium_6611",
-            ))
-        ))]
-        let result = self
-            .bindings
-            .FPDFFont_GetFontName(self.handle, buffer.as_mut_ptr() as *mut c_char, buffer_length);
 
         assert_eq!(result, buffer_length);
 

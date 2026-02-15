@@ -6,9 +6,6 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::pdf::document::page::field::options::PdfFormFieldOptions;
 use crate::pdf::document::page::field::private::internal::{PdfFormFieldFlags, PdfFormFieldPrivate};
 
-#[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-use crate::error::PdfiumError;
-
 #[cfg(doc)]
 use {
     crate::pdf::document::form::PdfForm,
@@ -75,31 +72,12 @@ impl<'a> PdfFormListBoxField<'a> {
         self.get_flags_impl().contains(PdfFormFieldFlags::ChoiceSort)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not the option items of this [PdfFormListBoxField] should be
-    /// sorted alphabetically.
-    ///
-    /// This flag is intended for use by form authoring tools, not by PDF viewer applications.
-    #[inline]
-    pub fn set_is_sorted(&mut self, is_sorted: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::ChoiceSort, is_sorted)
-    }
-
     /// Returns `true` if more than one of the option items in this [PdfFormListBoxField]
     /// may be selected simultaneously. If `false`, only one item at a time may be selected.
     ///
     /// This flag was added in PDF version 1.4.
     pub fn is_multiselect(&self) -> bool {
         self.get_flags_impl().contains(PdfFormFieldFlags::ChoiceMultiSelect)
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether more than one of the option items in this [PdfFormListBoxField]
-    /// may be selected simultaneously.
-    ///
-    /// This flag was added in PDF version 1.4.
-    pub fn set_is_multiselect(&mut self, is_multiselect: bool) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(PdfFormFieldFlags::ChoiceMultiSelect, is_multiselect)
     }
 
     /// Returns `true` if any new value is committed to this [PdfFormListBoxField]
@@ -112,21 +90,6 @@ impl<'a> PdfFormListBoxField<'a> {
     pub fn is_commit_on_selection_change(&self) -> bool {
         self.get_flags_impl()
             .contains(PdfFormFieldFlags::ChoiceCommitOnSelectionChange)
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Controls whether or not any new value is committed to this [PdfFormListBoxField]
-    /// as soon as a selection is made with the pointing device.
-    ///
-    /// This flag was added in PDF version 1.5.
-    pub fn set_is_commit_on_selection_change(
-        &mut self,
-        is_commit_on_selection_change: bool,
-    ) -> Result<(), PdfiumError> {
-        self.update_one_flag_impl(
-            PdfFormFieldFlags::ChoiceCommitOnSelectionChange,
-            is_commit_on_selection_change,
-        )
     }
 }
 

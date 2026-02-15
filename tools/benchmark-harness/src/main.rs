@@ -264,7 +264,9 @@ async fn main() -> Result<()> {
                     Err(_) => {
                         // Fallback to in-process mode if binary not found
                         registry.register(Arc::new(NativeAdapter::with_config(extraction_config)))?;
-                        eprintln!("[adapter] ✓ kreuzberg-rust (in-process mode, build kreuzberg-extract for fair benchmarks)");
+                        eprintln!(
+                            "[adapter] ✓ kreuzberg-rust (in-process mode, build kreuzberg-extract for fair benchmarks)"
+                        );
                         kreuzberg_count += 1;
                     }
                 }

@@ -40,17 +40,6 @@ use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
-#[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-use crate::pdf::document::page::objects::common::PdfPageObjectIndex;
-
-#[cfg(any(
-    feature = "pdfium_future",
-    feature = "pdfium_7543",
-    feature = "pdfium_7350",
-    feature = "pdfium_7215",
-    feature = "pdfium_7123",
-    feature = "pdfium_6996"
-))]
 use crate::error::PdfiumInternalError;
 
 /// The type of a single renderable [PdfPageObject].
@@ -531,14 +520,6 @@ impl<'a> PdfPageObject<'a> {
         ))
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     /// Marks this [PdfPageObject] as active on its containing page. All page objects
     /// start in the active state by default.
     pub fn set_active(&mut self) -> Result<(), PdfiumError> {
@@ -552,14 +533,6 @@ impl<'a> PdfPageObject<'a> {
         }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     /// Returns `true` if this [PdfPageObject] is marked as active on its containing page.
     pub fn is_active(&self) -> Result<bool, PdfiumError> {
         let mut result = self.bindings().FALSE();
@@ -574,14 +547,6 @@ impl<'a> PdfPageObject<'a> {
         }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     /// Marks this [PdfPageObject] as inactive on its containing page. The page object will
     /// be treated as if it were not in the document, even though it exists internally.
     pub fn set_inactive(&mut self) -> Result<(), PdfiumError> {
@@ -595,14 +560,6 @@ impl<'a> PdfPageObject<'a> {
         }
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996"
-    ))]
     /// Returns `true` if this [PdfPageObject] is marked as inactive on its containing page.
     #[inline]
     pub fn is_inactive(&self) -> Result<bool, PdfiumError> {
@@ -1191,16 +1148,6 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
     fn add_object_to_page(&mut self, page_objects: &mut PdfPageObjects) -> Result<(), PdfiumError> {
         self.unwrap_as_trait_mut().add_object_to_page(page_objects)
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    #[inline]
-    fn insert_object_on_page(
-        &mut self,
-        page_objects: &mut PdfPageObjects,
-        index: PdfPageObjectIndex,
-    ) -> Result<(), PdfiumError> {
-        self.unwrap_as_trait_mut().insert_object_on_page(page_objects, index)
     }
 
     #[inline]

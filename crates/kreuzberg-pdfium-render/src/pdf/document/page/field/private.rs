@@ -23,9 +23,6 @@ pub(crate) mod internal {
     use bitflags::bitflags;
     use chrono::Utc;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    use std::os::raw::c_int;
-
     bitflags! {
         /// Flags specifying various characteristics of one form field. For more details,
         /// refer to Section 8.6.2 of The PDF Reference (Sixth Edition, PDF Format 1.7),
@@ -473,33 +470,6 @@ pub(crate) mod internal {
                     .FPDFAnnot_GetFormFieldFlags(self.form_handle(), self.annotation_handle()) as u32,
             )
         }
-
-        #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-        /// Sets all the flags on this form field.
-        #[inline]
-        fn set_flags_impl(&self, flags: PdfFormFieldFlags) -> bool {
-            self.bindings().is_true(self.bindings().FPDFAnnot_SetFormFieldFlags(
-                self.form_handle(),
-                self.annotation_handle(),
-                flags.bits() as c_int,
-            ))
-        }
-
-        #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-        /// Sets or clears a single flag on this form field.
-        fn update_one_flag_impl(&self, flag: PdfFormFieldFlags, value: bool) -> Result<(), PdfiumError> {
-            let mut flags = self.get_flags_impl();
-
-            flags.set(flag, value);
-
-            if self.set_flags_impl(flags) {
-                Ok(())
-            } else {
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    crate::error::PdfiumInternalError::Unknown,
-                ))
-            }
-        }
     }
 }
 
@@ -541,97 +511,6 @@ mod tests {
 
         assert!(flags.contains(PdfFormFieldFlags::TextDoNotSpellCheck));
         assert_eq!(text.is_spell_checked(), false);
-
-        Ok(())
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    #[test]
-    fn test_set_form_field_flags() -> Result<(), PdfiumError> {
-        let pdfium = test_bind_to_pdfium();
-        let mut document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
-        let mut page = document.pages_mut().first()?;
-        let mut annotation = page
-            .annotations_mut()
-            .iter()
-            .find(|annotation| annotation.as_form_field().is_some())
-            .unwrap();
-        let field = annotation.as_form_field_mut().unwrap();
-        let text = field.as_text_field_mut().unwrap();
-
-        assert_eq!(text.is_read_only(), false);
-        assert_eq!(text.is_required(), false);
-        assert_eq!(text.is_exported_on_submit(), true);
-        assert_eq!(text.is_multiline(), false);
-        assert_eq!(text.is_password(), false);
-        assert_eq!(text.is_spell_checked(), false);
-
-        let mut flags = text.get_flags_impl();
-
-        flags.set(PdfFormFieldFlags::ReadOnly, true);
-        flags.set(PdfFormFieldFlags::Required, true);
-        flags.set(PdfFormFieldFlags::NoExport, true);
-        flags.set(PdfFormFieldFlags::TextMultiline, true);
-        flags.set(PdfFormFieldFlags::TextPassword, true);
-        flags.set(PdfFormFieldFlags::TextDoNotSpellCheck, false);
-
-        assert!(text.set_flags_impl(flags));
-
-        assert_eq!(text.is_read_only(), true);
-        assert_eq!(text.is_required(), true);
-        assert_eq!(text.is_exported_on_submit(), false);
-        assert_eq!(text.is_multiline(), true);
-        assert_eq!(text.is_password(), true);
-        assert_eq!(text.is_spell_checked(), true);
-
-        Ok(())
-    }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    #[test]
-    fn test_update_one_form_field_flag() -> Result<(), PdfiumError> {
-        let pdfium = test_bind_to_pdfium();
-        let mut document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
-        let mut page = document.pages_mut().first()?;
-        let mut annotation = page
-            .annotations_mut()
-            .iter()
-            .find(|annotation| annotation.as_form_field().is_some())
-            .unwrap();
-        let field = annotation.as_form_field_mut().unwrap();
-        let text = field.as_text_field_mut().unwrap();
-
-        assert_eq!(text.is_read_only(), false);
-        assert_eq!(text.is_required(), false);
-        assert_eq!(text.is_exported_on_submit(), true);
-        assert_eq!(text.is_multiline(), false);
-        assert_eq!(text.is_password(), false);
-        assert_eq!(text.is_spell_checked(), false);
-
-        text.set_is_read_only(true)?;
-        assert_eq!(text.is_read_only(), true);
-
-        text.set_is_required(true)?;
-        assert_eq!(text.is_required(), true);
-
-        text.set_is_exported_on_submit(false)?;
-        assert_eq!(text.is_exported_on_submit(), false);
-
-        text.set_is_multiline(true)?;
-        assert_eq!(text.is_multiline(), true);
-
-        text.set_is_password(true)?;
-        assert_eq!(text.is_password(), true);
-
-        text.set_is_spell_checked(true)?;
-        assert_eq!(text.is_spell_checked(), true);
-
-        assert_eq!(text.is_read_only(), true);
-        assert_eq!(text.is_required(), true);
-        assert_eq!(text.is_exported_on_submit(), false);
-        assert_eq!(text.is_multiline(), true);
-        assert_eq!(text.is_password(), true);
-        assert_eq!(text.is_spell_checked(), true);
 
         Ok(())
     }

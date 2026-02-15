@@ -212,21 +212,6 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         Err(PdfiumError::PageObjectsCollectionIsImmutable)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    fn remove_object_impl(&mut self, mut object: PdfPageObject<'a>) -> Result<PdfPageObject<'a>, PdfiumError> {
-        if self.bindings.is_true(
-            self.bindings
-                .FPDFFormObj_RemoveObject(self.object_handle, object.object_handle()),
-        ) {
-            object.set_ownership(PdfPageObjectOwnership::Unowned);
-
-            Ok(object)
-        } else {
-            Err(PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown))
-        }
-    }
-
-    #[cfg(not(any(feature = "pdfium_future", feature = "pdfium_7350")))]
     fn remove_object_impl(&mut self, _object: PdfPageObject<'a>) -> Result<PdfPageObject<'a>, PdfiumError> {
         Err(PdfiumError::PageObjectsCollectionIsImmutable)
     }

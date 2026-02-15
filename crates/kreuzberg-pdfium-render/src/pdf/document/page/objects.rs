@@ -126,24 +126,6 @@ impl<'a> PdfPageObjects<'a> {
             None => Err(PdfiumError::SourcePageIndexNotInCache),
         }
     }
-
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-    /// Adds the given [PdfPageObject] to this page objects collection, inserting it into
-    /// the collection at the given index. The object's memory ownership will be transferred
-    /// to the [PdfPage] containing this page objects collection, and the updated page object
-    /// will be returned.
-    ///
-    /// If the containing [PdfPage] has a content regeneration strategy of
-    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
-    /// will be triggered on the page.
-    #[inline]
-    pub fn insert_object_at_index(
-        &mut self,
-        index: PdfPageObjectIndex,
-        mut object: PdfPageObject<'a>,
-    ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        object.insert_object_on_page(self, index).map(|_| object)
-    }
 }
 
 impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {

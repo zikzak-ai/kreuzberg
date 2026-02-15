@@ -350,8 +350,7 @@ pub fn create_rust_subprocess_adapter(ocr_enabled: bool) -> Result<SubprocessAda
     // Find the kreuzberg-extract binary in target directory
     let binary_path = find_kreuzberg_extract_binary()?;
 
-    let mut args = Vec::new();
-    args.push(ocr_flag(ocr_enabled));
+    let args = vec![ocr_flag(ocr_enabled)];
 
     let supported_formats = get_kreuzberg_supported_formats();
     Ok(SubprocessAdapter::with_persistent_mode(
@@ -383,7 +382,8 @@ fn find_kreuzberg_extract_binary() -> Result<PathBuf> {
     }
 
     Err(crate::Error::Config(
-        "kreuzberg-extract binary not found. Build with: cargo build -p benchmark-harness --bin kreuzberg-extract".to_string(),
+        "kreuzberg-extract binary not found. Build with: cargo build -p benchmark-harness --bin kreuzberg-extract"
+            .to_string(),
     ))
 }
 

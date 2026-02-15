@@ -43,15 +43,11 @@ fn main() {
         match extract_file_sync(&file_path, None, &config) {
             Ok(result) => {
                 let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
-                let ocr_used = if ocr_enabled {
-                    match &result.metadata.format {
-                        Some(kreuzberg::FormatMetadata::Ocr(_)) => true,
-                        Some(kreuzberg::FormatMetadata::Image(_)) => true,
-                        _ => false,
-                    }
-                } else {
-                    false
-                };
+                let ocr_used = ocr_enabled
+                    && matches!(
+                        &result.metadata.format,
+                        Some(kreuzberg::FormatMetadata::Ocr(_)) | Some(kreuzberg::FormatMetadata::Image(_))
+                    );
 
                 let output = json!({
                     "content": result.content,

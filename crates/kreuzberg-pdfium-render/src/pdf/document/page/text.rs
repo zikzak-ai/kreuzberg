@@ -111,17 +111,6 @@ impl<'a> PdfPageText<'a> {
         )
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-    ))]
     /// Returns a collection of all the `PdfPageTextChar` characters in the given [PdfPageTextObject].
     ///
     /// The return result will be empty if the given [PdfPageTextObject] is not attached to the

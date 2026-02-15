@@ -13,9 +13,6 @@ pub mod render_config;
 pub mod size;
 pub mod text;
 
-#[cfg(feature = "paragraph")]
-pub mod paragraph;
-
 use object::ownership::PdfPageObjectOwnership;
 
 use crate::bindgen::{

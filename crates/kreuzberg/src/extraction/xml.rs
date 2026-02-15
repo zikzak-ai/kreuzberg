@@ -202,7 +202,7 @@ pub fn parse_xml(xml_bytes: &[u8], preserve_whitespace: bool) -> Result<XmlExtra
 fn decode_utf16_to_utf8(data: &[u8], big_endian: bool) -> Result<Vec<u8>> {
     // Skip BOM (first 2 bytes)
     let data = &data[2..];
-    if data.len() % 2 != 0 {
+    if !data.len().is_multiple_of(2) {
         return Err(KreuzbergError::parsing("Invalid UTF-16: odd byte count".to_string()));
     }
 
