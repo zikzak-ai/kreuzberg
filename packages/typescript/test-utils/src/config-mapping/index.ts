@@ -3,6 +3,6 @@
  * @module config-mapping
  */
 
-export * from "./types.js";
-export * from "./field-mappers.js";
 export * from "./build-config.js";
+export * from "./field-mappers.js";
+export * from "./types.js";

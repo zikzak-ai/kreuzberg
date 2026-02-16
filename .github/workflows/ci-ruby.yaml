@@ -385,12 +385,7 @@ jobs:
             echo "✓ Cleaned tmp/"
           fi
 
-          # Also clean any cached compilation artifacts
-          if [ -d ".bundle" ]; then
-            echo "Cleaning bundle cache..."
-            rm -rf .bundle/bundle
-            echo "✓ Cleaned .bundle/bundle"
-          fi
+          # Note: Do NOT clean .bundle/ - it contains gems installed by ruby/setup-ruby
 
           echo "Cleanup complete"
           echo ""

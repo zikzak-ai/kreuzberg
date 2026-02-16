@@ -1,8 +1,4 @@
-import type {
-	AssertionAdapter,
-	ExtractionResult,
-	PlainRecord,
-} from "./types.js";
+import type { AssertionAdapter, ExtractionResult, PlainRecord } from "./types.js";
 import { isPlainRecord } from "./types.js";
 
 /**
@@ -29,21 +25,9 @@ export interface ExtractionAssertions<TResult extends ExtractionResult> {
 	assertMaxContentLength(result: TResult, maximum: number): void;
 	assertContentContainsAny(result: TResult, snippets: string[]): void;
 	assertContentContainsAll(result: TResult, snippets: string[]): void;
-	assertTableCount(
-		result: TResult,
-		minimum?: number | null,
-		maximum?: number | null,
-	): void;
-	assertDetectedLanguages(
-		result: TResult,
-		expected: string[],
-		minConfidence?: number | null,
-	): void;
-	assertMetadataExpectation(
-		result: TResult,
-		path: string,
-		expectation: MetadataExpectation,
-	): void;
+	assertTableCount(result: TResult, minimum?: number | null, maximum?: number | null): void;
+	assertDetectedLanguages(result: TResult, expected: string[], minConfidence?: number | null): void;
+	assertMetadataExpectation(result: TResult, path: string, expectation: MetadataExpectation): void;
 }
 
 /**
@@ -103,9 +87,7 @@ export function createAssertions<TResult extends ExtractionResult>(
 			if (!expected.length) {
 				return;
 			}
-			const matches = expected.some((token) =>
-				result.mimeType.includes(token),
-			);
+			const matches = expected.some((token) => result.mimeType.includes(token));
 			adapter.assertTrue(
 				matches,
 				`Expected MIME type to contain one of ${JSON.stringify(expected)}, got ${result.mimeType}`,
@@ -133,13 +115,8 @@ export function createAssertions<TResult extends ExtractionResult>(
 				return;
 			}
 			const lowered = result.content.toLowerCase();
-			const matches = snippets.some((snippet) =>
-				lowered.includes(snippet.toLowerCase()),
-			);
-			adapter.assertTrue(
-				matches,
-				`Expected content to contain one of ${JSON.stringify(snippets)}`,
-			);
+			const matches = snippets.some((snippet) => lowered.includes(snippet.toLowerCase()));
+			adapter.assertTrue(matches, `Expected content to contain one of ${JSON.stringify(snippets)}`);
 		},
 
 		assertContentContainsAll(result: TResult, snippets: string[]): void {
@@ -147,20 +124,11 @@ export function createAssertions<TResult extends ExtractionResult>(
 				return;
 			}
 			const lowered = result.content.toLowerCase();
-			const allMatch = snippets.every((snippet) =>
-				lowered.includes(snippet.toLowerCase()),
-			);
-			adapter.assertTrue(
-				allMatch,
-				`Expected content to contain all of ${JSON.stringify(snippets)}`,
-			);
+			const allMatch = snippets.every((snippet) => lowered.includes(snippet.toLowerCase()));
+			adapter.assertTrue(allMatch, `Expected content to contain all of ${JSON.stringify(snippets)}`);
 		},
 
-		assertTableCount(
-			result: TResult,
-			minimum?: number | null,
-			maximum?: number | null,
-		): void {
+		assertTableCount(result: TResult, minimum?: number | null, maximum?: number | null): void {
 			const tables = Array.isArray(result.tables) ? result.tables : [];
 			if (typeof minimum === "number") {
 				adapter.assertGreaterThanOrEqual(
@@ -178,18 +146,11 @@ export function createAssertions<TResult extends ExtractionResult>(
 			}
 		},
 
-		assertDetectedLanguages(
-			result: TResult,
-			expected: string[],
-			minConfidence?: number | null,
-		): void {
+		assertDetectedLanguages(result: TResult, expected: string[], minConfidence?: number | null): void {
 			if (!expected.length) {
 				return;
 			}
-			adapter.assertDefined(
-				result.detectedLanguages,
-				"Expected detectedLanguages to be defined",
-			);
+			adapter.assertDefined(result.detectedLanguages, "Expected detectedLanguages to be defined");
 			const languages = result.detectedLanguages ?? [];
 			const allPresent = expected.every((lang) => languages.includes(lang));
 			adapter.assertTrue(
@@ -209,20 +170,14 @@ export function createAssertions<TResult extends ExtractionResult>(
 			}
 		},
 
-		assertMetadataExpectation(
-			result: TResult,
-			path: string,
-			expectation: MetadataExpectation,
-		): void {
+		assertMetadataExpectation(result: TResult, path: string, expectation: MetadataExpectation): void {
 			if (!isPlainRecord(result.metadata)) {
 				adapter.fail(`Metadata is not a record for path ${path}`);
 			}
 
 			const value = getMetadataPath(result.metadata, path);
 			if (value === undefined || value === null) {
-				adapter.fail(
-					`Metadata path '${path}' missing in ${JSON.stringify(result.metadata)}`,
-				);
+				adapter.fail(`Metadata path '${path}' missing in ${JSON.stringify(result.metadata)}`);
 			}
 
 			if (!isPlainRecord(expectation)) {

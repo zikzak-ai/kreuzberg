@@ -3,5 +3,5 @@
  * @module fixtures
  */
 
-export * from "./types.js";
 export * from "./skip-handler.js";
+export * from "./types.js";

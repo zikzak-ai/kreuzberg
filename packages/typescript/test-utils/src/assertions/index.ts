@@ -3,9 +3,9 @@
  * @module assertions
  */
 
-// Export only assertion-specific types/functions, not duplicated ones like PlainRecord/isPlainRecord
-export type { ExtractionResult, AssertionAdapter } from "./types.js";
-export type { MetadataExpectation, ExtractionAssertions } from "./factory.js";
-export { createAssertions } from "./factory.js";
-export { VitestAdapter } from "./vitest-adapter.js";
 export { DenoAdapter } from "./deno-adapter.js";
+export type { ExtractionAssertions, MetadataExpectation } from "./factory.js";
+export { createAssertions } from "./factory.js";
+// Export only assertion-specific types/functions, not duplicated ones like PlainRecord/isPlainRecord
+export type { AssertionAdapter, ExtractionResult } from "./types.js";
+export { VitestAdapter } from "./vitest-adapter.js";
