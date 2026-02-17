@@ -7,6 +7,7 @@
 //! that the configuration options actually influence the extraction process and produce
 //! observable differences in the output.
 
+#[cfg(feature = "chunking")]
 use kreuzberg::core::config::ChunkingConfig;
 use kreuzberg::core::config::ExtractionConfig;
 use kreuzberg::core::config::OutputFormat;

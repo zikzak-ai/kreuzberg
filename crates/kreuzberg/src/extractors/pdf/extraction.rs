@@ -118,15 +118,22 @@ fn extract_tables_from_document(
 
         let table_cells = reconstruct_table(&words, column_threshold, row_threshold_ratio);
 
-        if !table_cells.is_empty() {
-            let markdown = table_to_markdown(&table_cells);
-
-            all_tables.push(Table {
-                cells: table_cells,
-                markdown,
-                page_number: page_index + 1,
-            });
+        // Validate table: reject false positives.
+        // A real table must have at least 2 rows AND 2 columns.
+        // Single-column or single-row "tables" are almost always regular text lines.
+        let min_rows = 2;
+        let min_cols = table_cells.iter().map(|r| r.len()).min().unwrap_or(0);
+        if table_cells.len() < min_rows || min_cols < 2 {
+            continue;
         }
+
+        let markdown = table_to_markdown(&table_cells);
+
+        all_tables.push(Table {
+            cells: table_cells,
+            markdown,
+            page_number: page_index + 1,
+        });
     }
 
     Ok(all_tables)

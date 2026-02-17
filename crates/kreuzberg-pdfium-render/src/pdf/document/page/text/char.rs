@@ -307,6 +307,21 @@ impl<'a> PdfPageTextChar<'a> {
             .contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19)
     }
 
+    /// Returns combined font style information from a single FFI call.
+    ///
+    /// This is more efficient than calling `font_name()`, `font_is_bold_reenforced()`,
+    /// and `font_is_italic()` separately, as those each independently invoke the
+    /// underlying `FPDFText_GetFontInfo()` FFI function.
+    ///
+    /// Returns a tuple of (font_name, is_bold, is_italic).
+    pub fn font_info(&self) -> (String, bool, bool) {
+        let (name, flags) = self.font();
+        let name = name.unwrap_or_default();
+        let is_bold = flags.contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19);
+        let is_italic = flags.contains(FpdfFontDescriptorFlags::ITALIC_BIT_7);
+        (name, is_bold, is_italic)
+    }
+
     /// Returns the page text object that contains this character.
     pub fn text_object(&self) -> Result<PdfPageTextObject<'_>, PdfiumError> {
         let object_handle = self

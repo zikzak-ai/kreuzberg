@@ -313,7 +313,9 @@ mod tests {
         clear_font_cache();
         assert_eq!(cached_font_count(), 0, "Cache should be empty before initialization");
 
-        let _ = initialize_font_cache();
+        let result = initialize_font_cache();
+        assert!(result.is_ok(), "Font cache initialization should succeed");
+
         let _count = cached_font_count();
     }
 

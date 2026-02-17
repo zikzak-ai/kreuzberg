@@ -333,6 +333,37 @@ pub fn render_document_as_markdown(document: &PdfDocument, k_clusters: usize) ->
     Ok(assemble_markdown(all_page_paragraphs))
 }
 
+/// Returns true if the character is a CJK ideograph, Hiragana, Katakana, or Hangul.
+/// Used for word boundary detection — CJK characters don't use spaces between words.
+fn is_cjk_char(c: char) -> bool {
+    let cp = c as u32;
+    matches!(cp,
+        0x4E00..=0x9FFF     // CJK Unified Ideographs
+        | 0x3040..=0x309F   // Hiragana
+        | 0x30A0..=0x30FF   // Katakana
+        | 0xAC00..=0xD7AF   // Hangul Syllables
+        | 0x3400..=0x4DBF   // CJK Extension A
+        | 0xF900..=0xFAFF   // CJK Compatibility Ideographs
+        | 0x20000..=0x2A6DF // CJK Extension B
+        | 0x2A700..=0x2B73F // CJK Extension C
+        | 0x2B740..=0x2B81F // CJK Extension D
+        | 0x2B820..=0x2CEAF // CJK Extension E
+        | 0x2CEB0..=0x2EBEF // CJK Extension F
+        | 0x30000..=0x3134F // CJK Extension G
+        | 0x31350..=0x323AF // CJK Extension H
+        | 0x2F800..=0x2FA1F // CJK Compatibility Ideographs Supplement
+    )
+}
+
+/// Returns true if a space should be inserted between two adjacent words.
+/// CJK words should not have spaces between them.
+fn needs_space_between(prev: &str, next: &str) -> bool {
+    let prev_ends_cjk = prev.chars().last().is_some_and(is_cjk_char);
+    let next_starts_cjk = next.chars().next().is_some_and(is_cjk_char);
+    // No space when both sides are CJK
+    !(prev_ends_cjk && next_starts_cjk)
+}
+
 /// Convert raw character data into words by detecting spatial gaps.
 ///
 /// Characters are sorted by baseline_y then x. Characters sharing a baseline
@@ -388,14 +419,25 @@ fn chars_to_words(chars: &[CharData]) -> Vec<PdfWord> {
         let same_line = (prev.baseline_y - ch.baseline_y).abs() < BASELINE_Y_TOLERANCE_FRACTION * min_fs;
 
         if same_line {
-            // Check horizontal gap for word break
-            let prev_end = prev.x + prev.width;
-            let gap = ch.x - prev_end;
-            let avg_fs = ((prev.font_size + ch.font_size) / 2.0).max(1.0);
+            // CJK characters always form word boundaries — each CJK char is its own word.
+            // Check if either the previous or current character is CJK.
+            let prev_is_cjk = prev.text.chars().any(is_cjk_char);
+            let curr_is_cjk = ch.text.chars().any(is_cjk_char);
 
-            if gap > WORD_GAP_FRACTION * avg_fs {
+            if prev_is_cjk || curr_is_cjk {
+                // Always break word at CJK character boundaries
                 words.push(finalize_word(&word_chars));
                 word_chars.clear();
+            } else {
+                // Check horizontal gap for word break (non-CJK logic)
+                let prev_end = prev.x + prev.width;
+                let gap = ch.x - prev_end;
+                let avg_fs = ((prev.font_size + ch.font_size) / 2.0).max(1.0);
+
+                if gap > WORD_GAP_FRACTION * avg_fs {
+                    words.push(finalize_word(&word_chars));
+                    word_chars.clear();
+                }
             }
         } else {
             // Different line => finalize word
@@ -769,12 +811,28 @@ fn assemble_markdown(pages: Vec<Vec<PdfParagraph>>) -> String {
 }
 
 /// Join lines into a single string (no inline markup).
+/// Respects CJK spacing — no space inserted between adjacent CJK words.
 fn join_line_texts(lines: &[PdfLine]) -> String {
-    lines
+    let all_words: Vec<&str> = lines
         .iter()
-        .map(|l| l.words.iter().map(|w| w.text.as_str()).collect::<Vec<_>>().join(" "))
-        .collect::<Vec<_>>()
-        .join(" ")
+        .flat_map(|l| l.words.iter().map(|w| w.text.as_str()))
+        .collect();
+    join_words_cjk_aware(&all_words)
+}
+
+/// Join word texts with spaces, but omit the space when both adjacent words are CJK.
+fn join_words_cjk_aware(words: &[&str]) -> String {
+    if words.is_empty() {
+        return String::new();
+    }
+    let mut result = String::from(words[0]);
+    for pair in words.windows(2) {
+        if needs_space_between(pair[0], pair[1]) {
+            result.push(' ');
+        }
+        result.push_str(pair[1]);
+    }
+    result
 }
 
 /// Render a single line with bold/italic inline markup.
@@ -821,14 +879,17 @@ fn render_words_with_markup_refs(words: &[&PdfWord]) -> String {
             i += 1;
         }
 
-        let run_text: String = words[run_start..i]
-            .iter()
-            .map(|w| w.text.as_str())
-            .collect::<Vec<_>>()
-            .join(" ");
+        let run_words: Vec<&str> = words[run_start..i].iter().map(|w| w.text.as_str()).collect();
+        let run_text = join_words_cjk_aware(&run_words);
 
         if !result.is_empty() {
-            result.push(' ');
+            // Determine if we need a space between the end of the previous run
+            // and the start of this run
+            let prev_end = words[run_start - 1].text.as_str();
+            let next_start = words[run_start].text.as_str();
+            if needs_space_between(prev_end, next_start) {
+                result.push(' ');
+            }
         }
 
         match (bold, italic) {
@@ -1399,5 +1460,152 @@ mod tests {
     fn test_find_heading_level_close_match() {
         let heading_map = vec![(24.0, Some(1)), (12.0, None)];
         assert_eq!(find_heading_level(23.5, &heading_map), Some(1));
+    }
+
+    #[test]
+    fn test_is_cjk_char() {
+        assert!(is_cjk_char('中')); // CJK Unified Ideograph
+        assert!(is_cjk_char('あ')); // Hiragana
+        assert!(is_cjk_char('ア')); // Katakana
+        assert!(is_cjk_char('한')); // Hangul
+        assert!(!is_cjk_char('A')); // Latin
+        assert!(!is_cjk_char('1')); // Digit
+        assert!(!is_cjk_char(' ')); // Space
+    }
+
+    #[test]
+    fn test_chars_to_words_cjk_boundary() {
+        // CJK characters should each become their own word
+        let fs = 12.0;
+        let cw = fs * 0.6;
+        let chars = vec![
+            CharData {
+                text: "中".to_string(), // CJK
+                x: 0.0,
+                y: 100.0,
+                font_size: fs,
+                width: cw,
+                height: fs,
+                is_bold: false,
+                is_italic: false,
+                baseline_y: 100.0,
+            },
+            CharData {
+                text: "文".to_string(), // CJK
+                x: cw,
+                y: 100.0,
+                font_size: fs,
+                width: cw,
+                height: fs,
+                is_bold: false,
+                is_italic: false,
+                baseline_y: 100.0,
+            },
+            CharData {
+                text: "字".to_string(), // CJK
+                x: cw * 2.0,
+                y: 100.0,
+                font_size: fs,
+                width: cw,
+                height: fs,
+                is_bold: false,
+                is_italic: false,
+                baseline_y: 100.0,
+            },
+        ];
+
+        let words = chars_to_words(&chars);
+        assert_eq!(words.len(), 3, "Expected 3 CJK words, each character separate");
+        assert_eq!(words[0].text, "中");
+        assert_eq!(words[1].text, "文");
+        assert_eq!(words[2].text, "字");
+    }
+
+    #[test]
+    fn test_chars_to_words_cjk_latin_mixing() {
+        // CJK and Latin should break at boundaries
+        let fs = 12.0;
+        let cw = fs * 0.6;
+        let chars = vec![
+            CharData {
+                text: "A".to_string(),
+                x: 0.0,
+                y: 100.0,
+                font_size: fs,
+                width: cw,
+                height: fs,
+                is_bold: false,
+                is_italic: false,
+                baseline_y: 100.0,
+            },
+            CharData {
+                text: "B".to_string(),
+                x: cw,
+                y: 100.0,
+                font_size: fs,
+                width: cw,
+                height: fs,
+                is_bold: false,
+                is_italic: false,
+                baseline_y: 100.0,
+            },
+            CharData {
+                text: "中".to_string(), // CJK boundary break
+                x: cw * 2.0,
+                y: 100.0,
+                font_size: fs,
+                width: cw,
+                height: fs,
+                is_bold: false,
+                is_italic: false,
+                baseline_y: 100.0,
+            },
+            CharData {
+                text: "C".to_string(), // Another boundary break
+                x: cw * 3.0,
+                y: 100.0,
+                font_size: fs,
+                width: cw,
+                height: fs,
+                is_bold: false,
+                is_italic: false,
+                baseline_y: 100.0,
+            },
+        ];
+
+        let words = chars_to_words(&chars);
+        assert_eq!(words.len(), 3, "Expected 3 words (AB, 中, C)");
+        assert_eq!(words[0].text, "AB", "Latin characters should stay together");
+        assert_eq!(words[1].text, "中", "CJK character should be separate");
+        assert_eq!(words[2].text, "C", "Latin after CJK should be separate");
+    }
+
+    #[test]
+    fn test_needs_space_between() {
+        // CJK-CJK: no space
+        assert!(!needs_space_between("中", "文"));
+        assert!(!needs_space_between("あ", "い"));
+        // Latin-Latin: space
+        assert!(needs_space_between("hello", "world"));
+        // CJK-Latin: space (CJK ends, Latin starts)
+        assert!(needs_space_between("中", "hello"));
+        // Latin-CJK: space (Latin ends, CJK starts)
+        assert!(needs_space_between("hello", "中"));
+    }
+
+    #[test]
+    fn test_join_words_cjk_aware() {
+        // CJK words should be joined without spaces
+        assert_eq!(join_words_cjk_aware(&["中", "文", "字"]), "中文字");
+        // Latin words should be joined with spaces
+        assert_eq!(join_words_cjk_aware(&["hello", "world"]), "hello world");
+        // Mixed: CJK block then Latin
+        assert_eq!(join_words_cjk_aware(&["中", "文", "test"]), "中文 test");
+        // Mixed: Latin then CJK
+        assert_eq!(join_words_cjk_aware(&["test", "中", "文"]), "test 中文");
+        // Single word
+        assert_eq!(join_words_cjk_aware(&["hello"]), "hello");
+        // Empty
+        assert_eq!(join_words_cjk_aware(&[]), "");
     }
 }

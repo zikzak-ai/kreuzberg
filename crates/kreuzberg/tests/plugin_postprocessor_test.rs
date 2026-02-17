@@ -179,6 +179,7 @@ fn clear_processor_registry_and_cache() {
 #[serial]
 #[test]
 fn test_register_custom_postprocessor() {
+    clear_processor_registry_and_cache();
     let registry = get_post_processor_registry();
 
     let processor = Arc::new(AppendTextProcessor {
@@ -350,6 +351,7 @@ fn test_postprocessor_adds_metadata() {
 #[serial]
 #[test]
 fn test_unregister_postprocessor() {
+    clear_processor_registry_and_cache();
     let registry = get_post_processor_registry();
 
     let processor = Arc::new(AppendTextProcessor {
@@ -399,6 +401,7 @@ fn test_unregister_postprocessor() {
 #[serial]
 #[test]
 fn test_clear_all_postprocessors() {
+    clear_processor_registry_and_cache();
     let registry = get_post_processor_registry();
 
     {
@@ -482,6 +485,7 @@ fn test_postprocessor_error_handling() {
 #[serial]
 #[test]
 fn test_postprocessor_invalid_name() {
+    clear_processor_registry_and_cache();
     let registry = get_post_processor_registry();
 
     {

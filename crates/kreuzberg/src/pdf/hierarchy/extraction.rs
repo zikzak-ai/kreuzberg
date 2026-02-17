@@ -309,12 +309,10 @@ pub fn extract_chars_with_fonts(page: &PdfPage) -> Result<Vec<CharData>> {
         // Many PDFs encode bold/italic in font name ("TimesNewRoman-Bold") without
         // setting descriptor flags. We check per-attribute independently so that
         // e.g. a font with bold flag but no italic flag still gets italic from name.
-        let is_bold_flag = pdf_char.font_is_bold_reenforced();
-        let is_italic_flag = pdf_char.font_is_italic();
+        let (font_name, is_bold_flag, is_italic_flag) = pdf_char.font_info();
 
-        // Only call font_name() if at least one attribute is missing from flags
+        // Only check font name/weight if at least one attribute is missing from flags
         let (bold_from_name, italic_from_name, bold_from_weight) = if !is_bold_flag || !is_italic_flag {
-            let font_name = pdf_char.font_name();
             let name_lower = font_name.to_lowercase();
             let bold_n = name_lower.contains("bold");
             let italic_n = name_lower.contains("italic") || name_lower.contains("oblique");

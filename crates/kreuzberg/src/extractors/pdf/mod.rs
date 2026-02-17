@@ -313,6 +313,23 @@ impl DocumentExtractor for PdfExtractor {
             None
         };
 
+        // Run OCR on extracted images if configured (same pattern as docx/pptx)
+        #[cfg(all(feature = "ocr", feature = "tokio-runtime"))]
+        let images = if let Some(imgs) = images {
+            match crate::extraction::image_ocr::process_images_with_ocr(imgs, config).await {
+                Ok(processed) => Some(processed),
+                Err(e) => {
+                    tracing::warn!(
+                        "Image OCR on embedded PDF images failed: {:?}, continuing without image OCR",
+                        e
+                    );
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
         let final_pages = assign_tables_and_images_to_pages(page_contents, &tables, images.as_deref().unwrap_or(&[]));
 
         // Refine PageInfo.is_blank in page_structure to match PageContent refinement
