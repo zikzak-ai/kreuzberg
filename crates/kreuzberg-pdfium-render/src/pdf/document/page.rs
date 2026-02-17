@@ -983,7 +983,7 @@ impl<'a> Drop for PdfPage<'a> {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
     use image_025::{GenericImageView, ImageFormat};
 
     #[test]
@@ -993,7 +993,7 @@ mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("export-test.pdf"), None)?;
 
         let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
@@ -1022,7 +1022,7 @@ mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/dimensions-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("dimensions-test.pdf"), None)?;
 
         let render_config = PdfRenderConfig::new().set_target_width(500).set_maximum_height(500);
 

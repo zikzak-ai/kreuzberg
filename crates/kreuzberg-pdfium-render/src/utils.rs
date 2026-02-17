@@ -440,6 +440,20 @@ pub(crate) mod test {
 
     use crate::error::PdfiumError;
     use crate::pdfium::Pdfium;
+    use std::path::PathBuf;
+
+    /// Returns the path to a vendored pdfium-render test fixture PDF.
+    ///
+    /// Test fixtures live in `test_documents/vendored/pdfium-render/` at the workspace root.
+    pub(crate) fn test_fixture_path(filename: &str) -> PathBuf {
+        let workspace_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .canonicalize()
+            .expect("failed to resolve workspace root");
+        workspace_root
+            .join("test_documents/vendored/pdfium-render")
+            .join(filename)
+    }
 
     #[inline]
     #[cfg(pdfium_use_static)]

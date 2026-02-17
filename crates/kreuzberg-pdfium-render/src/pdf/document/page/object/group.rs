@@ -929,13 +929,13 @@ impl<'a> Iterator for PdfPageGroupObjectIterator<'a> {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
 
     #[test]
     fn test_group_bounds() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("export-test.pdf"), None)?;
 
         // Form a group of all text objects in the top half of the first page of music ...
 
@@ -970,7 +970,7 @@ mod test {
     fn test_group_text() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("export-test.pdf"), None)?;
 
         // Form a group of all text objects in the bottom half of the last page of music ...
 

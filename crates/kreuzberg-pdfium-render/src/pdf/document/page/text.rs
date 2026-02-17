@@ -386,7 +386,7 @@ mod tests {
     use std::fs;
 
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
 
     #[test]
     fn test_overlapping_chars_results() -> Result<(), PdfiumError> {
@@ -466,7 +466,8 @@ mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let samples = fs::read_dir("./test/")
+        let fixture_dir = test_fixture_path("");
+        let samples = fs::read_dir(&fixture_dir)
             .unwrap()
             .filter_map(|entry| match entry {
                 Ok(e) => Some(e.path()),

@@ -477,12 +477,12 @@ pub(crate) mod internal {
 mod tests {
     use crate::pdf::document::page::field::private::internal::{PdfFormFieldFlags, PdfFormFieldPrivate};
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
 
     #[test]
     fn test_get_form_field_flags() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
-        let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("form-test.pdf"), None)?;
         let page = document.pages().first()?;
         let annotation = page
             .annotations()

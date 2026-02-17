@@ -823,13 +823,13 @@ impl<'a> PdfParagraph<'a> {
 mod tests {
     use crate::pdf::document::page::paragraph::PdfParagraph;
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium; // Temporary until PdfParagraph is included in the prelude.
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path}; // Temporary until PdfParagraph is included in the prelude.
 
     #[test]
     fn test_paragraph_construction() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/text-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("text-test.pdf"), None)?;
 
         let page = document.pages().get(0)?;
 

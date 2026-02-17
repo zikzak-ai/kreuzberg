@@ -967,7 +967,7 @@ impl<'a> Iterator for PdfPageImageObjectFiltersIterator<'a> {
 mod tests {
     use super::*;
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
 
     #[test]
     fn test_page_image_object_retains_format() -> Result<(), PdfiumError> {
@@ -977,7 +977,7 @@ mod tests {
         let pdfium = test_bind_to_pdfium();
 
         let image = pdfium
-            .load_pdf_from_file("./test/path-test.pdf", None)?
+            .load_pdf_from_file(&test_fixture_path("path-test.pdf"), None)?
             .pages()
             .get(0)?
             .render_with_config(&PdfRenderConfig::new().set_target_width(1000))?

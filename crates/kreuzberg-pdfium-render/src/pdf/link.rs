@@ -102,7 +102,7 @@ impl<'a> PdfLink<'a> {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
 
     #[test]
     fn test_link_rect() -> Result<(), PdfiumError> {
@@ -110,7 +110,7 @@ mod tests {
 
         // The document under test contains a single page with a single link.
 
-        let document = pdfium.load_pdf_from_file("./test/links-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("links-test.pdf"), None)?;
 
         const EXPECTED: PdfRect = PdfRect::new_from_values(733.3627, 207.85417, 757.6127, 333.1458);
 

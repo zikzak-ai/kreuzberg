@@ -127,7 +127,7 @@ pub mod prelude {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
     use image_025::ImageFormat;
     use std::fs::File;
     use std::path::Path;
@@ -138,38 +138,27 @@ mod tests {
         // Runs the code in the main example at the top of README.md.
 
         fn export_pdf_to_jpegs(path: &impl AsRef<Path>, password: Option<&str>) -> Result<(), PdfiumError> {
-            // Renders each page in the given test PDF file to a separate JPEG file.
-
-            // Bind to a Pdfium library in the same directory as our Rust executable.
-            // See the "Dynamic linking" section below.
-
             let pdfium = Pdfium::default();
 
-            // Open the PDF document...
-
             let document = pdfium.load_pdf_from_file(path, password)?;
-
-            // ... set rendering options that will apply to all pages...
 
             let render_config = PdfRenderConfig::new()
                 .set_target_width(2000)
                 .set_maximum_height(2000)
                 .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true);
 
-            // ... then render each page to a bitmap image, saving each image to a JPEG file.
-
             for (index, page) in document.pages().iter().enumerate() {
                 page.render_with_config(&render_config)?
-                    .as_image() // Renders this page to an Image::DynamicImage...
-                    .into_rgb8() // ... then converts it to an Image::Image ...
-                    .save_with_format(format!("test-page-{}.jpg", index), ImageFormat::Jpeg) // ... and saves it to a file.
+                    .as_image()
+                    .into_rgb8()
+                    .save_with_format(format!("test-page-{}.jpg", index), ImageFormat::Jpeg)
                     .map_err(|_| PdfiumError::ImageError)?;
             }
 
             Ok(())
         }
 
-        export_pdf_to_jpegs(&"./test/export-test.pdf", None)
+        export_pdf_to_jpegs(&test_fixture_path("export-test.pdf"), None)
     }
 
     #[test]
@@ -177,7 +166,7 @@ mod tests {
     fn test_dynamic_bindings() -> Result<(), PdfiumError> {
         let pdfium = Pdfium::default();
 
-        let document = pdfium.load_pdf_from_file("./test/form-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("form-test.pdf"), None)?;
 
         let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
@@ -214,11 +203,12 @@ mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let paths = ["test/form-test.pdf", "test/annotations-test.pdf"];
+        let filenames = ["form-test.pdf", "annotations-test.pdf"];
 
-        for path in paths {
+        for filename in filenames {
+            let path = test_fixture_path(filename);
             let page_count = {
-                let reader = File::open(path).map_err(PdfiumError::IoError)?;
+                let reader = File::open(&path).map_err(PdfiumError::IoError)?;
 
                 let document = pdfium.load_pdf_from_reader(reader, None)?;
 
@@ -227,7 +217,7 @@ mod tests {
                 // reader will be dropped here, immediately after document.
             };
 
-            println!("{} has {} pages", path, page_count);
+            println!("{} has {} pages", path.display(), page_count);
         }
 
         Ok(())

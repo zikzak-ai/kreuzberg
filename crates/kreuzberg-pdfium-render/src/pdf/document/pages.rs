@@ -594,7 +594,7 @@ impl<'a> Iterator for PdfPagesIterator<'a> {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
 
     #[test]
     fn test_page_size() -> Result<(), PdfiumError> {
@@ -602,7 +602,7 @@ mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/page-sizes-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("page-sizes-test.pdf"), None)?;
 
         assert_eq!(document.pages().page_size(0)?, expected_page_0_size());
         assert_eq!(document.pages().page_size(1)?, expected_page_1_size());
@@ -620,7 +620,7 @@ mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/page-sizes-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("page-sizes-test.pdf"), None)?;
 
         assert_eq!(
             document.pages().page_sizes()?,

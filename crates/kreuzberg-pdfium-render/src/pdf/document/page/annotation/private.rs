@@ -540,12 +540,12 @@ pub(crate) mod internal {
 mod tests {
     use crate::pdf::document::page::annotation::private::internal::{PdfAnnotationFlags, PdfPageAnnotationPrivate};
     use crate::prelude::*;
-    use crate::utils::test::test_bind_to_pdfium;
+    use crate::utils::test::{test_bind_to_pdfium, test_fixture_path};
 
     #[test]
     fn test_get_annotation_flags() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
-        let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file(&test_fixture_path("form-test.pdf"), None)?;
         let page = document.pages().first()?;
         let annotation = page
             .annotations()
@@ -580,7 +580,7 @@ mod tests {
     #[test]
     fn test_set_annotation_flags() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
-        let mut document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
+        let mut document = pdfium.load_pdf_from_file(&test_fixture_path("form-test.pdf"), None)?;
         let mut page = document.pages_mut().first()?;
         let mut annotation = page
             .annotations_mut()
@@ -620,7 +620,7 @@ mod tests {
     #[test]
     fn test_update_one_annotation_flag() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
-        let mut document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
+        let mut document = pdfium.load_pdf_from_file(&test_fixture_path("form-test.pdf"), None)?;
         let mut page = document.pages_mut().first()?;
         let mut annotation = page
             .annotations_mut()
