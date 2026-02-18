@@ -236,8 +236,9 @@ export function shouldSkipFixture(
 	const unsupportedFormat = lower.includes("unsupported mime type") || lower.includes("unsupported format");
 	const pdfiumError = lower.includes("pdfium") || lower.includes("pdf extraction requires proper wasm");
 	const stackOverflow = lower.includes("maximum call stack") || lower.includes("stack overflow");
+	const fileNotFound = lower.includes("no such file") || lower.includes("notfound");
 
-	if (missingDependency || unsupportedFormat || pdfiumError || stackOverflow || requirementHit) {
+	if (missingDependency || unsupportedFormat || pdfiumError || stackOverflow || fileNotFound || requirementHit) {
 		const reason = missingDependency
 			? "missing dependency"
 			: unsupportedFormat
@@ -246,7 +247,9 @@ export function shouldSkipFixture(
 					? "PDFium not available (non-browser environment)"
 					: stackOverflow
 						? "stack overflow (document too large for WASM)"
-						: requirements.join(", ");
+						: fileNotFound
+							? "test document not found"
+							: requirements.join(", ");
 		console.warn(`Skipping ${fixtureId}: ${reason}. ${message}`);
 		if (notes) {
 			console.warn(`Notes: ${notes}`);

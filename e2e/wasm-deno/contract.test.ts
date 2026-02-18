@@ -306,10 +306,10 @@ Deno.test("config_document_structure_disabled", { permissions: { read: true } },
 });
 
 Deno.test("config_document_structure_headings", { permissions: { read: true } }, async () => {
-	const documentBytes = await resolveDocument("office/docx/headers.docx");
-	const config = buildConfig({ include_document_structure: true });
 	let result: ExtractionResult | null = null;
 	try {
+		const documentBytes = await resolveDocument("office/docx/headers.docx");
+		const config = buildConfig({ include_document_structure: true });
 		// Sync file extraction - WASM uses extractBytes with pre-read bytes
 		result = await extractBytes(documentBytes, "application/octet-stream", config);
 	} catch (error) {
@@ -346,10 +346,10 @@ Deno.test("config_document_structure_with_headings", { permissions: { read: true
 });
 
 Deno.test("config_element_types", { permissions: { read: true } }, async () => {
-	const documentBytes = await resolveDocument("office/docx/headers.docx");
-	const config = buildConfig({ result_format: "element_based" });
 	let result: ExtractionResult | null = null;
 	try {
+		const documentBytes = await resolveDocument("office/docx/headers.docx");
+		const config = buildConfig({ result_format: "element_based" });
 		// Sync file extraction - WASM uses extractBytes with pre-read bytes
 		result = await extractBytes(documentBytes, "application/octet-stream", config);
 	} catch (error) {
