@@ -482,6 +482,91 @@ mod tests {
     }
 
     #[test]
+    fn test_detect_list_items_with_crlf() {
+        // CRLF line endings must not cause byte offset drift
+        let text = "- First item\r\n- Second item\r\n- Third item";
+        let items = detect_list_items(text);
+        assert_eq!(items.len(), 3);
+        // Verify byte offsets are valid char boundaries
+        assert!(text.is_char_boundary(items[0].byte_start));
+        assert!(text.is_char_boundary(items[0].byte_end));
+        assert!(text.is_char_boundary(items[1].byte_start));
+        assert!(text.is_char_boundary(items[1].byte_end));
+        assert!(text.is_char_boundary(items[2].byte_start));
+        assert!(text.is_char_boundary(items[2].byte_end));
+        // Verify actual content via slicing (should not panic)
+        assert_eq!(&text[items[0].byte_start..items[0].byte_end], "- First item");
+        assert_eq!(&text[items[1].byte_start..items[1].byte_end], "- Second item");
+        assert_eq!(&text[items[2].byte_start..items[2].byte_end], "- Third item");
+    }
+
+    #[test]
+    fn test_detect_list_items_with_multibyte_utf8() {
+        // Multi-byte UTF-8 characters (right single quote U+2019, en-dash U+2013)
+        // must not cause panics when used with byte offsets
+        let text = "Some text with \u{2019}quotes\u{2019}\n- First item\n1. Second \u{2013} item";
+        let items = detect_list_items(text);
+        assert_eq!(items.len(), 2);
+        for item in &items {
+            assert!(
+                text.is_char_boundary(item.byte_start),
+                "byte_start {} is not a char boundary",
+                item.byte_start
+            );
+            assert!(
+                text.is_char_boundary(item.byte_end),
+                "byte_end {} is not a char boundary",
+                item.byte_end
+            );
+            // Slicing should not panic
+            let _ = &text[item.byte_start..item.byte_end];
+        }
+    }
+
+    #[test]
+    fn test_detect_list_items_crlf_with_multibyte() {
+        // Combination of CRLF and multi-byte characters
+        let text = "Policy \u{2019}Administration\u{2019}\r\n- Item one\r\nSome \u{2013} text\r\n1. Item two";
+        let items = detect_list_items(text);
+        assert_eq!(items.len(), 2);
+        for item in &items {
+            assert!(text.is_char_boundary(item.byte_start));
+            assert!(text.is_char_boundary(item.byte_end));
+            let slice = &text[item.byte_start..item.byte_end];
+            assert!(!slice.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_process_content_multibyte_no_panic() {
+        use crate::types::ElementType;
+
+        // Simulate the scenario from issue #398: text with multi-byte chars and list items
+        let content = "Number 1.0 \u{2013} POLICY MANUAL\r\n\r\nRevised: August 4, 2008\r\nThe State\u{2019}s policy:\r\n- First item\r\n- Second item";
+        let mut elements = Vec::new();
+        // This should not panic
+        process_content(&mut elements, content, 1, &None);
+
+        // Verify we got some elements
+        assert!(!elements.is_empty());
+        let list_items: Vec<_> = elements
+            .iter()
+            .filter(|e| e.element_type == ElementType::ListItem)
+            .collect();
+        assert_eq!(list_items.len(), 2);
+    }
+
+    #[test]
+    fn test_process_content_pure_multibyte_text() {
+        // Text with CJK characters and bullet points
+        let content = "\u{4f60}\u{597d}\u{4e16}\u{754c}\n- \u{7b2c}\u{4e00}\u{9879}\n- \u{7b2c}\u{4e8c}\u{9879}";
+        let mut elements = Vec::new();
+        // Must not panic
+        process_content(&mut elements, content, 1, &None);
+        assert!(!elements.is_empty());
+    }
+
+    #[test]
     fn test_paragraph_splitting() {
         use crate::types::{ElementType, ExtractionResult};
 

@@ -37,46 +37,61 @@ pub fn detect_list_items(text: &str) -> Vec<ListItemMetadata> {
         let trimmed = line.trim_start();
         let indent_level = (line.len() - trimmed.len()) / 2; // Estimate indent level
 
+        let byte_end = line_start_offset + line.len();
+
+        // Advance past the line ending: handle \r\n (CRLF) and \n (LF)
+        let next_offset = if byte_end < text.len() {
+            let rest = &text.as_bytes()[byte_end..];
+            if rest.starts_with(b"\r\n") {
+                byte_end + 2
+            } else if rest.starts_with(b"\n") {
+                byte_end + 1
+            } else if rest.starts_with(b"\r") {
+                byte_end + 1
+            } else {
+                byte_end
+            }
+        } else {
+            byte_end
+        };
+
         // Check for bullet points
         if let Some(stripped) = trimmed.strip_prefix('-')
             && (stripped.starts_with(' ') || stripped.is_empty())
         {
-            let byte_end = line_start_offset + line.len();
             items.push(ListItemMetadata {
                 list_type: ListType::Bullet,
                 byte_start: line_start_offset,
                 byte_end,
                 indent_level: indent_level as u32,
             });
-            current_byte_offset = byte_end + 1; // +1 for newline
+            current_byte_offset = next_offset;
             continue;
         }
 
         if let Some(stripped) = trimmed.strip_prefix('*')
             && (stripped.starts_with(' ') || stripped.is_empty())
         {
-            let byte_end = line_start_offset + line.len();
             items.push(ListItemMetadata {
                 list_type: ListType::Bullet,
                 byte_start: line_start_offset,
                 byte_end,
                 indent_level: indent_level as u32,
             });
-            current_byte_offset = byte_end + 1;
+            current_byte_offset = next_offset;
             continue;
         }
 
         if let Some(stripped) = trimmed.strip_prefix('•')
             && (stripped.starts_with(' ') || stripped.is_empty())
         {
-            let byte_end = line_start_offset + line.len();
             items.push(ListItemMetadata {
                 list_type: ListType::Bullet,
                 byte_start: line_start_offset,
                 byte_end,
                 indent_level: indent_level as u32,
             });
-            current_byte_offset = byte_end + 1;
+            current_byte_offset = next_offset;
             continue;
         }
 
@@ -89,14 +104,13 @@ pub fn detect_list_items(text: &str) -> Vec<ListItemMetadata> {
                 && trimmed.len() > pos + 1
                 && trimmed[pos + 1..].starts_with(' ')
             {
-                let byte_end = line_start_offset + line.len();
                 items.push(ListItemMetadata {
                     list_type: ListType::Numbered,
                     byte_start: line_start_offset,
                     byte_end,
                     indent_level: indent_level as u32,
                 });
-                current_byte_offset = byte_end + 1;
+                current_byte_offset = next_offset;
                 continue;
             }
         }
@@ -110,32 +124,30 @@ pub fn detect_list_items(text: &str) -> Vec<ListItemMetadata> {
                 && trimmed.len() > pos + 1
                 && trimmed[pos + 1..].starts_with(' ')
             {
-                let byte_end = line_start_offset + line.len();
                 items.push(ListItemMetadata {
                     list_type: ListType::Lettered,
                     byte_start: line_start_offset,
                     byte_end,
                     indent_level: indent_level as u32,
                 });
-                current_byte_offset = byte_end + 1;
+                current_byte_offset = next_offset;
                 continue;
             }
         }
 
         // Check for indented items (more than 4 spaces)
         if indent_level >= 2 && !trimmed.is_empty() {
-            let byte_end = line_start_offset + line.len();
             items.push(ListItemMetadata {
                 list_type: ListType::Indented,
                 byte_start: line_start_offset,
                 byte_end,
                 indent_level: indent_level as u32,
             });
-            current_byte_offset = byte_end + 1;
+            current_byte_offset = next_offset;
             continue;
         }
 
-        current_byte_offset = line_start_offset + line.len() + 1; // +1 for newline
+        current_byte_offset = next_offset;
     }
 
     items

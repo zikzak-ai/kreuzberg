@@ -8,20 +8,36 @@ use std::collections::HashMap;
 
 use super::elements::{add_paragraphs, detect_list_items, generate_element_id};
 
+/// Adjust a byte offset to the nearest valid UTF-8 char boundary, searching forward.
+fn snap_to_char_boundary(s: &str, offset: usize) -> usize {
+    let clamped = offset.min(s.len());
+    // Search forward for the next valid char boundary
+    let mut pos = clamped;
+    while pos < s.len() && !s.is_char_boundary(pos) {
+        pos += 1;
+    }
+    pos
+}
+
 /// Process page content to extract paragraphs and list items.
 pub(super) fn process_content(elements: &mut Vec<Element>, content: &str, page_number: usize, title: &Option<String>) {
     let list_items = detect_list_items(content);
     let mut current_byte_offset = 0;
 
     for list_item in list_items {
+        // Snap offsets to valid char boundaries to prevent panics on multi-byte UTF-8
+        let safe_start = snap_to_char_boundary(content, list_item.byte_start);
+        let safe_end = snap_to_char_boundary(content, list_item.byte_end);
+        let safe_current = snap_to_char_boundary(content, current_byte_offset);
+
         // Add narrative text/paragraphs before this list item
-        if current_byte_offset < list_item.byte_start {
-            let text_slice = content[current_byte_offset..list_item.byte_start].trim();
+        if safe_current < safe_start {
+            let text_slice = content[safe_current..safe_start].trim();
             add_paragraphs(elements, text_slice, page_number, title);
         }
 
         // Add the list item itself
-        let item_text = content[list_item.byte_start..list_item.byte_end].trim();
+        let item_text = content[safe_start..safe_end].trim();
         if !item_text.is_empty() {
             let element_id = generate_element_id(item_text, ElementType::ListItem, Some(page_number));
             elements.push(Element {
@@ -43,12 +59,13 @@ pub(super) fn process_content(elements: &mut Vec<Element>, content: &str, page_n
             });
         }
 
-        current_byte_offset = list_item.byte_end;
+        current_byte_offset = safe_end;
     }
 
     // Add any remaining narrative text/paragraphs
     if current_byte_offset < content.len() {
-        let text_slice = content[current_byte_offset..].trim();
+        let safe_current = snap_to_char_boundary(content, current_byte_offset);
+        let text_slice = content[safe_current..].trim();
         add_paragraphs(elements, text_slice, page_number, title);
     }
 }
