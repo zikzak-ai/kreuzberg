@@ -546,10 +546,7 @@ fn render_category(category: &str, fixtures: &[&Fixture]) -> Result<String> {
     writeln!(buffer, "#")?;
     writeln!(buffer, "# Tests for {category} fixtures.")?;
     writeln!(buffer)?;
-    writeln!(
-        buffer,
-        "# rubocop:disable RSpec/DescribeClass, RSpec/ExampleLength, Metrics/BlockLength"
-    )?;
+    writeln!(buffer, "# rubocop:disable Metrics/BlockLength")?;
     writeln!(buffer, "require_relative 'spec_helper'\n")?;
     writeln!(
         buffer,
@@ -563,10 +560,7 @@ fn render_category(category: &str, fixtures: &[&Fixture]) -> Result<String> {
     }
 
     writeln!(buffer, "end")?;
-    writeln!(
-        buffer,
-        "# rubocop:enable RSpec/DescribeClass, RSpec/ExampleLength, Metrics/BlockLength"
-    )?;
+    writeln!(buffer, "# rubocop:enable Metrics/BlockLength")?;
     Ok(buffer)
 }
 
@@ -1151,10 +1145,7 @@ fn generate_plugin_api_tests(fixtures: &[&Fixture], spec_dir: &Utf8Path) -> Resu
         "# To regenerate: cargo run -p kreuzberg-e2e-generator -- generate --lang ruby"
     )?;
     writeln!(buffer)?;
-    writeln!(
-        buffer,
-        "# rubocop:disable RSpec/DescribeClass, RSpec/ExampleLength, Metrics/BlockLength"
-    )?;
+    writeln!(buffer, "# rubocop:disable Metrics/BlockLength")?;
     writeln!(buffer)?;
     writeln!(buffer, "require 'spec_helper'")?;
     writeln!(buffer, "require 'tmpdir'")?;
@@ -1187,10 +1178,7 @@ fn generate_plugin_api_tests(fixtures: &[&Fixture], spec_dir: &Utf8Path) -> Resu
         writeln!(buffer)?;
     }
 
-    writeln!(
-        buffer,
-        "# rubocop:enable RSpec/DescribeClass, RSpec/ExampleLength, Metrics/BlockLength"
-    )?;
+    writeln!(buffer, "# rubocop:enable Metrics/BlockLength")?;
 
     let path = spec_dir.join("plugin_apis_spec.rb");
     fs::write(&path, buffer).with_context(|| format!("Writing {}", path))?;

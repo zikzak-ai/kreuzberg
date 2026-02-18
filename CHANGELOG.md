@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **UTF-8 panic in PDF list detection (#398)**: `detect_list_items()` assumed all newlines are 1 byte, causing panics on multi-byte UTF-8 content with CRLF line endings. Fixed with proper CRLF-aware newline advancement and char boundary guards in `process_content()`.
+- **PaddleOCR backend not respected in Python bindings (#399)**: `_ensure_ocr_backend_registered()` silently returned without registering for `paddleocr`/`paddle-ocr` backends. These are now correctly skipped like `tesseract`, letting the Rust core handle them.
+- **Ruby gem missing `sorbet-runtime` at runtime (#400)**: `sorbet-runtime` was listed as a development dependency in the gemspec but is required at runtime for `T::Struct` types. Promoted to a runtime dependency.
+- **E2e generator Ruby rubocop warnings**: The Ruby e2e generator emitted redundant `RSpec/DescribeClass` and `RSpec/ExampleLength` inline disable directives that rubocop autocorrect mangled into invalid syntax. Simplified to only disable `Metrics/BlockLength`.
+- **E2e generator TypeScript npm warnings**: Replaced `npx` with `pnpm exec` for running biome in the e2e generator, eliminating spurious warnings from pnpm-specific `.npmrc` settings.
+
+---
+
 ## [4.3.5]
 
 ### Added

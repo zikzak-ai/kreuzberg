@@ -12,7 +12,3 @@ RSpec/PredicateMatcher:
 
 RSpec/NoExpectationExample:
   Enabled: false
-
-Lint/RedundantCopDisableDirective:
-  Exclude:
-    - 'spec/**/*.rb'

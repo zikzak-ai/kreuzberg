@@ -141,8 +141,8 @@ fn main() -> Result<()> {
 
 fn run_biome_format(dir: &Utf8Path) {
     // Fix lint issues (import ordering)
-    let status = std::process::Command::new("npx")
-        .args(["biome", "check", "--fix", "--unsafe"])
+    let status = std::process::Command::new("pnpm")
+        .args(["exec", "biome", "check", "--fix", "--unsafe"])
         .arg(dir.as_str())
         .status();
     match status {
@@ -154,8 +154,8 @@ fn run_biome_format(dir: &Utf8Path) {
         }
     }
     // Apply formatting (tabs, line width, trailing commas)
-    let status = std::process::Command::new("npx")
-        .args(["biome", "format", "--write"])
+    let status = std::process::Command::new("pnpm")
+        .args(["exec", "biome", "format", "--write"])
         .arg(dir.as_str())
         .status();
     match status {

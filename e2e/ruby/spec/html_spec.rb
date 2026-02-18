@@ -46,4 +46,4 @@ RSpec.describe 'html fixtures' do
     end
   end
 end
-# rubocop:enable, Metrics/BlockLength
+# rubocop:enable Metrics/BlockLength

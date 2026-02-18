@@ -137,4 +137,4 @@ RSpec.describe 'smoke fixtures' do
     end
   end
 end
-# rubocop:enable, Metrics/BlockLength
+# rubocop:enable Metrics/BlockLength

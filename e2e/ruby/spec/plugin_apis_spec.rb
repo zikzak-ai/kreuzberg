@@ -145,4 +145,4 @@ RSpec.describe 'Validator Management' do
   end
 end
 
-# rubocop:enable, Metrics/BlockLength
+# rubocop:enable Metrics/BlockLength
