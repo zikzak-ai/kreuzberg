@@ -21,7 +21,7 @@ This test application validates the Kreuzberg Elixir binding across multiple doc
 
 - Elixir 1.14 or later
 - OTP 25 or later
-- Kreuzberg 4.0.0-rc.22
+- Kreuzberg 4.3.6
 
 ## Installation
 

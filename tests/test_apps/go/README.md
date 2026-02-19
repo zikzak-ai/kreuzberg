@@ -1,6 +1,6 @@
 # Kreuzberg Go Test Suite
 
-Comprehensive test suite for Kreuzberg v4.0.0-rc.16 Go bindings (github.com/kreuzberg-dev/kreuzberg/packages/go/v4).
+Comprehensive test suite for Kreuzberg v4.3.6 Go bindings (github.com/kreuzberg-dev/kreuzberg/packages/go/v4).
 
 This directory contains two test approaches:
 
@@ -177,7 +177,7 @@ test_apps/go/
 ├── README.md                 # This file
 ├── main.go                  # 86 comprehensive API tests (standalone executable)
 ├── extraction_test.go       # 72 unit tests (uses go test)
-├── go.mod                   # Module definition with v4.0.0-rc.16
+├── go.mod                   # Module definition with v4.0
 ├── go.sum                   # Dependency lock file
 ├── run_tests.sh             # Convenience test runner script
 └── test_documents/
@@ -396,7 +396,7 @@ Ensure:
 ### Verified With
 - Go 1.25.5
 - macOS (ARM64)
-- Kreuzberg v4.0.0-rc.14
+- Kreuzberg v4.0
 
 ### Platform Support
 - Linux (x86_64, ARM64)

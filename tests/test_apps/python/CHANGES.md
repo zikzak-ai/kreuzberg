@@ -20,7 +20,7 @@
 [project]
 name = "python"
 version = "0.1.0"
-description = "Smoke test for kreuzberg 4.0.0-rc.14 from PyPI"
+description = "Smoke test for kreuzberg 4.3.6 from PyPI"
 requires-python = ">=3.13"
 dependencies = ["kreuzberg>=4.0.0rc16"]
 ```
@@ -29,8 +29,8 @@ dependencies = ["kreuzberg>=4.0.0rc16"]
 ```toml
 [project]
 name = "kreuzberg-test-app-python"
-version = "4.0.0rc16"
-description = "Comprehensive API coverage test for Kreuzberg 4.0.0-rc16 Python bindings"
+version = "4.0.0"
+description = "Comprehensive API coverage test for Kreuzberg 4.0.0 Python bindings"
 requires-python = ">=3.10"
 dependencies = ["kreuzberg>=4.0.0rc16"]
 ```

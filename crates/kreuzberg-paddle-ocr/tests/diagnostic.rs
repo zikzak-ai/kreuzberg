@@ -143,7 +143,7 @@ fn diagnostic_detection_pipeline() {
     if !any_detected {
         eprintln!("RESULT: Detection model produces NO output regardless of thresholds.");
         eprintln!("This strongly suggests an ORT version compatibility issue.");
-        eprintln!("  ort crate: 2.0.0-rc.11");
+        eprintln!("  ort crate version: check Cargo.lock for current version");
         eprintln!("  ORT_DYLIB_PATH: {:?}", std::env::var("ORT_DYLIB_PATH"));
     } else {
         eprintln!("RESULT: Detection works. Issue may be threshold-related or image-specific.");

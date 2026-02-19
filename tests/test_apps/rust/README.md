@@ -2,7 +2,7 @@
 
 ## Overview
 
-Comprehensive API coverage test for Kreuzberg 4.0.0-rc.17 Rust library.
+Comprehensive API coverage test for Kreuzberg 4.3.6 Rust library.
 
 **Goal**: Validate the entire Rust public API with a standalone application that uses kreuzberg from crates.io.
 
@@ -96,7 +96,7 @@ Located in `test_documents/`:
 
 - **Rust:** 1.83+
 - **Edition:** 2024
-- **Kreuzberg:** 4.0.0-rc.17
+- **Kreuzberg:** 4.3.6
 - **OS:** macOS (Darwin), Linux (tested)
 - **Dependencies:** minimal (only kreuzberg, tokio, serde)
 
@@ -146,7 +146,7 @@ cargo build --release
 ================================================================================
 KREUZBERG RUST BINDINGS COMPREHENSIVE TEST SUITE
 ================================================================================
-✓ ALL IMPORTS SUCCESSFUL (Kreuzberg v4.0.0-rc.17)
+✓ ALL IMPORTS SUCCESSFUL (Kreuzberg v4.3.6)
 
 Running 120+ tests across 8 major sections...
 

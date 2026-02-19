@@ -4,7 +4,7 @@ Comprehensive smoke test suite for the Kreuzberg document extraction library C# 
 
 ## Overview
 
-This test application validates the Kreuzberg C# library (v4.0.0-rc.10) by testing document extraction across multiple file formats with and without OCR.
+This test application validates the Kreuzberg C# library (v4.3.6) by testing document extraction across multiple file formats with and without OCR.
 
 ## Prerequisites
 
@@ -105,7 +105,7 @@ dotnet run -c Release
 ### Standard Extraction Tests
 
 ```
-Starting kreuzberg 4.0.0-rc.10 test suite
+Starting kreuzberg 4.3.6 test suite
 Test documents directory: /path/to/test_documents
 --------------------------------------------------------------------------------
 TEST  PDF             tiny.pdf                       OK   (text: 1234 chars)
@@ -226,7 +226,7 @@ This does not affect DOCX, XLSX, or image extraction, which work correctly.
 
 ## Dependencies
 
-- **Kreuzberg** (4.0.0-rc.10): Core document extraction library (local project reference)
+- **Kreuzberg** (4.3.6): Core document extraction library (local project reference)
 - **System.Text.Json**: JSON serialization (part of .NET framework)
 
 ## Exit Code

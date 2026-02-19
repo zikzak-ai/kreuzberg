@@ -1,6 +1,6 @@
 # Kreuzberg Java Comprehensive Test Suite
 
-This directory contains a comprehensive JUnit 5 test suite for Kreuzberg Java FFM API bindings (version 4.0.0-rc.14).
+This directory contains a comprehensive JUnit 5 test suite for Kreuzberg Java FFM API bindings (version 4.3.6).
 
 ## Test Suite Overview
 
@@ -112,7 +112,7 @@ Tests concurrent extraction behavior:
 - **Dependencies**:
   - JUnit Jupiter 5.11.4
   - AssertJ 3.26.3
-  - Kreuzberg 4.0.0-rc.14
+  - Kreuzberg 4.3.6
 
 ## Building and Running Tests
 

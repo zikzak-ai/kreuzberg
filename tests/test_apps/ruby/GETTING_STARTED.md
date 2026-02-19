@@ -119,7 +119,7 @@ bundle exec ruby main_test.rb
 The native extension wasn't built. Rebuild it:
 
 ```bash
-gem pristine kreuzberg --version 4.0.0.pre.rc.6
+gem pristine kreuzberg --version 4.3.6
 ```
 
 Or reinstall:

@@ -1,6 +1,6 @@
 # Kreuzberg WASM Test Suite
 
-Comprehensive test suite for Kreuzberg WASM bindings (v4.0.0-rc.17). This test suite validates all major functionality of the `@kreuzberg/wasm` package with 79 test cases covering synchronous and asynchronous extraction, batch operations, configuration handling, and error scenarios.
+Comprehensive test suite for Kreuzberg WASM bindings (v4.3.6). This test suite validates all major functionality of the `@kreuzberg/wasm` package with 79 test cases covering synchronous and asynchronous extraction, batch operations, configuration handling, and error scenarios.
 
 ## Overview
 
@@ -30,11 +30,11 @@ pnpm install
 ```
 
 ### From Published npm Package
-When using the published `@kreuzberg/wasm@4.0.0-rc.17` from npm:
+When using the published `@kreuzberg/wasm@4.3.6` from npm:
 ```bash
 cd test_apps/wasm
 # Update package.json to reference npm version:
-# "@kreuzberg/wasm": "4.0.0-rc.17"
+# "@kreuzberg/wasm": "4.3.6"
 pnpm install
 ```
 

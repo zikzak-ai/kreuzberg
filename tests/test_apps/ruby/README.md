@@ -1,6 +1,6 @@
 # Kreuzberg Ruby Bindings - Comprehensive Test Suite
 
-This directory contains a comprehensive test application for the Kreuzberg Ruby bindings (v4.0.0-rc.16).
+This directory contains a comprehensive test application for the Kreuzberg Ruby bindings (v4.3.6).
 
 ## What This Test Suite Covers
 
@@ -30,7 +30,7 @@ The test suite (`main_test.rb`) is organized into 15 sections, each testing a di
 
 - Ruby 3.2.0 or higher (including Ruby 4.x)
 - RubyGems
-- The `kreuzberg` gem (4.0.0-rc.16) installed from RubyGems
+- The `kreuzberg` gem (4.3.6) installed from RubyGems
 
 ### Installation
 
@@ -283,7 +283,7 @@ export DYLD_LIBRARY_PATH=/path/to/kreuzberg/lib:$DYLD_LIBRARY_PATH
 The native extension hasn't been built. Rebuild:
 
 ```bash
-gem pristine kreuzberg --version 4.0.0.pre.rc.16
+gem pristine kreuzberg --version 4.3.6
 ```
 
 ### Cargo manifest errors
@@ -291,7 +291,7 @@ gem pristine kreuzberg --version 4.0.0.pre.rc.16
 If you see workspace root errors, the pre-release gem may have incomplete workspace configuration. Install the latest rc version:
 
 ```bash
-gem install kreuzberg:4.0.0.pre.rc.16 --pre
+gem install kreuzberg:4.3.6 --pre
 ```
 
 ### Permission errors

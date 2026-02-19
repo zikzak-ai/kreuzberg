@@ -2,7 +2,7 @@
 
 ## Overview
 
-Comprehensive API coverage test for Kreuzberg 4.0.0-rc.16+ Python bindings.
+Comprehensive API coverage test for Kreuzberg 4.0+ Python bindings.
 
 **Status:** 95.4% coverage (103/108 tests passing, 87/87 public APIs tested)
 
@@ -69,7 +69,7 @@ All other 82 public APIs working correctly.
 ## Environment
 
 - **Python:** 3.10+ (tested on 3.11.13)
-- **Kreuzberg:** 4.0.0-rc.17 (development)
+- **Kreuzberg:** 4.3.6 (development)
 - **OS:** macOS (Darwin 25.2.0)
 - **Dependencies:** None (pure Python test, uses installed kreuzberg)
 

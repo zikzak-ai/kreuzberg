@@ -418,17 +418,17 @@ docker exec kreuzberg-core-test ls /usr/share/tesseract-ocr/5/tessdata/
 ## Image Tags
 
 The docker-compose configuration uses:
-- `kreuzberg/kreuzberg:4.0.0-rc.14` for both core and full
+- `kreuzberg/kreuzberg:v4.0` for both core and full
 
 To use different tags, edit `docker-compose.yml`:
 
 ```yaml
 services:
   kreuzberg-core:
-    image: kreuzberg/kreuzberg:4.0.0-rc.14  # Change here
+    image: kreuzberg/kreuzberg:v4.0  # Change here
 
   kreuzberg-full:
-    image: kreuzberg/kreuzberg:4.0.0-rc.14  # Change here
+    image: kreuzberg/kreuzberg:v4.0  # Change here
 ```
 
 ## Test Output

@@ -53,7 +53,7 @@ cd tests/test_apps/python
 pip install kreuzberg
 
 # Or install specific version
-pip install kreuzberg==4.0.0-rc.17
+pip install kreuzberg==4.3.6
 
 # Run tests
 python main.py
@@ -61,7 +61,7 @@ python main.py
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.17
+**Version:** 4.3.6
 
 **Tests:** 108 organized in 14 sections
 
@@ -151,7 +151,7 @@ pnpm test:watch
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.16
+**Version:** 4.3.6
 
 **Tests:** 108 total
 
@@ -222,7 +222,7 @@ bundle exec ruby main_test.rb
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.16
+**Version:** 4.3.6
 
 **Tests:** 100+ in 15 sections
 
@@ -303,7 +303,7 @@ go build -o main main.go
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.16
+**Version:** 4.3.6
 
 **Tests:** 158 total (86 comprehensive + 72 unit)
 
@@ -397,7 +397,7 @@ mvn clean test -Dtest=ExtractionTests
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.14
+**Version:** 4.3.6
 
 **Tests:** 45+ in 9 categories
 
@@ -472,7 +472,7 @@ dotnet run
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.10
+**Version:** 4.3.6
 
 **Tests:** 7 smoke tests
 
@@ -546,7 +546,7 @@ npm run test:coverage
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.14
+**Version:** 4.3.6
 
 **Tests:** 45+ in 13 categories
 
@@ -636,7 +636,7 @@ bash tests/test-ocr.sh
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.14
+**Version:** 4.3.6
 
 **Tests:** Comprehensive across 6+ test scripts
 
@@ -719,7 +719,7 @@ cd tests/test_apps/homebrew
 
 ### Test Coverage
 
-**Version:** 4.0.0-rc.14
+**Version:** 4.3.6
 
 **Tests:** 4 major test suites
 
@@ -773,15 +773,15 @@ See `/crates/kreuzberg/README.md` for details.
 
 | Language | Tests | Status | Version | Framework |
 |----------|-------|--------|---------|-----------|
-| Python | 108 | 95.4% | 4.0.0-rc.17 | Custom runner |
-| Node.js | 108 | 64% | 4.0.0-rc.16 | vitest |
-| Ruby | 100+ | Working | 4.0.0-rc.16 | Custom runner |
-| Go | 158 | Passing | 4.0.0-rc.16 | go test + custom |
-| Java | 45+ | Passing | 4.0.0-rc.14 | JUnit 5 |
-| C# | 7 | Passing | 4.0.0-rc.10 | .NET test runner |
-| WASM | 45+ | Passing | 4.0.0-rc.14 | vitest |
-| Docker | 50+ | Passing | 4.0.0-rc.14 | Bash scripts |
-| Homebrew | 4 | 75% | 4.0.0-rc.14 | Bash scripts |
+| Python | 108 | 95.4% | 4.3.6 | Custom runner |
+| Node.js | 108 | 64% | 4.3.6 | vitest |
+| Ruby | 100+ | Working | 4.3.6 | Custom runner |
+| Go | 158 | Passing | 4.3.6 | go test + custom |
+| Java | 45+ | Passing | 4.3.6 | JUnit 5 |
+| C# | 7 | Passing | 4.3.6 | .NET test runner |
+| WASM | 45+ | Passing | 4.3.6 | vitest |
+| Docker | 50+ | Passing | 4.3.6 | Bash scripts |
+| Homebrew | 4 | 75% | 4.3.6 | Bash scripts |
 
 ---
 

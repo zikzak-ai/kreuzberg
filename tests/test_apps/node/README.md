@@ -1,6 +1,6 @@
 # Kreuzberg TypeScript/Node.js Test App
 
-Comprehensive test application for `@kreuzberg/node@4.0.0-rc.16` published on npm.
+Comprehensive test application for `@kreuzberg/node@4.3.6` published on npm.
 
 ## Quick Start
 
@@ -30,7 +30,7 @@ Key findings documented in [TEST_REPORT.md](./TEST_REPORT.md)
 
 - Node.js 22+
 - pnpm package manager
-- @kreuzberg/node 4.0.0-rc.16 (from npm)
+- @kreuzberg/node 4.3.6 (from npm)
 
 ## Running Tests
 
@@ -155,7 +155,7 @@ Corrected test suite with 31 tests using actual API signatures:
 
 ## Version Info
 
-- **Package**: @kreuzberg/node@4.0.0-rc.16
+- **Package**: @kreuzberg/node@4.3.6
 - **Node.js**: 22+
 - **TypeScript**: 5.9.3
 - **Test Framework**: vitest 4.0.16
