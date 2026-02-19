@@ -1,7 +1,7 @@
 //! End-to-end integration test for XLSX metadata extraction
 #![cfg(feature = "excel")]
 
-use kreuzberg::extraction::excel::read_excel_file;
+use kreuzberg::extraction::excel::{excel_to_markdown, excel_to_text, read_excel_file};
 
 #[test]
 fn test_xlsx_full_metadata_extraction() {
@@ -143,4 +143,43 @@ fn test_xlsx_excel_solver_extreme_dimensions_no_oom() {
         sheet.markdown.len()
     );
     println!("   Successfully handled dimension A1:XFD1048575 without OOM");
+}
+
+/// Regression test for #405: XLSX extraction with output_format=Markdown
+/// should produce markdown tables with pipe delimiters and separator rows,
+/// not plain space-separated text.
+#[test]
+fn test_xlsx_markdown_vs_plain_output() {
+    let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("Operation failed")
+        .parent()
+        .expect("Operation failed");
+    let test_file = workspace_root.join("test_documents/xlsx/excel_multi_sheet.xlsx");
+
+    if !test_file.exists() {
+        println!("Skipping test: Test file not found at {:?}", test_file);
+        return;
+    }
+
+    let file_path = test_file.to_str().expect("File path should be valid UTF-8");
+    let workbook = read_excel_file(file_path).expect("Should extract XLSX successfully");
+
+    // excel_to_markdown should produce tables with | delimiters
+    let md_content = excel_to_markdown(&workbook);
+    assert!(
+        md_content.contains("| "),
+        "Markdown output should contain table pipe delimiters"
+    );
+    assert!(
+        md_content.contains("---"),
+        "Markdown output should contain separator rows"
+    );
+
+    // excel_to_text should produce space-separated text (no pipes)
+    let text_content = excel_to_text(&workbook);
+    assert!(
+        !text_content.contains("| "),
+        "Plain text output should not contain table pipe delimiters"
+    );
 }
