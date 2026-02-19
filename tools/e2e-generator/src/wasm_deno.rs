@@ -1252,6 +1252,52 @@ fn normalize_metadata_expectation(value: &Value) -> String {
     }
 }
 
+/// Check whether a fixture can be tested in the WASM environment.
+///
+/// WASM does not expose document extractor management, filesystem-based
+/// config loading, or path-based MIME detection. Fixtures relying on
+/// those APIs are skipped.
+fn is_wasm_available(fixture: &Fixture) -> bool {
+    let cat = fixture.api_category.as_deref().unwrap_or("");
+    if cat == "document_extractor_management" {
+        return false;
+    }
+
+    let pattern = fixture.test_spec.as_ref().map(|ts| ts.pattern.as_str()).unwrap_or("");
+
+    !matches!(pattern, "config_from_file" | "config_discover" | "mime_from_path")
+}
+
+/// Map fixture function names to WASM JS export names.
+///
+/// Most functions follow a straight snake_case → camelCase conversion,
+/// but a few differ between the native Node binding and the WASM binding.
+fn wasm_function_name(fixture_name: &str) -> String {
+    match fixture_name {
+        "detect_mime_type" => "detectMimeFromBytes".to_string(),
+        _ => to_camel_case(fixture_name),
+    }
+}
+
+fn to_camel_case(s: &str) -> String {
+    let parts: Vec<&str> = s.split('_').collect();
+    if parts.is_empty() {
+        return String::new();
+    }
+
+    let mut result = parts[0].to_string();
+    for part in &parts[1..] {
+        if !part.is_empty() {
+            let mut chars = part.chars();
+            if let Some(first) = chars.next() {
+                result.push_str(&first.to_uppercase().to_string());
+                result.push_str(chars.as_str());
+            }
+        }
+    }
+    result
+}
+
 fn generate_plugin_api_tests(fixtures: &[&Fixture], output_dir: &Utf8Path) -> Result<()> {
     let mut buffer = String::new();
 
@@ -1266,8 +1312,49 @@ fn generate_plugin_api_tests(fixtures: &[&Fixture], output_dir: &Utf8Path) -> Re
     )?;
     writeln!(buffer, " */")?;
     writeln!(buffer)?;
-    // Note: We don't import assertions here since plugin API tests are stub implementations.
-    // Once implemented, they should use helpers.ts like the extraction tests.
+
+    // Collect WASM imports from available fixtures
+    let mut imports: BTreeSet<String> = BTreeSet::new();
+    imports.insert("assertEquals".to_string());
+    for fixture in fixtures {
+        if !is_wasm_available(fixture) {
+            continue;
+        }
+        let test_spec = match &fixture.test_spec {
+            Some(ts) => ts,
+            None => continue,
+        };
+        let fn_name = wasm_function_name(&test_spec.function_call.name);
+        imports.insert(fn_name);
+
+        // For clear_registry pattern, also import the corresponding list function
+        if test_spec.pattern == "clear_registry" && test_spec.assertions.verify_cleanup {
+            let clear_fn = wasm_function_name(&test_spec.function_call.name);
+            let list_fn = clear_fn.replace("clear", "list");
+            imports.insert(list_fn);
+        }
+    }
+
+    // Split into assert imports and wasm imports
+    let assert_imports: Vec<&String> = imports.iter().filter(|i| i.starts_with("assert")).collect();
+    let wasm_imports: Vec<&String> = imports.iter().filter(|i| !i.starts_with("assert")).collect();
+
+    if !assert_imports.is_empty() {
+        writeln!(
+            buffer,
+            "import {{ {} }} from \"@std/assert\";",
+            assert_imports.iter().map(|s| s.as_str()).collect::<Vec<_>>().join(", ")
+        )?;
+    }
+    if !wasm_imports.is_empty() {
+        writeln!(buffer, "// @deno-types=\"../../crates/kreuzberg-wasm/dist/index.d.ts\"")?;
+        writeln!(
+            buffer,
+            "import {{ {} }} from \"npm:@kreuzberg/wasm@^4.0.0\";",
+            wasm_imports.iter().map(|s| s.as_str()).collect::<Vec<_>>().join(", ")
+        )?;
+    }
+    writeln!(buffer)?;
 
     let mut grouped = fixtures
         .iter()
@@ -1290,15 +1377,158 @@ fn generate_plugin_api_tests(fixtures: &[&Fixture], output_dir: &Utf8Path) -> Re
 
         for fixture in fixtures {
             let test_name = &fixture.description;
+
+            if !is_wasm_available(fixture) {
+                writeln!(
+                    buffer,
+                    "Deno.test({{ name: \"{}\", ignore: true, fn() {{}} }});",
+                    escape_ts_string(test_name)
+                )?;
+                writeln!(buffer)?;
+                continue;
+            }
+
             writeln!(buffer, "Deno.test(\"{}\", () => {{", escape_ts_string(test_name))?;
-            writeln!(buffer, "    // Plugin API tests not yet implemented for Deno")?;
-            writeln!(buffer, "}});",)?;
+            render_deno_plugin_test(&mut buffer, fixture)?;
+            writeln!(buffer, "}});")?;
             writeln!(buffer)?;
         }
     }
 
     let path = output_dir.join("plugin-apis.test.ts");
     fs::write(&path, buffer).with_context(|| format!("Writing {}", path))?;
+
+    Ok(())
+}
+
+fn render_deno_plugin_test(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture
+        .test_spec
+        .as_ref()
+        .expect("test_spec required for plugin API fixtures");
+
+    match test_spec.pattern.as_str() {
+        "simple_list" => render_deno_simple_list(buffer, fixture)?,
+        "clear_registry" => render_deno_clear_registry(buffer, fixture)?,
+        "graceful_unregister" => render_deno_graceful_unregister(buffer, fixture)?,
+        "mime_from_bytes" => render_deno_mime_from_bytes(buffer, fixture)?,
+        "mime_extension_lookup" => render_deno_mime_extension_lookup(buffer, fixture)?,
+        other => {
+            return Err(anyhow::anyhow!(
+                "Unknown or unsupported plugin test pattern for Deno: {}",
+                other
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn render_deno_simple_list(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let fn_name = wasm_function_name(&test_spec.function_call.name);
+
+    writeln!(buffer, "    const result = {fn_name}();")?;
+    writeln!(buffer, "    assertEquals(Array.isArray(result), true);")?;
+
+    if let Some(item_type) = &test_spec.assertions.list_item_type
+        && item_type == "string"
+    {
+        writeln!(
+            buffer,
+            "    assertEquals(result.every((item: unknown) => typeof item === \"string\"), true);"
+        )?;
+    }
+
+    if let Some(contains) = &test_spec.assertions.list_contains {
+        writeln!(
+            buffer,
+            "    assertEquals(result.includes(\"{}\"), true);",
+            escape_ts_string(contains)
+        )?;
+    }
+
+    Ok(())
+}
+
+fn render_deno_clear_registry(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let clear_fn = wasm_function_name(&test_spec.function_call.name);
+    let list_fn = clear_fn.replace("clear", "list");
+
+    writeln!(buffer, "    {clear_fn}();")?;
+
+    if test_spec.assertions.verify_cleanup {
+        writeln!(buffer, "    const result = {list_fn}();")?;
+        writeln!(buffer, "    assertEquals(result.length, 0);")?;
+    }
+
+    Ok(())
+}
+
+fn render_deno_graceful_unregister(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let fn_name = wasm_function_name(&test_spec.function_call.name);
+
+    let arg = if let Some(Value::String(s)) = test_spec.function_call.args.first() {
+        s.clone()
+    } else {
+        "nonexistent-item".to_string()
+    };
+
+    writeln!(buffer, "    {fn_name}(\"{}\");", escape_ts_string(&arg))?;
+
+    Ok(())
+}
+
+fn render_deno_mime_from_bytes(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let setup = test_spec.setup.as_ref().expect("setup required for mime_from_bytes");
+    let test_data = setup.test_data.as_ref().expect("test_data required");
+    let fn_name = wasm_function_name(&test_spec.function_call.name);
+
+    writeln!(
+        buffer,
+        "    const testData = new TextEncoder().encode(\"{}\");",
+        escape_ts_string(test_data)
+    )?;
+    writeln!(buffer, "    const result = {fn_name}(testData);")?;
+
+    if let Some(contains) = &test_spec.assertions.string_contains {
+        writeln!(
+            buffer,
+            "    assertEquals(result.toLowerCase().includes(\"{}\"), true);",
+            escape_ts_string(&contains.to_lowercase())
+        )?;
+    }
+
+    Ok(())
+}
+
+fn render_deno_mime_extension_lookup(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let fn_name = wasm_function_name(&test_spec.function_call.name);
+
+    let mime_type = if let Some(Value::String(s)) = test_spec.function_call.args.first() {
+        s.clone()
+    } else {
+        "application/pdf".to_string()
+    };
+
+    writeln!(
+        buffer,
+        "    const result = {fn_name}(\"{}\");",
+        escape_ts_string(&mime_type)
+    )?;
+    writeln!(buffer, "    assertEquals(Array.isArray(result), true);")?;
+
+    if let Some(contains) = &test_spec.assertions.list_contains {
+        writeln!(
+            buffer,
+            "    assertEquals(result.includes(\"{}\"), true);",
+            escape_ts_string(contains)
+        )?;
+    }
 
     Ok(())
 }

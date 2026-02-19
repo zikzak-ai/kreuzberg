@@ -6,106 +6,91 @@
  * To regenerate: cargo run -p kreuzberg-e2e-generator -- generate --lang wasm-workers
  */
 
+import {
+	clearOcrBackends,
+	clearPostProcessors,
+	clearValidators,
+	detectMimeFromBytes,
+	getExtensionsForMime,
+	listOcrBackends,
+	listPostProcessors,
+	listValidators,
+	unregisterOcrBackend,
+} from "@kreuzberg/wasm";
 import { describe, expect, it } from "vitest";
 
-// Configuration
+describe("Configuration", () => {
+	it.skip("Discover configuration from current or parent directories (not available in WASM)", () => {});
 
-describe("Discover configuration from current or parent directories", () => {
-	it("should test config_discover", () => {
-		// Plugin API tests not yet implemented for Workers
+	it.skip("Load configuration from a TOML file (not available in WASM)", () => {});
+});
+
+describe("Document Extractor Management", () => {
+	it.skip("Clear all document extractors and verify list is empty (not available in WASM)", () => {});
+
+	it.skip("List all registered document extractors (not available in WASM)", () => {});
+
+	it.skip("Unregister nonexistent document extractor gracefully (not available in WASM)", () => {});
+});
+
+describe("Mime Utilities", () => {
+	it("Detect MIME type from file bytes", () => {
+		const testData = new TextEncoder().encode("%PDF-1.4\\n");
+		const result = detectMimeFromBytes(testData);
+		expect(result.toLowerCase()).toContain("pdf");
+	});
+
+	it.skip("Detect MIME type from file path (not available in WASM)", () => {});
+
+	it("Get file extensions for a MIME type", () => {
+		const result = getExtensionsForMime("application/pdf");
+		expect(Array.isArray(result)).toBe(true);
+		expect(result).toContain("pdf");
 	});
 });
 
-describe("Load configuration from a TOML file", () => {
-	it("should test config_from_file", () => {
-		// Plugin API tests not yet implemented for Workers
+describe("Ocr Backend Management", () => {
+	it("Clear all OCR backends and verify list is empty", () => {
+		clearOcrBackends();
+		const result = listOcrBackends();
+		expect(result).toHaveLength(0);
+	});
+
+	it("List all registered OCR backends", () => {
+		const result = listOcrBackends();
+		expect(Array.isArray(result)).toBe(true);
+		expect(result.every((item: unknown) => typeof item === "string")).toBe(true);
+	});
+
+	it("Unregister nonexistent OCR backend gracefully", () => {
+		expect(() => unregisterOcrBackend("nonexistent-backend-xyz")).not.toThrow();
 	});
 });
 
-// Document Extractor Management
+describe("Post Processor Management", () => {
+	it("Clear all post-processors and verify list is empty", () => {
+		clearPostProcessors();
+		const result = listPostProcessors();
+		expect(result).toHaveLength(0);
+	});
 
-describe("Clear all document extractors and verify list is empty", () => {
-	it("should test extractors_clear", () => {
-		// Plugin API tests not yet implemented for Workers
+	it("List all registered post-processors", () => {
+		const result = listPostProcessors();
+		expect(Array.isArray(result)).toBe(true);
+		expect(result.every((item: unknown) => typeof item === "string")).toBe(true);
 	});
 });
 
-describe("List all registered document extractors", () => {
-	it("should test extractors_list", () => {
-		// Plugin API tests not yet implemented for Workers
+describe("Validator Management", () => {
+	it("Clear all validators and verify list is empty", () => {
+		clearValidators();
+		const result = listValidators();
+		expect(result).toHaveLength(0);
 	});
-});
 
-describe("Unregister nonexistent document extractor gracefully", () => {
-	it("should test extractors_unregister", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-// Mime Utilities
-
-describe("Detect MIME type from file bytes", () => {
-	it("should test mime_detect_bytes", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-describe("Detect MIME type from file path", () => {
-	it("should test mime_detect_path", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-describe("Get file extensions for a MIME type", () => {
-	it("should test mime_get_extensions", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-// Ocr Backend Management
-
-describe("Clear all OCR backends and verify list is empty", () => {
-	it("should test ocr_backends_clear", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-describe("List all registered OCR backends", () => {
-	it("should test ocr_backends_list", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-describe("Unregister nonexistent OCR backend gracefully", () => {
-	it("should test ocr_backends_unregister", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-// Post Processor Management
-
-describe("Clear all post-processors and verify list is empty", () => {
-	it("should test post_processors_clear", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-describe("List all registered post-processors", () => {
-	it("should test post_processors_list", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-// Validator Management
-
-describe("Clear all validators and verify list is empty", () => {
-	it("should test validators_clear", () => {
-		// Plugin API tests not yet implemented for Workers
-	});
-});
-
-describe("List all registered validators", () => {
-	it("should test validators_list", () => {
-		// Plugin API tests not yet implemented for Workers
+	it("List all registered validators", () => {
+		const result = listValidators();
+		expect(Array.isArray(result)).toBe(true);
+		expect(result.every((item: unknown) => typeof item === "string")).toBe(true);
 	});
 });

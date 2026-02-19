@@ -1225,6 +1225,47 @@ fn render_json_literal(value: &Value) -> String {
     serde_json::to_string(value).unwrap_or_else(|_| "null".into())
 }
 
+/// Check whether a fixture can be tested in the WASM Workers environment.
+///
+/// Workers have no filesystem access and no document extractor management.
+fn is_workers_available(fixture: &Fixture) -> bool {
+    let cat = fixture.api_category.as_deref().unwrap_or("");
+    if cat == "document_extractor_management" {
+        return false;
+    }
+
+    let pattern = fixture.test_spec.as_ref().map(|ts| ts.pattern.as_str()).unwrap_or("");
+
+    !matches!(pattern, "config_from_file" | "config_discover" | "mime_from_path")
+}
+
+/// Map fixture function names to WASM JS export names.
+fn workers_function_name(fixture_name: &str) -> String {
+    match fixture_name {
+        "detect_mime_type" => "detectMimeFromBytes".to_string(),
+        _ => to_camel_case(fixture_name),
+    }
+}
+
+fn to_camel_case(s: &str) -> String {
+    let parts: Vec<&str> = s.split('_').collect();
+    if parts.is_empty() {
+        return String::new();
+    }
+
+    let mut result = parts[0].to_string();
+    for part in &parts[1..] {
+        if !part.is_empty() {
+            let mut chars = part.chars();
+            if let Some(first) = chars.next() {
+                result.push_str(&first.to_uppercase().to_string());
+                result.push_str(chars.as_str());
+            }
+        }
+    }
+    result
+}
+
 fn generate_plugin_api_tests(fixtures: &[&Fixture], output_dir: &Utf8Path) -> Result<()> {
     let mut buffer = String::new();
 
@@ -1240,6 +1281,34 @@ fn generate_plugin_api_tests(fixtures: &[&Fixture], output_dir: &Utf8Path) -> Re
     writeln!(buffer, " */")?;
     writeln!(buffer)?;
     writeln!(buffer, "import {{ describe, it, expect }} from \"vitest\";")?;
+
+    // Collect WASM imports from available fixtures
+    let mut wasm_imports: BTreeSet<String> = BTreeSet::new();
+    for fixture in fixtures {
+        if !is_workers_available(fixture) {
+            continue;
+        }
+        let test_spec = match &fixture.test_spec {
+            Some(ts) => ts,
+            None => continue,
+        };
+        let fn_name = workers_function_name(&test_spec.function_call.name);
+        wasm_imports.insert(fn_name);
+
+        if test_spec.pattern == "clear_registry" && test_spec.assertions.verify_cleanup {
+            let clear_fn = workers_function_name(&test_spec.function_call.name);
+            let list_fn = clear_fn.replace("clear", "list");
+            wasm_imports.insert(list_fn);
+        }
+    }
+
+    if !wasm_imports.is_empty() {
+        writeln!(
+            buffer,
+            "import {{ {} }} from \"@kreuzberg/wasm\";",
+            wasm_imports.iter().map(|s| s.as_str()).collect::<Vec<_>>().join(", ")
+        )?;
+    }
     writeln!(buffer)?;
 
     let mut grouped = fixtures
@@ -1258,26 +1327,169 @@ fn generate_plugin_api_tests(fixtures: &[&Fixture], output_dir: &Utf8Path) -> Re
     for (category, mut fixtures) in grouped {
         fixtures.sort_by(|a, b| a.id.cmp(&b.id));
         let category_title = to_title_case(&category);
-        writeln!(buffer, "// {category_title}")?;
-        writeln!(buffer)?;
+        writeln!(buffer, "describe(\"{category_title}\", () => {{")?;
 
         for fixture in fixtures {
             let test_name = &fixture.description;
-            writeln!(buffer, "describe(\"{}\", () => {{", escape_ts_string(test_name))?;
-            writeln!(
-                buffer,
-                "    it(\"should test {}\", () => {{",
-                escape_ts_string(&fixture.id)
-            )?;
-            writeln!(buffer, "        // Plugin API tests not yet implemented for Workers")?;
+
+            if !is_workers_available(fixture) {
+                writeln!(
+                    buffer,
+                    "    it.skip(\"{} (not available in WASM)\", () => {{}});",
+                    escape_ts_string(test_name)
+                )?;
+                writeln!(buffer)?;
+                continue;
+            }
+
+            writeln!(buffer, "    it(\"{}\", () => {{", escape_ts_string(test_name))?;
+            render_workers_plugin_test(&mut buffer, fixture)?;
             writeln!(buffer, "    }});")?;
-            writeln!(buffer, "}});")?;
             writeln!(buffer)?;
         }
+
+        writeln!(buffer, "}});")?;
+        writeln!(buffer)?;
     }
 
     let path = output_dir.join("plugin-apis.spec.ts");
     fs::write(&path, buffer).with_context(|| format!("Writing {}", path))?;
+
+    Ok(())
+}
+
+fn render_workers_plugin_test(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture
+        .test_spec
+        .as_ref()
+        .expect("test_spec required for plugin API fixtures");
+
+    match test_spec.pattern.as_str() {
+        "simple_list" => render_workers_simple_list(buffer, fixture)?,
+        "clear_registry" => render_workers_clear_registry(buffer, fixture)?,
+        "graceful_unregister" => render_workers_graceful_unregister(buffer, fixture)?,
+        "mime_from_bytes" => render_workers_mime_from_bytes(buffer, fixture)?,
+        "mime_extension_lookup" => render_workers_mime_extension_lookup(buffer, fixture)?,
+        other => {
+            return Err(anyhow::anyhow!(
+                "Unknown or unsupported plugin test pattern for Workers: {}",
+                other
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn render_workers_simple_list(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let fn_name = workers_function_name(&test_spec.function_call.name);
+
+    writeln!(buffer, "        const result = {fn_name}();")?;
+    writeln!(buffer, "        expect(Array.isArray(result)).toBe(true);")?;
+
+    if let Some(item_type) = &test_spec.assertions.list_item_type
+        && item_type == "string"
+    {
+        writeln!(
+            buffer,
+            "        expect(result.every((item: unknown) => typeof item === \"string\")).toBe(true);"
+        )?;
+    }
+
+    if let Some(contains) = &test_spec.assertions.list_contains {
+        writeln!(
+            buffer,
+            "        expect(result).toContain(\"{}\");",
+            escape_ts_string(contains)
+        )?;
+    }
+
+    Ok(())
+}
+
+fn render_workers_clear_registry(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let clear_fn = workers_function_name(&test_spec.function_call.name);
+    let list_fn = clear_fn.replace("clear", "list");
+
+    writeln!(buffer, "        {clear_fn}();")?;
+
+    if test_spec.assertions.verify_cleanup {
+        writeln!(buffer, "        const result = {list_fn}();")?;
+        writeln!(buffer, "        expect(result).toHaveLength(0);")?;
+    }
+
+    Ok(())
+}
+
+fn render_workers_graceful_unregister(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let fn_name = workers_function_name(&test_spec.function_call.name);
+
+    let arg = if let Some(Value::String(s)) = test_spec.function_call.args.first() {
+        s.clone()
+    } else {
+        "nonexistent-item".to_string()
+    };
+
+    writeln!(
+        buffer,
+        "        expect(() => {fn_name}(\"{}\")).not.toThrow();",
+        escape_ts_string(&arg)
+    )?;
+
+    Ok(())
+}
+
+fn render_workers_mime_from_bytes(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let setup = test_spec.setup.as_ref().expect("setup required for mime_from_bytes");
+    let test_data = setup.test_data.as_ref().expect("test_data required");
+    let fn_name = workers_function_name(&test_spec.function_call.name);
+
+    writeln!(
+        buffer,
+        "        const testData = new TextEncoder().encode(\"{}\");",
+        escape_ts_string(test_data)
+    )?;
+    writeln!(buffer, "        const result = {fn_name}(testData);")?;
+
+    if let Some(contains) = &test_spec.assertions.string_contains {
+        writeln!(
+            buffer,
+            "        expect(result.toLowerCase()).toContain(\"{}\");",
+            escape_ts_string(&contains.to_lowercase())
+        )?;
+    }
+
+    Ok(())
+}
+
+fn render_workers_mime_extension_lookup(buffer: &mut String, fixture: &Fixture) -> Result<()> {
+    let test_spec = fixture.test_spec.as_ref().expect("test_spec required");
+    let fn_name = workers_function_name(&test_spec.function_call.name);
+
+    let mime_type = if let Some(Value::String(s)) = test_spec.function_call.args.first() {
+        s.clone()
+    } else {
+        "application/pdf".to_string()
+    };
+
+    writeln!(
+        buffer,
+        "        const result = {fn_name}(\"{}\");",
+        escape_ts_string(&mime_type)
+    )?;
+    writeln!(buffer, "        expect(Array.isArray(result)).toBe(true);")?;
+
+    if let Some(contains) = &test_spec.assertions.list_contains {
+        writeln!(
+            buffer,
+            "        expect(result).toContain(\"{}\");",
+            escape_ts_string(contains)
+        )?;
+    }
 
     Ok(())
 }
