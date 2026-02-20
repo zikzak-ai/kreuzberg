@@ -111,7 +111,7 @@ fn assemble_page_with_tables(output: &mut String, paragraphs: &[PdfParagraph], t
     }
 
     // Sort by y descending (top of page first in PDF coordinates)
-    elements.sort_by(|a, b| b.y_pos.partial_cmp(&a.y_pos).unwrap_or(std::cmp::Ordering::Equal));
+    elements.sort_by(|a, b| b.y_pos.total_cmp(&a.y_pos));
 
     let start_len = output.len();
     for elem in &elements {

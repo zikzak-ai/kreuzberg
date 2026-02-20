@@ -13,6 +13,22 @@ use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 use std::cmp::Ordering;
 
+/// Update an `Option<PdfPoints>` to track the minimum value seen.
+fn update_min(slot: &mut Option<PdfPoints>, value: PdfPoints) {
+    match *slot {
+        Some(current) if current <= value => {}
+        _ => *slot = Some(value),
+    }
+}
+
+/// Update an `Option<PdfPoints>` to track the maximum value seen.
+fn update_max(slot: &mut Option<PdfPoints>, value: PdfPoints) {
+    match *slot {
+        Some(current) if current >= value => {}
+        _ => *slot = Some(value),
+    }
+}
+
 /// A single styled string in a [PdfParagraph].
 pub struct PdfStyledString<'a> {
     text: String,
@@ -209,7 +225,6 @@ pub enum PdfParagraphFragment<'a> {
 
 /// Controls the line alignment behaviour of a [PdfParagraph].
 #[derive(Copy, Clone, Debug, PartialEq)]
-#[allow(unused)]
 pub enum PdfParagraphAlignment {
     /// All lines will be non-justified, aligned to the left.
     LeftAlign,
@@ -345,55 +360,24 @@ impl<'a> PdfParagraph<'a> {
                 let object_left = bounds.map(|b| b.left()).unwrap_or(PdfPoints::ZERO);
                 let object_right = bounds.map(|b| b.right()).unwrap_or(PdfPoints::ZERO);
 
-                match objects_bottom {
-                    Some(paragraph_bottom) => {
-                        if paragraph_bottom > object_bottom {
-                            objects_bottom = Some(object_bottom);
-                        }
-                    }
-                    None => objects_bottom = Some(object_bottom),
-                };
-
-                match objects_top {
-                    Some(paragraph_top) => {
-                        if paragraph_top < object_top {
-                            objects_top = Some(object_top);
-                        }
-                    }
-                    None => objects_top = Some(object_top),
-                }
-
-                match objects_left {
-                    Some(paragraph_left) => {
-                        if paragraph_left > object_left {
-                            objects_left = Some(object_left);
-                        }
-                    }
-                    None => objects_left = Some(object_left),
-                }
-
-                match objects_right {
-                    Some(paragraph_right) => {
-                        if paragraph_right < object_right {
-                            objects_right = Some(object_right);
-                        }
-                    }
-                    None => objects_right = Some(object_right),
-                }
+                update_min(&mut objects_bottom, object_bottom);
+                update_max(&mut objects_top, object_top);
+                update_min(&mut objects_left, object_left);
+                update_max(&mut objects_right, object_right);
 
                 (object_bottom, object_top, object_left, object_right, object)
             })
             .sorted_by(|a, b| {
-                let (_a_bottom, a_top, a_left, _a_right) = (a.0, a.1, a.2, a.3);
-                let (_b_bottom, b_top, b_left, _b_right) = (b.0, b.1, b.2, b.3);
+                let (a_top, a_left) = (a.1, a.2);
+                let (b_top, b_left) = (b.1, b.2);
 
                 // Sort by position: top-to-bottom first (higher y = earlier in reading order),
                 // then left-to-right within a line.
                 // Use the top coordinate for vertical ordering (PDF y increases upward).
-                match b_top.value.partial_cmp(&a_top.value).unwrap_or(Ordering::Equal) {
+                match b_top.value.total_cmp(&a_top.value) {
                     Ordering::Equal => {
                         // Same vertical position: sort by horizontal (left-to-right)
-                        a_left.value.partial_cmp(&b_left.value).unwrap_or(Ordering::Equal)
+                        a_left.value.total_cmp(&b_left.value)
                     }
                     // If b_top > a_top, b is higher on page → b comes first → a is Greater
                     // If b_top < a_top, a is higher on page → a comes first → a is Less
@@ -555,8 +539,6 @@ impl<'a> PdfParagraph<'a> {
 
         let mut current_paragraph_right = None;
 
-        let mut current_paragraph_first_line_left = None;
-
         let mut last_line_alignment = lines
             .first()
             .map(|line| line.alignment)
@@ -577,7 +559,6 @@ impl<'a> PdfParagraph<'a> {
                         current_paragraph_bottom,
                         current_paragraph_left,
                         current_paragraph_right,
-                        current_paragraph_first_line_left,
                         first_line_alignment,
                         last_line_alignment,
                     ));
@@ -588,7 +569,6 @@ impl<'a> PdfParagraph<'a> {
                     current_paragraph_bottom = None;
                     current_paragraph_left = None;
                     current_paragraph_right = None;
-                    current_paragraph_first_line_left = None;
                     first_line_alignment = last_line_alignment
                 }
             }
@@ -597,33 +577,9 @@ impl<'a> PdfParagraph<'a> {
 
             last_line_alignment = line.alignment;
 
-            if let Some(paragraph_left) = current_paragraph_left {
-                if line.left < paragraph_left {
-                    current_paragraph_left = Some(line.left);
-                }
-            } else {
-                current_paragraph_left = Some(line.left);
-            }
-
-            if let Some(paragraph_right) = current_paragraph_right {
-                if line.left + line.width > paragraph_right {
-                    current_paragraph_right = Some(line.left + line.width);
-                }
-            } else {
-                current_paragraph_right = Some(line.left + line.width);
-            }
-
-            if let Some(paragraph_bottom) = current_paragraph_bottom {
-                if line.bottom < paragraph_bottom {
-                    current_paragraph_bottom = Some(line.bottom);
-                }
-            } else {
-                current_paragraph_bottom = Some(line.bottom);
-            }
-
-            if current_paragraph_first_line_left.is_none() {
-                current_paragraph_first_line_left = Some(line.left);
-            }
+            update_min(&mut current_paragraph_left, line.left);
+            update_max(&mut current_paragraph_right, line.left + line.width);
+            update_min(&mut current_paragraph_bottom, line.bottom);
         }
 
         // Finalize the last paragraph.
@@ -633,7 +589,6 @@ impl<'a> PdfParagraph<'a> {
             current_paragraph_bottom,
             current_paragraph_left,
             current_paragraph_right,
-            current_paragraph_first_line_left,
             first_line_alignment,
             last_line_alignment,
         ));
@@ -646,7 +601,6 @@ impl<'a> PdfParagraph<'a> {
         bottom: Option<PdfPoints>,
         left: Option<PdfPoints>,
         right: Option<PdfPoints>,
-        _first_line_left: Option<PdfPoints>,
         first_line_alignment: PdfLineAlignment,
         last_line_alignment: PdfLineAlignment,
     ) -> PdfParagraph<'a> {
