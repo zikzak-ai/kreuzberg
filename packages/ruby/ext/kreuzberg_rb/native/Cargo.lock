@@ -470,9 +470,9 @@ dependencies = [
 
 [[package]]
 name = "biblib"
-version = "0.3.2"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877d134cd77e9e3c8b90e848d5e28e3126aa8db8d66a6f97e7af89c468f631a9"
+checksum = "f289d61c020b03326674c9a13caf0b9a2744465510df96ff97979083a28517c6"
 dependencies = [
  "compact_str",
  "either",
@@ -977,6 +977,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "console"
+version = "0.16.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03e45a4a8926227e4197636ba97a9fc9b00477e9f4bd711395687c5f0734bec4"
+dependencies = [
+ "encode_unicode",
+ "libc",
+ "once_cell",
+ "unicode-width",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "console_error_panic_hook"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1118,21 +1131,6 @@ checksum = "8b2a41393f66f16b0823bb79094d54ac5fbd34ab292ddafb9a0456ac9f87d201"
 dependencies = [
  "libc",
 ]
-
-[[package]]
-name = "crc"
-version = "3.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9710d3b3739c2e349eb44fe848ad0b7c8cb1e42bd87ee49371df2f7acaf3e675"
-dependencies = [
- "crc-catalog",
-]
-
-[[package]]
-name = "crc-catalog"
-version = "2.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19d374276b40fb8bbdee95aef7c7fa6b5316ec764510eb64b8dd0e2ed0d7e7f5"
 
 [[package]]
 name = "crc32fast"
@@ -1657,7 +1655,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4339d45a80579ab8305616a501eacdbf18fb0f7def7fa6e4c0b75941416d5b0"
 dependencies = [
  "anyhow",
- "hf-hub",
+ "hf-hub 0.4.3",
  "ndarray",
  "ort",
  "safetensors",
@@ -2237,7 +2235,7 @@ checksum = "629d8f3bbeda9d148036d6b0de0a3ab947abd08ce90626327fc3547a49d59d97"
 dependencies = [
  "dirs",
  "http",
- "indicatif",
+ "indicatif 0.17.11",
  "libc",
  "log",
  "native-tls",
@@ -2248,6 +2246,25 @@ dependencies = [
  "thiserror 2.0.18",
  "ureq 2.12.1",
  "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "hf-hub"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aef3982638978efa195ff11b305f51f1f22f4f0a6cabee7af79b383ebee6a213"
+dependencies = [
+ "dirs",
+ "http",
+ "indicatif 0.18.4",
+ "libc",
+ "log",
+ "rand 0.9.2",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "ureq 3.2.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2709,10 +2726,23 @@ version = "0.17.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "183b3088984b400f4cfac3620d5e076c84da5364016b4f49473de574b2586235"
 dependencies = [
- "console",
+ "console 0.15.11",
  "number_prefix",
  "portable-atomic",
  "unicode-width",
+ "web-time",
+]
+
+[[package]]
+name = "indicatif"
+version = "0.18.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25470f23803092da7d239834776d653104d551bc4d7eacaf31e6837854b8e9eb"
+dependencies = [
+ "console 0.16.2",
+ "portable-atomic",
+ "unicode-width",
+ "unit-prefix",
  "web-time",
 ]
 
@@ -2901,7 +2931,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg"
-version = "4.3.6"
+version = "4.3.8"
 dependencies = [
  "ahash",
  "async-trait",
@@ -2926,7 +2956,7 @@ dependencies = [
  "hayro-jbig2",
  "hayro-jpeg2000",
  "hex",
- "hf-hub",
+ "hf-hub 0.5.0",
  "html-to-markdown-rs",
  "image",
  "indexmap",
@@ -2939,7 +2969,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "lopdf",
- "lzma-rust2 0.15.7",
+ "lzma-rust2 0.16.2",
  "mail-parser",
  "memchr",
  "mime_guess",
@@ -2954,7 +2984,7 @@ dependencies = [
  "pkg-config",
  "polars",
  "pulldown-cmark",
- "quick-xml 0.39.1",
+ "quick-xml 0.39.2",
  "rake",
  "rayon",
  "regex",
@@ -2993,7 +3023,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-ffi"
-version = "4.3.6"
+version = "4.3.8"
 dependencies = [
  "ahash",
  "async-trait",
@@ -3009,7 +3039,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-paddle-ocr"
-version = "4.3.6"
+version = "4.3.8"
 dependencies = [
  "geo-clipper",
  "geo-types",
@@ -3024,7 +3054,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-pdfium-render"
-version = "4.3.6"
+version = "4.3.8"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -3048,7 +3078,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-rb"
-version = "4.3.6"
+version = "4.3.8"
 dependencies = [
  "async-trait",
  "html-to-markdown-rs",
@@ -3065,7 +3095,7 @@ dependencies = [
 
 [[package]]
 name = "kreuzberg-tesseract"
-version = "4.3.6"
+version = "4.3.8"
 dependencies = [
  "cc",
  "cmake",
@@ -3295,18 +3325,13 @@ name = "lzma-rust2"
 version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1670343e58806300d87950e3401e820b519b9384281bbabfb15e3636689ffd69"
-dependencies = [
- "crc",
- "sha2",
-]
 
 [[package]]
 name = "lzma-rust2"
-version = "0.16.1"
+version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d673a11333485e7d8b93d62a9a5b07b22daf5e8a8655a44c1bb18aa4bf3d1524"
+checksum = "47bb1e988e6fb779cf720ad431242d3f03167c1b3f2b1aae7f1a94b2495b36ae"
 dependencies = [
- "crc",
  "sha2",
 ]
 
@@ -4891,9 +4916,9 @@ dependencies = [
 
 [[package]]
 name = "quick-xml"
-version = "0.39.1"
+version = "0.39.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd58c6a1fc307e1092aa0bb23d204ca4d1f021764142cd0424dccc84d2d5d106"
+checksum = "958f21e8e7ceb5a1aa7fa87fab28e7c75976e0bfe7e23ff069e0a260f894067d"
 dependencies = [
  "memchr",
  "serde",
@@ -7036,6 +7061,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39ec24b3121d976906ece63c9daad25b85969647682eee313cb5779fdd69e14e"
 
 [[package]]
+name = "unit-prefix"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81e544489bf3d8ef66c953931f56617f423cd4b5494be343d9b9d3dda037b9a3"
+
+[[package]]
 name = "unsafe-libyaml"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7088,6 +7119,7 @@ dependencies = [
  "base64 0.22.1",
  "cookie_store",
  "der",
+ "flate2",
  "log",
  "native-tls",
  "percent-encoding",
@@ -7095,6 +7127,7 @@ dependencies = [
  "rustls-pki-types",
  "serde",
  "serde_json",
+ "socks",
  "ureq-proto",
  "utf-8",
  "webpki-root-certs",
@@ -8122,7 +8155,7 @@ dependencies = [
  "getrandom 0.4.1",
  "hmac",
  "indexmap",
- "lzma-rust2 0.16.1",
+ "lzma-rust2 0.16.2",
  "memchr",
  "pbkdf2",
  "ppmd-rust",
