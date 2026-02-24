@@ -55,7 +55,7 @@
 </div>
 
 
-Extract text, tables, images, and metadata from 75+ file formats including PDF, Office documents, and images. PHP bindings with modern PHP 8.4+ support and type-safe API.
+Extract text, tables, images, and metadata from 75+ file formats including PDF, Office documents, and images. PHP bindings with modern PHP 8.4+ support, type-safe API, and async extraction via DeferredResult.
 
 
 ## Installation
@@ -441,6 +441,78 @@ echo "\n\nCompleted! Processed $totalProcessed files.\n";
 
 
 
+#### Async Extraction
+
+Non-blocking extraction via the `DeferredResult` pattern. Extraction runs on a background Tokio thread pool and returns immediately:
+
+```php title="async_extraction.php"
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Kreuzberg\Kreuzberg;
+
+$kreuzberg = new Kreuzberg();
+
+// Start async extraction — returns immediately
+$deferred = $kreuzberg->extractFileAsync('large_document.pdf');
+
+// Do other work while extraction runs in background
+echo "Extraction started, doing other work...\n";
+
+// Check if ready (non-blocking)
+if ($deferred->isReady()) {
+    $result = $deferred->getResult();
+    echo $result->content;
+}
+
+// Or block with a timeout (5 seconds)
+$result = $deferred->wait(5000);
+if ($result !== null) {
+    echo "Content: " . strlen($result->content) . " characters\n";
+} else {
+    echo "Extraction still in progress\n";
+}
+
+// Or block until complete
+$result = $deferred->getResult();
+echo $result->content;
+```
+
+**Batch async extraction:**
+
+```php title="async_batch.php"
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Kreuzberg\Kreuzberg;
+
+$kreuzberg = new Kreuzberg();
+
+$files = ['doc1.pdf', 'doc2.docx', 'doc3.xlsx'];
+$deferred = $kreuzberg->batchExtractFilesAsync($files);
+
+// Wait with timeout (10 seconds)
+$results = $deferred->waitBatch(10000);
+
+if ($results !== null) {
+    foreach ($results as $i => $result) {
+        echo "{$files[$i]}: " . strlen($result->content) . " chars\n";
+    }
+} else {
+    echo "Batch extraction timed out\n";
+}
+```
+
+**Framework integration** — Bridges available for [Amp v3+](https://amphp.org/) (`AmpBridge`) and [ReactPHP](https://reactphp.org/) (`ReactBridge`). See [Async API Reference](https://kreuzberg.dev/reference/api-php/#async-extraction) for details.
+
+
+
 ### Next Steps
 
 - **[Installation Guide](https://kreuzberg.dev/getting-started/installation/)** - Platform-specific setup
@@ -506,13 +578,9 @@ echo "\n\nCompleted! Processed $totalProcessed files.\n";
 - **Table Extraction** - Parse tables with structure and cell content preservation
 - **Image Extraction** - Extract embedded images and render page previews
 - **OCR Support** - Integrate multiple OCR backends for scanned documents
-
-
+- **Async Extraction** - Non-blocking extraction via DeferredResult with Amp and ReactPHP bridges
 - **Plugin System** - Extensible post-processing for custom text transformation
-
-
 - **Embeddings** - Generate vector embeddings using ONNX Runtime models
-
 - **Batch Processing** - Efficiently process multiple documents in parallel
 - **Memory Efficient** - Stream large files without loading entirely into memory
 - **Language Detection** - Detect and support multiple languages in documents
@@ -851,6 +919,74 @@ echo "\n\nCompleted! Processed $totalProcessed files.\n";
 ```
 
 
+
+
+## Async Extraction
+
+Kreuzberg PHP provides non-blocking extraction via a `DeferredResult` pattern. Async operations spawn work on a background Tokio thread pool and return immediately with a pollable result object.
+
+### DeferredResult API
+
+```php
+$deferred = $kreuzberg->extractFileAsync('document.pdf');
+
+$deferred->isReady();            // Non-blocking: returns bool
+$deferred->tryGetResult();       // Non-blocking: returns result or null
+$deferred->getResult();          // Blocking: waits until complete
+$deferred->wait(5000);           // Blocking with timeout (ms)
+$deferred->getResults();         // Blocking: batch results
+$deferred->waitBatch(10000);     // Blocking with timeout: batch results
+```
+
+### Async Methods
+
+All synchronous extraction methods have async counterparts:
+
+| Synchronous | Async |
+|-------------|-------|
+| `extractFile()` | `extractFileAsync()` |
+| `extractBytes()` | `extractBytesAsync()` |
+| `batchExtractFiles()` | `batchExtractFilesAsync()` |
+| `batchExtractBytes()` | `batchExtractBytesAsync()` |
+
+Procedural and static variants are also available (`extract_file_async()`, `Kreuzberg::extractFileAsyncStatic()`, etc.).
+
+### Framework Bridges
+
+#### Amp v3+
+
+```php
+use Kreuzberg\Async\AmpBridge;
+
+$deferred = $kreuzberg->extractFileAsync('document.pdf');
+$future = AmpBridge::toFuture($deferred);
+$result = $future->await();
+echo $result->content;
+```
+
+Requires: `composer require amphp/amp ^3.0`
+
+#### ReactPHP
+
+```php
+use Kreuzberg\Async\ReactBridge;
+
+$deferred = $kreuzberg->extractFileAsync('document.pdf');
+$promise = ReactBridge::toPromise($deferred);
+
+$promise->then(
+    function ($result) {
+        echo "Content: {$result->content}\n";
+    },
+    function (\Throwable $error) {
+        echo "Extraction failed: {$error->getMessage()}\n";
+    }
+);
+```
+
+Requires: `composer require react/promise ^3.0 react/event-loop ^1.0`
+
+**[Complete Async API Reference](https://kreuzberg.dev/reference/api-php/#async-extraction)**
 
 
 ## Configuration

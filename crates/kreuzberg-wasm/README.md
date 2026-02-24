@@ -57,6 +57,8 @@
 
 Extract text, tables, images, and metadata from 75+ file formats including PDF, Office documents, and images. WebAssembly bindings for browsers, Deno, and Cloudflare Workers with portable deployment and multi-threading support.
 
+> **Full Feature Parity** — The WASM package supports all extraction capabilities at full parity with native bindings: PDF (via PDFium), Excel/spreadsheets (via Calamine), archives (ZIP, TAR, 7z, GZIP), and OCR (via built-in Tesseract-WASM). No external dependencies required.
+
 
 ## Installation
 
@@ -95,7 +97,7 @@ yarn add @kreuzberg/wasm
 ### System Requirements
 
 - Modern browser with WebAssembly support, or Deno 1.0+, or Cloudflare Workers
-- Optional: [Tesseract WASM](https://github.com/naptha/tesseract.js) for OCR functionality
+- OCR is built-in via Tesseract-WASM (enable at runtime with `enableOcr()`)
 
 
 
@@ -172,6 +174,40 @@ extractWithOcr().catch(console.error);
 
 
 See [Table Extraction Guide](https://kreuzberg.dev/features/table-extraction/) for detailed examples.
+
+
+#### Excel/Spreadsheet Extraction
+
+Extract structured data from Excel files directly in the browser or server-side runtimes:
+
+```ts
+import { extractBytes, initWasm } from "@kreuzberg/wasm";
+
+async function extractSpreadsheet() {
+	await initWasm();
+
+	const bytes = new Uint8Array(
+		await fetch("report.xlsx").then((r) => r.arrayBuffer()),
+	);
+
+	const result = await extractBytes(
+		bytes,
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	);
+
+	console.log("Spreadsheet content:");
+	console.log(result.content);
+
+	if (result.tables && result.tables.length > 0) {
+		result.tables.forEach((table, index) => {
+			console.log(`\nSheet ${index + 1}:`);
+			console.log(table.markdown);
+		});
+	}
+}
+
+extractSpreadsheet().catch(console.error);
+```
 
 
 
@@ -318,14 +354,10 @@ extractDocuments(fileBytes, mimes)
 - **Metadata Extraction** - Retrieve document properties, creation date, author, etc.
 - **Table Extraction** - Parse tables with structure and cell content preservation
 - **Image Extraction** - Extract embedded images and render page previews
-- **OCR Support** - Integrate multiple OCR backends for scanned documents
-
+- **OCR Support** - Built-in Tesseract-WASM for scanned documents and images
+- **Full Feature Parity** - All extraction capabilities at parity with native bindings: PDF, Excel, archives, OCR, and 75+ formats
 - **Async/Await** - Non-blocking document processing with concurrent operations
-
-
 - **Plugin System** - Extensible post-processing for custom text transformation
-
-
 - **Batch Processing** - Efficiently process multiple documents in parallel
 - **Memory Efficient** - Stream large files without loading entirely into memory
 - **Language Detection** - Detect and support multiple languages in documents

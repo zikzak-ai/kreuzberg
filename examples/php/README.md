@@ -189,6 +189,25 @@ php metadata_extraction.php
 
 ---
 
+### 9. Async Extraction (`async_extraction.php`)
+
+**Purpose**: Non-blocking document extraction using the async API
+
+**Topics Covered**:
+- Single file async extraction (OOP and procedural APIs)
+- Non-blocking polling with `isReady()` and `tryGetResult()`
+- Blocking wait with timeout via `wait()`
+- Batch async extraction with `batchExtractFilesAsync()`
+- Concurrent async extractions
+- Procedural batch async API
+
+**Run**:
+```bash
+php async_extraction.php
+```
+
+---
+
 ## Requirements
 
 - PHP 8.2 or higher
@@ -280,6 +299,11 @@ try {
 1. Configure OCR: `ocr_example.php`
 2. Process scanned documents
 3. Extract tables and images: `metadata_extraction.php`
+
+### Async Processing
+1. Async extraction: `async_extraction.php`
+2. Batch async: `async_extraction.php` (Example 5)
+3. Concurrent extractions for maximum throughput
 
 ### Metadata Extraction
 1. Extract metadata: `metadata_extraction.php`

@@ -61,7 +61,7 @@ Extract text and metadata from a wide range of file formats (75+), generate embe
 - **Extensible architecture** – Plugin system for custom OCR backends, validators, post-processors, and document extractors
 - **Polyglot** – Native bindings for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, C#, PHP, and Elixir
 - **75+ file formats** – PDF, Office documents, images, HTML, XML, emails, archives, academic formats across 8 categories
-- **OCR support** – Tesseract (all bindings), PaddleOCR (all native bindings), EasyOCR (Python), extensible via plugin API
+- **OCR support** – Tesseract (all bindings, including Tesseract-WASM for browsers), PaddleOCR (all native bindings), EasyOCR (Python), extensible via plugin API
 - **High performance** – Rust core with native PDFium, SIMD optimizations and full parallelism
 - **Flexible deployment** – Use as library, CLI tool, REST API server, or MCP server
 - **Memory efficient** – Streaming parsers for multi-GB files
@@ -75,12 +75,12 @@ Each language binding provides comprehensive documentation with examples and bes
 **Scripting Languages:**
 - **[Python](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/python)** – PyPI package, async/sync APIs, OCR backends (Tesseract, PaddleOCR, EasyOCR)
 - **[Ruby](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/ruby)** – RubyGems package, idiomatic Ruby API, native bindings
-- **[PHP](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/php)** – Composer package, modern PHP 8.4+ support, type-safe API
+- **[PHP](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/php)** – Composer package, modern PHP 8.4+ support, type-safe API, async extraction
 - **[Elixir](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/elixir)** – Hex package, OTP integration, concurrent processing
 
 **JavaScript/TypeScript:**
 - **[@kreuzberg/node](https://github.com/kreuzberg-dev/kreuzberg/tree/main/crates/kreuzberg-node)** – Native NAPI-RS bindings for Node.js/Bun, fastest performance
-- **[@kreuzberg/wasm](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/typescript)** – WebAssembly for browsers/Deno/Cloudflare Workers
+- **[@kreuzberg/wasm](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/typescript)** – WebAssembly for browsers/Deno/Cloudflare Workers, full feature parity (PDF, Excel, OCR, archives)
 
 **Compiled Languages:**
 - **[Go](https://github.com/kreuzberg-dev/kreuzberg/tree/main/packages/go)** – Go module with FFI bindings, context-aware async
