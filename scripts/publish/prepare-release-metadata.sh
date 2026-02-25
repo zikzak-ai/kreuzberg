@@ -31,4 +31,5 @@ echo "$metadata" >release-metadata.json
   echo "release_wasm=$(echo "$metadata" | jq -r '.release_wasm')"
   echo "release_php=$(echo "$metadata" | jq -r '.release_php')"
   echo "release_elixir=$(echo "$metadata" | jq -r '.release_elixir')"
+  echo "release_c_ffi=$(echo "$metadata" | jq -r '.release_c_ffi')"
 } >>"${GITHUB_OUTPUT:?GITHUB_OUTPUT not set}"

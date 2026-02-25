@@ -17,7 +17,7 @@ on:
         required: false
         type: string
       targets:
-        description: "Comma-separated list of release targets (all, python, node, ruby, cli, crates, docker, homebrew, java, csharp, r, elixir)"
+        description: "Comma-separated list of release targets (all, python, node, ruby, cli, crates, docker, homebrew, java, csharp, r, elixir, c-ffi)"
         required: false
         type: string
       force_republish:
@@ -77,6 +77,7 @@ jobs:
       release_wasm: ${{ steps.meta.outputs.release_wasm }}
       release_php: ${{ steps.meta.outputs.release_php }}
       release_elixir: ${{ steps.meta.outputs.release_elixir }}
+      release_c_ffi: ${{ steps.meta.outputs.release_c_ffi }}
     steps:
       - name: Checkout code (default)
         uses: actions/checkout@v4
@@ -308,6 +309,35 @@ jobs:
             go-ffi-macos-arm64.tar.gz
             go-ffi-windows-x86_64.tar.gz
           SUMMARY_LABEL: Go FFI
+        run: scripts/publish/check-release-assets.sh
+
+  check-c-ffi:
+    name: Check if C FFI assets already published
+    needs: prepare
+    if: ${{ needs.prepare.outputs.is_tag == 'true' && needs.prepare.outputs.release_c_ffi == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+
+      - name: Check release for existing C FFI artifacts
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          ASSET_PREFIX: c-ffi-
+          REQUIRED_ASSETS: |
+            c-ffi-linux-aarch64.tar.gz
+            c-ffi-linux-x86_64.tar.gz
+            c-ffi-macos-arm64.tar.gz
+            c-ffi-windows-x86_64.tar.gz
+          SUMMARY_LABEL: C FFI
         run: scripts/publish/check-release-assets.sh
 
   check-cratesio:
@@ -2145,6 +2175,164 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: scripts/publish/upload-go-libraries.sh "${{ needs.prepare.outputs.tag }}" dist/go
 
+  c-ffi-libraries:
+    name: Build C FFI libraries (${{ matrix.settings.label }})
+    needs: [prepare, check-c-ffi]
+    if: ${{ needs.prepare.outputs.release_c_ffi == 'true' && (needs.check-c-ffi.outputs.exists != 'true' || needs.prepare.outputs.dry_run == 'true') }}
+    runs-on: ${{ matrix.settings.os }}
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - os: ubuntu-24.04-arm
+            label: linux-aarch64
+            target: aarch64-unknown-linux-gnu
+            build_features: default
+          - os: ubuntu-latest
+            label: linux-x86_64
+            target: x86_64-unknown-linux-gnu
+            build_features: default
+          - os: macos-latest
+            label: macos-arm64
+            target: aarch64-apple-darwin
+            build_features: default
+          - os: windows-latest
+            label: windows-x86_64
+            target: x86_64-pc-windows-gnu
+            build_features: core
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.checkout_ref }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Ensure target commit
+        if: ${{ needs.prepare.outputs.target_sha != '' }}
+        shell: bash
+        run: git checkout --progress --force ${{ needs.prepare.outputs.target_sha }}
+
+      - name: Free up disk space (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: scripts/publish/ubuntu/free-disk-space.sh
+
+      - name: Configure Windows GNU toolchain
+        if: matrix.settings.os == 'windows-latest'
+        shell: bash
+        run: scripts/publish/go/configure-windows-gnu-toolchain.sh
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+
+      - name: Setup Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          cache-key-prefix: ${{ matrix.settings.os == 'windows-latest' && 'publish-c-ffi-windows-gnu' || format('publish-c-ffi-{0}', matrix.settings.os) }}
+          use-sccache: ${{ matrix.settings.os != 'windows-latest' }}
+          target: ${{ matrix.settings.target }}
+          toolchain: ${{ matrix.settings.os == 'windows-latest' && 'stable-x86_64-pc-windows-gnu' || '' }}
+
+      - name: Set GNU as default (Windows)
+        if: matrix.settings.os == 'windows-latest'
+        shell: pwsh
+        run: rustup default stable-x86_64-pc-windows-gnu
+
+      - name: Cache PDFium
+        uses: ./.github/actions/cache-pdfium
+        with:
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+
+      - name: Download PDFium
+        uses: ./.github/actions/download-pdfium
+        with:
+          pdfium-version: ${{ env.PDFIUM_VERSION }}
+
+      - name: Stage PDFium runtime
+        uses: ./.github/actions/stage-pdfium-runtime
+        with:
+          destination: target/release
+
+      - name: Setup ONNX Runtime (Unix only)
+        if: matrix.settings.build_features == 'default'
+        uses: ./.github/actions/setup-onnx-runtime
+        with:
+          ort-version: ${{ env.ORT_VERSION }}
+
+      - name: Setup MSYS2 (Windows)
+        if: matrix.settings.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-pkg-config
+            mingw-w64-ucrt-x86_64-nasm
+            mingw-w64-ucrt-x86_64-zstd
+            mingw-w64-ucrt-x86_64-binutils
+
+      - name: Verify MSYS2 toolchain and add to PATH (Windows)
+        if: matrix.settings.os == 'windows-latest'
+        shell: pwsh
+        run: scripts/ci/go/setup-msys2-windows.ps1
+
+      - name: Package C FFI distribution
+        shell: bash
+        env:
+          BUILD_FEATURES: ${{ matrix.settings.build_features }}
+        run: scripts/publish/c-ffi/package-c-ffi.sh "${{ matrix.settings.label }}" "${{ needs.prepare.outputs.version }}" dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: c-ffi-${{ matrix.settings.label }}
+          path: dist/c-ffi-${{ matrix.settings.label }}.tar.gz
+          retention-days: 14
+
+  upload-c-ffi-release:
+    name: Upload C FFI libraries to GitHub Release
+    needs: [prepare, validate-versions, check-c-ffi, c-ffi-libraries]
+    if: |
+      always() &&
+      needs.prepare.outputs.dry_run != 'true' &&
+      needs.prepare.outputs.is_tag == 'true' &&
+      needs.prepare.outputs.release_c_ffi == 'true' &&
+      needs.check-c-ffi.outputs.exists != 'true' &&
+      needs.c-ffi-libraries.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.ref }}
+
+      - name: Ensure GitHub release exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: scripts/publish/ensure-github-release-exists.sh "${{ needs.prepare.outputs.tag }}"
+
+      - name: Download C FFI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: c-ffi-*
+          path: dist/c-ffi
+          merge-multiple: true
+
+      - name: Upload C FFI libraries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: scripts/publish/upload-c-ffi-artifacts.sh "${{ needs.prepare.outputs.tag }}" dist/c-ffi
+
   publish-crates:
     name: Publish crates.io packages
     needs: [prepare, validate-versions, check-cratesio]
@@ -3347,6 +3535,7 @@ jobs:
       - upload-cli-release
       - cli-musl-binaries
       - upload-go-release
+      - upload-c-ffi-release
       - homebrew-bottles
       - upload-homebrew-bottles
     if: always() && needs.prepare.outputs.is_tag == 'true'
@@ -3398,4 +3587,5 @@ jobs:
           RESULT_PUBLISH_HOMEBREW: ${{ needs.publish-homebrew.result }}
           RESULT_UPLOAD_CLI_RELEASE: ${{ needs.upload-cli-release.result }}
           RESULT_UPLOAD_GO_RELEASE: ${{ needs.upload-go-release.result }}
+          RESULT_UPLOAD_C_FFI_RELEASE: ${{ needs.upload-c-ffi-release.result }}
         run: python3 scripts/publish/aggregate-release-status.py

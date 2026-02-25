@@ -115,6 +115,7 @@ release_wasm=false
 release_php=false
 release_elixir=false
 release_r=false
+release_c_ffi=false
 
 set_all_targets() {
   release_python=true
@@ -131,6 +132,7 @@ set_all_targets() {
   release_php=true
   release_elixir=true
   release_r=true
+  release_c_ffi=true
 }
 
 mapfile -t requested_targets < <(echo "$targets_value" | tr ',' '\n')
@@ -189,6 +191,9 @@ for raw_target in "${requested_targets[@]}"; do
   elixir | hex)
     release_elixir=true
     ;;
+  c-ffi | c_ffi | cffi)
+    release_c_ffi=true
+    ;;
   none)
     release_python=false
     release_node=false
@@ -204,9 +209,10 @@ for raw_target in "${requested_targets[@]}"; do
     release_php=false
     release_elixir=false
     release_r=false
+    release_c_ffi=false
     ;;
   *)
-    echo "Unknown release target '$trimmed'. Allowed: all, python, node, ruby, cli, crates, docker, homebrew, java, csharp, go, wasm, php, r, elixir." >&2
+    echo "Unknown release target '$trimmed'. Allowed: all, python, node, ruby, cli, crates, docker, homebrew, java, csharp, go, wasm, php, r, elixir, c-ffi." >&2
     exit 1
     ;;
   esac
@@ -235,8 +241,9 @@ if [[ "$release_wasm" == "true" ]]; then enabled_targets+=("wasm"); fi
 if [[ "$release_php" == "true" ]]; then enabled_targets+=("php"); fi
 if [[ "$release_elixir" == "true" ]]; then enabled_targets+=("elixir"); fi
 if [[ "$release_r" == "true" ]]; then enabled_targets+=("r"); fi
+if [[ "$release_c_ffi" == "true" ]]; then enabled_targets+=("c-ffi"); fi
 
-if [[ ${#enabled_targets[@]} -eq 14 ]]; then
+if [[ ${#enabled_targets[@]} -eq 15 ]]; then
   release_targets_summary="all"
 elif [[ ${#enabled_targets[@]} -eq 0 ]]; then
   release_targets_summary="none"
@@ -290,6 +297,7 @@ cat <<JSON
   "release_wasm": $release_wasm,
   "release_php": $release_php,
   "release_elixir": $release_elixir,
-  "release_r": $release_r
+  "release_r": $release_r,
+  "release_c_ffi": $release_c_ffi
 }
 JSON

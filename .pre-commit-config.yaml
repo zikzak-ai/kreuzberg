@@ -120,6 +120,14 @@ repos:
     hooks:
       - id: actionlint
 
+  # C/C++: formatting
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v22.1.0
+    hooks:
+      - id: clang-format
+        types_or: [c, c++]
+        files: ^crates/kreuzberg-ffi/tests/c/
+
   # Local hooks for unsupported languages (Ruby, Java, C#, PHP) and custom configurations
   - repo: local
     hooks:

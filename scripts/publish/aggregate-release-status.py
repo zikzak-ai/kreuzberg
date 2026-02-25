@@ -24,6 +24,7 @@ def main() -> None:
         "CLI Release": os.environ.get("RESULT_UPLOAD_CLI_RELEASE", ""),
         "C# Release": os.environ.get("RESULT_UPLOAD_CSHARP_RELEASE", ""),
         "Go FFI Libraries": os.environ.get("RESULT_UPLOAD_GO_RELEASE", ""),
+        "C FFI Libraries": os.environ.get("RESULT_UPLOAD_C_FFI_RELEASE", ""),
     }
 
     summary_lines = [f"## Release Status for {release_tag}", ""]
