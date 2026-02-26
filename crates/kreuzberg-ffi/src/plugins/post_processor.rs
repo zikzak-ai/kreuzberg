@@ -189,6 +189,12 @@ pub unsafe extern "C" fn kreuzberg_register_post_processor(
             return false;
         }
 
+        // SAFETY: C callers may pass NULL for the callback function pointer.
+        if (callback as usize) == 0 {
+            set_last_error("PostProcessor callback cannot be NULL".to_string());
+            return false;
+        }
+
         let name_str = match unsafe { CStr::from_ptr(name) }.to_str() {
             Ok(s) => s,
             Err(e) => {
@@ -257,6 +263,12 @@ pub unsafe extern "C" fn kreuzberg_register_post_processor_with_stage(
 
         if name.is_null() {
             set_last_error("PostProcessor name cannot be NULL".to_string());
+            return false;
+        }
+
+        // SAFETY: C callers may pass NULL for the callback function pointer.
+        if (callback as usize) == 0 {
+            set_last_error("PostProcessor callback cannot be NULL".to_string());
             return false;
         }
 

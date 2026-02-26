@@ -171,6 +171,12 @@ pub unsafe extern "C" fn kreuzberg_register_validator(
             return false;
         }
 
+        // SAFETY: C callers may pass NULL for the callback function pointer.
+        if (callback as usize) == 0 {
+            set_last_error("Validator callback cannot be NULL".to_string());
+            return false;
+        }
+
         let name_str = match unsafe { CStr::from_ptr(name) }.to_str() {
             Ok(s) => s,
             Err(e) => {

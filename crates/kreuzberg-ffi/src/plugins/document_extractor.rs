@@ -245,6 +245,13 @@ pub unsafe extern "C" fn kreuzberg_register_document_extractor(
             return false;
         }
 
+        // SAFETY: C callers may pass NULL for the callback function pointer.
+        // We detect this by comparing the transmuted pointer address to zero.
+        if (callback as usize) == 0 {
+            set_last_error("DocumentExtractor callback cannot be NULL".to_string());
+            return false;
+        }
+
         if mime_types.is_null() {
             set_last_error("MIME types cannot be NULL".to_string());
             return false;
