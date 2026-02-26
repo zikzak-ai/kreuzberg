@@ -9,7 +9,8 @@ use pyo3::prelude::*;
 ///
 /// Example:
 ///     >>> from kreuzberg import KeywordAlgorithm
-///     >>> algo = KeywordAlgorithm.YAKE
+///     >>> algo = KeywordAlgorithm.Yake
+///     >>> assert algo == KeywordAlgorithm.Yake
 #[pyclass(name = "KeywordAlgorithm", module = "kreuzberg")]
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum KeywordAlgorithm {
@@ -42,7 +43,8 @@ impl From<kreuzberg::keywords::KeywordAlgorithm> for KeywordAlgorithm {
 ///
 /// Example:
 ///     >>> from kreuzberg import YakeParams
-///     >>> params = YakeParams(window_size=3, deduplicate=True, dedup_threshold=0.8)
+///     >>> params = YakeParams(window_size=3)
+///     >>> assert params.window_size == 3
 #[pyclass(name = "YakeParams", module = "kreuzberg")]
 #[derive(Clone)]
 pub struct YakeParams {
@@ -157,11 +159,12 @@ impl From<kreuzberg::keywords::RakeParams> for RakeParams {
 /// Example:
 ///     >>> from kreuzberg import KeywordConfig, KeywordAlgorithm
 ///     >>> config = KeywordConfig(
-///     ...     algorithm=KeywordAlgorithm.YAKE,
+///     ...     algorithm=KeywordAlgorithm.Yake,
 ///     ...     max_keywords=15,
 ///     ...     min_score=0.1,
 ///     ...     language="en"
 ///     ... )
+///     >>> assert config.max_keywords == 15
 #[pyclass(name = "KeywordConfig", module = "kreuzberg")]
 #[derive(Clone)]
 pub struct KeywordConfig {

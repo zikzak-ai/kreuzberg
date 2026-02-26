@@ -392,8 +392,8 @@ def extract_file_sync(
 
     Example:
         >>> from kreuzberg import extract_file_sync, ExtractionConfig, OcrConfig, TesseractConfig
-        >>> # Basic usage
-        >>> result = extract_file_sync("document.pdf")
+        >>> # Basic usage - requires a real file
+        >>> result = extract_file_sync("document.pdf")  # doctest: +SKIP
         >>>
         >>> # With Tesseract configuration
         >>> config = ExtractionConfig(
@@ -407,11 +407,13 @@ def extract_file_sync(
         ...         ),
         ...     )
         ... )
-        >>> result = extract_file_sync("invoice.pdf", config=config)
+        >>> result = extract_file_sync("invoice.pdf", config=config)  # doctest: +SKIP
         >>>
         >>> # With EasyOCR custom options
         >>> config = ExtractionConfig(ocr=OcrConfig(backend="easyocr", language="eng"))
-        >>> result = extract_file_sync("scanned.pdf", config=config, easyocr_kwargs={"use_gpu": True, "beam_width": 10})
+        >>> result = extract_file_sync(
+        ...     "scanned.pdf", config=config, easyocr_kwargs={"use_gpu": True, "beam_width": 10}
+        ... )  # doctest: +SKIP
     """
     if config is None:
         config = ExtractionConfig()
@@ -634,8 +636,8 @@ def detect_mime_type_from_path(path: str | Path) -> str:
 
     Example:
         >>> from kreuzberg import detect_mime_type_from_path
-        >>> mime_type = detect_mime_type_from_path("document.pdf")
-        >>> assert "pdf" in mime_type.lower()
+        >>> mime_type = detect_mime_type_from_path("document.pdf")  # doctest: +SKIP
+        >>> assert "pdf" in mime_type.lower()  # doctest: +SKIP
     """
     return _detect_mime_type_from_path_impl(str(path))
 
@@ -668,10 +670,8 @@ def discover_extraction_config() -> ExtractionConfig | None:
     Example:
         >>> from kreuzberg import discover_extraction_config
         >>> config = discover_extraction_config()
-        >>> if config:
-        ...     print(f"Loaded config with use_cache={config.use_cache}")
-        ... else:
-        ...     print("No config found, using defaults")
+        >>> # Config is None if no kreuzberg.toml/yaml/json is found in the search path
+        >>> assert config is None or hasattr(config, "use_cache")
     """
     return _discover_extraction_config_impl()
 
@@ -696,8 +696,8 @@ def load_extraction_config_from_file(path: str | Path) -> ExtractionConfig:
 
     Example:
         >>> from kreuzberg import load_extraction_config_from_file
-        >>> config = load_extraction_config_from_file("kreuzberg.toml")
-        >>> result = extract_file_sync("document.pdf", config=config)
+        >>> config = load_extraction_config_from_file("kreuzberg.toml")  # doctest: +SKIP
+        >>> result = extract_file_sync("document.pdf", config=config)  # doctest: +SKIP
     """
     return _load_extraction_config_from_file_impl(str(path))
 
@@ -853,12 +853,7 @@ def get_last_error_code() -> int | None:
     Example:
         >>> from kreuzberg import get_last_error_code, ErrorCode
         >>> code = get_last_error_code()
-        >>> if code == ErrorCode.SUCCESS:
-        ...     print("No errors")
-        >>> elif code == ErrorCode.OCR_ERROR:
-        ...     print("OCR operation failed")
-        >>> elif code == 2:
-        ...     print("A panic occurred")
+        >>> assert isinstance(code, int) or code is None
     """
     return _get_last_error_code_impl()
 
@@ -884,9 +879,9 @@ def get_error_details() -> dict[str, Any]:
     Example:
         >>> from kreuzberg import get_error_details
         >>> details = get_error_details()
-        >>> print(f"Error: {details['message']} (code={details['error_code']})")
-        >>> if details["source_file"]:
-        ...     print(f"  at {details['source_file']}:{details['source_line']}")
+        >>> assert "message" in details
+        >>> assert "error_code" in details
+        >>> assert "is_panic" in details
     """
     return _get_error_details_impl()  # type: ignore[return-value]
 
@@ -915,11 +910,9 @@ def classify_error(message: str) -> int:
     Example:
         >>> from kreuzberg import classify_error
         >>> code = classify_error("Failed to open file: permission denied")
-        >>> if code == 4:
-        ...     print("This is an I/O error")
+        >>> assert isinstance(code, int)
         >>> code = classify_error("OCR processing failed")
-        >>> if code == 2:
-        ...     print("This is an OCR error")
+        >>> assert isinstance(code, int)
     """
     return _classify_error_impl(message)
 
@@ -937,10 +930,13 @@ def error_code_name(code: int) -> str:
     Example:
         >>> from kreuzberg import error_code_name
         >>> name = error_code_name(0)
-        >>> print(name)  # output: "validation"
+        >>> name
+        'validation'
         >>> name = error_code_name(2)
-        >>> print(name)  # output: "ocr"
+        >>> name
+        'ocr'
         >>> name = error_code_name(99)
-        >>> print(name)  # output: "unknown"
+        >>> name
+        'unknown'
     """
     return _error_code_name_impl(code)

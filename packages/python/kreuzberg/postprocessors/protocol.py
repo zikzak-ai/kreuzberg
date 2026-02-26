@@ -44,7 +44,7 @@ class PostProcessorProtocol(Protocol):
             overwritten by the FFI bridge.
 
         Example:
-            >>> def process(self, result: ExtractionResult) -> ExtractionResult:
+            >>> def process(self, result: ExtractionResult) -> ExtractionResult:  # doctest: +SKIP
             ...     text = result.content
             ...     entities = extract_entities(text)
             ...     result.metadata["entities"] = entities

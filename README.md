@@ -65,7 +65,7 @@ Extract text and metadata from a wide range of file formats (75+), generate embe
 ## Key Features
 
 - **Extensible architecture** – Plugin system for custom OCR backends, validators, post-processors, and document extractors
-- **Polyglot** – Native bindings for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, C#, PHP, and Elixir
+- **Polyglot** – Native bindings for Rust, Python, TypeScript/Node.js, Ruby, Go, Java, C#, PHP, Elixir, R, and C
 - **75+ file formats** – PDF, Office documents, images, HTML, XML, emails, archives, academic formats across 8 categories
 - **OCR support** – Tesseract (all bindings, including Tesseract-WASM for browsers), PaddleOCR (all native bindings), EasyOCR (Python), extensible via plugin API
 - **High performance** – Rust core with native PDFium, SIMD optimizations and full parallelism
@@ -96,6 +96,7 @@ Each language binding provides comprehensive documentation with examples and bes
 
 **Native:**
 - **[Rust](https://github.com/kreuzberg-dev/kreuzberg/tree/main/crates/kreuzberg)** – Core library, flexible feature flags, zero-copy APIs
+- **[C (FFI)](https://github.com/kreuzberg-dev/kreuzberg/tree/main/crates/kreuzberg-ffi)** – C header + shared library, pkg-config/CMake support, cross-platform
 
 **Containers:**
 - **[Docker](https://docs.kreuzberg.dev/guides/docker/)** – Official images with API, CLI, and MCP server modes (Core: ~1.0-1.3GB, Full: ~1.0-1.3GB with OCR + legacy format support)
@@ -122,6 +123,7 @@ Complete architecture coverage across all language bindings:
 | C# | ✅ | ✅ | ✅ | ✅ |
 | PHP | ✅ | ✅ | ✅ | ✅ |
 | Rust | ✅ | ✅ | ✅ | ✅ |
+| C (FFI) | ✅ | ✅ | ✅ | ✅ |
 | CLI | ✅ | ✅ | ✅ | ✅ |
 | Docker | ✅ | ✅ | ✅ | - |
 

@@ -23,13 +23,13 @@ use crate::plugins::json_value_to_py;
 ///
 /// Example:
 ///     >>> from kreuzberg import extract_file_sync, ExtractionConfig
-///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())
-///     >>> print(result.content)
-///     >>> print(result.metadata)
-///     >>> print(len(result.tables))
-///     >>> if result.detected_languages:
+///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())  # doctest: +SKIP
+///     >>> print(result.content)  # doctest: +SKIP
+///     >>> print(result.metadata)  # doctest: +SKIP
+///     >>> print(len(result.tables))  # doctest: +SKIP
+///     >>> if result.detected_languages:  # doctest: +SKIP
 ///     ...     print(result.detected_languages)
-///     >>> if result.document:
+///     >>> if result.document:  # doctest: +SKIP
 ///     ...     print(f"Document has {len(result.document['nodes'])} nodes")
 #[pyclass(name = "ExtractionResult", module = "kreuzberg")]
 pub struct ExtractionResult {
@@ -167,9 +167,9 @@ impl ExtractionResult {
     ///     int: Total page count
     ///
     /// Example:
-    ///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())
-    ///     >>> page_count = result.get_page_count()
-    ///     >>> print(f"Document has {page_count} pages")
+    ///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())  # doctest: +SKIP
+    ///     >>> page_count = result.get_page_count()  # doctest: +SKIP
+    ///     >>> print(f"Document has {page_count} pages")  # doctest: +SKIP
     #[pyo3(name = "get_page_count")]
     fn get_page_count(&self) -> usize {
         Python::attach(|py| self.pages.as_ref().map(|pages_py| pages_py.bind(py).len()).unwrap_or(0))
@@ -186,9 +186,9 @@ impl ExtractionResult {
     /// Example:
     ///     >>> from kreuzberg import ChunkingConfig, ExtractionConfig
     ///     >>> config = ExtractionConfig(chunking=ChunkingConfig(max_chars=500))
-    ///     >>> result = extract_file_sync("document.pdf", None, config)
-    ///     >>> chunk_count = result.get_chunk_count()
-    ///     >>> print(f"Document has {chunk_count} chunks")
+    ///     >>> result = extract_file_sync("document.pdf", None, config)  # doctest: +SKIP
+    ///     >>> chunk_count = result.get_chunk_count()  # doctest: +SKIP
+    ///     >>> print(f"Document has {chunk_count} chunks")  # doctest: +SKIP
     #[pyo3(name = "get_chunk_count")]
     fn get_chunk_count(&self) -> usize {
         Python::attach(|py| {
@@ -212,9 +212,9 @@ impl ExtractionResult {
     ///     >>> config = ExtractionConfig(
     ///     ...     language_detection=LanguageDetectionConfig(enabled=True)
     ///     ... )
-    ///     >>> result = extract_file_sync("document.pdf", None, config)
-    ///     >>> lang = result.get_detected_language()
-    ///     >>> if lang:
+    ///     >>> result = extract_file_sync("document.pdf", None, config)  # doctest: +SKIP
+    ///     >>> lang = result.get_detected_language()  # doctest: +SKIP
+    ///     >>> if lang:  # doctest: +SKIP
     ///     ...     print(f"Document language: {lang}")
     #[pyo3(name = "get_detected_language")]
     fn get_detected_language(&self) -> Option<String> {
@@ -242,12 +242,12 @@ impl ExtractionResult {
     ///     Any | None: Field value (type depends on field), or None if not found
     ///
     /// Example:
-    ///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())
-    ///     >>> title = result.get_metadata_field("title")
-    ///     >>> if title:
+    ///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())  # doctest: +SKIP
+    ///     >>> title = result.get_metadata_field("title")  # doctest: +SKIP
+    ///     >>> if title:  # doctest: +SKIP
     ///     ...     print(f"Title: {title}")
-    ///     >>> authors = result.get_metadata_field("authors")
-    ///     >>> if authors:
+    ///     >>> authors = result.get_metadata_field("authors")  # doctest: +SKIP
+    ///     >>> if authors:  # doctest: +SKIP
     ///     ...     print(f"Authors: {authors}")
     #[pyo3(name = "get_metadata_field")]
     fn get_metadata_field(&self, field_name: &str) -> PyResult<Option<Py<PyAny>>> {
@@ -786,8 +786,8 @@ mod tests {
 /// Example:
 ///     >>> from kreuzberg import ChunkingConfig, ExtractionConfig
 ///     >>> config = ExtractionConfig(chunking=ChunkingConfig(max_chars=500))
-///     >>> result = extract_file_sync("document.pdf", None, config)
-///     >>> for chunk in result.chunks:
+///     >>> result = extract_file_sync("document.pdf", None, config)  # doctest: +SKIP
+///     >>> for chunk in result.chunks:  # doctest: +SKIP
 ///     ...     print(f"Chunk: {chunk.content[:50]}...")
 ///     ...     print(f"Metadata: {chunk.metadata}")
 #[pyclass(name = "Chunk", module = "kreuzberg")]
@@ -842,8 +842,8 @@ impl PyChunk {
 ///     page_number (int): Page number where table was found
 ///
 /// Example:
-///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())
-///     >>> for table in result.tables:
+///     >>> result = extract_file_sync("document.pdf", None, ExtractionConfig())  # doctest: +SKIP
+///     >>> for table in result.tables:  # doctest: +SKIP
 ///     ...     print(f"Table on page {table.page_number}:")
 ///     ...     print(table.markdown)
 ///     ...     print(f"Dimensions: {len(table.cells)} rows x {len(table.cells[0])} cols")

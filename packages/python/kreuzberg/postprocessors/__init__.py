@@ -36,9 +36,9 @@ Example:
     >>>
     >>> # Now it will be called automatically during extraction
     >>> from kreuzberg import extract_file_sync
-    >>> result = extract_file_sync("document.pdf")
-    >>> print(result.metadata.get("custom_word_count"))
-    >>> print(result.metadata.get("custom_tag"))
+    >>> result = extract_file_sync("document.pdf")  # doctest: +SKIP
+    >>> print(result.metadata.get("custom_word_count"))  # doctest: +SKIP
+    >>> print(result.metadata.get("custom_tag"))  # doctest: +SKIP
 
 Processing Stages:
     - **early**: Runs first in the pipeline (e.g., language detection)

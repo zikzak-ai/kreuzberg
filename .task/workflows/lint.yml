@@ -15,6 +15,7 @@ tasks:
       - task: php:lint
       - task: elixir:lint
       - task: r:lint
+      - task: c:lint
       - task: typescript:typecheck
 
   check:
@@ -31,6 +32,7 @@ tasks:
       - task: php:lint:check
       - task: elixir:lint:check
       - task: r:lint:check
+      - task: c:lint:check
       - task: typescript:typecheck:check
 
   core:
@@ -70,18 +72,20 @@ tasks:
       - task: typescript:typecheck:check
 
   systems:
-    desc: Lint systems languages (Rust, Go, C#) with auto-fix
+    desc: Lint systems languages (Rust, Go, C#, C) with auto-fix
     cmds:
       - task: rust:lint
       - task: go:lint
       - task: csharp:lint
+      - task: c:lint
 
   systems:check:
-    desc: Check systems languages linting without modifications
+    desc: Check systems languages linting (Rust, Go, C#, C) without modifications
     cmds:
       - task: rust:lint:check
       - task: go:lint:check
       - task: csharp:lint:check
+      - task: c:lint:check
 
   jvm-bindings:
     desc: Lint JVM-dependent bindings (Java, C#, Ruby, PHP) with auto-fix
@@ -214,6 +218,16 @@ tasks:
     desc: Check R code linting without modifications
     cmds:
       - task: r:lint:check
+
+  c:
+    desc: Lint C code with auto-fix
+    cmds:
+      - task: c:lint
+
+  c:check:
+    desc: Check C code linting without modifications
+    cmds:
+      - task: c:lint:check
 
   typescript:
     desc: Run TypeScript type checking

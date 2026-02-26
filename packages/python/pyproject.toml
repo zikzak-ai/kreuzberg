@@ -95,3 +95,4 @@ ini_options.markers = [
   "cli_features: marks tests that require CLI binary built with --features all (deselect with '-m \"not cli_features\"')",
 ]
 ini_options.timeout_func_only = true
+ini_options.addopts = "--doctest-modules"

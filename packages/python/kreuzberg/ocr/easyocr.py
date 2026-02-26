@@ -127,7 +127,9 @@ class EasyOCRBackend:
         >>> from kreuzberg import extract_file_sync, ExtractionConfig, OcrConfig
         >>> # Register backend with custom options via extraction API
         >>> config = ExtractionConfig(ocr=OcrConfig(backend="easyocr", language="en"))
-        >>> result = extract_file_sync("scanned.pdf", config=config, easyocr_kwargs={"use_gpu": True, "beam_width": 10})
+        >>> result = extract_file_sync(
+        ...     "scanned.pdf", config=config, easyocr_kwargs={"use_gpu": True, "beam_width": 10}
+        ... )  # doctest: +SKIP
 
     """
 

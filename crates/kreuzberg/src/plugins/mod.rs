@@ -52,6 +52,8 @@
 //! #             elements: None,
 //! #             ocr_elements: None,
 //! #             document: None,
+//! #             #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
+//! #             extracted_keywords: None,
 //! #             quality_score: None,
 //! #             processing_warnings: vec![],
 //! #             annotations: None,
@@ -72,6 +74,8 @@
 //! #             elements: None,
 //! #             ocr_elements: None,
 //! #             document: None,
+//! #             #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
+//! #             extracted_keywords: None,
 //! #             quality_score: None,
 //! #             processing_warnings: vec![],
 //! #             annotations: None,
@@ -141,6 +145,8 @@
 //!             elements: None,
 //!             ocr_elements: None,
 //!             document: None,
+//!             #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
+//!             extracted_keywords: None,
 //!             quality_score: None,
 //!             processing_warnings: vec![],
 //!             annotations: None,

@@ -105,6 +105,10 @@ class KreuzbergError(Exception):
 
     Example:
         >>> raise KreuzbergError("Failed to parse document", context={"file": "document.pdf", "page": 5})
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.KreuzbergError: KreuzbergError: Failed to parse document
+        Context: {"file": "document.pdf", "page": 5}
 
     """
 
@@ -149,6 +153,10 @@ class ValidationError(KreuzbergError):
 
     Example:
         >>> raise ValidationError("Invalid language code", context={"language": "xyz", "supported": ["en", "de"]})
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.ValidationError: ValidationError: Invalid language code
+        Context: {"language": "xyz", "supported": ["en", "de"]}
 
     """
 
@@ -161,6 +169,10 @@ class ParsingError(KreuzbergError):
 
     Example:
         >>> raise ParsingError("Failed to parse PDF", context={"file": "document.pdf", "extractor": "pdf"})
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.ParsingError: ParsingError: Failed to parse PDF
+        Context: {"extractor": "pdf", "file": "document.pdf"}
 
     """
 
@@ -172,6 +184,10 @@ class OCRError(KreuzbergError):
 
     Example:
         >>> raise OCRError("OCR processing failed", context={"backend": "tesseract", "language": "en"})
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.OCRError: OCRError: OCR processing failed
+        Context: {"backend": "tesseract", "language": "en"}
 
     """
 
@@ -186,6 +202,10 @@ class MissingDependencyError(KreuzbergError):
         >>> raise MissingDependencyError(
         ...     "EasyOCR not installed", context={"package": "easyocr", "install_command": "pip install kreuzberg[easyocr]"}
         ... )
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.MissingDependencyError: MissingDependencyError: EasyOCR not installed
+        Context: {"install_command": "pip install kreuzberg[easyocr]", "package": "easyocr"}
 
     """
 
@@ -215,6 +235,10 @@ class MissingDependencyError(KreuzbergError):
             ...     dependency_group="easyocr", functionality="EasyOCR backend", package_name="easyocr"
             ... )
             >>> raise error
+            Traceback (most recent call last):
+                ...
+            kreuzberg.exceptions.MissingDependencyError: MissingDependencyError: Missing required dependency 'easyocr' for EasyOCR backend. Install with: pip install kreuzberg[easyocr]
+            Context: {"dependency_group": "easyocr", "functionality": "EasyOCR backend", "install_command": "pip install kreuzberg[easyocr]", "package": "easyocr"}
 
         """
         install_cmd = f"pip install kreuzberg[{dependency_group}]"
@@ -235,6 +259,10 @@ class CacheError(KreuzbergError):
 
     Example:
         >>> raise CacheError("Failed to write cache", context={"path": "/tmp/cache", "operation": "write"})
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.CacheError: CacheError: Failed to write cache
+        Context: {"operation": "write", "path": "/tmp/cache"}
 
     """
 
@@ -247,6 +275,10 @@ class ImageProcessingError(KreuzbergError):
 
     Example:
         >>> raise ImageProcessingError("Failed to resize image", context={"width": 1920, "height": 1080})
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.ImageProcessingError: ImageProcessingError: Failed to resize image
+        Context: {"height": 1080, "width": 1920}
 
     """
 
@@ -258,5 +290,9 @@ class PluginError(KreuzbergError):
 
     Example:
         >>> raise PluginError("Plugin initialization failed", context={"plugin_name": "pdf-extractor"})
+        Traceback (most recent call last):
+            ...
+        kreuzberg.exceptions.PluginError: PluginError: Plugin initialization failed
+        Context: {"plugin_name": "pdf-extractor"}
 
     """
