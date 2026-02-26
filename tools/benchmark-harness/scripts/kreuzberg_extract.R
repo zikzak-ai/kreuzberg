@@ -3,6 +3,11 @@
 library(kreuzberg)
 library(jsonlite)
 
+# Define %||% for R < 4.4.0 (base R added it in 4.4.0)
+if (!exists("%||%", baseenv())) {
+  `%||%` <- function(x, y) if (is.null(x)) y else x
+}
+
 DEBUG <- identical(Sys.getenv('KREUZBERG_BENCHMARK_DEBUG'), 'true')
 
 debug_log <- function(message) {
