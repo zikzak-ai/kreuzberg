@@ -129,6 +129,7 @@ impl Fixture {
                     | "odfpy"
                     | "ebooklib"
                     | "striprtf"
+                    | "pyxlsb"
             ) {
                 return Err(Error::InvalidFixture {
                     path: fixture_path.to_path_buf(),

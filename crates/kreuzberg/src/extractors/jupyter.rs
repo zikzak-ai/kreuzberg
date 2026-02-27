@@ -60,27 +60,18 @@ impl JupyterExtractor {
         let mut images = Vec::new();
 
         if let Some(notebook_metadata) = notebook.get("metadata").and_then(|m| m.as_object()) {
-            if let Some(kernelspec) = notebook_metadata.get("kernelspec")
-                && let Some(name) = kernelspec.get("name").and_then(|n| n.as_str())
-            {
-                extracted_content.push_str(&format!("Kernelspec: {}\n", name));
+            if let Some(kernelspec) = notebook_metadata.get("kernelspec") {
                 metadata.insert(Cow::Borrowed("kernelspec"), kernelspec.clone());
             }
 
-            if let Some(language_info) = notebook_metadata.get("language_info")
-                && let Some(name) = language_info.get("name").and_then(|n| n.as_str())
-            {
-                extracted_content.push_str(&format!("Language: {}\n", name));
+            if let Some(language_info) = notebook_metadata.get("language_info") {
                 metadata.insert(Cow::Borrowed("language_info"), language_info.clone());
             }
         }
 
         if let Some(nbformat) = notebook.get("nbformat") {
-            extracted_content.push_str(&format!("NBFormat: {}\n", nbformat));
             metadata.insert(Cow::Borrowed("nbformat"), nbformat.clone());
         }
-
-        extracted_content.push('\n');
 
         if let Some(cells) = notebook.get("cells").and_then(|c| c.as_array()) {
             for (cell_idx, cell) in cells.iter().enumerate() {
@@ -101,37 +92,18 @@ impl JupyterExtractor {
     ) -> Result<()> {
         let cell_type = cell.get("cell_type").and_then(|t| t.as_str()).unwrap_or("unknown");
 
-        let cell_id = cell.get("id").and_then(|id| id.as_str());
-
-        if let Some(id) = cell_id {
-            content.push_str(&format!(":::: {{#{} .cell .{}}}\n", id, cell_type));
-        } else {
-            content.push_str(&format!(":::: {{#cell_{} .cell .{}}}\n", cell_idx, cell_type));
-        }
-
-        if let Some(cell_metadata) = cell.get("metadata").and_then(|m| m.as_object())
-            && let Some(tags) = cell_metadata.get("tags").and_then(|t| t.as_array())
-        {
-            let tag_strs: Vec<String> = tags
-                .iter()
-                .filter_map(|tag| tag.as_str().map(|s| s.to_string()))
-                .collect();
-            if !tag_strs.is_empty() {
-                content.push_str(&format!(" tags=[{}]", tag_strs.join(", ")));
-            }
-        }
-        content.push('\n');
-
         match cell_type {
             "markdown" => Self::extract_markdown_cell(cell, content)?,
             "code" => Self::extract_code_cell(cell, cell_idx, content, images)?,
             "raw" => Self::extract_raw_cell(cell, content)?,
-            _ => {
-                content.push_str(&format!("Unknown cell type: {}\n", cell_type));
-            }
+            _ => {}
         }
 
-        content.push_str("::::\n\n");
+        // Separate cells with a blank line
+        if !content.ends_with('\n') {
+            content.push('\n');
+        }
+        content.push('\n');
         Ok(())
     }
 
@@ -151,20 +123,12 @@ impl JupyterExtractor {
         content: &mut String,
         images: &mut Vec<ExtractedImage>,
     ) -> Result<()> {
-        let exec_count = cell.get("execution_count").and_then(|e| e.as_u64());
-
-        if let Some(n) = exec_count {
-            content.push_str(&format!("In [{}]:\n", n));
-        }
-
         if let Some(source) = cell.get("source") {
             let cell_text = Self::extract_source(source);
-            content.push_str("```python\n");
             content.push_str(&cell_text);
             if !cell_text.ends_with('\n') {
                 content.push('\n');
             }
-            content.push_str("```\n");
         }
 
         if let Some(outputs) = cell.get("outputs").and_then(|o| o.as_array()) {
@@ -205,37 +169,20 @@ impl JupyterExtractor {
     ) -> Result<()> {
         let output_type = output.get("output_type").and_then(|t| t.as_str()).unwrap_or("unknown");
 
-        content.push_str(&format!("::: {{.output .{}", output_type));
-
-        if let Some(exec_count) = output.get("execution_count")
-            && !exec_count.is_null()
-        {
-            content.push_str(&format!(" execution_count={}", exec_count));
-        }
-
-        content.push_str("}\n");
-
         match output_type {
             "stream" => Self::extract_stream_output(output, content)?,
             "execute_result" | "display_data" => {
                 Self::extract_data_output(output, cell_idx, content, images)?;
             }
             "error" => Self::extract_error_output(output, content)?,
-            _ => {
-                content.push_str(&format!("Unknown output type: {}\n", output_type));
-            }
+            _ => {}
         }
 
-        content.push_str(":::\n");
         Ok(())
     }
 
     /// Extract stream output (stdout, stderr).
     fn extract_stream_output(output: &Value, content: &mut String) -> Result<()> {
-        if let Some(name) = output.get("name").and_then(|n| n.as_str()) {
-            content.push_str(&format!("Stream: {}\n", name));
-        }
-
         if let Some(text) = output.get("text") {
             let text_content = Self::extract_source(text);
             content.push_str(&text_content);
@@ -254,11 +201,6 @@ impl JupyterExtractor {
         content: &mut String,
         images: &mut Vec<ExtractedImage>,
     ) -> Result<()> {
-        // Add Out [N]: prefix for execution results
-        if let Some(exec_count) = output.get("execution_count").and_then(|e| e.as_u64()) {
-            content.push_str(&format!("Out [{}]:\n", exec_count));
-        }
-
         if let Some(data) = output.get("data").and_then(|d| d.as_object()) {
             // Prefer text/plain first - it has the most readable tokens for quality scoring
             if let Some(plain) = data.get("text/plain") {

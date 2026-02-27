@@ -316,7 +316,7 @@ fn process_xlsx_sheet_safe<RS: Read + Seek>(workbook: &mut calamine::Xlsx<RS>, s
 /// Process a sparse sheet directly from collected cells without creating a full Range.
 ///
 /// This is used when the bounding box would exceed MAX_BOUNDING_BOX_CELLS.
-/// Instead of creating a dense Range, we generate markdown directly from the sparse cells.
+/// Instead of creating a dense Range, we generate a markdown pipe table from the sparse cells.
 fn process_sparse_sheet_from_cells(
     sheet_name: &str,
     cells: Vec<((u32, u32), Data)>,
@@ -329,51 +329,111 @@ fn process_sparse_sheet_from_cells(
     let bb_rows = (row_max - row_min + 1) as usize;
     let bb_cols = (col_max - col_min + 1) as usize;
 
-    // Create a warning message about the sparse data
-    let mut markdown = String::with_capacity(500 + cell_count * 50);
-    write!(
-        markdown,
-        "## {}\n\n*Note: Sheet contains sparse data spanning {} rows x {} columns ({} actual cells). \
-         Bounding box too large for dense extraction. Showing actual cell data below.*\n\n",
-        sheet_name, bb_rows, bb_cols, cell_count
-    )
-    .expect("write to String cannot fail");
+    // Collect unique columns and rows that actually contain data
+    let mut col_set = std::collections::BTreeSet::new();
+    let mut row_set = std::collections::BTreeSet::new();
+    let mut cell_map: HashMap<(u32, u32), &Data> = HashMap::with_capacity(cells.len());
 
-    // Group cells by row for tabular display
-    let mut cells_by_row: HashMap<u32, Vec<(u32, &Data)>> = HashMap::new();
     for ((row, col), data) in &cells {
-        cells_by_row.entry(*row).or_default().push((*col, data));
+        if !matches!(data, Data::Empty) {
+            col_set.insert(*col);
+            row_set.insert(*row);
+            cell_map.insert((*row, *col), data);
+        }
     }
 
-    // Sort rows and output as simple key-value pairs
-    let mut rows: Vec<_> = cells_by_row.keys().copied().collect();
-    rows.sort_unstable();
+    let cols: Vec<u32> = col_set.into_iter().collect();
+    let rows: Vec<u32> = row_set.into_iter().collect();
 
-    // Limit output to first 1000 cells to avoid huge output
-    let mut output_count = 0;
-    const MAX_OUTPUT_CELLS: usize = 1000;
+    if cols.is_empty() || rows.is_empty() {
+        let markdown = format!("## {}\n\n*Empty sheet*", sheet_name);
+        return Ok(ExcelSheet {
+            name: sheet_name.to_owned(),
+            markdown,
+            row_count: bb_rows,
+            col_count: bb_cols,
+            cell_count,
+            table_cells: None,
+        });
+    }
 
-    for row in rows {
-        if output_count >= MAX_OUTPUT_CELLS {
-            write!(markdown, "\n... ({} more cells not shown)\n", cell_count - output_count)
-                .expect("write to String cannot fail");
-            break;
+    // Limit output to avoid huge tables
+    const MAX_OUTPUT_ROWS: usize = 1000;
+    const MAX_OUTPUT_COLS: usize = 50;
+    let display_rows = rows.len().min(MAX_OUTPUT_ROWS);
+    let display_cols = cols.len().min(MAX_OUTPUT_COLS);
+
+    let mut markdown = String::with_capacity(500 + cell_count * 20);
+    let mut table_cells: Vec<Vec<String>> = Vec::with_capacity(display_rows + 1);
+
+    write!(markdown, "## {}\n\n", sheet_name).expect("write to String cannot fail");
+
+    // First row of actual data is treated as the header row
+    // Build header
+    let first_row = rows[0];
+    let mut header_cells = Vec::with_capacity(display_cols);
+    markdown.push_str("| ");
+    for (i, &col) in cols.iter().take(display_cols).enumerate() {
+        if i > 0 {
+            markdown.push_str(" | ");
         }
-
-        let mut row_cells = cells_by_row.remove(&row).unwrap_or_default();
-        row_cells.sort_by_key(|(col, _)| *col);
-
-        for (col, data) in row_cells {
-            if output_count >= MAX_OUTPUT_CELLS {
-                break;
-            }
-            let cell_ref = col_to_excel_letter(col);
-            let cell_str = format_cell_to_string(data);
-            if !cell_str.is_empty() {
-                writeln!(markdown, "- **{}{}**: {}", cell_ref, row + 1, cell_str).expect("write to String cannot fail");
-                output_count += 1;
-            }
+        let cell_str = cell_map
+            .get(&(first_row, col))
+            .map(|d| format_cell_to_string(d))
+            .unwrap_or_default();
+        if cell_str.contains('|') || cell_str.contains('\\') {
+            escape_markdown_into(&mut markdown, &cell_str);
+        } else {
+            markdown.push_str(&cell_str);
         }
+        header_cells.push(cell_str);
+    }
+    markdown.push_str(" |\n");
+    table_cells.push(header_cells);
+
+    // Separator row
+    markdown.push_str("| ");
+    for i in 0..display_cols {
+        if i > 0 {
+            markdown.push_str(" | ");
+        }
+        markdown.push_str("---");
+    }
+    markdown.push_str(" |\n");
+
+    // Data rows
+    for &row in rows.iter().skip(1).take(display_rows - 1) {
+        let mut row_cells_vec = Vec::with_capacity(display_cols);
+        markdown.push_str("| ");
+        for (i, &col) in cols.iter().take(display_cols).enumerate() {
+            if i > 0 {
+                markdown.push_str(" | ");
+            }
+            let cell_str = cell_map
+                .get(&(row, col))
+                .map(|d| format_cell_to_string(d))
+                .unwrap_or_default();
+            if cell_str.contains('|') || cell_str.contains('\\') {
+                escape_markdown_into(&mut markdown, &cell_str);
+            } else {
+                markdown.push_str(&cell_str);
+            }
+            row_cells_vec.push(cell_str);
+        }
+        markdown.push_str(" |\n");
+        table_cells.push(row_cells_vec);
+    }
+
+    if rows.len() > MAX_OUTPUT_ROWS || cols.len() > MAX_OUTPUT_COLS {
+        write!(
+            markdown,
+            "\n*Truncated: showing {}x{} of {}x{} cells*\n",
+            display_rows,
+            display_cols,
+            rows.len(),
+            cols.len()
+        )
+        .expect("write to String cannot fail");
     }
 
     Ok(ExcelSheet {
@@ -382,20 +442,8 @@ fn process_sparse_sheet_from_cells(
         row_count: bb_rows,
         col_count: bb_cols,
         cell_count,
-        table_cells: None, // No structured table for sparse sheets
+        table_cells: Some(table_cells),
     })
-}
-
-/// Convert a 0-indexed column number to Excel-style letter(s) (A, B, ..., Z, AA, AB, ...).
-fn col_to_excel_letter(col: u32) -> String {
-    let mut result = String::new();
-    let mut n = col + 1; // 1-indexed for calculation
-    while n > 0 {
-        n -= 1;
-        result.insert(0, (b'A' + (n % 26) as u8) as char);
-        n /= 26;
-    }
-    result
 }
 
 fn process_workbook<RS, R>(mut workbook: R, office_metadata: Option<HashMap<String, String>>) -> Result<ExcelWorkbook>

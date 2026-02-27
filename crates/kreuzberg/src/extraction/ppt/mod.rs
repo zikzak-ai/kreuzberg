@@ -110,8 +110,9 @@ fn extract_texts_from_records(data: &[u8]) -> Result<(Vec<String>, usize)> {
                 continue;
             }
             RT_MAIN_MASTER => {
-                // Skip master slide content - step into container
-                pos += 8;
+                // Skip entire master slide container to avoid extracting
+                // placeholder text like "Click to edit Master title style"
+                pos = content_end;
                 continue;
             }
             RT_TEXT_CHARS_ATOM => {

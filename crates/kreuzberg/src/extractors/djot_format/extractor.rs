@@ -2,7 +2,7 @@
 //!
 //! Implements the DocumentExtractor and Plugin traits for Djot markup files.
 
-use super::parsing::{extract_complete_djot_content, extract_tables_from_events, extract_text_from_events};
+use super::parsing::{extract_complete_djot_content, extract_tables_from_events};
 use crate::Result;
 use crate::core::config::ExtractionConfig;
 use crate::plugins::{DocumentExtractor, Plugin};
@@ -102,14 +102,16 @@ impl DocumentExtractor for DjotExtractor {
         let parser = Parser::new(&remaining_content);
         let events: Vec<Event> = parser.collect();
 
-        let extracted_text = extract_text_from_events(&events);
         let tables = extract_tables_from_events(&events);
 
         // Extract complete djot content with all features
         let djot_content = extract_complete_djot_content(&events, metadata.clone(), tables.clone());
 
+        // Use the raw source (after frontmatter stripping) as content to preserve
+        // table structures, formatting, and all original text verbatim.
+        // Structured extraction goes into djot_content.
         Ok(ExtractionResult {
-            content: extracted_text,
+            content: remaining_content.to_string(),
             mime_type: mime_type.to_string().into(),
             metadata,
             tables,

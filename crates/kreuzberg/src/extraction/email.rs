@@ -532,15 +532,24 @@ fn clean_html_content(html: &str) -> String {
         return String::new();
     }
 
-    let mut result = String::with_capacity(html.len().saturating_mul(8).saturating_div(10));
+    // Use html-to-markdown converter when available for higher quality conversion
+    #[cfg(feature = "html")]
+    {
+        if let Ok(markdown) = crate::extraction::html::convert_html_to_markdown(html, None, None) {
+            let trimmed = markdown.trim().to_string();
+            if !trimmed.is_empty() {
+                return trimmed;
+            }
+        }
+    }
 
+    // Fallback: regex-based HTML stripping
     let cleaned = script_regex().replace_all(html, "");
     let cleaned = style_regex().replace_all(&cleaned, "");
     let cleaned = html_tag_regex().replace_all(&cleaned, "");
     let cleaned = whitespace_regex().replace_all(&cleaned, " ");
 
-    result.push_str(cleaned.trim());
-    result
+    cleaned.trim().to_string()
 }
 
 fn is_image_mime_type(mime_type: &str) -> bool {

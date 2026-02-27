@@ -102,7 +102,7 @@ const SKIP_ELEMENTS: &[&str] = &["head", "script", "style", "svg", "math"];
 /// at block-level element boundaries.
 pub(super) fn extract_text_from_xhtml(xhtml: &str) -> String {
     // Try direct XML tree traversal first (lossless path).
-    if let Some(text) = try_extract_via_roxmltree(xhtml) {
+    if let Some((text, _)) = try_extract_via_roxmltree(xhtml) {
         return text;
     }
 
@@ -113,18 +113,86 @@ pub(super) fn extract_text_from_xhtml(xhtml: &str) -> String {
 /// Attempt to extract plain text via `roxmltree` XML parsing.
 ///
 /// Returns `None` if the document cannot be parsed as XML/XHTML.
-fn try_extract_via_roxmltree(xhtml: &str) -> Option<String> {
-    let doc = roxmltree::Document::parse(xhtml).ok()?;
-    let root = doc.root();
+fn try_extract_via_roxmltree(xhtml: &str) -> Option<(String, bool)> {
+    // Remove DOCTYPE declaration to avoid XXE/DTD parsing issues with roxmltree.
+    // roxmltree rejects DTDs for security, so we strip them before parsing.
+    let sanitized = strip_doctype(xhtml);
 
-    let mut output = String::with_capacity(xhtml.len() / 2);
-    visit_node(root, &mut output);
+    match roxmltree::Document::parse(&sanitized) {
+        Ok(doc) => {
+            let root = doc.root();
 
-    // Normalise multiple consecutive blank lines to a single blank line.
-    let result = collapse_blank_lines(&output);
-    let result = result.trim().to_string();
+            let mut output = String::with_capacity(xhtml.len() / 2);
+            visit_node(root, &mut output);
 
-    if result.is_empty() { None } else { Some(result) }
+            // Normalise multiple consecutive blank lines to a single blank line.
+            let result = collapse_blank_lines(&output);
+            let result = result.trim().to_string();
+
+            if result.is_empty() { None } else { Some((result, true)) }
+        }
+        Err(_) => None,
+    }
+}
+
+/// Remove DOCTYPE declaration from XML/XHTML to allow safe parsing with roxmltree.
+///
+/// DTD declarations can cause security issues (XXE attacks), and roxmltree rejects them.
+/// This function safely removes the DOCTYPE declaration while preserving the rest of the document.
+fn strip_doctype(xml: &str) -> String {
+    // Find and remove <!DOCTYPE ...> declarations. We need to handle nested brackets
+    // in the DOCTYPE (e.g., <!DOCTYPE html [internal subset]>)
+    let mut result = String::new();
+    let mut in_doctype = false;
+    let mut bracket_depth = 0;
+
+    let mut chars = xml.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if !in_doctype && ch == '<' {
+            // Check if this starts a DOCTYPE
+            let start_pos = result.len();
+            result.push(ch);
+
+            if chars.peek() == Some(&'!') {
+                result.push(chars.next().unwrap());
+                let next_chars: String = chars.clone().take(7).collect();
+                if next_chars.starts_with("DOCTYPE") {
+                    // This is a DOCTYPE declaration, skip it
+                    in_doctype = true;
+                    bracket_depth = 0;
+                    // Consume the DOCTYPE keyword and everything up to the closing >
+                    for c in chars.by_ref() {
+                        if c == '[' {
+                            bracket_depth += 1;
+                        } else if c == ']' {
+                            bracket_depth -= 1;
+                        } else if c == '>' && bracket_depth == 0 {
+                            in_doctype = false;
+                            break;
+                        }
+                    }
+                    // Remove what we added to result (the '<!')
+                    result.truncate(start_pos);
+                } else {
+                    // Not a DOCTYPE, keep what we added
+                }
+            }
+        } else if in_doctype {
+            // Already in a DOCTYPE, continue consuming
+            if ch == '[' {
+                bracket_depth += 1;
+            } else if ch == ']' {
+                bracket_depth -= 1;
+            } else if ch == '>' && bracket_depth == 0 {
+                in_doctype = false;
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+
+    result
 }
 
 /// Recursively visit an XML node and append its text to `output`.
