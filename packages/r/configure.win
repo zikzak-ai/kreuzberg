@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 
+# Ensure the MinGW (GNU) Rust target is available.
+# R on Windows uses rtools (MinGW), so we must compile for the GNU ABI,
+# not the default MSVC ABI, to avoid linker symbol mismatches.
+rustup target add x86_64-pc-windows-gnu 2>/dev/null || true
+
 # Vendor kreuzberg core crates if vendor directory is not populated.
 #
 # Two strategies:

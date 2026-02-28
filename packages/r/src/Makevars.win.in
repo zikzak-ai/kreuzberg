@@ -1,10 +1,15 @@
 # Use a short target dir to avoid Windows MAX_PATH (260 char) issues.
 # CMake scratch paths inside cargo's OUT_DIR can exceed the limit when
 # the R temp install directory is deeply nested.
+#
+# R on Windows uses rtools (MinGW/GCC), so we must cross-compile Rust for
+# the GNU ABI target. Without --target, Rust defaults to MSVC ABI which
+# produces object files incompatible with MinGW's linker.
 TARGET_DIR = C:/tmp/kr
-LIBDIR = $(TARGET_DIR)/release
-STATLIB = $(LIBDIR)/kreuzberg_r.lib
-PKG_LIBS = -L$(LIBDIR) -lkreuzberg_r -lws2_32 -ladvapi32 -luserenv -lbcrypt -lntdll @ADDITIONAL_PKG_LIBS@
+RUST_TARGET = x86_64-pc-windows-gnu
+LIBDIR = $(TARGET_DIR)/$(RUST_TARGET)/release
+STATLIB = $(LIBDIR)/libkreuzberg_r.a
+PKG_LIBS = -L$(LIBDIR) -lkreuzberg_r -lstdc++ -lws2_32 -ladvapi32 -luserenv -lbcrypt -lntdll -luser32 -lgdi32 -lshell32 @ADDITIONAL_PKG_LIBS@
 
 all: C_clean
 
@@ -18,7 +23,7 @@ $(STATLIB):
 		export CARGO_HOME=$(CARGOTMP); \
 	fi && \
 	export PATH="$(PATH):$(HOME)/.cargo/bin" && \
-	cargo build --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR) && \
+	cargo build --lib --release --target $(RUST_TARGET) --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR) && \
 	echo `cargo --version` && echo `rustc --version`;
 	rm -Rf $(CARGOTMP) && rm -Rf $(LIBDIR)/build
 
