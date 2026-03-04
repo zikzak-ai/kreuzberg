@@ -728,11 +728,15 @@ module Kreuzberg
       return nil if bbox_data.nil?
 
       PdfAnnotationBoundingBox.new(
-        left: (bbox_data['left'] || bbox_data['x0'])&.to_f,
-        top: (bbox_data['top'] || bbox_data['y0'])&.to_f,
-        right: (bbox_data['right'] || bbox_data['x1'])&.to_f,
-        bottom: (bbox_data['bottom'] || bbox_data['y1'])&.to_f
+        left: bbox_field(bbox_data, 'left', 'x0'),
+        top: bbox_field(bbox_data, 'top', 'y0'),
+        right: bbox_field(bbox_data, 'right', 'x1'),
+        bottom: bbox_field(bbox_data, 'bottom', 'y1')
       )
+    end
+
+    def bbox_field(bbox_data, primary_key, fallback_key)
+      (bbox_data[primary_key] || bbox_data[fallback_key])&.to_f
     end
   end
   # rubocop:enable Metrics/ClassLength
