@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **PDF markdown garbled text for positioned/tabular content** ([#431](https://github.com/kreuzberg-dev/kreuzberg/issues/431)): PDF text extraction now detects X-position gaps between consecutive characters and inserts spaces when the gap exceeds `0.8 × avg_font_size`. Previously, characters placed at specific coordinates without explicit space characters (common in tabular/positioned PDFs) were concatenated without spaces, producing garbled output like `12345.6778.90` instead of `123 45.67 78.90`.
+- **Chunk page metadata drift with overlap** ([#439](https://github.com/kreuzberg-dev/kreuzberg/issues/439)): Chunk byte offsets are now computed via pointer arithmetic from the source text, fixing cumulative drift that caused chunks to report incorrect page numbers. Previously, a running byte offset subtracted overlap each iteration, causing ~N×overlap bytes of drift by the last chunk in multi-page documents.
 - **Node.js Metadata casing standardization**: Standardized all `Metadata` and `EmailMetadata` fields to `camelCase` (e.g., `pageCount`, `creationDate`, `fromEmail`) to provide a consistent TypeScript-native experience. Implemented a recursive `snake_to_camel` transformation in the Rust bridge to ensure non-leaky API behavior.
 - **Node.js pluralization**: Corrected pluralization for `authors` and `keywords` (string array) in the Node.js/TypeScript bindings to align with the core Rust implementation and documentation.
 
