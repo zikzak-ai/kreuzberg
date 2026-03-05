@@ -91,7 +91,7 @@ Deno.test("ocr_pdf_image_only_german", { permissions: { read: true, net: true } 
 	}
 	assertions.assertExpectedMime(result, ["application/pdf"]);
 	assertions.assertMinContentLength(result, 20);
-	assertions.assertMetadataExpectation(result, "format_type", { eq: "pdf" });
+	assertions.assertMetadataExpectation(result, "formatType", { eq: "pdf" });
 });
 
 Deno.test("ocr_pdf_rotated_90", { permissions: { read: true, net: true } }, async () => {

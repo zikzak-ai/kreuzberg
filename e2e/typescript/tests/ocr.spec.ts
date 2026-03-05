@@ -451,7 +451,7 @@ describe("ocr fixtures", () => {
 			}
 			assertions.assertExpectedMime(result, ["application/pdf"]);
 			assertions.assertMinContentLength(result, 20);
-			assertions.assertMetadataExpectation(result, "format_type", { eq: "pdf" });
+			assertions.assertMetadataExpectation(result, "formatType", { eq: "pdf" });
 		},
 		TEST_TIMEOUT_MS,
 	);

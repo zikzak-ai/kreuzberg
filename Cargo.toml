@@ -25,6 +25,7 @@ kreuzberg = { path = "crates/kreuzberg" }
 kreuzberg-tesseract = { path = "crates/kreuzberg-tesseract" }
 kreuzberg-paddle-ocr = { path = "crates/kreuzberg-paddle-ocr" }
 kreuzberg-pdfium-render = { path = "crates/kreuzberg-pdfium-render" }
+html-to-markdown-rs = { path = "../html-to-markdown/crates/html-to-markdown" }
 
 [workspace.package]
 version = "4.4.2"

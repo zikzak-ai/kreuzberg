@@ -94,7 +94,7 @@ describe("ocr", () => {
 		}
 		assertions.assertExpectedMime(result, ["application/pdf"]);
 		assertions.assertMinContentLength(result, 20);
-		assertions.assertMetadataExpectation(result, "format_type", { eq: "pdf" });
+		assertions.assertMetadataExpectation(result, "formatType", { eq: "pdf" });
 	});
 
 	it("ocr_pdf_rotated_90", async () => {

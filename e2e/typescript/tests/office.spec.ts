@@ -1212,8 +1212,8 @@ describe("office fixtures", () => {
 			assertions.assertMinContentLength(result, 100);
 			assertions.assertContentContainsAll(result, ["Team", "Location", "Stanley Cups"]);
 			assertions.assertTableCount(result, 1, null);
-			assertions.assertMetadataExpectation(result, "sheet_count", { gte: 2 });
-			assertions.assertMetadataExpectation(result, "sheet_names", { contains: ["Stanley Cups"] });
+			assertions.assertMetadataExpectation(result, "sheetCount", { gte: 2 });
+			assertions.assertMetadataExpectation(result, "sheetNames", { contains: ["Stanley Cups"] });
 		},
 		TEST_TIMEOUT_MS,
 	);
@@ -1241,7 +1241,7 @@ describe("office fixtures", () => {
 			}
 			assertions.assertExpectedMime(result, ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]);
 			assertions.assertMinContentLength(result, 20);
-			assertions.assertMetadataExpectation(result, "sheet_count", { gte: 2 });
+			assertions.assertMetadataExpectation(result, "sheetCount", { gte: 2 });
 		},
 		TEST_TIMEOUT_MS,
 	);

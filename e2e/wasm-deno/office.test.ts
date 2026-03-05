@@ -929,8 +929,8 @@ Deno.test("office_xlsx_basic", { permissions: { read: true, net: true } }, async
 	if (result.tables.length > 0) {
 		assertions.assertTableCount(result, 1, null);
 	}
-	assertions.assertMetadataExpectation(result, "sheet_count", { gte: 2 });
-	assertions.assertMetadataExpectation(result, "sheet_names", { contains: ["Stanley Cups"] });
+	assertions.assertMetadataExpectation(result, "sheetCount", { gte: 2 });
+	assertions.assertMetadataExpectation(result, "sheetNames", { contains: ["Stanley Cups"] });
 });
 
 Deno.test("office_xlsx_multi_sheet", { permissions: { read: true, net: true } }, async () => {
@@ -955,7 +955,7 @@ Deno.test("office_xlsx_multi_sheet", { permissions: { read: true, net: true } },
 	}
 	assertions.assertExpectedMime(result, ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]);
 	assertions.assertMinContentLength(result, 20);
-	assertions.assertMetadataExpectation(result, "sheet_count", { gte: 2 });
+	assertions.assertMetadataExpectation(result, "sheetCount", { gte: 2 });
 });
 
 Deno.test("office_xlsx_office_example", { permissions: { read: true, net: true } }, async () => {

@@ -42,7 +42,9 @@ mod types;
 // Public API re-exports
 pub use converter::convert_html_to_markdown;
 pub use converter::convert_html_to_markdown_with_metadata;
-pub use processor::process_html;
+pub use converter::convert_html_to_markdown_with_tables;
+#[cfg(feature = "ocr")]
+pub(crate) use converter::map_output_format;
 pub use types::{
     CodeBlockStyle, HeadingStyle, HighlightStyle, ListIndentType, NewlineStyle, PreprocessingOptions,
     PreprocessingPreset, WhitespaceMode,
