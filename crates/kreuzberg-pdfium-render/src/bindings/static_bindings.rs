@@ -602,17 +602,6 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetExpansion(
-        &self,
-        struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong {
-        unsafe { crate::bindgen::FPDF_StructElement_GetExpansion(struct_element, buffer, buflen) }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
     fn FPDF_StructElement_GetStringAttribute(
         &self,
         struct_element: FPDF_STRUCTELEMENT,

@@ -213,8 +213,6 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT, buffer: *mut c_void, buflen: c_ulong) -> c_ulong,
     extern_FPDF_StructElement_GetLang:
         unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT, buffer: *mut c_void, buflen: c_ulong) -> c_ulong,
-    extern_FPDF_StructElement_GetExpansion:
-        unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT, buffer: *mut c_void, buflen: c_ulong) -> c_ulong,
     extern_FPDF_StructElement_GetStringAttribute: unsafe extern "C" fn(
         struct_element: FPDF_STRUCTELEMENT,
         attr_name: FPDF_BYTESTRING,
@@ -1332,7 +1330,6 @@ impl DynamicPdfiumBindings {
             extern_FPDF_StructElement_GetAltText: *(Self::bind(&library, "FPDF_StructElement_GetAltText")?),
             extern_FPDF_StructElement_GetID: *(Self::bind(&library, "FPDF_StructElement_GetID")?),
             extern_FPDF_StructElement_GetLang: *(Self::bind(&library, "FPDF_StructElement_GetLang")?),
-            extern_FPDF_StructElement_GetExpansion: *(Self::bind(&library, "FPDF_StructElement_GetExpansion")?),
             extern_FPDF_StructElement_GetStringAttribute: *(Self::bind(
                 &library,
                 "FPDF_StructElement_GetStringAttribute",
@@ -2350,17 +2347,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { (self.extern_FPDF_StructElement_GetLang)(struct_element, buffer, buflen) }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetExpansion(
-        &self,
-        struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong {
-        unsafe { (self.extern_FPDF_StructElement_GetExpansion)(struct_element, buffer, buflen) }
     }
 
     #[inline]

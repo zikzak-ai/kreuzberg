@@ -1615,13 +1615,6 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_ulong;
 }
 unsafe extern "C" {
-    pub fn FPDF_StructElement_GetExpansion(
-        struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut ::std::os::raw::c_void,
-        buflen: ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_ulong;
-}
-unsafe extern "C" {
     #[doc = " Experimental API.\n Function: FPDF_StructElement_GetStringAttribute\n          Get a struct element attribute of type \"name\" or \"string\".\n Parameters:\n          struct_element -   Handle to the struct element.\n          attr_name      -   The name of the attribute to retrieve.\n          buffer         -   A buffer for output. May be NULL.\n          buflen         -   The length of the buffer, in bytes. May be 0.\n Return value:\n          The number of bytes in the attribute value, including the\n          terminating NUL character. The number of bytes is returned\n          regardless of the |buffer| and |buflen| parameters.\n Comments:\n          Regardless of the platform, the |buffer| is always in UTF-16LE\n          encoding. The string is terminated by a UTF16 NUL character. If\n          |buflen| is less than the required length, or |buffer| is NULL,\n          |buffer| will not be modified."]
     pub fn FPDF_StructElement_GetStringAttribute(
         struct_element: FPDF_STRUCTELEMENT,
