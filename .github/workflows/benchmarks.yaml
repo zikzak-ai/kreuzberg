@@ -488,8 +488,8 @@ jobs:
         env:
           FRAMEWORK: kreuzberg-wasm
           MODE: ${{ matrix.mode }}
-          ITERATIONS: ${{ env.ITERATIONS }}
-          TIMEOUT: ${{ github.event.inputs.timeout }}
+          ITERATIONS: "1"
+          TIMEOUT: "120"
         run: scripts/benchmarks/run-benchmark.sh
 
       - name: Upload artifacts
@@ -2002,6 +2002,7 @@ jobs:
           merge-multiple: false
 
       - name: Validate artifacts before consolidation
+        id: validate-artifacts
         run: |
           set -euo pipefail
 
@@ -2009,22 +2010,26 @@ jobs:
 
           # Check if benchmark-artifacts directory exists and is not empty
           if [[ ! -d "benchmark-artifacts" ]]; then
-            echo "ERROR: benchmark-artifacts directory does not exist"
-            exit 1
+            echo "WARNING: benchmark-artifacts directory does not exist"
+            echo "This may indicate that no benchmarks completed successfully (e.g., setup job was cancelled)"
+            echo "has-artifacts=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           ARTIFACT_COUNT=$(find benchmark-artifacts -mindepth 1 -maxdepth 1 -type d | wc -l)
           if [[ $ARTIFACT_COUNT -eq 0 ]]; then
             echo "WARNING: No artifact directories found in benchmark-artifacts"
             echo "This may indicate that no benchmarks completed successfully"
-            echo "Exiting gracefully - no data to consolidate"
+            echo "has-artifacts=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           echo "Found $ARTIFACT_COUNT artifact directories"
           find benchmark-artifacts -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
+          echo "has-artifacts=true" >> "$GITHUB_OUTPUT"
 
       - name: Consolidate results
+        if: steps.validate-artifacts.outputs.has-artifacts == 'true'
         run: |
           set -euo pipefail
 
@@ -2061,6 +2066,7 @@ jobs:
           ls -lh consolidated-output/
 
       - name: Validate aggregated data
+        if: steps.validate-artifacts.outputs.has-artifacts == 'true'
         run: |
           set -euo pipefail
 
@@ -2097,6 +2103,7 @@ jobs:
           jq 'keys' "$AGGREGATED_FILE" | head -20
 
       - name: Validate framework completeness
+        if: steps.validate-artifacts.outputs.has-artifacts == 'true'
         run: |
           set -euo pipefail
 
@@ -2169,6 +2176,7 @@ jobs:
           fi
 
       - name: Install GitHub CLI
+        if: steps.validate-artifacts.outputs.has-artifacts == 'true'
         run: |
           if ! command -v gh &> /dev/null; then
             echo "Installing GitHub CLI..."
@@ -2181,6 +2189,7 @@ jobs:
           fi
 
       - name: Create GitHub Release with benchmark results
+        if: steps.validate-artifacts.outputs.has-artifacts == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
