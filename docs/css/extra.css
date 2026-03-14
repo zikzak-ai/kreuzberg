@@ -1556,7 +1556,7 @@ body:has(.full-width-iframe) article {
 	line-height: 1;
 	text-decoration: none !important;
 	margin-right: 10px;
-	margin-top: 8px;
+	margin-top: 4px;
 	white-space: nowrap;
 }
 
@@ -1614,14 +1614,37 @@ body:has(.full-width-iframe) article {
 	fill: currentColor !important;
 }
 
+.cli-hero .tabbed-content {
+	margin-bottom: 0 !important;
+}
+
+.cli-hero .tabbed-content .highlight {
+	margin-bottom: 0;
+}
+
 /* ── Installation cards (Figma design) ── */
+.md-typeset .install-cards.grid.cards>ul,
+.md-typeset .install-cards.grid.cards>ol {
+	row-gap: 48px !important;
+	column-gap: 48px !important;
+}
+
 .md-typeset .install-cards.grid.cards>ul>li,
 .md-typeset .install-cards.grid.cards>ol>li {
 	border-radius: 16px;
-	border: 1px solid #e4e1ed;
-	background: #f6f5fa;
-	padding: 20px 20px 18px !important;
+	border: 1.5px solid #ddd8e8;
+	background: #ffffff;
+	padding: 32px !important;
 	box-shadow: none;
+	display: flex;
+	flex-direction: column;
+}
+
+.md-typeset .install-cards.grid.cards>ul>li:hover,
+.md-typeset .install-cards.grid.cards>ol>li:hover {
+	transform: none;
+	box-shadow: none;
+	border-color: #c5b8d9;
 }
 
 .md-typeset .install-cards.grid.cards>ul>li hr,
@@ -1631,16 +1654,36 @@ body:has(.full-width-iframe) article {
 
 .md-typeset .install-cards.grid.cards>ul>li>p:first-child,
 .md-typeset .install-cards.grid.cards>ol>li>p:first-child {
-	margin-bottom: 0.1rem;
+	margin-bottom: 0.2rem;
+	font-size: 1rem;
+}
+
+/* Language icon color — black in light mode */
+.md-typeset .install-cards .lg svg {
+	fill: #1a1926 !important;
+}
+
+/* Language icon color — white in dark mode */
+[data-md-color-scheme="slate"] .md-typeset .install-cards .lg svg {
+	fill: #ffffff !important;
 }
 
 .md-typeset .install-cards .highlight {
-	background: #2f2b43;
+	background: #2c2840;
 	border: none;
-	border-radius: 10px;
-	margin: 10px 0 16px;
-	padding: 14px 16px;
+	border-radius: 12px;
+	margin: 12px 0 20px;
+	padding: 18px;
 	gap: 0;
+	min-height: 56px;
+	display: flex;
+	align-items: center;
+}
+
+.md-typeset .install-cards .highlight pre {
+	background-color: transparent;
+	margin: 0;
+	width: 100%;
 }
 
 .md-typeset .install-cards .highlight pre,
@@ -1650,7 +1693,7 @@ body:has(.full-width-iframe) article {
 }
 
 .md-typeset .install-cards .highlight .md-code__nav {
-	right: 10px;
+	right: 12px;
 	top: 50%;
 	transform: translateY(-50%);
 }
@@ -1667,48 +1710,55 @@ body:has(.full-width-iframe) article {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	height: 36px;
+	height: 30px;
+	min-width: 130px;
 	padding: 0 18px;
 	border-radius: 8px;
 	font-size: 0.82rem;
-	font-weight: 600;
+	font-weight: 400;
 	line-height: 1;
 	text-decoration: none !important;
-	margin-right: 8px;
+	margin-right: 10px;
 	white-space: nowrap;
 }
 
+/* Light mode buttons */
 .md-typeset .install-cards .install-btn--ghost {
-	border: 1.5px solid #c9a0d4;
+	border: 1.5px solid #d4c5e0;
 	color: #3f3456 !important;
 	background: transparent;
 }
 
 .md-typeset .install-cards .install-btn--ghost:hover {
-	border-color: #a86cbf;
-	background: rgba(218, 42, 224, 0.04);
+	border-color: #b89fd0;
+	background: rgba(218, 42, 224, 0.03);
 }
 
 .md-typeset .install-cards .install-btn--solid {
 	border: none;
 	color: #ffffff !important;
-	background: linear-gradient(135deg, #2f2848, #3d2d60);
+	background: #2c2840;
 }
 
 .md-typeset .install-cards .install-btn--solid:hover {
-	background: linear-gradient(135deg, #3d2d60, #2f2848);
-	box-shadow: 0 2px 8px rgba(47, 40, 72, 0.3);
+	background: #3a3258;
+	box-shadow: 0 2px 8px rgba(44, 40, 64, 0.25);
 }
 
 /* Dark mode */
 [data-md-color-scheme="slate"] .md-typeset .install-cards.grid.cards>ul>li,
 [data-md-color-scheme="slate"] .md-typeset .install-cards.grid.cards>ol>li {
-	background: #302d3e;
-	border-color: rgba(255, 255, 255, 0.08);
+	background: #2a2838;
+	border-color: rgba(88, 251, 218, 0.12);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .install-cards.grid.cards>ul>li:hover,
+[data-md-color-scheme="slate"] .md-typeset .install-cards.grid.cards>ol>li:hover {
+	border-color: rgba(88, 251, 218, 0.25);
 }
 
 [data-md-color-scheme="slate"] .md-typeset .install-cards .highlight {
-	background: #232131;
+	background: #201e2e;
 }
 
 [data-md-color-scheme="slate"] .md-typeset .install-cards .install-btn--ghost {
@@ -1720,7 +1770,7 @@ body:has(.full-width-iframe) article {
 [data-md-color-scheme="slate"] .md-typeset .install-cards .install-btn--ghost:hover {
 	border-color: #7ffce8;
 	color: #7ffce8 !important;
-	background: rgba(88, 251, 218, 0.08);
+	background: rgba(88, 251, 218, 0.06);
 }
 
 [data-md-color-scheme="slate"] .md-typeset .install-cards .install-btn--solid {
@@ -1734,13 +1784,29 @@ body:has(.full-width-iframe) article {
 	box-shadow: 0 2px 10px rgba(88, 251, 218, 0.3);
 }
 
-.md-typeset .install-cards .install-btn .twemoji svg,
-.md-typeset .install-cards .install-btn .md-icon svg {
+/* Button icon — white in light mode (on dark solid bg) */
+.md-typeset .install-cards .install-btn--solid .twemoji svg,
+.md-typeset .install-cards .install-btn--solid .md-icon svg {
+	fill: #ffffff !important;
+	width: 0.9em;
+	height: 0.9em;
+	vertical-align: -0.1em;
+	margin-right: 3px;
+}
+
+/* Button icon — black in dark mode (on teal solid bg) */
+[data-md-color-scheme="slate"] .md-typeset .install-cards .install-btn--solid .twemoji svg,
+[data-md-color-scheme="slate"] .md-typeset .install-cards .install-btn--solid .md-icon svg {
+	fill: #1a1926 !important;
+}
+
+.md-typeset .install-cards .install-btn--ghost .twemoji svg,
+.md-typeset .install-cards .install-btn--ghost .md-icon svg {
 	fill: currentColor !important;
 	width: 0.9em;
 	height: 0.9em;
 	vertical-align: -0.1em;
-	margin-right: 2px;
+	margin-right: 3px;
 }
 
 /* Homepage hero banner */
