@@ -296,20 +296,38 @@ pub(crate) fn is_jbig2(bytes: &[u8]) -> bool {
 /// The decoder converts black/white pixels to grayscale (0/255) for OCR processing.
 #[cfg(any(feature = "ocr", feature = "ocr-wasm"))]
 pub(crate) fn decode_jbig2_to_gray(bytes: &[u8]) -> Result<image::GrayImage> {
-    use hayro_jbig2::decode;
+    use hayro_jbig2::{Decoder, Image};
 
-    let jbig2_image = decode(bytes).map_err(|e| KreuzbergError::parsing(format!("JBIG2 decode failed: {}", e)))?;
-    let width = jbig2_image.width;
-    let height = jbig2_image.height;
+    struct GrayDecoder {
+        pixels: Vec<u8>,
+    }
 
-    // Convert boolean pixel data (true=black, false=white) to grayscale (0=black, 255=white)
-    let pixels: Vec<u8> = jbig2_image
-        .data
-        .iter()
-        .map(|&is_black| if is_black { 0 } else { 255 })
-        .collect();
+    impl Decoder for GrayDecoder {
+        fn push_pixel(&mut self, black: bool) {
+            self.pixels.push(if black { 0 } else { 255 });
+        }
 
-    image::GrayImage::from_raw(width, height, pixels)
+        fn push_pixel_chunk(&mut self, black: bool, chunk_count: u32) {
+            let luma = if black { 0 } else { 255 };
+            let count = chunk_count as usize * 8;
+            self.pixels.resize(self.pixels.len() + count, luma);
+        }
+
+        fn next_line(&mut self) {}
+    }
+
+    let jbig2_image = Image::new(bytes).map_err(|e| KreuzbergError::parsing(format!("JBIG2 decode failed: {e}")))?;
+    let width = jbig2_image.width();
+    let height = jbig2_image.height();
+
+    let mut decoder = GrayDecoder {
+        pixels: Vec::with_capacity((width * height) as usize),
+    };
+    jbig2_image
+        .decode(&mut decoder)
+        .map_err(|e| KreuzbergError::parsing(format!("JBIG2 decode failed: {e}")))?;
+
+    image::GrayImage::from_raw(width, height, decoder.pixels)
         .ok_or_else(|| KreuzbergError::parsing("Failed to construct grayscale image from JBIG2 data".to_string()))
 }
 

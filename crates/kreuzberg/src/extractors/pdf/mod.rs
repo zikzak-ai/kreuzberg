@@ -392,8 +392,14 @@ impl DocumentExtractor for PdfExtractor {
                     &document,
                     config,
                     layout_hints.as_deref(),
+                    #[cfg(feature = "layout-detection")]
                     layout_images.as_deref(),
+                    #[cfg(not(feature = "layout-detection"))]
+                    None,
+                    #[cfg(feature = "layout-detection")]
                     layout_results.as_deref(),
+                    #[cfg(not(feature = "layout-detection"))]
+                    None,
                 )?
             }
         };

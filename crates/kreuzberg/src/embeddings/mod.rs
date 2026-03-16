@@ -422,7 +422,7 @@ fn get_or_init_engine(
 
         // Create ORT session
         let session = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            ort::session::Session::builder().and_then(|builder| builder.commit_from_file(&model_path))
+            ort::session::Session::builder().and_then(|mut builder| builder.commit_from_file(&model_path))
         }))
         .map_err(|panic_payload| {
             let panic_msg = panic_to_string(panic_payload);

@@ -17,9 +17,12 @@ pub trait BaseNet {
         let builder = match builder_fn {
             Some(custom) => custom(builder)?,
             None => builder
-                .with_optimization_level(GraphOptimizationLevel::Level2)?
-                .with_intra_threads(num_thread)?
-                .with_inter_threads(num_thread)?,
+                .with_optimization_level(GraphOptimizationLevel::Level2)
+                .map_err(|e| OcrError::Ort(ort::Error::new(e.message())))?
+                .with_intra_threads(num_thread)
+                .map_err(|e| OcrError::Ort(ort::Error::new(e.message())))?
+                .with_inter_threads(num_thread)
+                .map_err(|e| OcrError::Ort(ort::Error::new(e.message())))?,
         };
 
         Ok(builder)
@@ -41,7 +44,7 @@ pub trait BaseNet {
         num_thread: usize,
         builder_fn: Option<fn(SessionBuilder) -> Result<SessionBuilder, ort::Error>>,
     ) -> Result<(), OcrError> {
-        let builder = self.get_session_builder(num_thread, builder_fn)?;
+        let mut builder = self.get_session_builder(num_thread, builder_fn)?;
         let session = builder.commit_from_file(path)?;
         self.init(session);
 
@@ -54,7 +57,7 @@ pub trait BaseNet {
         num_thread: usize,
         builder_fn: Option<fn(SessionBuilder) -> Result<SessionBuilder, ort::Error>>,
     ) -> Result<(), OcrError> {
-        let builder = self.get_session_builder(num_thread, builder_fn)?;
+        let mut builder = self.get_session_builder(num_thread, builder_fn)?;
         let session = builder.commit_from_memory(model_bytes)?;
 
         self.init(session);

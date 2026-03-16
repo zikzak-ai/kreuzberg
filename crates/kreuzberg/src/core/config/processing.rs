@@ -193,6 +193,10 @@ impl ChunkingConfig {
     ///
     /// If the preset name is not recognized, a warning is logged and the config
     /// is returned unchanged.
+    ///
+    /// Requires the `embeddings` feature. Without it, this is a no-op that returns
+    /// the config unchanged.
+    #[cfg(feature = "embeddings")]
     pub fn resolve_preset(&self) -> Self {
         let preset_name = match &self.preset {
             Some(name) => name,
@@ -231,6 +235,15 @@ impl ChunkingConfig {
             preset: self.preset.clone(),
             sizing: self.sizing.clone(),
         }
+    }
+
+    /// Resolve a preset name (no-op without the `embeddings` feature).
+    #[cfg(not(feature = "embeddings"))]
+    pub fn resolve_preset(&self) -> Self {
+        if self.preset.is_some() {
+            tracing::warn!("Chunking presets require the 'embeddings' feature");
+        }
+        self.clone()
     }
 }
 

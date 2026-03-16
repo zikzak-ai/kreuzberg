@@ -180,15 +180,15 @@ pub fn warm_command(
         let layout_dir = cache_base.join("layout");
         let manager = kreuzberg::layout::LayoutModelManager::new(Some(layout_dir));
 
-        let was_cached = manager.is_rtdetr_cached() && manager.is_slanet_plus_cached();
+        let was_cached = manager.is_rtdetr_cached() && manager.is_tatr_cached();
 
         if was_cached {
-            already_cached.push("layout (rtdetr, slanet-plus)".to_string());
+            already_cached.push("layout (rtdetr, tatr)".to_string());
         } else {
             manager
                 .ensure_all_models()
                 .context("Failed to download layout models")?;
-            downloaded.push("layout (rtdetr, slanet-plus)".to_string());
+            downloaded.push("layout (rtdetr, tatr)".to_string());
         }
     }
 

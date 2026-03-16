@@ -149,10 +149,13 @@ impl SlaNetModel {
     fn build_cpu_session(path: &str) -> Result<ort::session::Session, LayoutError> {
         use ort::session::builder::GraphOptimizationLevel;
         let num_cores = num_cpus::get();
-        let builder = ort::session::Session::builder()?
-            .with_optimization_level(GraphOptimizationLevel::Level3)?
-            .with_intra_threads(num_cores)?
-            .with_inter_threads(1)?;
+        let mut builder = ort::session::Session::builder()?
+            .with_optimization_level(GraphOptimizationLevel::Level3)
+            .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
+            .with_intra_threads(num_cores)
+            .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
+            .with_inter_threads(1)
+            .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?;
         Ok(builder.commit_from_file(path)?)
     }
 

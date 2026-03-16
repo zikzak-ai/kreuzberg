@@ -8,10 +8,8 @@ use crate::core::config::ExtractionConfig;
 use crate::core::config::extraction::FileExtractionConfig;
 use crate::types::ExtractionResult;
 
-use std::path::PathBuf;
-
 #[cfg(feature = "tokio-runtime")]
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[cfg(feature = "tokio-runtime")]
 use once_cell::sync::Lazy;

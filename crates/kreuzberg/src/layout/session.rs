@@ -15,41 +15,54 @@ pub fn build_session(path: &str, accel: Option<&AccelerationConfig>) -> Result<S
     let num_cores = num_cpus::get();
 
     let builder = Session::builder()?
-        .with_optimization_level(GraphOptimizationLevel::Level3)?
-        .with_intra_threads(num_cores)?
-        .with_inter_threads(1)?;
+        .with_optimization_level(GraphOptimizationLevel::Level3)
+        .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
+        .with_intra_threads(num_cores)
+        .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
+        .with_inter_threads(1)
+        .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?;
 
     let provider = accel.map(|a| &a.provider).unwrap_or(&ExecutionProviderType::Auto);
     let device_id = accel.map(|a| a.device_id).unwrap_or(0);
 
-    let builder = match provider {
+    let mut builder = match provider {
         ExecutionProviderType::Cpu => {
             tracing::debug!("ORT session: CPU execution provider (explicit)");
             builder
         }
         ExecutionProviderType::CoreMl => {
             tracing::debug!("ORT session: CoreML execution provider requested");
-            builder.with_execution_providers([ort::ep::CoreML::default().build()])?
+            builder
+                .with_execution_providers([ort::ep::CoreML::default().build()])
+                .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
         }
         ExecutionProviderType::Cuda => {
             tracing::debug!(device_id, "ORT session: CUDA execution provider requested");
-            builder.with_execution_providers([ort::ep::CUDA::default().with_device_id(device_id as i32).build()])?
+            builder
+                .with_execution_providers([ort::ep::CUDA::default().with_device_id(device_id as i32).build()])
+                .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
         }
         ExecutionProviderType::TensorRt => {
             tracing::debug!(device_id, "ORT session: TensorRT execution provider requested");
-            builder.with_execution_providers([ort::ep::TensorRT::default().with_device_id(device_id as i32).build()])?
+            builder
+                .with_execution_providers([ort::ep::TensorRT::default().with_device_id(device_id as i32).build()])
+                .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
         }
         ExecutionProviderType::Auto => {
             // Platform defaults
             #[cfg(target_os = "macos")]
             let builder = {
                 tracing::debug!("ORT session: auto-selected CoreML (macOS)");
-                builder.with_execution_providers([ort::ep::CoreML::default().build()])?
+                builder
+                    .with_execution_providers([ort::ep::CoreML::default().build()])
+                    .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
             };
             #[cfg(target_os = "linux")]
             let builder = {
                 tracing::debug!("ORT session: auto-selected CUDA (Linux)");
-                builder.with_execution_providers([ort::ep::CUDA::default().build()])?
+                builder
+                    .with_execution_providers([ort::ep::CUDA::default().build()])
+                    .map_err(|e| LayoutError::Ort(ort::Error::new(e.message())))?
             };
             #[cfg(not(any(target_os = "macos", target_os = "linux")))]
             let builder = {

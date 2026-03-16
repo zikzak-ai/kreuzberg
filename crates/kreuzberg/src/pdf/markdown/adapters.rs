@@ -5,6 +5,7 @@ use pdfium_render::prelude::{ContentRole, ExtractedBlock};
 
 use super::content::{ContentElement, ElementLevel, ExtractionSource, PageContent, SemanticRole};
 use super::geometry::Rect;
+#[cfg(feature = "layout-detection")]
 use super::types::LayoutHintClass;
 use crate::pdf::hierarchy::SegmentData;
 

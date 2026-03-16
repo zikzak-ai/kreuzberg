@@ -96,7 +96,7 @@ pub fn take_or_create_slanet() -> Option<models::slanet::SlaNetModel> {
     let result = CACHED_SLANET.take_or_create(|| {
         crate::ort_discovery::ensure_ort_available();
         let manager = LayoutModelManager::new(None);
-        let model_path = manager.ensure_slanet_plus_model()?;
+        let model_path = manager.ensure_tatr_model()?;
         models::slanet::SlaNetModel::from_file(&model_path.to_string_lossy())
     });
 

@@ -609,9 +609,11 @@ mod tests {
 
     #[test]
     fn test_with_file_overrides_batch_fields_unaffected() {
-        let mut base = ExtractionConfig::default();
-        base.max_concurrent_extractions = Some(42);
-        base.use_cache = false;
+        let base = ExtractionConfig {
+            max_concurrent_extractions: Some(42),
+            use_cache: false,
+            ..Default::default()
+        };
 
         let overrides = crate::FileExtractionConfig {
             force_ocr: Some(true),

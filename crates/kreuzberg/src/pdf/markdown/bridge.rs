@@ -220,6 +220,7 @@ struct CharInfo {
     /// Identity of the parent PDF text object (pointer-as-usize).
     /// Characters sharing the same `text_object_id` belong to the same text run
     /// and should never have word breaks inserted between them.
+    #[allow(dead_code)]
     text_object_id: usize,
 }
 

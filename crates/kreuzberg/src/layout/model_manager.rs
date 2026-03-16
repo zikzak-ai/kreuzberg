@@ -180,22 +180,22 @@ mod tests {
     }
 
     #[test]
-    fn test_is_slanet_plus_cached_empty() {
+    fn test_is_tatr_cached_empty() {
         let temp_dir = TempDir::new().unwrap();
         let manager = LayoutModelManager::new(Some(temp_dir.path().to_path_buf()));
-        assert!(!manager.is_slanet_plus_cached());
+        assert!(!manager.is_tatr_cached());
     }
 
     #[test]
-    fn test_is_slanet_plus_cached_present() {
+    fn test_is_tatr_cached_present() {
         let temp_dir = TempDir::new().unwrap();
         let manager = LayoutModelManager::new(Some(temp_dir.path().to_path_buf()));
 
-        let dir = temp_dir.path().join("slanet_plus");
+        let dir = temp_dir.path().join("tatr");
         fs::create_dir_all(&dir).unwrap();
-        fs::write(dir.join("slanet-plus.onnx"), "fake").unwrap();
+        fs::write(dir.join("tatr.onnx"), "fake").unwrap();
 
-        assert!(manager.is_slanet_plus_cached());
+        assert!(manager.is_tatr_cached());
     }
 
     #[test]
@@ -205,7 +205,7 @@ mod tests {
 
         let paths: Vec<&str> = entries.iter().map(|e| e.relative_path.as_str()).collect();
         assert!(paths.contains(&"layout/rtdetr/model.onnx"));
-        assert!(paths.contains(&"layout/slanet_plus/slanet-plus.onnx"));
+        assert!(paths.contains(&"layout/tatr/tatr.onnx"));
     }
 
     #[test]
@@ -244,9 +244,9 @@ mod tests {
         fs::create_dir_all(&rtdetr_dir).unwrap();
         fs::write(rtdetr_dir.join("model.onnx"), "fake").unwrap();
 
-        let slanet_dir = temp_dir.path().join("slanet_plus");
-        fs::create_dir_all(&slanet_dir).unwrap();
-        fs::write(slanet_dir.join("slanet-plus.onnx"), "fake").unwrap();
+        let tatr_dir = temp_dir.path().join("tatr");
+        fs::create_dir_all(&tatr_dir).unwrap();
+        fs::write(tatr_dir.join("tatr.onnx"), "fake").unwrap();
 
         assert!(manager.ensure_all_models().is_ok());
     }
