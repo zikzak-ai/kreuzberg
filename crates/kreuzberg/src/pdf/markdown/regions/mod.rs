@@ -80,7 +80,7 @@ pub(super) fn assemble_region_paragraphs(
 
     let page_height = segments.iter().map(|s| s.y + s.height).fold(0.0_f32, f32::max);
 
-    let mut extra_unassigned: Vec<usize> = Vec::new();
+    let extra_unassigned: Vec<usize> = Vec::new();
 
     // Pre-merge fragmented Title/SectionHeader regions before reading order.
     // The layout model sometimes splits a single semantic element (e.g., a multi-line
@@ -95,31 +95,6 @@ pub(super) fn assemble_region_paragraphs(
     // Assemble paragraphs per region
     for region in &regions {
         if region.segment_indices.is_empty() {
-            continue;
-        }
-
-        // Table regions: skip only if TATR successfully extracted a table for
-        // this hint (bbox overlaps an extracted_table_bbox). If extraction failed,
-        // recover the segments to the unassigned pool so text isn't lost.
-        if region.hint.class == LayoutHintClass::Table {
-            // Check if TATR successfully extracted a table covering this hint.
-            // Require >=50% IoS (hint area covered by extracted bbox) to count
-            // as "extracted" — a tiny overlap shouldn't suppress all segments.
-            let hint_rect = super::geometry::Rect::from_lbrt(
-                region.hint.left,
-                region.hint.bottom,
-                region.hint.right,
-                region.hint.top,
-            );
-            let table_extracted = extracted_table_bboxes.iter().any(|bb| {
-                let bb_rect = super::geometry::Rect::from_lbrt(bb.x0 as f32, bb.y0 as f32, bb.x1 as f32, bb.y1 as f32);
-                hint_rect.intersection_over_self(&bb_rect) >= 0.5
-            });
-            if table_extracted {
-                continue; // Text captured by TATR — skip
-            }
-            // TATR failed or didn't cover this hint — recover segments
-            extra_unassigned.extend(region.segment_indices.iter());
             continue;
         }
 
@@ -650,11 +625,9 @@ mod tests {
     }
 
     #[test]
-    fn test_table_regions_assigned_not_suppressed() {
-        // Segments overlapping Table regions are assigned to the Table region
-        // (not suppressed). The caller skips Table-class regions, preventing
-        // body text emission while TATR captures the content separately.
-        let segments = vec![make_segment("text", 10.0, 700.0, 40.0, 12.0)];
+    fn test_table_segments_suppressed_when_extracted() {
+        // Segments overlapping successfully extracted tables are suppressed.
+        let segments = vec![make_segment("table text", 10.0, 700.0, 40.0, 12.0)];
         let hints = vec![make_hint(LayoutHintClass::Table, 0.9, 0.0, 690.0, 200.0, 720.0)];
         let extracted_bbox = crate::types::BoundingBox {
             x0: 0.0,
@@ -663,29 +636,21 @@ mod tests {
             y1: 720.0,
         };
         let (regions, unassigned) = assignment::assign_segments_to_regions(&segments, &hints, 0.5, &[extracted_bbox]);
-        assert_eq!(regions.len(), 1);
-        assert_eq!(regions[0].hint.class, LayoutHintClass::Table);
-        assert_eq!(regions[0].segment_indices.len(), 1);
+        // Table excluded from regions, segment suppressed by extracted bbox
+        assert!(regions.is_empty());
         assert!(unassigned.is_empty());
     }
 
     #[test]
-    fn test_table_region_competes_with_text_region() {
-        // Segment at the border of a Table and Text region is assigned
-        // to whichever has higher IoS, not unconditionally suppressed.
-        let segments = vec![make_segment("border text", 100.0, 700.0, 40.0, 12.0)];
-        // Text region covers left side; Table region covers right side.
-        // Segment is mostly in the Text region (x=100, width=40 → center at 120).
-        let hints = vec![
-            make_hint(LayoutHintClass::Text, 0.9, 80.0, 690.0, 130.0, 720.0),
-            make_hint(LayoutHintClass::Table, 0.9, 125.0, 690.0, 300.0, 720.0),
-        ];
+    fn test_table_segments_recovered_when_not_extracted() {
+        // Segments overlapping Table hints without successful extraction
+        // fall through to unassigned (not suppressed, not lost).
+        let segments = vec![make_segment("table text", 10.0, 700.0, 40.0, 12.0)];
+        let hints = vec![make_hint(LayoutHintClass::Table, 0.9, 0.0, 690.0, 200.0, 720.0)];
+        // No extracted bboxes — TATR failed
         let (regions, unassigned) = assignment::assign_segments_to_regions(&segments, &hints, 0.5, &[]);
-        // Segment should be assigned to Text region (higher IoS)
-        assert_eq!(regions.len(), 2);
-        assert_eq!(regions[0].segment_indices.len(), 1); // Text region got it
-        assert!(regions[1].segment_indices.is_empty()); // Table region empty
-        assert!(unassigned.is_empty());
+        assert!(regions.is_empty()); // Table excluded from regions
+        assert_eq!(unassigned.len(), 1); // Segment recovered to unassigned
     }
 
     #[test]
