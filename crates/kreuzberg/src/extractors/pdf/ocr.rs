@@ -407,9 +407,11 @@ pub(crate) async fn extract_with_ocr(
     for (page_idx, ocr_result) in ocr_results.into_iter().enumerate() {
         // SAFETY: every slot was filled in the join loop above; None is unreachable.
         let ocr_result = ocr_result.expect("OCR result missing for page");
-        let (_page_idx_enc, _image_data, width, height) = &encoded_pages[page_idx];
-        let width = *width;
-        let height = *height;
+        let (_page_idx_enc, _image_data, _width, _height) = &encoded_pages[page_idx];
+        #[cfg(feature = "layout-detection")]
+        let width = *_width;
+        #[cfg(feature = "layout-detection")]
+        let height = *_height;
 
         // Accumulate mean_text_conf from per-page OCR results.
         if let Some(conf_val) = ocr_result

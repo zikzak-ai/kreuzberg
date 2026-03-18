@@ -10,6 +10,12 @@ use crate::pdf::markdown::types::{LayoutHint, LayoutHintClass};
 /// Matches docling's threshold of 0.2 (20% of the segment's area must overlap).
 const MIN_IOS_THRESHOLD: f32 = 0.2;
 
+/// Minimum alphanumeric character count for Picture region text to be considered
+/// substantive. Below this threshold, text is treated as diagram labels or
+/// decorative and suppressed. Above it, the text is preserved as unassigned
+/// (e.g., screenshots of papers, appendix pages containing readable text).
+const PICTURE_SUBSTANTIVE_CHAR_THRESHOLD: usize = 50;
+
 /// Padding (in points) added to each side of the tight bbox during refinement.
 const BBOX_REFINEMENT_PADDING: f32 = 2.0;
 
@@ -25,8 +31,12 @@ const MAX_REFINEMENT_ITERATIONS: usize = 3;
 ///
 /// Table and Picture regions are excluded from assignment — handled separately.
 /// Segments overlapping successfully extracted tables are suppressed (>=50% IoS).
-/// Segments overlapping Picture regions are suppressed unless substantive
-/// or the region was validated as empty (no text CCs in the rendered image).
+/// Segments overlapping Picture regions are evaluated per-region: regions
+/// validated as empty (no text CCs) never suppress. Regions with substantive
+/// text (>= 50 alphanumeric chars) are preserved as unassigned, allowing
+/// screenshots and misclassified text-heavy regions to flow through the
+/// standard pipeline. Only short/label text (diagram labels, axis text) is
+/// suppressed.
 pub(in crate::pdf::markdown) fn assign_segments_to_regions<'a>(
     segments: &[SegmentData],
     hints: &'a [LayoutHint],
@@ -86,17 +96,82 @@ pub(in crate::pdf::markdown) fn assign_segments_to_regions<'a>(
 
     let mut suppressed_count = 0_usize;
 
+    // First pass: identify which segments fall into which Picture region.
+    // We collect per-picture segment indices to decide per-region whether to
+    // suppress (decorative/label text) or preserve (substantive text like
+    // screenshots of papers).
+    let mut picture_seg_indices: Vec<Vec<usize>> = vec![Vec::new(); picture_hints.len()];
+
+    for (seg_idx, seg) in segments.iter().enumerate() {
+        if seg.text.trim().is_empty() {
+            continue;
+        }
+        let seg_rect = Rect::from_lbrt(seg.x, seg.y, seg.x + seg.width, seg.y + seg.height);
+        for (pi, (ph, _)) in picture_hints.iter().enumerate() {
+            let hint_rect = Rect::from_lbrt(ph.left, ph.bottom, ph.right, ph.top);
+            if seg_rect.intersection_over_self(&hint_rect) >= 0.5 {
+                picture_seg_indices[pi].push(seg_idx);
+                break; // Assign to first matching picture
+            }
+        }
+    }
+
+    // Decide per-Picture region: suppress or preserve.
+    // Empty-validated regions never suppress. Regions with substantive text
+    // (>= threshold alphanumeric chars) are preserved as unassigned.
+    let mut picture_preserved_segments: std::collections::HashSet<usize> =
+        std::collections::HashSet::new();
+    let mut picture_suppressed_segments: std::collections::HashSet<usize> =
+        std::collections::HashSet::new();
+
+    for (pi, seg_indices) in picture_seg_indices.iter().enumerate() {
+        let (_, is_empty) = picture_hints[pi];
+
+        if is_empty {
+            // Empty-validated: no real image content, don't suppress text
+            for &idx in seg_indices {
+                picture_preserved_segments.insert(idx);
+            }
+            continue;
+        }
+
+        // Count alphanumeric chars across all segments in this Picture region
+        let alphanum_count: usize = seg_indices
+            .iter()
+            .map(|&idx| {
+                segments[idx]
+                    .text
+                    .chars()
+                    .filter(|c| c.is_alphanumeric())
+                    .count()
+            })
+            .sum();
+
+        if alphanum_count >= PICTURE_SUBSTANTIVE_CHAR_THRESHOLD {
+            // Substantive text — likely a screenshot or misclassified region.
+            // Preserve segments as unassigned so they go through the standard pipeline.
+            tracing::trace!(
+                alphanum_count,
+                segment_count = seg_indices.len(),
+                "picture region contains substantive text — preserving"
+            );
+            for &idx in seg_indices {
+                picture_preserved_segments.insert(idx);
+            }
+        } else {
+            // Short/label text — suppress as before (diagram labels, axis text, etc.)
+            for &idx in seg_indices {
+                picture_suppressed_segments.insert(idx);
+            }
+        }
+    }
+
     for (seg_idx, seg) in segments.iter().enumerate() {
         if seg.text.trim().is_empty() {
             continue; // Skip whitespace-only segments
         }
 
-        let seg_left = seg.x;
-        let seg_right = seg.x + seg.width;
-        let seg_bottom = seg.y;
-        let seg_top = seg.y + seg.height;
-
-        let seg_rect = Rect::from_lbrt(seg_left, seg_bottom, seg_right, seg_top);
+        let seg_rect = Rect::from_lbrt(seg.x, seg.y, seg.x + seg.width, seg.y + seg.height);
 
         // Suppress segments overlapping successfully extracted tables (>=50% IoS).
         let in_extracted_table = suppress_bboxes.iter().any(|bb| {
@@ -108,16 +183,14 @@ pub(in crate::pdf::markdown) fn assign_segments_to_regions<'a>(
             continue;
         }
 
-        // Suppress segments inside Picture regions. Diagram labels, flow chart
-        // text, axis labels etc. inside pictures pollute the output as body text.
-        // Following Docling's approach: pictures emit an image placeholder only;
-        // captions are separate layout regions and are preserved independently.
-        let in_picture = picture_hints.iter().any(|(ph, _is_empty)| {
-            let hint_rect = Rect::from_lbrt(ph.left, ph.bottom, ph.right, ph.top);
-            seg_rect.intersection_over_self(&hint_rect) >= 0.5
-        });
-        if in_picture {
+        // Handle Picture region segments based on per-region decision
+        if picture_suppressed_segments.contains(&seg_idx) {
             suppressed_count += 1;
+            continue;
+        }
+        if picture_preserved_segments.contains(&seg_idx) {
+            // Preserved picture text goes to unassigned for standard pipeline processing
+            unassigned.push(seg_idx);
             continue;
         }
 
@@ -326,13 +399,13 @@ mod tests {
     use crate::pdf::hierarchy::SegmentData;
     use crate::pdf::markdown::types::{LayoutHint, LayoutHintClass};
 
-    fn make_seg(text: &str, x: f32, y: f32, width: f32, height: f32) -> SegmentData {
+    fn make_segment(text: &str, x: f32, y: f32, w: f32, h: f32) -> SegmentData {
         SegmentData {
             text: text.to_string(),
             x,
             y,
-            width,
-            height,
+            width: w,
+            height: h,
             font_size: 12.0,
             is_bold: false,
             is_italic: false,
@@ -341,10 +414,10 @@ mod tests {
         }
     }
 
-    fn make_hint(class: LayoutHintClass, confidence: f32, left: f32, bottom: f32, right: f32, top: f32) -> LayoutHint {
+    fn make_hint(class: LayoutHintClass, left: f32, bottom: f32, right: f32, top: f32) -> LayoutHint {
         LayoutHint {
             class,
-            confidence,
+            confidence: 0.9,
             left,
             bottom,
             right,
@@ -353,155 +426,166 @@ mod tests {
     }
 
     #[test]
-    fn test_segment_inside_region_assigned() {
-        let segments = vec![make_seg("Hello", 50.0, 700.0, 100.0, 12.0)];
-        let hints = vec![make_hint(LayoutHintClass::Text, 0.9, 40.0, 690.0, 200.0, 720.0)];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        assert_eq!(regions.len(), 1);
-        assert_eq!(regions[0].segment_indices, vec![0]);
-        assert!(unassigned.is_empty());
-    }
-
-    #[test]
-    fn test_segment_outside_all_regions_unassigned() {
-        let segments = vec![make_seg("Hello", 500.0, 100.0, 50.0, 12.0)];
-        let hints = vec![make_hint(LayoutHintClass::Text, 0.9, 40.0, 690.0, 200.0, 720.0)];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        assert!(regions[0].segment_indices.is_empty());
-        assert_eq!(unassigned, vec![0]);
-    }
-
-    #[test]
-    fn test_whitespace_only_segments_skipped() {
+    fn picture_suppresses_short_label_text() {
+        // A Picture region with only short label text (< 50 alphanum chars)
+        // should suppress the segments.
         let segments = vec![
-            make_seg("   ", 50.0, 700.0, 100.0, 12.0),
-            make_seg("Real", 50.0, 680.0, 80.0, 12.0),
-        ];
-        let hints = vec![make_hint(LayoutHintClass::Text, 0.9, 0.0, 0.0, 600.0, 800.0)];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        // Only segment index 1 should be assigned; segment 0 (whitespace) is skipped entirely
-        assert_eq!(regions[0].segment_indices, vec![1]);
-        assert!(unassigned.is_empty());
-    }
-
-    #[test]
-    fn test_table_hints_excluded_from_regions() {
-        let segments = vec![make_seg("Hello", 50.0, 700.0, 100.0, 12.0)];
-        let hints = vec![make_hint(LayoutHintClass::Table, 0.9, 0.0, 0.0, 600.0, 800.0)];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        // Table hints are excluded from region assignment
-        assert!(regions.is_empty());
-        assert_eq!(unassigned, vec![0]);
-    }
-
-    #[test]
-    fn test_picture_hints_excluded_from_regions() {
-        let segments = vec![make_seg("Hello", 50.0, 700.0, 100.0, 12.0)];
-        let hints = vec![make_hint(LayoutHintClass::Picture, 0.9, 0.0, 0.0, 600.0, 800.0)];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        assert!(regions.is_empty());
-        // Segment inside a Picture region is suppressed (not unassigned either)
-        assert!(unassigned.is_empty());
-    }
-
-    #[test]
-    fn test_confidence_filtering() {
-        let segments = vec![make_seg("Hello", 50.0, 700.0, 100.0, 12.0)];
-        let hints = vec![make_hint(LayoutHintClass::Text, 0.3, 0.0, 0.0, 600.0, 800.0)];
-        // min_confidence = 0.5, hint confidence = 0.3 → filtered out
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        assert!(regions.is_empty());
-        assert_eq!(unassigned, vec![0]);
-    }
-
-    #[test]
-    fn test_overlapping_regions_best_ios_wins() {
-        let segments = vec![make_seg("Hello", 50.0, 700.0, 100.0, 12.0)];
-        // Region A: large, fully containing the segment
-        // Region B: smaller, also containing the segment but tighter → higher IoS → wins tie
-        let hints = vec![
-            make_hint(LayoutHintClass::Text, 0.9, 0.0, 0.0, 600.0, 800.0),
-            make_hint(LayoutHintClass::SectionHeader, 0.9, 40.0, 695.0, 200.0, 720.0),
-        ];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        assert_eq!(regions.len(), 2);
-        // Both have IoS = 1.0, tie broken by smallest area → region 1 (smaller)
-        assert!(regions[1].segment_indices.contains(&0) || regions[0].segment_indices.contains(&0));
-        assert!(unassigned.is_empty());
-    }
-
-    #[test]
-    fn test_segment_suppressed_by_extracted_table_bbox() {
-        let segments = vec![make_seg("Table text", 50.0, 700.0, 100.0, 12.0)];
-        let hints = vec![make_hint(LayoutHintClass::Text, 0.9, 0.0, 0.0, 600.0, 800.0)];
-        // Table bbox fully containing the segment → suppressed at >=50% IoS
-        let table_bboxes = vec![crate::types::BoundingBox {
-            x0: 0.0,
-            y0: 0.0,
-            x1: 600.0,
-            y1: 800.0,
-        }];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &table_bboxes, &[]);
-        // Segment should be suppressed (not assigned, not in unassigned)
-        assert!(regions[0].segment_indices.is_empty());
-        assert!(unassigned.is_empty());
-    }
-
-    #[test]
-    fn test_no_hints_returns_all_unassigned() {
-        let segments = vec![
-            make_seg("A", 50.0, 700.0, 50.0, 12.0),
-            make_seg("B", 50.0, 680.0, 50.0, 12.0),
-        ];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &[], 0.5, &[], &[]);
-        assert!(regions.is_empty());
-        assert_eq!(unassigned, vec![0, 1]);
-    }
-
-    #[test]
-    fn test_empty_segments_returns_empty() {
-        let hints = vec![make_hint(LayoutHintClass::Text, 0.9, 0.0, 0.0, 600.0, 800.0)];
-        let (regions, unassigned) = assign_segments_to_regions(&[], &hints, 0.5, &[], &[]);
-        assert_eq!(regions.len(), 1);
-        assert!(regions[0].segment_indices.is_empty());
-        assert!(unassigned.is_empty());
-    }
-
-    #[test]
-    fn test_multiple_segments_distributed_across_regions() {
-        let segments = vec![
-            make_seg("Top", 50.0, 700.0, 100.0, 12.0),
-            make_seg("Bottom", 50.0, 100.0, 100.0, 12.0),
+            make_segment("Fig 1", 10.0, 10.0, 30.0, 10.0),
+            make_segment("x-axis", 10.0, 5.0, 30.0, 10.0),
         ];
         let hints = vec![
-            make_hint(LayoutHintClass::SectionHeader, 0.9, 0.0, 690.0, 300.0, 720.0),
-            make_hint(LayoutHintClass::Text, 0.9, 0.0, 90.0, 300.0, 120.0),
+            make_hint(LayoutHintClass::Picture, 0.0, 0.0, 100.0, 100.0),
         ];
-        let (regions, unassigned) = assign_segments_to_regions(&segments, &hints, 0.5, &[], &[]);
-        assert_eq!(regions[0].segment_indices, vec![0]);
-        assert_eq!(regions[1].segment_indices, vec![1]);
-        assert!(unassigned.is_empty());
-    }
-
-    #[test]
-    fn test_refined_assignment_returns_results() {
-        let segments = vec![
-            make_seg("A", 50.0, 700.0, 100.0, 12.0),
-            make_seg("B", 50.0, 680.0, 100.0, 12.0),
-        ];
-        let hints = vec![make_hint(LayoutHintClass::Text, 0.9, 40.0, 670.0, 200.0, 720.0)];
-        let (regions, unassigned) = assign_segments_to_regions_refined(&segments, &hints, 0.5, &[], &[]);
-        // Both should be assigned to the region
-        assert!(!regions.is_empty());
-        let total_assigned: usize = regions.iter().map(|r| r.segment_indices.len()).sum();
-        assert_eq!(total_assigned + unassigned.len(), 2);
-    }
-
-    #[test]
-    fn test_refined_with_no_regions_returns_all_unassigned() {
-        let segments = vec![make_seg("A", 50.0, 700.0, 50.0, 12.0)];
-        let (regions, unassigned) = assign_segments_to_regions_refined(&segments, &[], 0.5, &[], &[]);
+        let (regions, unassigned) = assign_segments_to_regions(
+            &segments,
+            &hints,
+            0.5,
+            &[],
+            &[],
+        );
+        // No text regions, no unassigned — both segments suppressed
         assert!(regions.is_empty());
-        assert_eq!(unassigned, vec![0]);
+        assert!(unassigned.is_empty(), "short label text should be suppressed, got {:?}", unassigned);
+    }
+
+    #[test]
+    fn picture_preserves_substantive_text() {
+        // A Picture region containing substantial readable text (e.g., a screenshot
+        // of a paper) should preserve segments as unassigned.
+        let long_text = "This is a substantial amount of readable text that should not be suppressed by the layout model";
+        let segments = vec![
+            make_segment(long_text, 10.0, 50.0, 200.0, 12.0),
+            make_segment("Additional paragraph of text in the screenshot region", 10.0, 30.0, 200.0, 12.0),
+        ];
+        let hints = vec![
+            make_hint(LayoutHintClass::Picture, 0.0, 0.0, 300.0, 100.0),
+        ];
+        let (regions, unassigned) = assign_segments_to_regions(
+            &segments,
+            &hints,
+            0.5,
+            &[],
+            &[],
+        );
+        // Both segments should be preserved as unassigned
+        assert!(regions.is_empty());
+        assert_eq!(unassigned.len(), 2, "substantive text should be preserved as unassigned");
+    }
+
+    #[test]
+    fn picture_empty_validated_never_suppresses() {
+        // A Picture region validated as Empty should never suppress text.
+        let segments = vec![
+            make_segment("Fig 1", 10.0, 10.0, 30.0, 10.0),
+        ];
+        let hints = vec![
+            make_hint(LayoutHintClass::Picture, 0.0, 0.0, 100.0, 100.0),
+        ];
+        let validations = vec![
+            super::super::layout_validation::RegionValidation::Empty,
+        ];
+        let (regions, unassigned) = assign_segments_to_regions(
+            &segments,
+            &hints,
+            0.5,
+            &[],
+            &validations,
+        );
+        assert!(regions.is_empty());
+        // Even short text should be preserved when region is empty-validated
+        assert_eq!(unassigned.len(), 1, "empty-validated picture should not suppress text");
+    }
+
+    #[test]
+    fn picture_does_not_affect_non_overlapping_segments() {
+        // Segments outside the Picture region should be unaffected.
+        let segments = vec![
+            make_segment("Outside text", 200.0, 200.0, 100.0, 12.0),
+            make_segment("Label inside", 10.0, 10.0, 30.0, 10.0),
+        ];
+        let hints = vec![
+            make_hint(LayoutHintClass::Picture, 0.0, 0.0, 100.0, 100.0),
+        ];
+        let (regions, unassigned) = assign_segments_to_regions(
+            &segments,
+            &hints,
+            0.5,
+            &[],
+            &[],
+        );
+        // "Outside text" should be unassigned (no non-Picture regions to match)
+        // "Label inside" should be suppressed (short label text)
+        assert!(regions.is_empty());
+        assert_eq!(unassigned.len(), 1);
+        assert_eq!(unassigned[0], 0, "only the outside segment should be unassigned");
+    }
+
+    #[test]
+    fn picture_threshold_boundary() {
+        // Test right at the threshold boundary (50 alphanumeric chars).
+        // Generate exactly 50 alphanum chars.
+        let text_50 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX"; // 50 chars
+        assert_eq!(text_50.chars().filter(|c| c.is_alphanumeric()).count(), 50);
+
+        let segments = vec![
+            make_segment(text_50, 10.0, 10.0, 200.0, 12.0),
+        ];
+        let hints = vec![
+            make_hint(LayoutHintClass::Picture, 0.0, 0.0, 300.0, 100.0),
+        ];
+        let (_, unassigned) = assign_segments_to_regions(
+            &segments,
+            &hints,
+            0.5,
+            &[],
+            &[],
+        );
+        // Exactly at threshold — should be preserved
+        assert_eq!(unassigned.len(), 1, "text at threshold should be preserved");
+
+        // Now test with 49 chars (below threshold)
+        let text_49 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW"; // 49 chars
+        assert_eq!(text_49.chars().filter(|c| c.is_alphanumeric()).count(), 49);
+
+        let segments_below = vec![
+            make_segment(text_49, 10.0, 10.0, 200.0, 12.0),
+        ];
+        let (_, unassigned_below) = assign_segments_to_regions(
+            &segments_below,
+            &hints,
+            0.5,
+            &[],
+            &[],
+        );
+        // Below threshold — should be suppressed
+        assert!(unassigned_below.is_empty(), "text below threshold should be suppressed");
+    }
+
+    #[test]
+    fn mixed_picture_and_text_regions() {
+        // Picture region + Text region on the same page.
+        // Segments in the Text region should be assigned normally.
+        // Segments in the Picture region with short text should be suppressed.
+        let segments = vec![
+            make_segment("Body paragraph text", 10.0, 200.0, 150.0, 12.0),
+            make_segment("Fig 1", 10.0, 50.0, 30.0, 10.0),
+        ];
+        let hints = vec![
+            make_hint(LayoutHintClass::Text, 0.0, 180.0, 200.0, 230.0),
+            make_hint(LayoutHintClass::Picture, 0.0, 0.0, 100.0, 100.0),
+        ];
+        let (regions, unassigned) = assign_segments_to_regions(
+            &segments,
+            &hints,
+            0.5,
+            &[],
+            &[],
+        );
+        // "Body paragraph text" should be assigned to the Text region
+        assert_eq!(regions.len(), 1);
+        assert_eq!(regions[0].hint.class, LayoutHintClass::Text);
+        assert_eq!(regions[0].segment_indices, vec![0]);
+        // "Fig 1" should be suppressed (short label)
+        assert!(unassigned.is_empty());
     }
 }

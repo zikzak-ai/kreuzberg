@@ -517,9 +517,9 @@ pub fn render_document_as_markdown_with_tables(
     page_marker_format: Option<&str>,
     layout_hints: Option<&[Vec<LayoutHint>]>,
     #[cfg(feature = "layout-detection")] layout_images: Option<&[image::DynamicImage]>,
-    #[cfg(not(feature = "layout-detection"))] layout_images: Option<()>,
+    #[cfg(not(feature = "layout-detection"))] _layout_images: Option<()>,
     #[cfg(feature = "layout-detection")] layout_results: Option<&[crate::pdf::layout_runner::PageLayoutResult]>,
-    #[cfg(not(feature = "layout-detection"))] layout_results: Option<()>,
+    #[cfg(not(feature = "layout-detection"))] _layout_results: Option<()>,
 ) -> Result<(String, bool)> {
     let pages = document.pages();
     let page_count = pages.len();

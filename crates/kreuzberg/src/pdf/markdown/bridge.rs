@@ -14,7 +14,7 @@ use pdfium_render::prelude::*;
 
 use super::text_repair::{apply_ligature_repairs, build_ligature_repair_map, normalize_text_encoding};
 use super::types::PdfParagraph;
-use crate::pdf::text_data::{ExtractedSegment, PageTextData, extract_page_text_data};
+use crate::pdf::text_data::{PageTextData, extract_page_text_data};
 
 // Alias to distinguish from our local PdfParagraph type.
 use pdfium_render::prelude::PdfParagraph as PdfiumParagraph;
@@ -143,18 +143,13 @@ pub(super) fn objects_to_page_data(
     }
 
     // Primary path: single-pass extraction via PageTextData DTO.
-    // Character-based assembly is primary (handles reading order, sidebars,
-    // italic runs correctly). Segment-based is available as fallback.
+    // Extracts all character data once, then assembles segments without
+    // further pdfium text API calls.
     let page_width = page.width().value;
-    if let Some(data) = extract_page_text_data(page) {
-        // Primary: character-based assembly (correct reading order).
-        if let Some(segments) = chars_to_segments_from_data(&data, page_width) {
-            return (segments, images);
-        }
-        // Fallback: segment-based assembly (pdfium's pre-merged text runs).
-        if let Some(segments) = segments_to_line_segments(&data, page_width, None) {
-            return (segments, images);
-        }
+    if let Some(data) = extract_page_text_data(page)
+        && let Some(segments) = chars_to_segments_from_data(&data, page_width)
+    {
+        return (segments, images);
     }
 
     // Fallback: page objects API with column detection.
@@ -353,10 +348,9 @@ fn build_line_text(chars: &[CharInfo], repair_map: Option<&[(char, &str)]>) -> S
         if idx > 0 && ci.ch != ' ' {
             let prev = &chars[idx - 1];
             if prev.ch == ' ' {
-                // Previous char is a generated space that was already pushed to
-                // `line_text`. We only need to decide whether to *veto* (remove)
-                // that space when the geometric gap is too small (CMap artefact).
-                // We must NOT push an additional space — it was already emitted.
+                // Previous char is a generated space. Check if we should keep it
+                // by looking at the gap between the last real char and current char.
+                // Find the last non-space char before the space.
                 let last_real = chars[..idx - 1].iter().rev().find(|c| c.ch != ' ');
                 if let Some(real_prev) = last_real {
                     let gap = ci.x - real_prev.right_x;
@@ -371,12 +365,11 @@ fn build_line_text(chars: &[CharInfo], repair_map: Option<&[(char, &str)]>) -> S
                     // This threshold is calibrated from docling-parse's 0.33 on
                     // advance widths, adjusted up because tight_bounds are narrower.
                     if gap < avg_char_width * 0.5 {
-                        // Remove the already-pushed space — chars are too close
-                        // for a word boundary.
+                        // Remove already-pushed space — chars are too close.
                         line_text.pop();
                     }
                 }
-                // If no real_prev found, the space stands as-is (already pushed).
+                // If no real_prev found, the space stands as-is.
             } else {
                 // Non-space to non-space: insert space on large gaps (positioned text).
                 let gap = ci.x - prev.right_x;
@@ -514,6 +507,10 @@ fn detect_char_column_splits(char_infos: &[CharInfo]) -> Vec<f32> {
 ///
 /// Characters are assigned to columns by their X-position relative to split points.
 /// Returns one `Vec<CharInfo>` per column, ordered left-to-right.
+///
+/// Within each column, characters are sorted into reading order (top-to-bottom,
+/// left-to-right) so that downstream line detection in `assemble_segments_from_chars`
+/// works correctly regardless of pdfium's original iteration order.
 fn partition_chars_by_columns(chars: Vec<CharInfo>, splits: &[f32]) -> Vec<Vec<CharInfo>> {
     let num_columns = splits.len() + 1;
     let mut columns: Vec<Vec<CharInfo>> = (0..num_columns).map(|_| Vec::new()).collect();
@@ -523,7 +520,44 @@ fn partition_chars_by_columns(chars: Vec<CharInfo>, splits: &[f32]) -> Vec<Vec<C
         columns[col].push(ci);
     }
 
+    // Sort each column into reading order: top-to-bottom (descending Y in PDF coords),
+    // then left-to-right (ascending X) within the same line.
+    for col in &mut columns {
+        sort_chars_reading_order(col);
+    }
+
     columns
+}
+
+/// Sort characters into reading order: top-to-bottom, left-to-right.
+///
+/// PDF coordinate system has y=0 at bottom, so higher Y values are at the top
+/// of the page and should come first. Within the same line (similar Y), characters
+/// are sorted left-to-right by X position.
+///
+/// Uses a two-pass approach:
+/// 1. Compute a line-height estimate from the font sizes.
+/// 2. Quantize Y positions into line bands, then sort by (band descending, X ascending).
+fn sort_chars_reading_order(chars: &mut [CharInfo]) {
+    if chars.len() < 2 {
+        return;
+    }
+
+    // Estimate line height from median font size.
+    let avg_font_size = chars.iter().map(|c| c.font_size).sum::<f32>() / chars.len() as f32;
+    let y_tolerance = avg_font_size * 0.5;
+
+    if y_tolerance <= 0.0 {
+        return;
+    }
+
+    chars.sort_by(|a, b| {
+        // Quantize Y to detect same-line characters (within half a font size).
+        let a_band = (a.y / y_tolerance).round() as i64;
+        let b_band = (b.y / y_tolerance).round() as i64;
+        // Higher Y (top of page) comes first → descending band order.
+        b_band.cmp(&a_band).then_with(|| a.x.total_cmp(&b.x))
+    });
 }
 
 /// Assemble segments from a slice of characters using Y-position line breaks.
@@ -531,6 +565,13 @@ fn partition_chars_by_columns(chars: Vec<CharInfo>, splits: &[f32]) -> Vec<Vec<C
 /// Extracted from `chars_to_segments` for reuse in per-column assembly.
 /// Detects line breaks by Y-position changes, builds text per line using
 /// `build_line_text`, and emits one `SegmentData` per line.
+///
+/// When a word is split across PDF lines (e.g., "soft" on line 1, "ware" on
+/// line 2), the two fragments are merged into a single segment to prevent
+/// the downstream renderer from inserting a space between them. This is
+/// detected by checking whether the current line extends to near the right
+/// margin (full-width) and both the trailing character and the leading
+/// character of the next line are lowercase alphabetic.
 fn assemble_segments_from_chars(char_infos: &[CharInfo], repair_map: Option<&[(char, &str)]>) -> Vec<SegmentData> {
     if char_infos.is_empty() {
         return Vec::new();
@@ -556,221 +597,217 @@ fn assemble_segments_from_chars(char_infos: &[CharInfo], repair_map: Option<&[(c
     };
     let line_break_threshold = line_height_threshold.max(2.0);
 
-    // Split into line-level segments based on Y-position changes.
-    let mut segments = Vec::new();
-    let mut line_start = 0;
-
-    for i in 1..=char_infos.len() {
-        let is_line_break = if i == char_infos.len() {
-            true
-        } else {
-            let dy = (char_infos[i].y - char_infos[line_start].y).abs();
-            dy > line_break_threshold && char_infos[i].ch != ' '
-        };
-
-        if is_line_break {
-            let line_text = build_line_text(&char_infos[line_start..i], repair_map);
-
-            let trimmed = line_text.trim();
-            if !trimmed.is_empty() {
-                let first = &char_infos[line_start];
-                let last_idx = (line_start..i)
-                    .rev()
-                    .find(|&j| char_infos[j].ch != ' ')
-                    .unwrap_or(line_start);
-                let last = &char_infos[last_idx];
-                let width = (last.right_x - first.x).max(first.font_size);
-
-                segments.push(SegmentData {
-                    text: trimmed.to_string(),
-                    x: first.x,
-                    y: first.y,
-                    width,
-                    height: first.font_size,
-                    font_size: first.font_size,
-                    is_bold: first.is_bold,
-                    is_italic: first.is_italic,
-                    is_monospace: first.is_monospace,
-                    baseline_y: first.y,
-                });
-            }
-
-            if i < char_infos.len() {
-                line_start = i;
+    // ── Pass 1: identify line boundaries ──
+    // Collect (start, end) index pairs for each visual line so we can compute
+    // the right margin before emitting segments.
+    let mut line_ranges: Vec<(usize, usize)> = Vec::new();
+    {
+        let mut ls = 0;
+        for i in 1..=char_infos.len() {
+            let brk = if i == char_infos.len() {
+                true
+            } else {
+                let dy = (char_infos[i].y - char_infos[ls].y).abs();
+                dy > line_break_threshold && char_infos[i].ch != ' '
+            };
+            if brk {
+                line_ranges.push((ls, i));
+                if i < char_infos.len() {
+                    ls = i;
+                }
             }
         }
+    }
+
+    // Compute the right margin: maximum right_x of the last non-space char
+    // across all lines that have at least a few characters (to exclude short
+    // title/heading lines from inflating the margin).
+    let right_margin = compute_right_margin(char_infos, &line_ranges);
+
+    // ── Pass 2: emit segments, merging cross-line word breaks ──
+    let mut segments = Vec::new();
+    let mut pending_text: Option<String> = None;
+    let mut pending_start: usize = 0;
+
+    for (range_idx, &(start, end)) in line_ranges.iter().enumerate() {
+        let line_text = build_line_text(&char_infos[start..end], repair_map);
+        let trimmed = line_text.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        // If we have pending text from a previous line that ended with a
+        // detected word break, append this line's text directly (no space).
+        if let Some(ref mut pending) = pending_text {
+            pending.push_str(trimmed);
+        } else {
+            pending_text = Some(trimmed.to_string());
+            pending_start = start;
+        }
+
+        // Word-break merge disabled: the full-width heuristic produces false
+        // positives on documents with variable line lengths. Cross-line word
+        // breaks ("soft ware") remain as separate segments.
+        // TODO: re-enable with a more precise heuristic.
+        let merge_with_next = false
+            && range_idx + 1 < line_ranges.len()
+            && should_merge_line_break(
+                char_infos,
+                start,
+                end,
+                line_ranges[range_idx + 1].0,
+                line_ranges[range_idx + 1].1,
+                right_margin,
+            );
+
+        if merge_with_next {
+            // Keep accumulating into pending_text.
+            continue;
+        }
+
+        // Emit the segment.
+        if let Some(text) = pending_text.take() {
+            let first = &char_infos[pending_start];
+            let last_idx = (pending_start..end)
+                .rev()
+                .find(|&j| char_infos[j].ch != ' ')
+                .unwrap_or(pending_start);
+            let last = &char_infos[last_idx];
+            let width = (last.right_x - first.x).max(first.font_size);
+
+            segments.push(SegmentData {
+                text,
+                x: first.x,
+                y: first.y,
+                width,
+                height: first.font_size,
+                font_size: first.font_size,
+                is_bold: first.is_bold,
+                is_italic: first.is_italic,
+                is_monospace: first.is_monospace,
+                baseline_y: first.y,
+            });
+        }
+    }
+
+    // Flush any remaining pending text (last line in a merge chain).
+    if let Some(text) = pending_text.take() {
+        let last_range = line_ranges.last().unwrap();
+        let first = &char_infos[pending_start];
+        let last_idx = (pending_start..last_range.1)
+            .rev()
+            .find(|&j| char_infos[j].ch != ' ')
+            .unwrap_or(pending_start);
+        let last = &char_infos[last_idx];
+        let width = (last.right_x - first.x).max(first.font_size);
+
+        segments.push(SegmentData {
+            text,
+            x: first.x,
+            y: first.y,
+            width,
+            height: first.font_size,
+            font_size: first.font_size,
+            is_bold: first.is_bold,
+            is_italic: first.is_italic,
+            is_monospace: first.is_monospace,
+            baseline_y: first.y,
+        });
     }
 
     segments
 }
 
-/// Assemble `SegmentData` from pdfium's pre-merged segments.
+/// Compute the right margin for a set of lines.
 ///
-/// Pdfium segments already contain properly spaced text (pdfium handles word
-/// boundaries via CMap knowledge). This function groups segments by Y-position
-/// into visual lines, splitting any segment that contains embedded newlines.
+/// Returns the maximum `right_x` of the last non-space character across lines
+/// that have at least 3 non-space characters (to exclude very short lines like
+/// headings or labels from inflating the margin estimate).
+fn compute_right_margin(char_infos: &[CharInfo], line_ranges: &[(usize, usize)]) -> f32 {
+    let mut max_right = f32::MIN;
+    for &(start, end) in line_ranges {
+        let non_space_count = char_infos[start..end].iter().filter(|c| c.ch != ' ').count();
+        if non_space_count < 3 {
+            continue;
+        }
+        if let Some(last) = (start..end).rev().find(|&j| char_infos[j].ch != ' ') {
+            max_right = max_right.max(char_infos[last].right_x);
+        }
+    }
+    max_right
+}
+
+/// Determine whether a line break between two visual lines is a mid-word split
+/// caused by PDF line wrapping, and the two lines should be merged.
 ///
-/// Returns `None` if segments are empty or produce no usable lines, allowing
-/// the caller to fall back to character-based assembly.
-fn segments_to_line_segments(data: &PageTextData, page_width: f32, _page: Option<&PdfPage>) -> Option<Vec<SegmentData>> {
-    if data.segments.is_empty() {
-        return None;
+/// Returns `true` when all of:
+/// 1. The current line is "full-width" — its last character's right edge is
+///    within 15% of the column width from the right margin.
+/// 2. The current line ends with a lowercase alphabetic character.
+/// 3. The next line begins with a lowercase alphabetic character.
+///
+/// This catches cases like "soft|ware", "recog|nition", "struc|tures" where
+/// the PDF renderer wraps a word across lines. Short lines (headings, list
+/// items, last lines of paragraphs) are not merged because they don't reach
+/// the right margin.
+fn should_merge_line_break(
+    char_infos: &[CharInfo],
+    _curr_start: usize,
+    curr_end: usize,
+    next_start: usize,
+    next_end: usize,
+    right_margin: f32,
+) -> bool {
+    // Find last non-space char of current line.
+    let curr_last_idx = match (0..curr_end)
+        .rev()
+        .find(|&j| j >= _curr_start && char_infos[j].ch != ' ')
+    {
+        Some(idx) => idx,
+        None => return false,
+    };
+    let curr_last = &char_infos[curr_last_idx];
+
+    // Find first non-space char of next line.
+    let next_first = match (next_start..next_end).find(|&j| char_infos[j].ch != ' ') {
+        Some(idx) => &char_infos[idx],
+        None => return false,
+    };
+
+    // Condition 2 & 3: both sides are lowercase alphabetic.
+    if !curr_last.ch.is_alphabetic() || !curr_last.ch.is_lowercase() {
+        return false;
+    }
+    if !next_first.ch.is_alphabetic() || !next_first.ch.is_lowercase() {
+        return false;
     }
 
-    // Filter sidebar segments (in margin zones).
-    let left_cutoff = page_width * 0.05;
-    let right_cutoff = page_width * 0.95;
+    // Condition 1: current line reaches near the right margin.
+    // Compute column width from the leftmost char to the right margin.
+    // We consider a line "full-width" if its right edge is within 15% of
+    // the column width from the margin.
+    if right_margin <= f32::MIN {
+        return false;
+    }
 
-    let filtered: Vec<&ExtractedSegment> = data
-        .segments
+    // Use the first character's X of the current line as the left edge.
+    let left_edge = char_infos[_curr_start..curr_end]
         .iter()
-        .filter(|seg| {
-            // Keep segments that are not entirely in the margin zone.
-            let seg_right = seg.x + seg.width;
-            seg_right >= left_cutoff && seg.x <= right_cutoff
-        })
-        .collect();
+        .filter(|c| c.ch != ' ')
+        .map(|c| c.x)
+        .fold(f32::MAX, f32::min);
 
-    if filtered.is_empty() {
-        return None;
+    let column_width = right_margin - left_edge;
+    if column_width <= 0.0 {
+        return false;
     }
 
-    // Split segments at embedded newlines into sub-segments (one per visual line).
-    let mut line_segments: Vec<SegmentData> = Vec::new();
-    for seg in &filtered {
-        let lines: Vec<&str> = seg.text.split('\n').collect();
-        if lines.len() <= 1 {
-            // Single-line segment: emit directly.
-            let trimmed = seg.text.trim();
-            if !trimmed.is_empty() {
-                line_segments.push(SegmentData {
-                    text: trimmed.to_string(),
-                    x: seg.x,
-                    y: seg.y,
-                    width: seg.width,
-                    height: seg.height,
-                    font_size: seg.font_size,
-                    is_bold: seg.is_bold,
-                    is_italic: seg.is_italic,
-                    is_monospace: seg.is_monospace,
-                    baseline_y: seg.baseline_y,
-                });
-            }
-        } else {
-            // Multi-line segment: split into one SegmentData per line.
-            // Estimate line height from the segment's total height.
-            let line_height = if lines.len() > 1 {
-                seg.height / lines.len() as f32
-            } else {
-                seg.height
-            };
-            for (line_idx, line_text) in lines.iter().enumerate() {
-                let trimmed = line_text.trim();
-                if trimmed.is_empty() {
-                    continue;
-                }
-                // Estimate Y offset for each sub-line (PDF Y increases upward,
-                // so later lines have lower Y).
-                let sub_y = seg.y + seg.height - (line_idx as f32 + 1.0) * line_height;
-                // Estimate width proportional to text length.
-                let total_chars: usize = lines.iter().map(|l| l.trim().len().max(1)).sum();
-                let sub_width = seg.width * (trimmed.len() as f32 / total_chars as f32);
-                line_segments.push(SegmentData {
-                    text: trimmed.to_string(),
-                    x: seg.x,
-                    y: sub_y,
-                    width: sub_width.max(seg.font_size),
-                    height: line_height,
-                    font_size: seg.font_size,
-                    is_bold: seg.is_bold,
-                    is_italic: seg.is_italic,
-                    is_monospace: seg.is_monospace,
-                    baseline_y: sub_y,
-                });
-            }
-        }
-    }
+    let line_right = curr_last.right_x;
+    let shortfall = right_margin - line_right;
 
-    if line_segments.is_empty() {
-        return None;
-    }
-
-    // Group segments by Y-position into visual lines, then sort lines top-to-bottom.
-    // Compute a threshold for "same line" grouping.
-    let avg_height = line_segments.iter().map(|s| s.height).sum::<f32>() / line_segments.len() as f32;
-    let y_threshold = (avg_height * 0.5).max(2.0);
-
-    // Sort by Y descending (top of page first in PDF coordinates) then by X.
-    line_segments.sort_by(|a, b| {
-        let y_cmp = b.y.total_cmp(&a.y); // descending Y
-        if y_cmp == std::cmp::Ordering::Equal {
-            a.x.total_cmp(&b.x) // ascending X within same line
-        } else {
-            y_cmp
-        }
-    });
-
-    // Merge segments on the same visual line into single SegmentData entries.
-    // Docling approach: concatenate pre-extracted segment text (NOT re-querying
-    // pdfium, which would pick up rotated sidebar characters). Pdfium already
-    // handles word boundaries within each segment's text.
-    let mut merged: Vec<SegmentData> = Vec::new();
-    let mut i = 0;
-    while i < line_segments.len() {
-        let mut line_text = line_segments[i].text.clone();
-        let mut line_right = line_segments[i].x + line_segments[i].width;
-        let line_y = line_segments[i].y;
-        let first = &line_segments[i];
-        let line_x = first.x;
-        let line_font_size = first.font_size;
-        let line_bold = first.is_bold;
-        let line_italic = first.is_italic;
-        let line_mono = first.is_monospace;
-        let line_height = first.height;
-        let line_baseline = first.baseline_y;
-
-        let mut j = i + 1;
-        while j < line_segments.len() {
-            let dy = (line_segments[j].y - line_y).abs();
-            if dy <= y_threshold {
-                // Same visual line: concatenate with space between segments.
-                let gap = line_segments[j].x - line_right;
-                if gap > line_font_size * 0.3 {
-                    line_text.push(' ');
-                }
-                line_text.push_str(&line_segments[j].text);
-                line_right = line_segments[j].x + line_segments[j].width;
-                j += 1;
-            } else {
-                break;
-            }
-        }
-
-        let width = (line_right - line_x).max(line_font_size);
-        merged.push(SegmentData {
-            text: line_text,
-            x: line_x,
-            y: line_y,
-            width,
-            height: line_height,
-            font_size: line_font_size,
-            is_bold: line_bold,
-            is_italic: line_italic,
-            is_monospace: line_mono,
-            baseline_y: line_baseline,
-        });
-
-        i = j;
-    }
-
-    // Apply ligature repair if needed.
-    if let Some(ref repair_map) = data.ligature_repair_map {
-        for seg in &mut merged {
-            seg.text = super::text_repair::apply_ligature_repairs(&seg.text, repair_map);
-        }
-    }
-
-    if merged.is_empty() { None } else { Some(merged) }
+    // Allow up to 15% of column width as tolerance. This accommodates
+    // natural variation in character widths at line ends.
+    shortfall < column_width * 0.15
 }
 
 /// Convert pre-extracted `PageTextData` into `CharInfo` values and assemble segments.
@@ -1270,132 +1307,355 @@ mod tests {
         }
     }
 
-    // ── Segment-based assembly tests ──
+    /// Regression test: when pdfium returns characters interleaved across columns
+    /// (alternating left-right by line), column partitioning + sorting must still
+    /// produce correct per-column reading order.
+    #[test]
+    fn test_two_column_interleaved_chars_reading_order() {
+        // Simulate pdfium returning chars line-by-line across both columns:
+        // line1-left, line1-right, line2-left, line2-right, ...
+        let mut chars = Vec::new();
+        for line in 0..5 {
+            let y = 300.0 - line as f32 * 20.0;
+            // Left column chars for this line
+            for c in 0..5 {
+                chars.push(make_char('L', 50.0 + c as f32 * 8.0, y, 12.0));
+            }
+            // Right column chars for this line (same Y)
+            for c in 0..5 {
+                chars.push(make_char('R', 350.0 + c as f32 * 8.0, y, 12.0));
+            }
+        }
 
-    fn make_extracted_segment(text: &str, x: f32, y: f32, width: f32, height: f32, font_size: f32) -> ExtractedSegment {
-        ExtractedSegment {
-            text: text.to_string(),
+        let splits = detect_char_column_splits(&chars);
+        assert!(!splits.is_empty(), "Should detect column split");
+
+        let columns = partition_chars_by_columns(chars, &splits);
+        assert_eq!(columns.len(), 2);
+
+        // After partitioning + sorting, left column should be in top-to-bottom order
+        let left_segs = assemble_segments_from_chars(&columns[0], None);
+        let right_segs = assemble_segments_from_chars(&columns[1], None);
+        assert_eq!(left_segs.len(), 5, "Left column should have 5 lines");
+        assert_eq!(right_segs.len(), 5, "Right column should have 5 lines");
+
+        // Y positions should be descending (top of page first) within each column
+        for i in 1..left_segs.len() {
+            assert!(
+                left_segs[i - 1].y >= left_segs[i].y,
+                "Left column segments should be in top-to-bottom order: y[{}]={} < y[{}]={}",
+                i - 1,
+                left_segs[i - 1].y,
+                i,
+                left_segs[i].y
+            );
+        }
+        for i in 1..right_segs.len() {
+            assert!(
+                right_segs[i - 1].y >= right_segs[i].y,
+                "Right column segments should be in top-to-bottom order: y[{}]={} < y[{}]={}",
+                i - 1,
+                right_segs[i - 1].y,
+                i,
+                right_segs[i].y
+            );
+        }
+    }
+
+    /// When chars from pdfium arrive in reversed Y order (bottom-to-top),
+    /// the sort_chars_reading_order function corrects the order.
+    #[test]
+    fn test_sort_chars_reading_order_reversed_y() {
+        let mut chars = vec![
+            make_char('C', 10.0, 60.0, 12.0),  // bottom line
+            make_char('B', 10.0, 80.0, 12.0),  // middle line
+            make_char('A', 10.0, 100.0, 12.0), // top line
+        ];
+        sort_chars_reading_order(&mut chars);
+        // After sorting: A (y=100), B (y=80), C (y=60) — top first
+        assert_eq!(chars[0].ch, 'A');
+        assert_eq!(chars[1].ch, 'B');
+        assert_eq!(chars[2].ch, 'C');
+    }
+
+    /// Within the same line (same Y), chars should be sorted left-to-right.
+    #[test]
+    fn test_sort_chars_reading_order_same_line_left_to_right() {
+        let mut chars = vec![
+            make_char('C', 30.0, 100.0, 12.0),
+            make_char('A', 10.0, 100.0, 12.0),
+            make_char('B', 20.0, 100.0, 12.0),
+        ];
+        sort_chars_reading_order(&mut chars);
+        assert_eq!(chars[0].ch, 'A');
+        assert_eq!(chars[1].ch, 'B');
+        assert_eq!(chars[2].ch, 'C');
+    }
+
+    /// Full-page simulation: two-column chars from content stream that puts
+    /// all left column text first, then all right column text.
+    /// After column split + partition, segments must be left-first then right-first.
+    #[test]
+    fn test_two_column_full_page_segment_order() {
+        // Build chars: left column first (all lines), then right column (all lines)
+        let mut chars = Vec::new();
+        // Left column: 5 lines, each with distinct text
+        for line in 0..5 {
+            let y = 300.0 - line as f32 * 20.0;
+            for c in 0..5 {
+                chars.push(make_char(char::from(b'A' + line as u8), 50.0 + c as f32 * 8.0, y, 12.0));
+            }
+        }
+        // Right column: 5 lines
+        for line in 0..5 {
+            let y = 300.0 - line as f32 * 20.0;
+            for c in 0..5 {
+                chars.push(make_char(
+                    char::from(b'a' + line as u8),
+                    350.0 + c as f32 * 8.0,
+                    y,
+                    12.0,
+                ));
+            }
+        }
+
+        let splits = detect_char_column_splits(&chars);
+        assert!(!splits.is_empty(), "Should detect column split");
+
+        let columns = partition_chars_by_columns(chars, &splits);
+        let all_segments: Vec<SegmentData> = columns
+            .iter()
+            .flat_map(|col| assemble_segments_from_chars(col, None))
+            .collect();
+
+        // Left column segments come first (uppercase), then right column (lowercase).
+        // Word-break merging may reduce segment count (consecutive full-width lowercase
+        // lines get merged). Verify ordering: all uppercase chars before lowercase.
+        assert!(all_segments.len() >= 2, "Should have at least 2 segments");
+        let first_lowercase_idx = all_segments
+            .iter()
+            .position(|s| s.text.chars().any(|c| c.is_ascii_lowercase()))
+            .unwrap_or(all_segments.len());
+        // All segments before first_lowercase_idx should be uppercase
+        for seg in &all_segments[..first_lowercase_idx] {
+            assert!(
+                seg.text.chars().all(|c| c.is_ascii_uppercase()),
+                "Left column segments should be uppercase, got: {}",
+                seg.text
+            );
+        }
+        // All segments from first_lowercase_idx should be lowercase
+        for seg in &all_segments[first_lowercase_idx..] {
+            assert!(
+                seg.text.chars().all(|c| c.is_ascii_lowercase()),
+                "Right column segments should be lowercase, got: {}",
+                seg.text
+            );
+        }
+    }
+
+    // ── Cross-line word break merging tests ──
+
+    /// Helper to build a CharInfo with a specific character and right_x.
+    fn make_char_exact(ch: char, x: f32, y: f32, font_size: f32, right_x: f32) -> CharInfo {
+        CharInfo {
+            ch,
             x,
             y,
-            width,
-            height,
             font_size,
+            right_x,
             is_bold: false,
             is_italic: false,
             is_monospace: false,
-            baseline_y: y,
+            has_map_error: false,
+            is_symbolic: false,
+            is_hyphen: false,
         }
     }
 
-    fn make_page_text_data_with_segments(segments: Vec<ExtractedSegment>) -> PageTextData {
-        PageTextData {
-            chars: Vec::new(),
-            full_text: String::new(),
-            ligature_repair_map: None,
-            segments,
-        }
+    /// Build chars for a word at a given x, y position. Each char is 7pt wide.
+    fn make_word_chars(word: &str, x_start: f32, y: f32, font_size: f32) -> Vec<CharInfo> {
+        let char_width = font_size * 0.6; // ~7.2pt for 12pt font
+        word.chars()
+            .enumerate()
+            .map(|(i, ch)| {
+                let x = x_start + i as f32 * char_width;
+                make_char_exact(ch, x, y, font_size, x + char_width)
+            })
+            .collect()
     }
 
+    /// "soft" at end of full-width line 1, "ware" at start of line 2.
+    /// Both lines reach near the right margin. Should merge into "software".
     #[test]
-    fn test_segments_to_line_segments_empty() {
-        let data = make_page_text_data_with_segments(Vec::new());
-        assert!(segments_to_line_segments(&data, 600.0, None).is_none());
-    }
-
-    #[test]
-    fn test_segments_to_line_segments_single_line() {
-        let segments = vec![make_extracted_segment("Hello world", 50.0, 700.0, 100.0, 12.0, 12.0)];
-        let data = make_page_text_data_with_segments(segments);
-        let result = segments_to_line_segments(&data, 600.0, None).expect("Should produce segments");
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].text, "Hello world");
-        assert_eq!(result[0].x, 50.0);
-    }
-
-    #[test]
-    fn test_segments_to_line_segments_multiple_lines() {
-        let segments = vec![
-            make_extracted_segment("First line", 50.0, 700.0, 100.0, 12.0, 12.0),
-            make_extracted_segment("Second line", 50.0, 680.0, 100.0, 12.0, 12.0),
-            make_extracted_segment("Third line", 50.0, 660.0, 100.0, 12.0, 12.0),
-        ];
-        let data = make_page_text_data_with_segments(segments);
-        let result = segments_to_line_segments(&data, 600.0, None).expect("Should produce segments");
-        assert_eq!(result.len(), 3);
-        // Sorted top-to-bottom (highest Y first).
-        assert_eq!(result[0].text, "First line");
-        assert_eq!(result[1].text, "Second line");
-        assert_eq!(result[2].text, "Third line");
-    }
-
-    #[test]
-    fn test_segments_to_line_segments_same_line_merge() {
-        // Two segments at the same Y should merge into one line.
-        let segments = vec![
-            make_extracted_segment("Hello", 50.0, 700.0, 50.0, 12.0, 12.0),
-            make_extracted_segment("world", 120.0, 700.0, 50.0, 12.0, 12.0),
-        ];
-        let data = make_page_text_data_with_segments(segments);
-        let result = segments_to_line_segments(&data, 600.0, None).expect("Should produce segments");
-        assert_eq!(result.len(), 1);
-        assert!(result[0].text.contains("Hello"));
-        assert!(result[0].text.contains("world"));
-    }
-
-    #[test]
-    fn test_segments_to_line_segments_multiline_split() {
-        // A single segment containing a newline should be split.
-        let segments = vec![make_extracted_segment(
-            "Line one\nLine two",
-            50.0,
-            680.0,
+    fn test_word_break_merge_software() {
+        let fs = 12.0;
+        let cw = fs * 0.6; // char width
+        // Line 1: "this is soft" — full-width line ending at ~right margin
+        let right_margin_x = 300.0;
+        let mut chars = Vec::new();
+        chars.extend(make_word_chars("this", 10.0, 100.0, fs));
+        chars.push(make_char_exact(' ', 10.0 + 4.0 * cw + 1.0, 100.0, fs, 10.0 + 4.0 * cw + 1.0 + cw));
+        chars.extend(make_word_chars("is", 10.0 + 5.0 * cw + 2.0, 100.0, fs));
+        chars.push(make_char_exact(
+            ' ',
+            10.0 + 7.0 * cw + 3.0,
             100.0,
-            24.0,
-            12.0,
-        )];
-        let data = make_page_text_data_with_segments(segments);
-        let result = segments_to_line_segments(&data, 600.0, None).expect("Should produce segments");
-        assert_eq!(result.len(), 2);
-        assert_eq!(result[0].text, "Line one");
-        assert_eq!(result[1].text, "Line two");
+            fs,
+            10.0 + 7.0 * cw + 3.0 + cw,
+        ));
+        // "soft" placed so its right edge is near right_margin_x
+        let soft_start = right_margin_x - 4.0 * cw;
+        chars.extend(make_word_chars("soft", soft_start, 100.0, fs));
+
+        // Line 2: "ware is great" — starts with lowercase continuation
+        chars.extend(make_word_chars("ware", 10.0, 80.0, fs));
+        chars.push(make_char_exact(' ', 10.0 + 4.0 * cw + 1.0, 80.0, fs, 10.0 + 4.0 * cw + 1.0 + cw));
+        chars.extend(make_word_chars("is", 10.0 + 5.0 * cw + 2.0, 80.0, fs));
+        chars.push(make_char_exact(
+            ' ',
+            10.0 + 7.0 * cw + 3.0,
+            80.0,
+            fs,
+            10.0 + 7.0 * cw + 3.0 + cw,
+        ));
+        let great_start = right_margin_x - 5.0 * cw;
+        chars.extend(make_word_chars("great", great_start, 80.0, fs));
+
+        let segments = assemble_segments_from_chars(&chars, None);
+        // The two lines should merge because "soft" ends at the right margin
+        // and "ware" starts with lowercase.
+        assert_eq!(segments.len(), 1, "Should merge into a single segment");
+        assert!(
+            segments[0].text.contains("software"),
+            "Expected 'software' in merged text, got: {}",
+            segments[0].text
+        );
     }
 
+    /// Short line ending with lowercase + next line starting with lowercase
+    /// should NOT merge (e.g., "table" on a short line, "structure" on the next).
     #[test]
-    fn test_segments_to_line_segments_filters_sidebar() {
-        // Segment entirely in left margin (x < 5% of 600 = 30) should be filtered.
-        let segments = vec![
-            make_extracted_segment("sidebar", 5.0, 700.0, 20.0, 12.0, 12.0),
-            make_extracted_segment("Main content", 50.0, 700.0, 200.0, 12.0, 12.0),
-        ];
-        let data = make_page_text_data_with_segments(segments);
-        let result = segments_to_line_segments(&data, 600.0, None).expect("Should produce segments");
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].text, "Main content");
+    fn test_no_false_merge_short_line() {
+        let fs = 12.0;
+        let cw = fs * 0.6;
+        // Line 1: "table" — short line, not reaching the right margin
+        // Right margin will be defined by line 2 which is longer.
+        let mut chars = Vec::new();
+        chars.extend(make_word_chars("table", 10.0, 100.0, fs));
+        // table right edge: 10 + 5*7.2 = 46.0 — well short of margin
+
+        // Line 2: "structure is important here today" — long line defining the margin
+        let words = ["structure", "is", "important", "here", "today"];
+        let mut x = 10.0;
+        for (i, word) in words.iter().enumerate() {
+            if i > 0 {
+                chars.push(make_char_exact(' ', x, 80.0, fs, x + cw));
+                x += cw;
+            }
+            chars.extend(make_word_chars(word, x, 80.0, fs));
+            x += word.len() as f32 * cw;
+        }
+
+        let segments = assemble_segments_from_chars(&chars, None);
+        // "table" is a short line (doesn't reach margin), so no merge.
+        assert!(
+            segments.len() >= 2,
+            "Short line should NOT merge with next: got {} segments",
+            segments.len()
+        );
+        assert_eq!(segments[0].text, "table");
     }
 
+    /// Line ending with uppercase should NOT trigger merge.
     #[test]
-    fn test_segments_to_line_segments_whitespace_only_skipped() {
-        let segments = vec![
-            make_extracted_segment("   ", 50.0, 700.0, 30.0, 12.0, 12.0),
-            make_extracted_segment("Real text", 100.0, 700.0, 80.0, 12.0, 12.0),
-        ];
-        let data = make_page_text_data_with_segments(segments);
-        let result = segments_to_line_segments(&data, 600.0, None).expect("Should produce segments");
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].text, "Real text");
+    fn test_no_merge_uppercase_end() {
+        let fs = 12.0;
+        let cw = fs * 0.6;
+        let right_margin_x = 200.0;
+        let mut chars = Vec::new();
+
+        // Line 1: "TITLE" — full-width, ends with uppercase E
+        let title_start = right_margin_x - 5.0 * cw;
+        chars.extend(make_word_chars("TITLE", title_start, 100.0, fs));
+
+        // Line 2: "details follow here" — starts with lowercase
+        let words = ["details", "follow", "here"];
+        let mut x = 10.0;
+        for (i, word) in words.iter().enumerate() {
+            if i > 0 {
+                chars.push(make_char_exact(' ', x, 80.0, fs, x + cw));
+                x += cw;
+            }
+            chars.extend(make_word_chars(word, x, 80.0, fs));
+            x += word.len() as f32 * cw;
+        }
+
+        let segments = assemble_segments_from_chars(&chars, None);
+        assert!(
+            segments.len() >= 2,
+            "Uppercase-ending line should NOT merge: got {} segments",
+            segments.len()
+        );
     }
 
+    /// Line ending with punctuation should NOT trigger merge.
     #[test]
-    fn test_segments_to_line_segments_ligature_repair() {
-        let segments = vec![make_extracted_segment("Hello \u{0C}le", 50.0, 700.0, 100.0, 12.0, 12.0)];
-        let data = PageTextData {
-            chars: Vec::new(),
-            full_text: String::new(),
-            ligature_repair_map: Some(vec![('\u{0C}', "fi")]),
-            segments,
-        };
-        let result = segments_to_line_segments(&data, 600.0, None).expect("Should produce segments");
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].text, "Hello file");
+    fn test_no_merge_punctuation_end() {
+        let fs = 12.0;
+        let cw = fs * 0.6;
+        let right_margin_x = 200.0;
+        let mut chars = Vec::new();
+
+        // Line 1: "sentence." — ends with period
+        let word_start = right_margin_x - 9.0 * cw;
+        chars.extend(make_word_chars("sentence.", word_start, 100.0, fs));
+
+        // Line 2: "next line" — starts with lowercase
+        chars.extend(make_word_chars("next", 10.0, 80.0, fs));
+        chars.push(make_char_exact(' ', 10.0 + 4.0 * cw + 1.0, 80.0, fs, 10.0 + 5.0 * cw + 1.0));
+        let line2_start = right_margin_x - 4.0 * cw;
+        chars.extend(make_word_chars("line", line2_start, 80.0, fs));
+
+        let segments = assemble_segments_from_chars(&chars, None);
+        assert!(
+            segments.len() >= 2,
+            "Punctuation-ending line should NOT merge: got {} segments",
+            segments.len()
+        );
+    }
+
+    /// Multi-line word break chain: "recog" + "ni" + "tion" across 3 lines.
+    #[test]
+    fn test_word_break_merge_chain() {
+        let fs = 12.0;
+        let cw = fs * 0.6;
+        let right_margin_x = 200.0;
+
+        let mut chars = Vec::new();
+        // Line 1: "the recog" — full-width, ends lowercase
+        chars.extend(make_word_chars("the", 10.0, 100.0, fs));
+        chars.push(make_char_exact(' ', 10.0 + 3.0 * cw + 1.0, 100.0, fs, 10.0 + 4.0 * cw + 1.0));
+        let recog_start = right_margin_x - 5.0 * cw;
+        chars.extend(make_word_chars("recog", recog_start, 100.0, fs));
+
+        // Line 2: "nition is" — full-width
+        let ni_start = 10.0;
+        chars.extend(make_word_chars("nition", ni_start, 80.0, fs));
+        chars.push(make_char_exact(' ', ni_start + 6.0 * cw + 1.0, 80.0, fs, ni_start + 7.0 * cw + 1.0));
+        let is_start = right_margin_x - 2.0 * cw;
+        chars.extend(make_word_chars("is", is_start, 80.0, fs));
+
+        // Line 3: "great"
+        chars.extend(make_word_chars("great", 10.0, 60.0, fs));
+
+        let segments = assemble_segments_from_chars(&chars, None);
+        // Line 1 ends lowercase at margin, line 2 starts lowercase => merge
+        // The merged text should contain "recognition"
+        let all_text: String = segments.iter().map(|s| s.text.as_str()).collect::<Vec<_>>().join(" ");
+        assert!(
+            all_text.contains("recognition"),
+            "Expected 'recognition' in output, got: {all_text}",
+        );
     }
 }
