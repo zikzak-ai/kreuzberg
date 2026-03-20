@@ -101,14 +101,14 @@ fn build_bytes_items(
 
 pub fn batch_extract_files_sync_impl(
     paths: Strings,
-    file_configs: Nullable<&List>,
+    file_configs: Nullable<List>,
     config_json: Nullable<&str>,
 ) -> extendr_api::Result<List> {
     #[cfg(not(target_arch = "wasm32"))]
     {
         let config = parse_config(config_json)?;
         let path_vec: Vec<String> = paths.iter().map(|s| s.to_string()).collect();
-        let fc = match file_configs {
+        let fc = match &file_configs {
             Nullable::NotNull(val) => Some(val),
             Nullable::Null => None,
         };
@@ -129,14 +129,14 @@ pub fn batch_extract_files_sync_impl(
 
 pub fn batch_extract_files_impl(
     paths: Strings,
-    file_configs: Nullable<&List>,
+    file_configs: Nullable<List>,
     config_json: Nullable<&str>,
 ) -> extendr_api::Result<List> {
     #[cfg(not(target_arch = "wasm32"))]
     {
         let config = parse_config(config_json)?;
         let path_vec: Vec<String> = paths.iter().map(|s| s.to_string()).collect();
-        let fc = match file_configs {
+        let fc = match &file_configs {
             Nullable::NotNull(val) => Some(val),
             Nullable::Null => None,
         };
@@ -161,11 +161,11 @@ pub fn batch_extract_files_impl(
 pub fn batch_extract_bytes_sync_impl(
     data_list: List,
     mime_types: Strings,
-    file_configs: Nullable<&List>,
+    file_configs: Nullable<List>,
     config_json: Nullable<&str>,
 ) -> extendr_api::Result<List> {
     let config = parse_config(config_json)?;
-    let fc = match file_configs {
+    let fc = match &file_configs {
         Nullable::NotNull(val) => Some(val),
         Nullable::Null => None,
     };
@@ -181,13 +181,13 @@ pub fn batch_extract_bytes_sync_impl(
 pub fn batch_extract_bytes_impl(
     data_list: List,
     mime_types: Strings,
-    file_configs: Nullable<&List>,
+    file_configs: Nullable<List>,
     config_json: Nullable<&str>,
 ) -> extendr_api::Result<List> {
     #[cfg(not(target_arch = "wasm32"))]
     {
         let config = parse_config(config_json)?;
-        let fc = match file_configs {
+        let fc = match &file_configs {
             Nullable::NotNull(val) => Some(val),
             Nullable::Null => None,
         };

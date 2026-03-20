@@ -53,6 +53,20 @@ readonly class HtmlConversionOptions
         public ?string $bullets = null,
 
         /**
+         * List style (e.g., "dash", "asterisk", "plus").
+         *
+         * @var string|null
+         */
+        public ?string $listStyle = null,
+
+        /**
+         * List format (e.g., "unordered", "ordered").
+         *
+         * @var string|null
+         */
+        public ?string $listFormat = null,
+
+        /**
          * Symbol for strong/emphasis text.
          *
          * @var string|null
@@ -226,6 +240,8 @@ readonly class HtmlConversionOptions
         $listIndentType = $data['list_indent_type'] ?? null;
         $listIndentWidth = $data['list_indent_width'] ?? null;
         $bullets = $data['bullets'] ?? null;
+        $listStyle = $data['list_style'] ?? null;
+        $listFormat = $data['list_format'] ?? null;
         $strongEmSymbol = $data['strong_em_symbol'] ?? null;
         $escapeAsterisks = $data['escape_asterisks'] ?? null;
         $escapeUnderscores = $data['escape_underscores'] ?? null;
@@ -255,6 +271,8 @@ readonly class HtmlConversionOptions
             listIndentType: is_string($listIndentType) ? $listIndentType : null,
             listIndentWidth: is_int($listIndentWidth) ? $listIndentWidth : null,
             bullets: is_string($bullets) ? $bullets : null,
+            listStyle: is_string($listStyle) ? $listStyle : null,
+            listFormat: is_string($listFormat) ? $listFormat : null,
             strongEmSymbol: is_string($strongEmSymbol) ? $strongEmSymbol : null,
             escapeAsterisks: is_bool($escapeAsterisks) ? $escapeAsterisks : null,
             escapeUnderscores: is_bool($escapeUnderscores) ? $escapeUnderscores : null,
@@ -293,6 +311,8 @@ readonly class HtmlConversionOptions
             'list_indent_type' => $this->listIndentType,
             'list_indent_width' => $this->listIndentWidth,
             'bullets' => $this->bullets,
+            'list_style' => $this->listStyle,
+            'list_format' => $this->listFormat,
             'strong_em_symbol' => $this->strongEmSymbol,
             'escape_asterisks' => $this->escapeAsterisks,
             'escape_underscores' => $this->escapeUnderscores,

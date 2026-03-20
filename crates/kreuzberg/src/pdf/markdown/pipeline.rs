@@ -45,7 +45,7 @@ fn extract_structure_tree_pages(
             crate::pdf::error::PdfError::TextExtractionFailed(format!("Failed to get page {}: {:?}", i, e))
         })?;
 
-        let page_t = std::time::Instant::now();
+        let page_t = crate::utils::timing::Instant::now();
         match extract_page_content(&page) {
             Ok(extraction) if extraction.method == ExtractionMethod::StructureTree && !extraction.blocks.is_empty() => {
                 tracing::trace!(
@@ -145,7 +145,7 @@ fn extract_structure_tree_pages(
                 heuristic_pages.push(i as usize);
             }
         }
-        let page_ms = page_t.elapsed().as_secs_f64() * 1000.0;
+        let page_ms = page_t.elapsed_ms();
         if page_ms > 2000.0 {
             tracing::warn!(page = i, elapsed_ms = page_ms, "slow structure tree extraction");
         }
@@ -171,7 +171,7 @@ fn extract_heuristic_segments(
     bottom_margin: Option<f32>,
     has_layout_hints: bool,
 ) -> (Vec<Vec<SegmentData>>, Vec<ImagePosition>) {
-    let stage1_start = std::time::Instant::now();
+    let stage1_start = crate::utils::timing::Instant::now();
     let mut all_page_segments: Vec<Vec<SegmentData>> = vec![Vec::new(); page_count as usize];
     let mut all_image_positions: Vec<ImagePosition> = Vec::new();
     let mut image_offset = 0usize;
@@ -185,9 +185,9 @@ fn extract_heuristic_segments(
             }
         };
 
-        let page_t = std::time::Instant::now();
+        let page_t = crate::utils::timing::Instant::now();
         let (mut segments, image_positions) = objects_to_page_data(&page, i + 1, &mut image_offset);
-        let page_ms = page_t.elapsed().as_secs_f64() * 1000.0;
+        let page_ms = page_t.elapsed_ms();
         if page_ms > 1000.0 {
             tracing::warn!(
                 "slow objects_to_page_data page {}: {:.0}ms, {} segments",
@@ -235,7 +235,7 @@ fn extract_heuristic_segments(
     }
 
     tracing::debug!(
-        stage1_ms = stage1_start.elapsed().as_secs_f64() * 1000.0,
+        stage1_ms = stage1_start.elapsed_ms(),
         total_segments = all_page_segments.iter().map(|s| s.len()).sum::<usize>(),
         "PDF markdown pipeline: stage 1 complete"
     );
@@ -539,13 +539,13 @@ pub fn render_document_as_markdown_with_tables(
     // producing cleaner word spacing for fonts with broken CMaps.
     #[cfg(feature = "pdf-oxide")]
     let oxide_segments: Option<Vec<Vec<SegmentData>>> = {
-        let t = std::time::Instant::now();
+        let t = crate::utils::timing::Instant::now();
         let result = crate::pdf::oxide_text::extract_segments_with_oxide(page_count as usize);
         if let Some(ref segs) = result {
             let total: usize = segs.iter().map(|s| s.len()).sum();
             tracing::debug!(
                 total_segments = total,
-                elapsed_ms = t.elapsed().as_secs_f64() * 1000.0,
+                elapsed_ms = t.elapsed_ms(),
                 "pdf_oxide text extraction complete"
             );
         }

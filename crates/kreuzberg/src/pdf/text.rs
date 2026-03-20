@@ -271,15 +271,15 @@ fn extract_text_lazy_fast_path(document: &PdfDocument<'_>) -> Result<PdfTextExtr
     let mut sample_count = 0;
 
     for (page_idx, page) in document.pages().iter().enumerate() {
-        let _t = std::time::Instant::now();
+        let _t = crate::utils::timing::Instant::now();
         let text = page
             .text()
             .map_err(|e| PdfError::TextExtractionFailed(format!("Page text extraction failed: {}", e)))?;
-        let load_ms = _t.elapsed().as_secs_f64() * 1000.0;
+        let load_ms = _t.elapsed_ms();
 
-        let _t2 = std::time::Instant::now();
+        let _t2 = crate::utils::timing::Instant::now();
         let page_text = text.all();
-        let get_ms = _t2.elapsed().as_secs_f64() * 1000.0;
+        let get_ms = _t2.elapsed_ms();
         let page_size = page_text.len();
 
         if load_ms > 1000.0 || get_ms > 1000.0 {
@@ -361,15 +361,15 @@ fn extract_text_lazy_with_tracking(
     for (page_idx, page) in document.pages().iter().enumerate() {
         let page_number = page_idx + 1;
 
-        let _t = std::time::Instant::now();
+        let _t = crate::utils::timing::Instant::now();
         let text = page
             .text()
             .map_err(|e| PdfError::TextExtractionFailed(format!("Page text extraction failed: {}", e)))?;
-        let load_ms = _t.elapsed().as_secs_f64() * 1000.0;
+        let load_ms = _t.elapsed_ms();
 
-        let _t2 = std::time::Instant::now();
+        let _t2 = crate::utils::timing::Instant::now();
         let page_text_ref = text.all();
-        let get_ms = _t2.elapsed().as_secs_f64() * 1000.0;
+        let get_ms = _t2.elapsed_ms();
         let page_size = page_text_ref.len();
 
         if load_ms > 1000.0 || get_ms > 1000.0 {

@@ -1564,21 +1564,22 @@ fn to_title_case(s: &str) -> String {
 }
 
 fn write_vitest_config(output_dir: &Utf8Path) -> Result<()> {
-    let vitest_config = r#"import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
+    let vitest_config = r#"import { defineConfig } from "vitest/config";
+import { cloudflareTest } from "@cloudflare/vitest-pool-workers";
 
-export default defineWorkersConfig({
-    test: {
-        globals: true,
-        poolOptions: {
-            workers: {
-                main: "./tests/index.ts",
-                wrangler: {
-                    configPath: "./wrangler.toml",
-                },
-            },
-        },
-        testTimeout: 60000,
-    },
+export default defineConfig({
+	plugins: [
+		cloudflareTest({
+			main: "./tests/index.ts",
+			wrangler: {
+				configPath: "./wrangler.toml",
+			},
+		}),
+	],
+	test: {
+		globals: true,
+		testTimeout: 60000,
+	},
 });
 "#;
 
