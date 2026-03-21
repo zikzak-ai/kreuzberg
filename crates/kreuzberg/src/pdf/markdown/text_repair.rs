@@ -1000,6 +1000,20 @@ mod tests {
     }
 
     #[test]
+    fn test_pipe_table_guard_standard() {
+        // Lines starting with '|' are pipe-table rows — must not be modified.
+        let table = "| CTC_ARP | s hall be | active |";
+        assert_eq!(repair_broken_word_spacing(table), table);
+    }
+
+    #[test]
+    fn test_pipe_table_separator_guard() {
+        // Pipe-table separator lines must also be left untouched.
+        let sep = "| --- | --- |";
+        assert_eq!(repair_broken_word_spacing(sep), sep);
+    }
+
+    #[test]
     fn test_normalize_plain_text_unchanged() {
         assert_eq!(normalize_text_encoding("hello world"), "hello world");
     }

@@ -27,6 +27,126 @@ use std::fmt::{Display, Formatter};
 use std::os::raw::{c_double, c_int};
 use std::ptr::null_mut;
 
+/// Shared gap-based space filtering for respaced text methods.
+///
+/// Iterates `chars` and builds a `String`, emitting a space for each generated
+/// space character only when the horizontal gap to the next real character
+/// exceeds `font_size * space_ratio`. This is the single implementation shared
+/// by `all_respaced`, `inside_rect_respaced`, and `PdfPageTextSegment::text_respaced`.
+/// Filter generated spaces using direct FFI calls for minimal overhead.
+///
+/// Single pass over character indices. For each character:
+/// - Non-generated: 2 FFI calls (GetUnicode + GetCharBox)
+/// - Generated space: 1 FFI call (IsGenerated), plus GetCharBox only for the next
+///   non-generated char to measure the gap
+///
+/// This avoids the PdfPageTextChar wrapper overhead and minimizes FFI roundtrips.
+pub(super) fn filter_generated_spaces_direct(
+    text_page_handle: crate::bindgen::FPDF_TEXTPAGE,
+    start: i32,
+    count: i32,
+    space_ratio: f32,
+    bindings: &dyn PdfiumLibraryBindings,
+) -> String {
+    if count <= 0 {
+        return String::new();
+    }
+
+    let end = start + count;
+    let mut result = String::with_capacity(count as usize);
+    let mut prev_right_x: Option<f32> = None;
+    let mut prev_font_size: f32 = 12.0;
+
+    let mut i = start;
+    while i < end {
+        let idx = i as std::os::raw::c_int;
+
+        // Check if generated (1 FFI call)
+        if bindings.FPDFText_IsGenerated(text_page_handle, idx) != 0 {
+            if let Some(prev_r) = prev_right_x {
+                // Find next non-generated char to measure gap
+                let mut j = i + 1;
+                while j < end {
+                    let jdx = j as std::os::raw::c_int;
+                    if bindings.FPDFText_IsGenerated(text_page_handle, jdx) == 0 {
+                        // Get left edge of next real char (1 FFI call)
+                        let mut left = 0.0_f64;
+                        let mut bottom = 0.0_f64;
+                        let mut right = 0.0_f64;
+                        let mut top = 0.0_f64;
+                        if bindings.FPDFText_GetCharBox(
+                            text_page_handle,
+                            jdx,
+                            &mut left,
+                            &mut right,
+                            &mut bottom,
+                            &mut top,
+                        ) != 0
+                        {
+                            let gap = left as f32 - prev_r;
+                            let next_fs =
+                                bindings.FPDFText_GetFontSize(text_page_handle, jdx) as f32;
+                            let ref_fs = if next_fs > 0.0 { next_fs } else { prev_font_size };
+                            if gap > ref_fs * space_ratio {
+                                result.push(' ');
+                            }
+                        } else {
+                            result.push(' ');
+                        }
+                        break;
+                    }
+                    j += 1;
+                }
+                if j >= end {
+                    result.push(' '); // trailing generated space
+                }
+            }
+            i += 1;
+            continue;
+        }
+
+        // Non-generated char: GetUnicode (1 FFI call)
+        let unicode_val = bindings.FPDFText_GetUnicode(text_page_handle, idx);
+        if let Some(uc) = char::from_u32(unicode_val) {
+            if uc == '\r' {
+                result.push('\n');
+                prev_right_x = None;
+                i += 1;
+                continue;
+            }
+            if !uc.is_control() || uc == '\n' || uc == '\t' {
+                result.push(uc);
+            }
+        }
+
+        // GetCharBox for right_x tracking (1 FFI call)
+        let mut left = 0.0_f64;
+        let mut bottom = 0.0_f64;
+        let mut right = 0.0_f64;
+        let mut top = 0.0_f64;
+        if bindings.FPDFText_GetCharBox(
+            text_page_handle,
+            idx,
+            &mut left,
+            &mut right,
+            &mut bottom,
+            &mut top,
+        ) != 0
+        {
+            prev_right_x = Some(right as f32);
+        }
+
+        let fs = bindings.FPDFText_GetFontSize(text_page_handle, idx) as f32;
+        if fs > 0.0 {
+            prev_font_size = fs;
+        }
+
+        i += 1;
+    }
+
+    result
+}
+
 /// The collection of Unicode characters visible on a single [PdfPage].
 ///
 /// Use the [PdfPageText::all()] function to easily return all characters in the containing
@@ -239,79 +359,8 @@ impl<'a> PdfPageText<'a> {
     ///
     /// `space_ratio` controls sensitivity: 0.25 matches MinerU's threshold.
     pub fn all_respaced(&self, space_ratio: f32) -> String {
-        let chars = self.chars();
-        let count = chars.len();
-        if count == 0 {
-            return String::new();
-        }
-
-        let mut result = String::with_capacity(count);
-        let mut prev_right_x: Option<f32> = None;
-        let mut prev_font_size: f32 = 12.0;
-
-        for i in 0..count {
-            let ch = match chars.get(i) {
-                Ok(c) => c,
-                Err(_) => continue,
-            };
-
-            let is_gen = ch.is_generated().unwrap_or(false);
-
-            if is_gen {
-                if let Some(prev_r) = prev_right_x {
-                    let mut next_left_x: Option<f32> = None;
-                    let mut next_font_size: Option<f32> = None;
-                    for j in (i + 1)..count {
-                        if let Ok(next_ch) = chars.get(j)
-                            && !next_ch.is_generated().unwrap_or(false)
-                        {
-                            if let Ok(bounds) = next_ch.tight_bounds() {
-                                next_left_x = Some(bounds.left().value);
-                            } else if let Ok((ox, _)) = next_ch.origin() {
-                                next_left_x = Some(ox.value);
-                            }
-                            let nfs = next_ch.scaled_font_size().value;
-                            if nfs > 0.0 {
-                                next_font_size = Some(nfs);
-                            }
-                            break;
-                        }
-                    }
-
-                    if let Some(next_x) = next_left_x {
-                        let gap = next_x - prev_r;
-                        let ref_size = next_font_size.unwrap_or(prev_font_size);
-                        if gap > ref_size * space_ratio {
-                            result.push(' ');
-                        }
-                    } else {
-                        result.push(' ');
-                    }
-                }
-                continue;
-            }
-
-            if let Some(uc) = ch.unicode_char() {
-                if uc == '\r' {
-                    result.push('\n');
-                    prev_right_x = None;
-                    continue;
-                }
-                result.push(uc);
-            }
-
-            let fs = ch.scaled_font_size().value;
-            if fs > 0.0 {
-                prev_font_size = fs;
-            }
-            if let Ok(bounds) = ch.tight_bounds() {
-                prev_right_x = Some(bounds.right().value);
-            } else if let Ok((ox, _)) = ch.origin() {
-                prev_right_x = Some(ox.value + prev_font_size * 0.6);
-            }
-        }
-
-        result
+        let count = self.len();
+        filter_generated_spaces_direct(self.text_page_handle(), 0, count, space_ratio, self.bindings)
     }
 
     /// Returns all characters that lie within the bounds of the given [PdfRect] in the
@@ -374,77 +423,19 @@ impl<'a> PdfPageText<'a> {
     pub fn inside_rect_respaced(&self, rect: PdfRect, space_ratio: f32) -> String {
         let chars = match self.chars_inside_rect(rect) {
             Ok(c) => c,
-            Err(_) => return self.inside_rect(rect),
+            Err(_) => {
+                log::warn!("chars_inside_rect failed, falling back to unrespaced text");
+                return self.inside_rect(rect);
+            }
         };
         let count = chars.len();
         if count == 0 {
             return String::new();
         }
-
-        let mut result = String::with_capacity(count);
-        let mut prev_right_x: Option<f32> = None;
-        let mut prev_font_size: f32 = 12.0;
-
-        for i in 0..count {
-            let ch = match chars.get(i) {
-                Ok(c) => c,
-                Err(_) => continue,
-            };
-
-            if ch.is_generated().unwrap_or(false) {
-                if let Some(prev_r) = prev_right_x {
-                    let mut next_left: Option<f32> = None;
-                    let mut next_fs: Option<f32> = None;
-                    for j in (i + 1)..count {
-                        if let Ok(next_ch) = chars.get(j)
-                            && !next_ch.is_generated().unwrap_or(false)
-                        {
-                            if let Ok(bounds) = next_ch.tight_bounds() {
-                                next_left = Some(bounds.left().value);
-                            } else if let Ok((ox, _)) = next_ch.origin() {
-                                next_left = Some(ox.value);
-                            }
-                            let nfs = next_ch.scaled_font_size().value;
-                            if nfs > 0.0 {
-                                next_fs = Some(nfs);
-                            }
-                            break;
-                        }
-                    }
-                    if let Some(nl) = next_left {
-                        let gap = nl - prev_r;
-                        let ref_fs = next_fs.unwrap_or(prev_font_size);
-                        if gap > ref_fs * space_ratio {
-                            result.push(' ');
-                        }
-                    } else {
-                        result.push(' ');
-                    }
-                }
-                continue;
-            }
-
-            if let Some(uc) = ch.unicode_char() {
-                if uc == '\r' {
-                    result.push('\n');
-                    prev_right_x = None;
-                    continue;
-                }
-                result.push(uc);
-            }
-
-            let fs = ch.scaled_font_size().value;
-            if fs > 0.0 {
-                prev_font_size = fs;
-            }
-            if let Ok(bounds) = ch.tight_bounds() {
-                prev_right_x = Some(bounds.right().value);
-            } else if let Ok((ox, _)) = ch.origin() {
-                prev_right_x = Some(ox.value + prev_font_size * 0.6);
-            }
-        }
-
-        result
+        // Use the first char's index as start for the direct FFI path.
+        // Rect-based chars are typically contiguous segments.
+        let start = chars.first_char_index().unwrap_or(0) as i32;
+        filter_generated_spaces_direct(self.text_page_handle(), start, count as i32, space_ratio, self.bindings)
     }
 
     /// Returns all characters assigned to the given [PdfPageTextObject] in this [PdfPageText] object,

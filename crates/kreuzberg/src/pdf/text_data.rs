@@ -128,7 +128,7 @@ fn extract_segments_from_api(text_obj: &PdfPageText) -> Vec<ExtractedSegment> {
             Ok(s) => s,
             Err(_) => continue,
         };
-        let text = seg.text_respaced(0.25);
+        let text = seg.text();
         if text.trim().is_empty() {
             continue;
         }
@@ -330,7 +330,7 @@ pub(crate) fn extract_page_text_data(page: &PdfPage) -> Option<PageTextData> {
     let _ = has_any_map_error; // used only to gate repair_map construction above
 
     // Extract full page text and segment-level data in the same pass.
-    let full_text = text_obj.all_respaced(0.25);
+    let full_text = text_obj.all();
     let segments = extract_segments_from_api(&text_obj);
 
     Some(PageTextData {

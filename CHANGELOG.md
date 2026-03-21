@@ -11,10 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Table cell underscore escaping**: Underscores in table cell content (e.g. `CTC_ARP_01`) were incorrectly escaped as `CTC\_ARP\_01`, breaking identifier readability. Table cells now preserve underscores literally since markdown italic parsing does not apply inside pipe tables.
+- **PDF word splitting in extracted text**: Pdfium's text extraction inserted spurious spaces mid-word (e.g. `"s hall a b e active"` instead of `"shall be active"`). Added gap-based space filtering at the pdfium bindings level — generated spaces are only kept when the character gap exceeds `font_size × 0.25`. Fixes all text extraction paths: plain text, segments, table cells, and bounded-rect queries.
+- **Markdown underscore escaping**: Underscores in extracted text (e.g. `CTC_ARP_01`) were incorrectly escaped as `CTC\_ARP\_01` throughout the markdown output. Underscore escaping has been removed entirely since extracted PDF text contains literal identifiers, not markdown formatting.
+- **Page header/footer leakage**: Running headers like `ISO 21111-10:2021(E)` and copyright footers leaked into the document body. Added fuzzy alphanumeric matching to detect repeated header/footer text even when spacing or character extraction varies across pages.
 - **R batch function spurious NULL argument**: R wrapper batch functions passed an extra `NULL` positional argument to native Rust functions, causing "unused argument" errors on all batch operations.
 - **Elixir Windows ORT DLL staging**: ONNX Runtime DLL was only staged in `target/release/` but not in `priv/native/` where the BEAM VM loads NIFs. OCR/layout/embedding features now work correctly on Windows CI.
-- **Benchmark batch mode**: Batch benchmarks now use real batch adapters (`batch_extract_file_sync`) instead of sequential single-file processing. Third-party frameworks without batch APIs are excluded from batch benchmarks for fair comparison.
 
 ### Added
 

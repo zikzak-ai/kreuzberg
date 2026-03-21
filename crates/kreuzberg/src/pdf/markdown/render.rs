@@ -1099,4 +1099,10 @@ mod tests {
         let result = render_multiline_para(vec![vec!["they are"], vec!["here"]]);
         assert_eq!(result, "they are here");
     }
+
+    #[test]
+    fn test_escape_preserves_identifiers() {
+        // Underscores in technical identifiers must pass through unchanged.
+        assert_eq!(escape_html_entities("CTC_ARP_01"), "CTC_ARP_01");
+    }
 }
