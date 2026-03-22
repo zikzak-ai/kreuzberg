@@ -3,6 +3,7 @@
 
 
 require 'json'
+require 'time'
 
 DEBUG = ENV.fetch('KREUZBERG_BENCHMARK_DEBUG', 'false') == 'true'
 

@@ -139,7 +139,12 @@ defmodule Kreuzberg.ExtractionConfig do
   @type nested_config :: config_map | nil
 
   @type layout_config ::
-          %{preset: String.t(), confidence_threshold: float() | nil, apply_heuristics: boolean()}
+          %{
+            preset: String.t(),
+            confidence_threshold: float() | nil,
+            apply_heuristics: boolean(),
+            table_model: String.t() | nil
+          }
           | nil
 
   @type output_format :: String.t()
@@ -1010,7 +1015,8 @@ defmodule Kreuzberg.ExtractionConfig do
   defp validate_layout_config(config) when is_map(config) do
     with :ok <- validate_layout_preset(config),
          :ok <- validate_layout_confidence_threshold(config),
-         :ok <- validate_layout_apply_heuristics(config) do
+         :ok <- validate_layout_apply_heuristics(config),
+         :ok <- validate_layout_table_model(config) do
       :ok
     end
   end
@@ -1076,6 +1082,35 @@ defmodule Kreuzberg.ExtractionConfig do
 
       value ->
         {:error, "Field 'layout.apply_heuristics' must be a boolean, got: #{type_name(value)}"}
+    end
+  end
+
+  @doc false
+  defp validate_layout_table_model(config) do
+    table_model =
+      case Map.fetch(config, "table_model") do
+        {:ok, value} -> value
+        :error -> Map.get(config, :table_model)
+      end
+
+    case table_model do
+      nil ->
+        :ok
+
+      value when is_binary(value) ->
+        case String.downcase(value) do
+          "tatr" -> :ok
+          "slanet_wired" -> :ok
+          "slanet_wireless" -> :ok
+          "slanet_plus" -> :ok
+          "slanet_auto" -> :ok
+          _invalid ->
+            {:error,
+             "Field 'layout.table_model' must be one of: tatr, slanet_wired, slanet_wireless, slanet_plus, slanet_auto, got: #{value}"}
+        end
+
+      value ->
+        {:error, "Field 'layout.table_model' must be a string, got: #{type_name(value)}"}
     end
   end
 

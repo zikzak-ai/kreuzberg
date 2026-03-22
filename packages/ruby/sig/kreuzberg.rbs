@@ -463,8 +463,9 @@ module Kreuzberg
       attr_reader preset: String
       attr_reader confidence_threshold: Float?
       attr_reader apply_heuristics: bool
+      attr_reader table_model: String?
 
-      def initialize: (?preset: String, ?confidence_threshold: Float?, ?apply_heuristics: bool) -> void
+      def initialize: (?preset: String, ?confidence_threshold: Float?, ?apply_heuristics: bool, ?table_model: String?) -> void
       def to_h: () -> Hash[Symbol, untyped]
     end
 

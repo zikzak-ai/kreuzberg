@@ -406,6 +406,7 @@ function normalizeLayoutDetectionConfig(config?: LayoutDetectionConfig): NativeE
 	setIfDefined(normalized, "preset", config.preset);
 	setIfDefined(normalized, "confidenceThreshold", config.confidenceThreshold);
 	setIfDefined(normalized, "applyHeuristics", config.applyHeuristics);
+	setIfDefined(normalized, "tableModel", config.tableModel);
 	return normalized;
 }
 

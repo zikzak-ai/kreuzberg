@@ -293,6 +293,8 @@ jobs:
     timeout-minutes: 360
     permissions:
       contents: read
+    env:
+      RUSTUP_TOOLCHAIN: stable
     strategy:
       fail-fast: false
       matrix:
@@ -1312,7 +1314,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
@@ -1376,7 +1378,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
@@ -1441,7 +1443,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -1505,7 +1507,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
         shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v6
@@ -1569,7 +1571,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
@@ -1633,7 +1635,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
@@ -1698,7 +1700,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -1761,7 +1763,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
@@ -1825,7 +1827,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -1888,7 +1890,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -1951,7 +1953,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -2014,7 +2016,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [single-file, batch]
+        mode: [single-file]
     steps:
       - uses: actions/checkout@v6
         with:

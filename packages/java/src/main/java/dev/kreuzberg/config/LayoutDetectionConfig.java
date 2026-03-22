@@ -12,11 +12,13 @@ public final class LayoutDetectionConfig {
 	private final String preset;
 	private final Double confidenceThreshold;
 	private final Boolean applyHeuristics;
+	private final String tableModel;
 
 	private LayoutDetectionConfig(Builder builder) {
 		this.preset = builder.preset;
 		this.confidenceThreshold = builder.confidenceThreshold;
 		this.applyHeuristics = builder.applyHeuristics;
+		this.tableModel = builder.tableModel;
 	}
 
 	public static Builder builder() {
@@ -35,6 +37,10 @@ public final class LayoutDetectionConfig {
 		return applyHeuristics;
 	}
 
+	public String getTableModel() {
+		return tableModel;
+	}
+
 	public Map<String, Object> toMap() {
 		Map<String, Object> map = new HashMap<>();
 		if (preset != null) {
@@ -46,6 +52,9 @@ public final class LayoutDetectionConfig {
 		if (applyHeuristics != null) {
 			map.put("apply_heuristics", applyHeuristics);
 		}
+		if (tableModel != null) {
+			map.put("table_model", tableModel);
+		}
 		return map;
 	}
 
@@ -53,6 +62,7 @@ public final class LayoutDetectionConfig {
 		private String preset = "fast";
 		private Double confidenceThreshold;
 		private Boolean applyHeuristics = true;
+		private String tableModel;
 
 		private Builder() {
 		}
@@ -69,6 +79,11 @@ public final class LayoutDetectionConfig {
 
 		public Builder applyHeuristics(Boolean applyHeuristics) {
 			this.applyHeuristics = applyHeuristics;
+			return this;
+		}
+
+		public Builder tableModel(String tableModel) {
+			this.tableModel = tableModel;
 			return this;
 		}
 
@@ -92,6 +107,9 @@ public final class LayoutDetectionConfig {
 		Object applyHeuristicsValue = map.get("apply_heuristics");
 		if (applyHeuristicsValue instanceof Boolean) {
 			builder.applyHeuristics((Boolean) applyHeuristicsValue);
+		}
+		if (map.get("table_model") instanceof String) {
+			builder.tableModel((String) map.get("table_model"));
 		}
 		return builder.build();
 	}

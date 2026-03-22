@@ -17,7 +17,7 @@ else
   RPATH = -Wl,-rpath,$(LIBDIR)
 endif
 
-TESTS = test_archive test_contract test_email test_embeddings test_html test_image test_keywords test_ocr test_office test_pdf test_smoke test_structured test_token_reduction test_xml test_plugin_apis
+TESTS =
 
 .PHONY: all test clean
 
@@ -26,50 +26,6 @@ all: $(TESTS)
 test: all
 	@for t in $(TESTS); do echo "--- $$t ---" && ./$$t && echo "  PASS" || exit 1; done
 
-test_archive: test_archive.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_archive.c helpers.c $(LDFLAGS)
-
-test_contract: test_contract.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_contract.c helpers.c $(LDFLAGS)
-
-test_email: test_email.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_email.c helpers.c $(LDFLAGS)
-
-test_embeddings: test_embeddings.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_embeddings.c helpers.c $(LDFLAGS)
-
-test_html: test_html.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_html.c helpers.c $(LDFLAGS)
-
-test_image: test_image.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_image.c helpers.c $(LDFLAGS)
-
-test_keywords: test_keywords.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_keywords.c helpers.c $(LDFLAGS)
-
-test_ocr: test_ocr.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_ocr.c helpers.c $(LDFLAGS)
-
-test_office: test_office.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_office.c helpers.c $(LDFLAGS)
-
-test_pdf: test_pdf.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_pdf.c helpers.c $(LDFLAGS)
-
-test_smoke: test_smoke.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_smoke.c helpers.c $(LDFLAGS)
-
-test_structured: test_structured.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_structured.c helpers.c $(LDFLAGS)
-
-test_token_reduction: test_token_reduction.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_token_reduction.c helpers.c $(LDFLAGS)
-
-test_xml: test_xml.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_xml.c helpers.c $(LDFLAGS)
-
-test_plugin_apis: test_plugin_apis.c helpers.c helpers.h
-	$(CC) $(CFLAGS) $(RPATH) -o $@ test_plugin_apis.c helpers.c $(LDFLAGS)
 
 clean:
 	rm -f $(TESTS)

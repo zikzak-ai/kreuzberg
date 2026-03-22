@@ -1097,6 +1097,7 @@ pub struct JsLayoutDetectionConfig {
     pub preset: Option<String>,
     pub confidence_threshold: Option<f64>,
     pub apply_heuristics: Option<bool>,
+    pub table_model: Option<String>,
 }
 
 impl From<JsLayoutDetectionConfig> for kreuzberg::core::config::layout::LayoutDetectionConfig {
@@ -1105,6 +1106,7 @@ impl From<JsLayoutDetectionConfig> for kreuzberg::core::config::layout::LayoutDe
             preset: val.preset.unwrap_or_else(|| "fast".to_string()),
             confidence_threshold: val.confidence_threshold.map(|v| v as f32),
             apply_heuristics: val.apply_heuristics.unwrap_or(true),
+            table_model: val.table_model,
         }
     }
 }
@@ -1115,6 +1117,7 @@ impl From<kreuzberg::core::config::layout::LayoutDetectionConfig> for JsLayoutDe
             preset: Some(config.preset),
             confidence_threshold: config.confidence_threshold.map(|v| v as f64),
             apply_heuristics: Some(config.apply_heuristics),
+            table_model: config.table_model,
         }
     }
 }

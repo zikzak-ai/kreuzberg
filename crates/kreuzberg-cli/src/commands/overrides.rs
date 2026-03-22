@@ -152,6 +152,14 @@ pub struct ExtractionOverrides {
     #[arg(long)]
     pub layout_confidence: Option<f32>,
 
+    /// Table structure model: tatr (default), slanet_wired, slanet_wireless, slanet_plus, slanet_auto.
+    #[cfg(feature = "layout-detection")]
+    #[arg(
+        long,
+        help = "Table structure model: tatr (default), slanet_wired, slanet_wireless, slanet_plus, slanet_auto"
+    )]
+    pub layout_table_model: Option<String>,
+
     // ── Acceleration & concurrency ───────────────────────────────────
     /// ONNX Runtime execution provider for model inference.
     #[arg(long, value_enum)]
@@ -467,7 +475,8 @@ impl ExtractionOverrides {
     fn apply_layout(&self, config: &mut ExtractionConfig) {
         #[cfg(feature = "layout-detection")]
         {
-            let has_layout_flag = self.layout_preset.is_some() || self.layout_confidence.is_some();
+            let has_layout_flag =
+                self.layout_preset.is_some() || self.layout_confidence.is_some() || self.layout_table_model.is_some();
             if has_layout_flag {
                 let mut layout = config.layout.clone().unwrap_or_default();
                 if let Some(ref preset) = self.layout_preset {
@@ -475,6 +484,9 @@ impl ExtractionOverrides {
                 }
                 if let Some(confidence) = self.layout_confidence {
                     layout.confidence_threshold = Some(confidence);
+                }
+                if let Some(ref table_model) = self.layout_table_model {
+                    layout.table_model = Some(table_model.clone());
                 }
                 config.layout = Some(layout);
             }

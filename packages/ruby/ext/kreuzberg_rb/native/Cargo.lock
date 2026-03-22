@@ -2057,9 +2057,9 @@ dependencies = [
 
 [[package]]
 name = "html-to-markdown-rs"
-version = "2.28.6"
+version = "2.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6869b5e058b5ebb8c176269406b692d0695b4b19c36e532b56a2c355590978ae"
+checksum = "9013679b8c3600142e5a8f742748c3c38c49d9fc50675dad62f8f1721090a85a"
 dependencies = [
  "ahash",
  "astral-tl",
@@ -2857,7 +2857,6 @@ dependencies = [
  "parking_lot",
  "pastey 0.2.1",
  "pkg-config",
- "prost",
  "pulldown-cmark",
  "quick-xml 0.39.2",
  "rake",
@@ -4005,33 +4004,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "prost"
-version = "0.14.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2ea70524a2f82d518bce41317d0fae74151505651af45faf1ffbd6fd33f0568"
-dependencies = [
- "bytes",
- "prost-derive",
-]
-
-[[package]]
-name = "prost-derive"
-version = "0.14.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27c6023962132f4b30eb4c172c91ce92d933da334c59c23cddee82358ddafb0b"
-dependencies = [
- "anyhow",
- "itertools 0.14.0",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "pulldown-cmark"
-version = "0.13.2"
+version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14104c5a24d9bcf7eb2c24753e0f49fe14555d8bd565ea3d38e4b4303267259d"
+checksum = "7c3a14896dfa883796f1cb410461aef38810ea05f2b2c33c5aded3649095fdad"
 dependencies = [
  "bitflags",
  "getopts",

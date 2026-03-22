@@ -363,6 +363,9 @@ enum CacheCommands {
     ///
     /// Use --all-embeddings to also download all 4 embedding model presets,
     /// or --embedding-model <preset> to download a specific one.
+    ///
+    /// By default, only the core layout models (rtdetr + tatr) are downloaded.
+    /// Use --all-table-models to also download SLANeXT variants (~730MB).
     Warm {
         /// Cache directory (default: .kreuzberg in current directory, or KREUZBERG_CACHE_DIR)
         #[arg(short, long)]
@@ -379,6 +382,13 @@ enum CacheCommands {
         /// Download a specific embedding model preset
         #[arg(long, value_name = "PRESET")]
         embedding_model: Option<String>,
+
+        /// Download all table structure models including SLANeXT variants (~730MB)
+        #[arg(
+            long,
+            help = "Download all table structure models including SLANeXT variants (~730MB)"
+        )]
+        all_table_models: bool,
     },
 }
 
@@ -743,8 +753,9 @@ fn main() -> Result<()> {
                 format,
                 all_embeddings,
                 embedding_model,
+                all_table_models,
             } => {
-                warm_command(cache_dir, format, all_embeddings, embedding_model)?;
+                warm_command(cache_dir, format, all_embeddings, embedding_model, all_table_models)?;
             }
         },
 

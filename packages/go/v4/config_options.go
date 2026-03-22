@@ -758,6 +758,14 @@ func WithLayoutApplyHeuristics(apply bool) LayoutDetectionOption {
 	}
 }
 
+// WithLayoutTableModel sets the table model for layout detection.
+// Valid values: "tatr", "slanet_wired", "slanet_wireless", "slanet_plus", "slanet_auto".
+func WithLayoutTableModel(m string) LayoutDetectionOption {
+	return func(c *LayoutDetectionConfig) {
+		c.TableModel = &m
+	}
+}
+
 // ============================================================================
 // PostProcessorConfig Options
 // ============================================================================

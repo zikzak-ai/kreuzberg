@@ -12,7 +12,8 @@
 		"input_type": "file",
 		"config": {
 			"layout": {
-				"preset": "fast"
+				"preset": "accurate",
+				"table_model": "tatr"
 			},
 			"output_format": "markdown"
 		}

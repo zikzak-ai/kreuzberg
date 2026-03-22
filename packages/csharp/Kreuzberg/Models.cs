@@ -3914,4 +3914,11 @@ public sealed class LayoutDetectionConfig
     /// </summary>
     [JsonPropertyName("apply_heuristics")]
     public bool? ApplyHeuristics { get; init; }
+
+    /// <summary>
+    /// Table detection model to use.
+    /// Supported values: "tatr", "slanet_wired", "slanet_wireless", "slanet_plus", "slanet_auto".
+    /// </summary>
+    [JsonPropertyName("table_model")]
+    public string? TableModel { get; init; }
 }

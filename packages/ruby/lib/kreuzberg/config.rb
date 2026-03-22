@@ -850,19 +850,21 @@ module Kreuzberg
     #   )
     #
     class LayoutDetection
-      attr_reader :preset, :confidence_threshold, :apply_heuristics
+      attr_reader :preset, :confidence_threshold, :apply_heuristics, :table_model
 
-      def initialize(preset: 'fast', confidence_threshold: nil, apply_heuristics: true)
+      def initialize(preset: 'fast', confidence_threshold: nil, apply_heuristics: true, table_model: nil)
         @preset = preset.to_s
         @confidence_threshold = confidence_threshold&.to_f
         @apply_heuristics = apply_heuristics ? true : false
+        @table_model = table_model&.to_s
       end
 
       def to_h
         {
           preset: @preset,
           confidence_threshold: @confidence_threshold,
-          apply_heuristics: @apply_heuristics
+          apply_heuristics: @apply_heuristics,
+          table_model: @table_model
         }.compact
       end
     end

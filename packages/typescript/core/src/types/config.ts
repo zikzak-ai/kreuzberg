@@ -360,6 +360,26 @@ export interface AccelerationConfig {
 }
 
 /**
+ * Layout detection configuration.
+ *
+ * Controls document layout analysis, including semantic zone detection and table structure recognition.
+ */
+export interface LayoutDetectionConfig {
+	/** Model preset: "fast" (YOLO, 11 classes) or "accurate" (RT-DETR, 17 classes). Default: "fast". */
+	preset?: string;
+
+	/** Override the model's default confidence threshold for detections. Default: null (use model default). */
+	confidenceThreshold?: number;
+
+	/** Apply postprocessing heuristics to improve detection quality. Default: true. */
+	applyHeuristics?: boolean;
+
+	/** Table structure recognition model. Controls which model is used for table cell detection.
+	 * Options: "tatr" (default), "slanet_wired", "slanet_wireless", "slanet_plus", "slanet_auto". */
+	tableModel?: string;
+}
+
+/**
  * Email extraction configuration.
  *
  * Controls behavior of MSG file extraction, specifically the fallback codepage
@@ -398,6 +418,7 @@ export interface ExtractionConfig {
 	keywords?: KeywordConfig;
 	pages?: PageConfig;
 	acceleration?: AccelerationConfig;
+	layout?: LayoutDetectionConfig;
 	email?: EmailConfig;
 	securityLimits?: Record<string, number>;
 	maxConcurrentExtractions?: number;

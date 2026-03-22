@@ -617,6 +617,12 @@ export interface LayoutDetectionConfig {
 
 	/** Apply postprocessing heuristics to improve detection quality. Default: true. */
 	applyHeuristics?: boolean;
+
+	/**
+	 * Table structure recognition model. Controls which model is used for table cell detection.
+	 * Options: "tatr" (default), "slanet_wired", "slanet_wireless", "slanet_plus", "slanet_auto".
+	 */
+	tableModel?: string;
 }
 
 /**

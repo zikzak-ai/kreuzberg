@@ -195,6 +195,7 @@ pub fn warm_command(
     format: OutputFormat,
     all_embeddings: bool,
     embedding_model: Option<String>,
+    all_table_models: bool,
 ) -> Result<()> {
     let cache_base = resolve_cache_base(cache_dir);
 
@@ -219,15 +220,28 @@ pub fn warm_command(
         let layout_dir = cache_base.join("layout");
         let manager = kreuzberg::layout::LayoutModelManager::new(Some(layout_dir));
 
-        let was_cached = manager.is_rtdetr_cached() && manager.is_tatr_cached();
-
-        if was_cached {
-            already_cached.push("layout (rtdetr, tatr)".to_string());
+        if all_table_models {
+            // Download rtdetr + tatr + all SLANeXT variants (~730MB)
+            let was_cached = manager.is_rtdetr_cached() && manager.is_tatr_cached();
+            if was_cached {
+                already_cached.push("layout (rtdetr, tatr, slanet variants)".to_string());
+            } else {
+                manager
+                    .ensure_all_models()
+                    .context("Failed to download layout models")?;
+                downloaded.push("layout (rtdetr, tatr, slanet variants)".to_string());
+            }
         } else {
-            manager
-                .ensure_all_models()
-                .context("Failed to download layout models")?;
-            downloaded.push("layout (rtdetr, tatr)".to_string());
+            // Default: download only rtdetr + tatr
+            let was_cached = manager.is_rtdetr_cached() && manager.is_tatr_cached();
+            if was_cached {
+                already_cached.push("layout (rtdetr, tatr)".to_string());
+            } else {
+                manager
+                    .ensure_default_models()
+                    .context("Failed to download layout models")?;
+                downloaded.push("layout (rtdetr, tatr)".to_string());
+            }
         }
     }
 
