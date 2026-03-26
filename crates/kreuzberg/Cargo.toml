@@ -135,15 +135,17 @@ keywords-yake = ["dep:yake-rust", "stopwords"]
 keywords-rake = ["dep:rake", "stopwords"]
 keywords = ["keywords-yake", "keywords-rake"]
 
+tower-service = ["dep:tower", "tokio-runtime"]
+
 api = [
+    "tower-service",
     "dep:axum",
-    "dep:tower",
     "dep:tower-http",
     "dep:utoipa",
     "tokio-runtime",
     "chunking",
 ]
-mcp = ["dep:rmcp", "tokio-runtime"]
+mcp = ["tower-service", "dep:rmcp", "tokio-runtime"]
 mcp-http = ["mcp", "api"]
 
 otel = ["dep:opentelemetry", "dep:opentelemetry_sdk", "dep:tracing-opentelemetry"]
@@ -327,7 +329,7 @@ tokenizers = { version = "0.22", optional = true, default-features = false, feat
 ] }
 tokio = { workspace = true, optional = true }
 toml = { workspace = true }
-tower = { version = "0.5", optional = true }
+tower = { version = "0.5", features = ["timeout", "limit", "util"], optional = true }
 tower-http = { version = "0.6", features = ["cors", "trace", "limit"], optional = true }
 tracing = { workspace = true }
 tracing-opentelemetry = { version = "0.32", optional = true }

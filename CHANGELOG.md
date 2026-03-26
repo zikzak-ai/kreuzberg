@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Tower service layer** (`service` module): Composable `ExtractionService` implementing `tower::Service` with configurable middleware layers (tracing, metrics, timeout, concurrency limit). New `tower-service` feature flag, auto-enabled by `api` and `mcp`. `ExtractionServiceBuilder` provides ergonomic layer composition.
+- **Semantic OpenTelemetry conventions** (`telemetry` module): Formal `kreuzberg.*` attribute namespace with 30+ span attributes, metric names, and operation/stage constants. Documented conventions for document extraction, pipeline stages, OCR, and model inference telemetry.
+- **Extraction metrics**: 11 OTel metric instruments (counters, histograms, gauge) covering extraction totals, durations, cache hits/misses, pipeline stages, OCR, and concurrent extractions. Feature-gated behind `otel`.
+- **InstrumentedExtractor wrapper**: Automatic per-extractor tracing spans and metrics without per-extractor annotations. Injected at registry dispatch when `otel` feature is enabled.
+
+### Improved
+
+- **Deeper instrumentation**: Pipeline post-processing stages (Early/Middle/Late), individual processor execution, OCR operations, and RT-DETR layout model inference now have semantic spans and duration metrics.
+- **API and MCP servers use ExtractionService**: Both consumers now route extractions through the Tower service stack, getting unified tracing, metrics, and middleware for free.
+- **Unified config merge**: JSON config merge logic deduplicated between CLI and MCP into a shared function.
+
+### Changed
+
+- **Removed per-extractor `#[instrument]` annotations**: 29 manual `#[cfg_attr(feature = "otel", tracing::instrument(...))]` annotations replaced by the automatic `InstrumentedExtractor` wrapper.
+- **Span attribute names migrated to `kreuzberg.*` namespace**: `extraction.filename` -> `kreuzberg.document.filename`, `extraction.mime_type` -> `kreuzberg.document.mime_type`, etc.
+
+### Fixed
+
+- **`test_pipeline_with_all_features` assertion without `quality` feature**: `quality_score` assertion now gated behind `#[cfg(feature = "quality")]`.
+
+---
+
 ## [4.6.2] - 2026-03-26
 
 ### Added

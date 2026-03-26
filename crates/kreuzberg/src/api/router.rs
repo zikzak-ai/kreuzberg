@@ -13,7 +13,7 @@ use tower_http::{
     trace::TraceLayer,
 };
 
-use crate::{ExtractionConfig, core::ServerConfig};
+use crate::{ExtractionConfig, core::ServerConfig, service::ExtractionServiceBuilder};
 
 use super::{
     handlers::{
@@ -119,8 +119,11 @@ pub fn create_router_with_limits_and_server_config(
     limits: ApiSizeLimits,
     server_config: ServerConfig,
 ) -> Router {
+    let extraction_service = ExtractionServiceBuilder::new().with_tracing().with_metrics().build();
+
     let state = ApiState {
         default_config: Arc::new(config),
+        extraction_service: Arc::new(std::sync::Mutex::new(extraction_service)),
     };
 
     // CORS configuration based on ServerConfig
