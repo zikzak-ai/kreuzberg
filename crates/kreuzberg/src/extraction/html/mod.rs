@@ -35,6 +35,7 @@
 
 mod converter;
 mod stack_management;
+#[cfg(any(feature = "office", feature = "email"))]
 pub(crate) mod structure;
 mod types;
 
