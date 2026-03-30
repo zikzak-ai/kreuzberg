@@ -6,6 +6,7 @@ use crate::plugins::{DocumentExtractor, Plugin};
 use crate::types::internal::InternalDocument;
 use crate::types::internal_builder::InternalDocumentBuilder;
 use crate::types::metadata::Metadata;
+use crate::types::uri::Uri;
 use ahash::AHashMap;
 use async_trait::async_trait;
 use std::borrow::Cow;
@@ -248,6 +249,11 @@ impl DocumentExtractor for PptxExtractor {
 
         doc.metadata = metadata;
 
+        // Push hyperlink URIs discovered in slides
+        for (url, label) in pptx_result.hyperlinks {
+            doc.push_uri(Uri::hyperlink(&url, label));
+        }
+
         // Transfer images
         if extract_images {
             doc.images = pptx_result.images;
@@ -297,6 +303,11 @@ impl DocumentExtractor for PptxExtractor {
         }
 
         doc.metadata = metadata;
+
+        // Push hyperlink URIs discovered in slides
+        for (url, label) in pptx_result.hyperlinks {
+            doc.push_uri(Uri::hyperlink(&url, label));
+        }
 
         // Transfer images
         if extract_images {

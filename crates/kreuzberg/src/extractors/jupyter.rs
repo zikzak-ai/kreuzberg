@@ -438,53 +438,65 @@ impl JupyterExtractor {
         bytes[start..].iter().position(|&b| b == delim).map(|p| start + p)
     }
 
-    /// Extract markdown-style `[text](url)` links from text and return as URIs.
+    /// Extract markdown-style links from text and return as URIs.
+    ///
+    /// Uses pulldown-cmark for robust parsing instead of hand-rolled byte scanning.
+    /// Recognizes both `[text](url)` hyperlinks and `![alt](url)` image links.
     fn extract_markdown_links(text: &str) -> Vec<Uri> {
-        let mut uris = Vec::new();
-        let bytes = text.as_bytes();
-        let len = bytes.len();
-        let mut i = 0;
+        use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 
-        while i < len {
-            // Check for ![alt](url) image links first (before [text](url))
-            if bytes[i] == b'!'
-                && i + 1 < len
-                && bytes[i + 1] == b'['
-                && let Some(close_bracket) = Self::find_closing_byte(bytes, i + 2, b']')
-                && close_bracket + 1 < len
-                && bytes[close_bracket + 1] == b'('
-                && let Some(close_paren) = Self::find_closing_byte(bytes, close_bracket + 2, b')')
-            {
-                let alt = &text[i + 2..close_bracket];
-                let url = &text[close_bracket + 2..close_paren];
-                if !url.is_empty() {
-                    let label_opt = if alt.is_empty() { None } else { Some(alt.to_string()) };
-                    uris.push(Uri::image(url, label_opt));
+        let parser = Parser::new(text);
+        let mut uris = Vec::new();
+        let mut current_text = String::new();
+        let mut current_url: Option<String> = None;
+        let mut in_link = false;
+        let mut in_image = false;
+
+        for event in parser {
+            match event {
+                Event::Start(Tag::Link { dest_url, .. }) => {
+                    in_link = true;
+                    current_text.clear();
+                    current_url = Some(dest_url.into_string());
                 }
-                i = close_paren + 1;
-                continue;
-            }
-            // [text](url) links
-            if bytes[i] == b'['
-                && let Some(close_bracket) = Self::find_closing_byte(bytes, i + 1, b']')
-                && close_bracket + 1 < len
-                && bytes[close_bracket + 1] == b'('
-                && let Some(close_paren) = Self::find_closing_byte(bytes, close_bracket + 2, b')')
-            {
-                let label = &text[i + 1..close_bracket];
-                let url = &text[close_bracket + 2..close_paren];
-                if !url.is_empty() {
-                    let label_opt = if label.is_empty() {
-                        None
-                    } else {
-                        Some(label.to_string())
-                    };
-                    uris.push(Uri::hyperlink(url, label_opt));
+                Event::Start(Tag::Image { dest_url, .. }) => {
+                    in_image = true;
+                    current_text.clear();
+                    current_url = Some(dest_url.into_string());
                 }
-                i = close_paren + 1;
-                continue;
+                Event::Text(text) if in_link || in_image => {
+                    current_text.push_str(&text);
+                }
+                Event::End(TagEnd::Link) => {
+                    if let Some(url) = current_url.take() {
+                        if !url.is_empty() {
+                            let label_opt = if current_text.is_empty() {
+                                None
+                            } else {
+                                Some(current_text.clone())
+                            };
+                            uris.push(Uri::hyperlink(&url, label_opt));
+                        }
+                    }
+                    in_link = false;
+                    current_text.clear();
+                }
+                Event::End(TagEnd::Image) => {
+                    if let Some(url) = current_url.take() {
+                        if !url.is_empty() {
+                            let label_opt = if current_text.is_empty() {
+                                None
+                            } else {
+                                Some(current_text.clone())
+                            };
+                            uris.push(Uri::image(&url, label_opt));
+                        }
+                    }
+                    in_image = false;
+                    current_text.clear();
+                }
+                _ => {}
             }
-            i += 1;
         }
 
         uris

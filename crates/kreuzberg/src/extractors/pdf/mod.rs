@@ -902,7 +902,7 @@ impl PdfExtractor {
                                 };
                                 Uri {
                                     url: url.clone(),
-                                    label: None,
+                                    label: Some(url.clone()),
                                     page: Some(a.page_number as u32),
                                     kind,
                                 }

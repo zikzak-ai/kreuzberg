@@ -109,6 +109,9 @@ pub struct PptxExtractionResult {
     /// Structured document representation
     #[serde(skip_serializing_if = "Option::is_none")]
     pub document: Option<DocumentStructure>,
+    /// Hyperlinks discovered in slides as (url, optional_label) pairs.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub hyperlinks: Vec<(String, Option<String>)>,
 }
 
 /// Email extraction result.

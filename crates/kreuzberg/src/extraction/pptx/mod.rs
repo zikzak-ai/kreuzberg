@@ -153,6 +153,7 @@ fn extract_pptx_from_container<R: std::io::Read + std::io::Seek>(
     let mut total_image_count = 0;
     let mut total_table_count = 0;
     let mut extracted_images = Vec::new();
+    let mut collected_hyperlinks: Vec<(String, Option<String>)> = Vec::new();
     let mut doc_builder = if include_structure {
         Some(DocumentStructureBuilder::new().source_format("pptx"))
     } else {
@@ -182,6 +183,9 @@ fn extract_pptx_from_container<R: std::io::Read + std::io::Seek>(
         if let Some(ref mut builder) = doc_builder {
             build_slide_structure(&slide, builder, &mut image_index_counter);
         }
+
+        // Collect hyperlinks from runs that have hlinkClick references
+        collect_slide_hyperlinks(&slide, &mut collected_hyperlinks);
 
         if config.extract_images
             && let Ok(image_data) = iterator.get_slide_images(&slide)
@@ -283,6 +287,7 @@ fn extract_pptx_from_container<R: std::io::Read + std::io::Seek>(
         page_structure,
         page_contents,
         document,
+        hyperlinks: collected_hyperlinks,
     })
 }
 
@@ -458,21 +463,62 @@ fn build_slide_structure(
     doc_builder.exit_container();
 }
 
+/// Collect hyperlinks from all runs in a slide by resolving `hlinkClick` rIds
+/// against the slide's hyperlink relationships.
+fn collect_slide_hyperlinks(slide: &elements::Slide, out: &mut Vec<(String, Option<String>)>) {
+    // Helper: iterate all runs from all elements
+    let mut visit_runs = |runs: &[Run]| {
+        for run in runs {
+            if let Some(ref hlink_id) = run.hyperlink_id {
+                if let Some(href) = slide.hyperlinks.iter().find(|h| h.id == *hlink_id) {
+                    let label = if run.text.trim().is_empty() {
+                        None
+                    } else {
+                        Some(run.text.trim().to_string())
+                    };
+                    out.push((href.url.clone(), label));
+                }
+            }
+        }
+    };
+
+    for elem in &slide.elements {
+        match elem {
+            SlideElement::Text(text, _) => visit_runs(&text.runs),
+            SlideElement::List(list, _) => {
+                for item in &list.items {
+                    visit_runs(&item.runs);
+                }
+            }
+            SlideElement::Table(table, _) => {
+                for row in &table.rows {
+                    for cell in &row.cells {
+                        visit_runs(&cell.runs);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
 // Re-export Slide implementation methods for internal use
 impl elements::Slide {
     fn from_xml(slide_number: u32, xml_data: &[u8], rels_data: Option<&[u8]>) -> Result<Self> {
         let elements = parser::parse_slide_xml(xml_data)?;
 
-        let images = if let Some(rels) = rels_data {
-            parser::parse_slide_rels(rels)?
+        let (images, hyperlinks) = if let Some(rels) = rels_data {
+            let slide_rels = parser::parse_slide_rels(rels)?;
+            (slide_rels.images, slide_rels.hyperlinks)
         } else {
-            Vec::new()
+            (Vec::new(), Vec::new())
         };
 
         Ok(Self {
             slide_number,
             elements,
             images,
+            hyperlinks,
         })
     }
 
