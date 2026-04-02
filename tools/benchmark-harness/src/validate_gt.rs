@@ -240,10 +240,14 @@ pub fn validate_ground_truth(config: &ValidateGtConfig) -> Result<ValidateGtRepo
         let fixture_dir = fixture_path.parent().unwrap_or(Path::new("."));
 
         // --- text GT ---
-        let text_path = fixture_dir.join(&gt.text_file);
-        if text_path.exists() {
-            report.with_text_gt += 1;
-            check_small_file(&text_path, &config.fixtures_dir, &mut report);
+        if let Some(ref tf) = gt.text_file {
+            let text_path = fixture_dir.join(tf);
+            if text_path.exists() {
+                report.with_text_gt += 1;
+                check_small_file(&text_path, &config.fixtures_dir, &mut report);
+            } else {
+                report.missing_text_gt += 1;
+            }
         } else {
             report.missing_text_gt += 1;
         }

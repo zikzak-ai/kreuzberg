@@ -79,6 +79,8 @@ repos:
             "--allow-dirty",
             "--allow-staged",
             "--workspace",
+            "--exclude=kreuzberg-php",
+            "--exclude=kreuzberg-wasm",
             "--all-features",
             "--all-targets",
             "--",

@@ -676,6 +676,10 @@ func convertCResult(cRes *C.CExtractionResult) (*ExtractionResult, error) {
 		return nil, newSerializationErrorWithContext("failed to decode chunks", err, ErrorCodeValidation, nil)
 	}
 
+	if err := decodeJSONCString(cRes.children_json, &result.Children); err != nil {
+		return nil, newSerializationErrorWithContext("failed to decode children", err, ErrorCodeValidation, nil)
+	}
+
 	if err := decodeJSONCString(cRes.images_json, &result.Images); err != nil {
 		return nil, newSerializationErrorWithContext("failed to decode images", err, ErrorCodeValidation, nil)
 	}

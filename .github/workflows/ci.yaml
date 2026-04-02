@@ -232,6 +232,20 @@ jobs:
       - name: Validate documentation snippets
         run: ./target/release/snippet-runner validate --snippets docs/snippets --reference docs/reference --level syntax --timeout 120
 
+      - name: Validate vendored C headers match canonical
+        shell: bash
+        run: |
+          CANONICAL="crates/kreuzberg-ffi/kreuzberg.h"
+          FAIL=0
+          for VENDORED in packages/go/v4/internal/ffi/kreuzberg.h packages/ruby/vendor/kreuzberg-ffi/kreuzberg.h; do
+            if [ -f "$VENDORED" ] && ! diff -q "$CANONICAL" "$VENDORED" > /dev/null 2>&1; then
+              echo "::error::$VENDORED is out of sync with $CANONICAL — run 'python scripts/sync_versions.py'"
+              diff "$CANONICAL" "$VENDORED" | head -20
+              FAIL=1
+            fi
+          done
+          [ "$FAIL" -eq 0 ] || exit 1
+
       - name: Check final disk space
         if: always()
         run: scripts/ci/validate/show-disk-space.sh "Final disk space"

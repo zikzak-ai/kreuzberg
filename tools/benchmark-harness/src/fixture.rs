@@ -57,8 +57,9 @@ pub struct Fixture {
 /// Ground truth data for quality assessment
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GroundTruth {
-    /// Path to ground truth text file
-    pub text_file: PathBuf,
+    /// Path to ground truth text file (optional — some fixtures only have markdown GT)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text_file: Option<PathBuf>,
 
     /// Path to ground truth markdown file for structural quality scoring (optional)
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -103,7 +104,9 @@ impl Fixture {
         }
 
         if let Some(gt) = &self.ground_truth {
-            if gt.text_file.is_absolute() {
+            if let Some(ref tf) = gt.text_file
+                && tf.is_absolute()
+            {
                 return Err(Error::InvalidFixture {
                     path: fixture_path.to_path_buf(),
                     reason: "ground_truth.text_file must be relative".to_string(),
@@ -146,14 +149,14 @@ impl Fixture {
 
             // Validate that ground truth file exists at load time
             // Use fixture directory as the base for relative paths
-            if let Some(fixture_dir) = fixture_path.parent() {
-                let ground_truth_path = fixture_dir.join(&gt.text_file);
+            if let (Some(fixture_dir), Some(tf)) = (fixture_path.parent(), &gt.text_file) {
+                let ground_truth_path = fixture_dir.join(tf);
                 if !ground_truth_path.exists() {
                     return Err(Error::InvalidFixture {
                         path: fixture_path.to_path_buf(),
                         reason: format!(
                             "ground truth file not found: {} (resolved to {})",
-                            gt.text_file.display(),
+                            tf.display(),
                             ground_truth_path.display()
                         ),
                     });
@@ -192,7 +195,9 @@ impl Fixture {
 
     /// Resolve ground truth path relative to fixture file
     pub fn resolve_ground_truth_path(&self, fixture_dir: &Path) -> Option<PathBuf> {
-        self.ground_truth.as_ref().map(|gt| fixture_dir.join(&gt.text_file))
+        self.ground_truth
+            .as_ref()
+            .and_then(|gt| gt.text_file.as_ref().map(|tf| fixture_dir.join(tf)))
     }
 
     /// Resolve ground truth markdown path relative to fixture file
@@ -754,7 +759,7 @@ mod tests {
             expected_frameworks: vec![],
             metadata: HashMap::new(),
             ground_truth: Some(GroundTruth {
-                text_file: PathBuf::from("nonexistent_ground_truth.txt"),
+                text_file: Some(PathBuf::from("nonexistent_ground_truth.txt")),
                 markdown_file: None,
                 source: "manual".to_string(),
             }),
@@ -789,7 +794,7 @@ mod tests {
             expected_frameworks: vec![],
             metadata: HashMap::new(),
             ground_truth: Some(GroundTruth {
-                text_file: PathBuf::from("ground_truth.txt"),
+                text_file: Some(PathBuf::from("ground_truth.txt")),
                 markdown_file: None,
                 source: "manual".to_string(),
             }),
@@ -828,7 +833,7 @@ mod tests {
             expected_frameworks: vec![],
             metadata: HashMap::new(),
             ground_truth: Some(GroundTruth {
-                text_file: PathBuf::from("nonexistent.txt"),
+                text_file: Some(PathBuf::from("nonexistent.txt")),
                 markdown_file: None,
                 source: "manual".to_string(),
             }),

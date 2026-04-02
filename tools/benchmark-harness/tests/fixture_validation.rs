@@ -250,18 +250,20 @@ fn all_ground_truth_files_exist() {
     for fixture_path in &fixtures {
         match Fixture::from_file(fixture_path) {
             Ok(fixture) => {
-                if let Some(ground_truth) = &fixture.ground_truth {
+                if let Some(ground_truth) = &fixture.ground_truth
+                    && let Some(ref tf) = ground_truth.text_file
+                {
                     let fixture_dir = fixture_path
                         .parent()
                         .expect("fixture path should have parent directory");
-                    let ground_truth_path = fixture_dir.join(&ground_truth.text_file);
+                    let ground_truth_path = fixture_dir.join(tf);
 
                     if !ground_truth_path.exists() {
                         missing_ground_truth.push(format!(
                             "{}: Ground truth file not found at {} (resolved from {})",
                             fixture_path.display(),
                             ground_truth_path.display(),
-                            ground_truth.text_file.display()
+                            tf.display()
                         ));
                     }
                 }

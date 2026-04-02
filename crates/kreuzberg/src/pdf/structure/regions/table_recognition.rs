@@ -184,11 +184,13 @@ pub(in crate::pdf::structure) fn recognize_tables_for_native_page(
         // Match words to cells and build markdown table.
         // Cell bboxes are in crop-pixel space; words are in PDF coords.
         // Convert cell bboxes to PDF coords for matching.
-        let markdown = build_tatr_grid_table(&cell_grid, &table_words, px_left as f32, px_top as f32, sx, sy);
+        let (grid, markdown) = build_tatr_grid_table(&cell_grid, &table_words, px_left as f32, px_top as f32, sx, sy);
 
         tracing::debug!(
             page = page_index,
             table_words = table_words.len(),
+            grid_rows = grid.len(),
+            grid_cols = grid.first().map_or(0, |r| r.len()),
             markdown_len = markdown.len(),
             "TATR: word matching and markdown generation"
         );
@@ -199,9 +201,10 @@ pub(in crate::pdf::structure) fn recognize_tables_for_native_page(
 
         // Validate: reject TATR output if too few cells have content.
         let total_cells = num_rows * num_cols;
-        let filled_cells = markdown
-            .split('|')
-            .filter(|s| !s.trim().is_empty() && s.trim() != "---")
+        let filled_cells = grid
+            .iter()
+            .flat_map(|r| r.iter())
+            .filter(|c| !c.trim().is_empty())
             .count();
         if total_cells > 4 && filled_cells < total_cells / 4 {
             tracing::debug!(
@@ -221,7 +224,7 @@ pub(in crate::pdf::structure) fn recognize_tables_for_native_page(
         });
 
         tables.push(Table {
-            cells: Vec::new(),
+            cells: grid,
             markdown,
             page_number: page_index + 1,
             bounding_box,
@@ -247,15 +250,15 @@ fn build_tatr_grid_table(
     crop_offset_px_y: f32,
     sx: f32,
     sy: f32,
-) -> String {
+) -> (Vec<Vec<String>>, String) {
     if cell_grid.is_empty() {
-        return String::new();
+        return (Vec::new(), String::new());
     }
 
     let num_rows = cell_grid.len();
     let num_cols = cell_grid[0].len();
     if num_cols == 0 {
-        return String::new();
+        return (Vec::new(), String::new());
     }
 
     // Convert all cell bboxes from crop-pixel space to HocrWord coordinate
@@ -325,7 +328,8 @@ fn build_tatr_grid_table(
         grid.push(grid_row);
     }
 
-    render_grid_as_markdown(&grid)
+    let markdown = render_grid_as_markdown(&grid);
+    (grid, markdown)
 }
 
 // Word-to-cell matching is now handled inline in build_tatr_grid_table
@@ -587,7 +591,7 @@ pub(in crate::pdf::structure) fn recognize_tables_slanet(
         // Build markdown by matching words to SLANeXT cells.
         // Cell bboxes are in image pixel coords; words are in PDF coords.
         // Convert cell bboxes to PDF coord space for matching.
-        let markdown = build_slanet_cells_table(&matching_cells, num_rows, num_cols, &table_words, sx, sy);
+        let (grid, markdown) = build_slanet_cells_table(&matching_cells, num_rows, num_cols, &table_words, sx, sy);
 
         if markdown.is_empty() {
             tracing::debug!(page = page_index, "SLANeXT: empty markdown output for table hint");
@@ -596,9 +600,10 @@ pub(in crate::pdf::structure) fn recognize_tables_slanet(
 
         // Validate: reject if too few cells have content
         let total_cells = num_rows * num_cols;
-        let filled_cells = markdown
-            .split('|')
-            .filter(|s| !s.trim().is_empty() && s.trim() != "---")
+        let filled_cells = grid
+            .iter()
+            .flat_map(|r| r.iter())
+            .filter(|c| !c.trim().is_empty())
             .count();
         if total_cells > 4 && filled_cells < total_cells / 4 {
             tracing::debug!(
@@ -618,7 +623,7 @@ pub(in crate::pdf::structure) fn recognize_tables_slanet(
         });
 
         tables.push(Table {
-            cells: Vec::new(),
+            cells: grid,
             markdown,
             page_number: page_index + 1,
             bounding_box,
@@ -641,9 +646,9 @@ fn build_slanet_cells_table(
     words: &[&crate::pdf::table_reconstruct::HocrWord],
     sx: f32,
     sy: f32,
-) -> String {
+) -> (Vec<Vec<String>>, String) {
     if cells.is_empty() || num_rows == 0 || num_cols == 0 {
-        return String::new();
+        return (Vec::new(), String::new());
     }
 
     // Renumber rows/cols to be 0-based relative to the filtered cell set.
@@ -729,5 +734,6 @@ fn build_slanet_cells_table(
         }
     }
 
-    render_grid_as_markdown(&grid)
+    let markdown = render_grid_as_markdown(&grid);
+    (grid, markdown)
 }

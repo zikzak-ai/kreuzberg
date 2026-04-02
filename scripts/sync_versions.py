@@ -923,18 +923,22 @@ def main():
         else:
             unchanged_files.append(str(docker_compose.relative_to(repo_root)))
 
-    # Sync Go C header from generated FFI header
-    go_ffi_header = repo_root / "packages/go/v4/internal/ffi/kreuzberg.h"
+    # Sync vendored C headers from generated FFI header
     generated_header = repo_root / "crates/kreuzberg-ffi/kreuzberg.h"
-    if go_ffi_header.exists() and generated_header.exists():
+    vendored_headers = [
+        repo_root / "packages/go/v4/internal/ffi/kreuzberg.h",
+        repo_root / "packages/ruby/vendor/kreuzberg-ffi/kreuzberg.h",
+    ]
+    if generated_header.exists():
         gen_content = generated_header.read_text()
-        go_content = go_ffi_header.read_text()
-        if gen_content != go_content:
-            go_ffi_header.write_text(gen_content)
-            print(f"✓ {go_ffi_header.relative_to(repo_root)}: synced from generated C header")
-            updated_files.append(str(go_ffi_header.relative_to(repo_root)))
-        else:
-            unchanged_files.append(str(go_ffi_header.relative_to(repo_root)))
+        for vendored in vendored_headers:
+            if vendored.exists():
+                if vendored.read_text() != gen_content:
+                    vendored.write_text(gen_content)
+                    print(f"✓ {vendored.relative_to(repo_root)}: synced from generated C header")
+                    updated_files.append(str(vendored.relative_to(repo_root)))
+                else:
+                    unchanged_files.append(str(vendored.relative_to(repo_root)))
 
     # Sync Go DefaultVersion constant
     go_install_main = repo_root / "packages/go/v4/cmd/install/main.go"
