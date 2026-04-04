@@ -78,11 +78,11 @@ permissions:
 # --- Stage 1: Validate ---
 
 jobs:
-  validate-universal:
-    name: "Validate: Universal"
+  validate:
+    name: "Validate"
     if: github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
 
@@ -90,81 +90,6 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends cppcheck clang-format
-
-      - name: Run prek hooks
-        uses: j178/prek-action@v2
-        with:
-          extra-args: trailing-whitespace end-of-file-fixer check-merge-conflict check-added-large-files detect-private-key check-json check-yaml check-toml check-case-conflict pyproject-fmt shfmt shellcheck actionlint ai-rulez-generate --all-files
-
-      - name: Validate vendored C headers match canonical
-        shell: bash
-        run: |
-          CANONICAL="crates/kreuzberg-ffi/kreuzberg.h"
-          FAIL=0
-          for VENDORED in packages/go/v4/internal/ffi/kreuzberg.h packages/ruby/vendor/kreuzberg-ffi/kreuzberg.h; do
-            if [ -f "$VENDORED" ] && ! diff -q "$CANONICAL" "$VENDORED" > /dev/null 2>&1; then
-              echo "::error::$VENDORED is out of sync with $CANONICAL — run 'python scripts/sync_versions.py'"
-              diff "$CANONICAL" "$VENDORED" | head -20
-              FAIL=1
-            fi
-          done
-          [ "$FAIL" -eq 0 ] || exit 1
-
-  validate-rust:
-    name: "Validate: Rust"
-    if: github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Free disk space before setup
-        uses: kreuzberg-dev/actions/free-disk-space-linux@v1
-        with:
-          show-initial: "false"
-          show-final: "true"
-
-      - name: Setup Rust
-        uses: kreuzberg-dev/actions/setup-rust@v1
-        with:
-          cache-key-prefix: validate-rust
-          use-sccache: "true"
-
-      - name: Setup OpenSSL
-        uses: kreuzberg-dev/actions/setup-openssl@v1
-
-      - name: Install Task
-        uses: kreuzberg-dev/actions/install-task@v1
-
-      - name: Run Rust lint checks
-        run: task rust:lint:check
-
-      - name: Run C lint checks
-        run: task c:lint:check
-
-      - name: Build snippet-runner
-        run: cargo build --release -p snippet-runner
-
-      - name: Validate documentation snippets
-        run: ./target/release/snippet-runner validate --snippets docs/snippets --reference docs/reference --level syntax --timeout 120
-
-      - name: Check final disk space
-        if: always()
-        run: scripts/ci/validate/show-disk-space.sh "Final disk space"
-        shell: bash
-
-      - name: Cleanup build artifacts after lint
-        if: always()
-        run: scripts/ci/validate/cleanup-after-lint.sh
-        shell: bash
-
-  validate:
-    name: "Validate: Python/TypeScript/Ruby/Java/C#/PHP/Elixir/R"
-    if: github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v6
 
       - name: Setup Python
         uses: kreuzberg-dev/actions/setup-python-env@v1
@@ -237,10 +162,83 @@ jobs:
       - name: Install Task
         uses: kreuzberg-dev/actions/install-task@v1
 
-      - name: Run all lightweight lint checks
+      - name: Run all prek hooks
         uses: j178/prek-action@v2
         with:
-          extra-args: ruff ruff-format mypy biome-format biome-lint oxlint ruby-format ruby-lint cpd checkstyle java-verify csharp-format csharp-lint php-format php-lint mix-credo mix-format r-format r-lint --all-files
+          extra-args: --all-files
+
+      - name: Validate vendored C headers match canonical
+        shell: bash
+        run: |
+          CANONICAL="crates/kreuzberg-ffi/kreuzberg.h"
+          FAIL=0
+          for VENDORED in packages/go/v4/internal/ffi/kreuzberg.h packages/ruby/vendor/kreuzberg-ffi/kreuzberg.h; do
+            if [ -f "$VENDORED" ] && ! diff -q "$CANONICAL" "$VENDORED" > /dev/null 2>&1; then
+              echo "::error::$VENDORED is out of sync with $CANONICAL — run 'python scripts/sync_versions.py'"
+              diff "$CANONICAL" "$VENDORED" | head -20
+              FAIL=1
+            fi
+          done
+          [ "$FAIL" -eq 0 ] || exit 1
+
+  validate-rust:
+    name: "Validate: Rust"
+    if: github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Free disk space before setup
+        uses: kreuzberg-dev/actions/free-disk-space-linux@v1
+        with:
+          show-initial: "false"
+          show-final: "true"
+
+      - name: Setup Rust
+        uses: kreuzberg-dev/actions/setup-rust@v1
+        with:
+          cache-key-prefix: validate-rust
+          use-sccache: "true"
+
+      - name: Setup OpenSSL
+        uses: kreuzberg-dev/actions/setup-openssl@v1
+
+      - name: Install Task
+        uses: kreuzberg-dev/actions/install-task@v1
+
+      - name: Run Rust lint checks
+        run: task rust:lint:check
+
+      - name: Run C lint checks
+        run: task c:lint:check
+
+      - name: Check final disk space
+        if: always()
+        run: scripts/ci/validate/show-disk-space.sh "Final disk space"
+        shell: bash
+
+      - name: Cleanup build artifacts after lint
+        if: always()
+        run: scripts/ci/validate/cleanup-after-lint.sh
+        shell: bash
+
+  validate-snippets:
+    name: "Validate: Documentation Snippets"
+    if: github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: kreuzberg-dev/actions/setup-rust@v1
+        with:
+          cache-key-prefix: validate-snippets
+          use-sccache: "true"
+
+      - name: Build and run snippet validation
+        run: cargo run --release -p snippet-runner -- validate --snippets docs/snippets --reference docs/reference --level syntax --timeout 120
 
   changes:
     name: Detect Changes
@@ -269,53 +267,76 @@ jobs:
             core:
               - 'crates/kreuzberg/**'
               - 'crates/kreuzberg-tesseract/**'
+              - 'crates/kreuzberg-paddle-ocr/**'
+              - 'crates/kreuzberg-pdfium-render/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
               - 'rust-toolchain.toml'
               - '.cargo/config.toml'
+              - 'fixtures/**'
+              - 'tools/e2e-generator/**'
             rust:
               - 'crates/kreuzberg/**'
               - 'crates/kreuzberg-cli/**'
               - 'crates/kreuzberg-tesseract/**'
+              - 'crates/kreuzberg-paddle-ocr/**'
+              - 'crates/kreuzberg-pdfium-render/**'
               - 'e2e/rust/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
+              - 'tools/e2e-generator/**'
+              - 'tools/benchmark-harness/**'
             ffi:
               - 'crates/kreuzberg-ffi/**'
+              - 'crates/kreuzberg/**'
             python:
               - 'crates/kreuzberg-py/**'
               - 'packages/python/**'
               - 'e2e/python/**'
+              - 'fixtures/**'
             typescript:
               - 'crates/kreuzberg-node/**'
               - 'packages/typescript/**'
               - 'e2e/typescript/**'
+              - 'fixtures/**'
             ruby:
               - 'packages/ruby/**'
               - 'e2e/ruby/**'
+              - 'fixtures/**'
             php:
               - 'crates/kreuzberg-php/**'
               - 'packages/php/**'
               - 'e2e/php/**'
+              - 'fixtures/**'
             go:
               - 'packages/go/**'
               - 'e2e/go/**'
+              - 'crates/kreuzberg-ffi/**'
+              - 'fixtures/**'
             java:
               - 'packages/java/**'
               - 'e2e/java/**'
+              - 'crates/kreuzberg-ffi/**'
+              - 'fixtures/**'
             csharp:
               - 'packages/csharp/**'
               - 'e2e/csharp/**'
+              - 'crates/kreuzberg-ffi/**'
+              - 'fixtures/**'
             elixir:
               - 'packages/elixir/**'
               - 'e2e/elixir/**'
+              - 'fixtures/**'
             r:
               - 'packages/r/**'
               - 'e2e/r/**'
+              - 'crates/kreuzberg-ffi/**'
+              - 'fixtures/**'
             wasm:
               - 'crates/kreuzberg-wasm/**'
               - 'e2e/wasm-deno/**'
               - 'e2e/wasm-workers/**'
+              - 'fixtures/**'
             docker:
               - 'Dockerfile*'
               - 'docker/**'
@@ -324,7 +345,7 @@ jobs:
 # --- Stage 2: Build FFI + Rust Tests + Docker ---
 
   build-ffi:
-    needs: [validate-universal, validate-rust, validate, changes]
+    needs: [validate, validate-rust, changes]
     name: "Build: FFI (${{ matrix.os }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -425,7 +446,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   rust-tests:
-    needs: [validate-universal, validate-rust, validate, changes]
+    needs: [validate, validate-rust, changes]
     name: "Test: Rust (${{ matrix.os }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -538,7 +559,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   docker-build:
-    needs: [validate-universal, validate-rust, validate, changes]
+    needs: [validate, validate-rust, changes]
     name: "Build: Docker (${{ matrix.variant }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -750,7 +771,7 @@ jobs:
 # --- Stage 3: Build Bindings ---
 
   build-python:
-    needs: [rust-tests, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, changes, validate, validate-rust]
     name: "Build: Python (${{ matrix.target }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -899,7 +920,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   build-python-sdist:
-    needs: [rust-tests, build-ffi, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, build-ffi, changes, validate, validate-rust]
     name: "Build: Python Sdist"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -938,7 +959,7 @@ jobs:
           retention-days: 7
 
   build-node:
-    needs: [rust-tests, build-ffi, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, build-ffi, changes, validate, validate-rust]
     name: "Build: Node (${{ matrix.target }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -1111,7 +1132,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   build-ruby:
-    needs: [rust-tests, build-ffi, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, build-ffi, changes, validate, validate-rust]
     name: "Build: Ruby Gem (${{ matrix.os }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -1387,7 +1408,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   build-php:
-    needs: [rust-tests, build-ffi, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, build-ffi, changes, validate, validate-rust]
     name: "Build: PHP (${{ matrix.os }}, PHP ${{ matrix.php-version }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -1535,7 +1556,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   build-wasm:
-    needs: [rust-tests, build-ffi, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, build-ffi, changes, validate, validate-rust]
     name: "Build: WASM (${{ matrix.os }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -1626,7 +1647,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   build-java:
-    needs: [rust-tests, build-ffi, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, build-ffi, changes, validate, validate-rust]
     name: "Build: Java (${{ matrix.os }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
@@ -1757,7 +1778,7 @@ jobs:
         uses: kreuzberg-dev/actions/cleanup-rust-cache@v1
 
   build-csharp:
-    needs: [rust-tests, build-ffi, changes, validate-universal, validate-rust, validate]
+    needs: [rust-tests, build-ffi, changes, validate, validate-rust]
     name: "Build: C# (${{ matrix.os }})"
     if: |
       github.repository == 'kreuzberg-dev/kreuzberg' && github.actor != 'dependabot[bot]' &&
