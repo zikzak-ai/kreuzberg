@@ -663,9 +663,14 @@ pub fn create_elixir_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     Ok(adapter)
 }
 
-/// Create Elixir batch adapter (batch_extract_files)
+/// Create Elixir batch adapter.
+///
+/// Uses persistent server mode (not subprocess-per-batch) because the BEAM VM
+/// cold start is ~500s. Spawning a fresh process for each batch would exceed
+/// the benchmark timeout. Instead, files are sent one-by-one through the
+/// persistent stdin/stdout server, reusing the warmed-up VM.
 pub fn create_elixir_batch_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
-    let mut adapter = create_from_spec(&elixir_spec(), ocr_enabled, true)?;
+    let mut adapter = create_from_spec(&elixir_spec(), ocr_enabled, false)?;
     adapter.set_working_dir(workspace_root()?.join("packages/elixir"));
     Ok(adapter)
 }
