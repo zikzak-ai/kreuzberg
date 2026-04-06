@@ -366,11 +366,11 @@ kreuzberg extract <PATH> [OPTIONS]
 | `--chunk-size <SIZE>` | Maximum chunk size in characters (default: 1000) |
 | `--chunk-overlap <SIZE>` | Overlap between chunks in characters (default: 200) |
 | `--chunking-tokenizer <MODEL>` | Tokenizer model for token-based sizing (e.g. `Xenova/gpt-4o`) |
-| `--output-format <FORMAT>` | Content format: `plain`, `markdown`, `djot`, `html` |
+| `--content-format <FORMAT>` | Content format: `plain`, `markdown`, `djot`, `html` |
 | `--include-structure <true\|false>` | Include hierarchical document structure |
 | `--quality <true\|false>` | Enable quality post-processing |
 | `--detect-language <true\|false>` | Enable language detection |
-| `--layout` | Enable layout detection (RT-DETR v2) |
+| `--layout` | Enable layout detection (RT-DETR v2) (enables with defaults, use `--layout false` to disable) |
 | `--layout-confidence <FLOAT>` | Layout confidence threshold (0.0 - 1.0) |
 | `--acceleration <PROVIDER>` | ONNX execution provider: `auto`, `cpu`, `coreml`, `cuda`, `tensorrt` |
 | `--max-concurrent <N>` | Max parallel extractions in batch mode |
@@ -383,6 +383,10 @@ kreuzberg extract <PATH> [OPTIONS]
 | `--pdf-extract-images <true\|false>` | Extract images from PDF pages |
 | `--pdf-extract-metadata <true\|false>` | Extract PDF metadata |
 | `--token-reduction <LEVEL>` | Token reduction: `off`, `light`, `moderate`, `aggressive`, `maximum` |
+| `--layout-table-model <MODEL>` | Table structure model: `tatr`, `slanet_wired`, `slanet_wireless`, `slanet_plus`, `slanet_auto`, `disabled` |
+| `--disable-ocr <true\|false>` | Disable OCR entirely (even for images) |
+| `--cache-namespace <NAMESPACE>` | Cache namespace for tenant isolation |
+| `--cache-ttl-secs <SECONDS>` | Per-request cache TTL in seconds (0 = skip cache) |
 | `--msg-codepage <CODE>` | Windows codepage fallback for MSG files |
 
 **Examples:**
@@ -401,7 +405,10 @@ kreuzberg extract report.pdf --chunk true --chunk-size 2000
 kreuzberg extract scanned.pdf --ocr true --format json
 
 # Markdown output with page markers
-kreuzberg extract report.pdf --output-format markdown --page-markers true
+kreuzberg extract report.pdf --content-format markdown --page-markers true
+
+# Layout-aware extraction with GPU acceleration
+kreuzberg extract document.pdf --layout --content-format markdown --acceleration coreml
 
 # GPU-accelerated extraction
 kreuzberg extract scanned.pdf --ocr true --acceleration coreml

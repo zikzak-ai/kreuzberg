@@ -471,10 +471,13 @@ fn test_extract_help_shows_all_extraction_override_flags() {
         "--chunk-size",
         "--chunk-overlap",
         "--chunking-tokenizer",
-        "--output-format",
+        "--content-format",
         "--include-structure",
         "--quality",
         "--detect-language",
+        "--layout",
+        "--layout-confidence",
+        "--layout-table-model",
         "--acceleration",
         "--max-concurrent",
         "--max-threads",
@@ -529,9 +532,12 @@ fn test_batch_has_same_extraction_flags_as_extract() {
         "--chunk",
         "--chunk-size",
         "--chunk-overlap",
-        "--output-format",
+        "--content-format",
         "--quality",
         "--detect-language",
+        "--layout",
+        "--layout-confidence",
+        "--layout-table-model",
         "--acceleration",
         "--max-concurrent",
         "--max-threads",
@@ -636,6 +642,24 @@ fn test_extract_layout_confidence_out_of_range_error() {
         stderr.contains("confidence") || stderr.contains("layout") || stderr.contains("unexpected argument"),
         "Error should mention confidence or layout, got: {}",
         stderr
+    );
+}
+
+#[test]
+fn test_extract_layout_false_with_confidence_error() {
+    build_binary();
+    let (_dir, file_path) = create_temp_file();
+
+    let output = Command::new(get_binary_path())
+        .args(["extract", "--layout", "false", "--layout-confidence", "0.5", &file_path])
+        .output()
+        .expect("Failed to execute extract command");
+
+    // If layout-detection feature is enabled, validation should reject this combination.
+    // If not enabled, clap rejects the unknown flags.
+    assert!(
+        !output.status.success(),
+        "Should fail when --layout false is combined with --layout-confidence"
     );
 }
 

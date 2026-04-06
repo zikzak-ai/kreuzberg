@@ -80,6 +80,22 @@ Layout detection uses the **RT-DETR v2** model (17 layout classes), an ONNX-base
     # table_model = "tatr"
     ```
 
+=== "CLI"
+
+    ```bash title="Terminal"
+    # Enable layout detection with default settings
+    kreuzberg extract document.pdf --layout --content-format markdown
+
+    # Custom confidence threshold
+    kreuzberg extract document.pdf --layout-confidence 0.5 --content-format markdown
+
+    # Specific table model
+    kreuzberg extract document.pdf --layout --layout-table-model slanet_wired
+
+    # Combined with GPU acceleration
+    kreuzberg extract document.pdf --layout --acceleration coreml
+    ```
+
 ## Table Structure Models <span class="version-badge">v4.5.3</span>
 
 When layout detection identifies a table region, a table structure model analyzes rows, columns, headers, and spanning cells.

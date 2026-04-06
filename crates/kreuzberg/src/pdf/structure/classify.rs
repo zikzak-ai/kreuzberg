@@ -1045,13 +1045,22 @@ fn is_greek_letter(c: char) -> bool {
     matches!(c, '\u{0391}'..='\u{03A9}' | '\u{03B1}'..='\u{03C9}')
 }
 
-/// Mark paragraphs containing arXiv identifiers as page furniture.
+/// Remove arXiv watermark/sidebar noise from paragraphs on the first pages.
 ///
-/// Catches arXiv watermark text (e.g. "arXiv:2408.09869v5 [cs.CL] 9 Dec 2024")
-/// that appears on the first page(s) of academic papers. Only marks short
-/// paragraphs (≤25 words) to avoid filtering references that cite arXiv papers.
+/// Handles two cases:
+/// 1. Short standalone paragraphs that are just the arXiv identifier → mark as furniture.
+/// 2. arXiv identifier appended to the end of a longer paragraph (LaTeX sidebar
+///    text that pdfium concatenates with body text) → strip the trailing noise.
 pub(super) fn mark_arxiv_noise(all_pages: &mut [Vec<PdfParagraph>]) {
     let arxiv_re = regex::Regex::new(r"arXiv:\d{4}\.\d{4,5}").expect("valid regex");
+    // Match trailing sidebar noise: title/page-num + arXiv ID (+ category + date) at end.
+    // The sidebar text from LaTeX gets concatenated by pdfium with body text.
+    // We capture from the arXiv ID to end-of-string and also eat back any preceding
+    // short title/page-number fragment (up to ~8 words before arXiv:).
+    let trailing_re = regex::Regex::new(
+        r"(?:\s+(?:\S+\s+){0,8})?arXiv:\d{4}\.\d{4,5}(?:v\d+)?(?:\s*\[[\w.-]+\])?\s*(?:\d{1,2}\s+\w+\s+\d{4})?\s*$",
+    )
+    .expect("valid regex");
 
     // Only check first 2 pages — arXiv watermarks don't appear later.
     for page in all_pages.iter_mut().take(2) {
@@ -1063,14 +1072,47 @@ pub(super) fn mark_arxiv_noise(all_pages: &mut [Vec<PdfParagraph>]) {
             let trimmed = text.trim();
             let word_count = trimmed.split_whitespace().count();
 
+            if !arxiv_re.is_match(trimmed) {
+                continue;
+            }
+
             // Short paragraph dominated by the arXiv identifier → mark as furniture.
-            if word_count <= 25 && arxiv_re.is_match(trimmed) {
+            if word_count <= 25 {
                 tracing::trace!(
                     text = %trimmed.chars().take(80).collect::<String>(),
                     "marking arXiv watermark as furniture"
                 );
                 para.is_page_furniture = true;
                 para.heading_level = None;
+            } else if let Some(m) = trailing_re.find(trimmed) {
+                // arXiv id is at the end of a longer paragraph — strip it from the last segment.
+                let noise = &trimmed[m.start()..];
+                tracing::trace!(
+                    stripped = %noise.chars().take(80).collect::<String>(),
+                    "stripping trailing arXiv watermark from paragraph"
+                );
+                strip_trailing_text_from_paragraph(para, noise.trim());
+            }
+        }
+    }
+}
+
+/// Strip trailing noise text from the last segment(s) of a paragraph.
+fn strip_trailing_text_from_paragraph(para: &mut PdfParagraph, noise: &str) {
+    // Walk lines in reverse to find the segment containing the noise.
+    for line in para.lines.iter_mut().rev() {
+        for seg in line.segments.iter_mut().rev() {
+            if let Some(pos) = seg.text.find(noise) {
+                seg.text = seg.text[..pos].trim_end().to_string();
+                return;
+            }
+            // If the entire segment is part of the noise, clear it.
+            let seg_trimmed = seg.text.trim();
+            if !seg_trimmed.is_empty() && noise.contains(seg_trimmed) {
+                seg.text.clear();
+            } else {
+                // Reached body text — stop.
+                return;
             }
         }
     }

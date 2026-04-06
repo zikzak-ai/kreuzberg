@@ -405,6 +405,7 @@ The `extract` and `batch` commands support a comprehensive set of flags to overr
 | `--ocr-language <LANG>` | OCR language code. Tesseract uses ISO 639-3 (`eng`, `fra`, `deu`). PaddleOCR/EasyOCR use short codes (`en`, `ch`, `korean`). |
 | `--force-ocr <true\|false>` | Force OCR even if the document has an existing text layer. |
 | `--ocr-auto-rotate <true\|false>` | Automatically rotate images before OCR based on detected orientation. |
+| `--disable-ocr <true\|false>` | Disable OCR entirely, even for images. |
 
 ```bash title="Terminal"
 kreuzberg extract scanned.pdf --ocr true --ocr-backend paddle-ocr --ocr-language ch
@@ -440,8 +441,9 @@ kreuzberg extract document.pdf --content-format markdown --include-structure tru
 
 | Flag | Description |
 |------|-------------|
-| `--layout` | Enable layout detection (RT-DETR v2). Requires the `layout-detection` feature. |
+| `--layout` | Enable layout detection with default settings (RT-DETR v2). Use `--layout false` to explicitly disable. Requires the `layout-detection` feature. |
 | `--layout-confidence <FLOAT>` | Layout detection confidence threshold (0.0 - 1.0). |
+| `--layout-table-model <MODEL>` | Table structure model: `tatr` (default), `slanet_wired`, `slanet_wireless`, `slanet_plus`, `slanet_auto`, `disabled`. |
 
 ```bash title="Terminal"
 kreuzberg extract document.pdf --layout --layout-confidence 0.7
@@ -517,11 +519,13 @@ kreuzberg extract document.pdf --token-reduction maximum
 | `--quality <true\|false>` | Enable quality post-processing for improved formatting. |
 | `--detect-language <true\|false>` | Enable automatic language detection on extracted text. |
 
-### Caching Flags
+### Cache Flags
 
 | Flag | Description |
 |------|-------------|
 | `--no-cache <true\|false>` | Disable extraction result caching. |
+| `--cache-namespace <NAMESPACE>` | Cache namespace for tenant isolation. |
+| `--cache-ttl-secs <SECONDS>` | Per-request cache TTL in seconds (0 = skip cache). |
 
 ### Concurrency Flags
 
