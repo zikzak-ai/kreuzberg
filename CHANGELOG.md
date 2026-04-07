@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Local LLM support** via liter-llm 1.2 — use Ollama, LM Studio, vLLM, llama.cpp, LocalAI, or llamafile as VLM OCR, embedding, or structured extraction backends with zero API key configuration
-- **LLM-powered document intelligence via liter-llm** — Integrates with 150+ LLM providers (including local inference engines) for three new capabilities:
+- **LLM-powered document intelligence via liter-llm** — Integrates with 146 LLM providers (including local inference engines) for three new capabilities:
   - **VLM OCR**: Vision language models as OCR backend (OpenAI GPT-4o, Anthropic Claude, Google Gemini, etc.). Superior accuracy for low-quality scans, handwriting, Arabic/Farsi, and complex layouts. Configure via `ocr.backend = "vlm"` with `ocr.vlm_config`.
   - **Structured Extraction**: Extract structured JSON data from documents using a JSON schema constraint. Users provide a schema and optional Jinja2 prompt template; the LLM returns conforming data. Supports strict mode (OpenAI) with automatic schema sanitization for cross-provider compatibility.
   - **VLM Embeddings**: Provider-hosted embedding models (e.g., `openai/text-embedding-3-small`, `mistral/mistral-embed`) as alternative to local ONNX models. Works through existing `/embed` API, `embed_text` MCP tool, and `embed` CLI command.

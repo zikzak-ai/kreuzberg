@@ -198,7 +198,7 @@ After extraction, Kreuzberg can run a chain of processing steps. Each is optiona
 
 !!! info "Added in v4.8.0"
 
-Kreuzberg integrates with 150+ LLM providers including local inference (Ollama, LM Studio, vLLM, llama.cpp) via [liter-llm](https://github.com/kreuzberg-dev/liter-llm) to unlock three new capabilities that complement the local extraction pipeline.
+Kreuzberg integrates with 146 LLM providers including local inference (Ollama, LM Studio, vLLM, llama.cpp) via [liter-llm](https://github.com/kreuzberg-dev/liter-llm) to unlock three new capabilities that complement the local extraction pipeline.
 
 <details>
 <summary><strong>VLM OCR</strong> -- Vision language models as an OCR backend</summary>

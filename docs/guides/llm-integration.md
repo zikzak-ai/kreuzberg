@@ -1,6 +1,6 @@
 # LLM Integration <span class="version-badge">v4.8.0</span>
 
-Kreuzberg integrates with 150+ LLM providers (including local inference engines) via [liter-llm](https://github.com/kreuzberg-dev/liter-llm) for three capabilities: VLM OCR, structured extraction, and provider-hosted embeddings.
+Kreuzberg integrates with 146 LLM providers (including local inference engines) via [liter-llm](https://github.com/kreuzberg-dev/liter-llm) for three capabilities: VLM OCR, structured extraction, and provider-hosted embeddings.
 
 !!! note "Feature gate"
     Requires the `llm` Cargo feature. Not included in the default feature set.
