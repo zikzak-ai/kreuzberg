@@ -439,7 +439,7 @@ jobs:
     # WASM runs on x86 — Node.js V8 WASM runtime has initialization issues on ARM64 Linux
     # that cause extractions to hang indefinitely. Works fine on x86 and macOS ARM.
     runs-on: ubuntu-24.04
-    timeout-minutes: 180
+    timeout-minutes: 360
     permissions:
       contents: read
     strategy:
@@ -1242,6 +1242,7 @@ jobs:
   bench-docling:
     name: docling (${{ matrix.mode }}, shard ${{ matrix.shard }}/3)
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1306,6 +1307,7 @@ jobs:
   bench-markitdown:
     name: markitdown (${{ matrix.mode }}, shard ${{ matrix.shard }}/3)
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1366,6 +1368,7 @@ jobs:
   bench-pandoc:
     name: pandoc (${{ matrix.mode }})
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1430,6 +1433,7 @@ jobs:
   bench-unstructured:
     name: unstructured (${{ matrix.mode }}, shard ${{ matrix.shard }}/4)
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1494,6 +1498,7 @@ jobs:
   bench-tika:
     name: tika (${{ matrix.mode }}, shard ${{ matrix.shard }}/3)
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1558,6 +1563,7 @@ jobs:
   bench-pymupdf4llm:
     name: pymupdf4llm (${{ matrix.mode }}, shard ${{ matrix.shard }}/3)
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1623,6 +1629,7 @@ jobs:
   bench-pdfplumber:
     name: pdfplumber (${{ matrix.mode }})
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1681,6 +1688,7 @@ jobs:
   bench-mineru:
     name: mineru (${{ matrix.mode }}, shard ${{ matrix.shard }}/3)
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1745,6 +1753,7 @@ jobs:
   bench-pypdf:
     name: pypdf (${{ matrix.mode }})
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1803,6 +1812,7 @@ jobs:
   bench-pdfminer:
     name: pdfminer (${{ matrix.mode }})
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1861,6 +1871,7 @@ jobs:
   bench-pdftotext:
     name: pdftotext (${{ matrix.mode }})
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1924,6 +1935,7 @@ jobs:
   bench-playa-pdf:
     name: playa-pdf (${{ matrix.mode }})
     needs: kreuzberg-gate
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     permissions:
@@ -1983,7 +1995,7 @@ jobs:
     name: Aggregate & Release Results
     needs: [kreuzberg-gate, bench-docling, bench-markitdown, bench-pandoc, bench-unstructured, bench-tika, bench-pymupdf4llm, bench-pdfplumber, bench-mineru, bench-pypdf, bench-pdfminer, bench-pdftotext, bench-playa-pdf]
     runs-on: ubuntu-24.04-arm
-    if: ${{ !cancelled() && !failure() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') }}
     permissions:
       contents: write
     steps:
