@@ -1304,6 +1304,142 @@ pub fn extract_document_structure(
     Ok((doc, has_font_encoding_issues))
 }
 
+/// Build a structured `InternalDocument` from pre-extracted per-page segments.
+///
+/// This is the oxide-backend equivalent of [`extract_document_structure`]. It accepts
+/// segments already extracted via `oxide::hierarchy::extract_all_segments` and runs
+/// the same font-clustering, heading-classification, paragraph-assembly, and
+/// post-processing stages without requiring a pdfium `PdfDocument`.
+///
+/// Layout detection and image extraction are not supported on this path (yet).
+///
+/// Returns the assembled `InternalDocument`.
+#[cfg(feature = "pdf-oxide")]
+pub(crate) fn extract_document_structure_from_segments(
+    mut all_page_segments: Vec<Vec<SegmentData>>,
+    k_clusters: usize,
+    tables: &[crate::types::Table],
+    strip_repeating_text: bool,
+    include_headers: bool,
+    include_footers: bool,
+) -> Result<crate::types::internal::InternalDocument> {
+    let page_count = all_page_segments.len();
+    tracing::debug!(
+        page_count,
+        "oxide structure pipeline: starting from pre-extracted segments"
+    );
+
+    // No structure tree on the oxide path — all pages use heuristic (segment-based) extraction.
+    let struct_tree_results: Vec<Option<Vec<PdfParagraph>>> = vec![None; page_count];
+    let heuristic_pages: Vec<usize> = (0..page_count).collect();
+
+    // Stage 2: Global font-size clustering.
+    let (heading_map, _struct_tree_needs_classify) =
+        build_heading_map(&all_page_segments, &struct_tree_results, &heuristic_pages, k_clusters)?;
+
+    let doc_body_font_size: Option<f32> = heading_map
+        .iter()
+        .find(|(_, level)| level.is_none())
+        .map(|(size, _)| *size);
+
+    // Build per-page table bbox suppression map.
+    let extracted_table_bboxes_by_page: ahash::AHashMap<usize, Vec<crate::types::BoundingBox>> = {
+        let mut map: ahash::AHashMap<usize, Vec<crate::types::BoundingBox>> = ahash::AHashMap::new();
+        for table in tables {
+            if let Some(ref bb) = table.bounding_box {
+                map.entry(table.page_number.saturating_sub(1)).or_default().push(*bb);
+            }
+        }
+        map
+    };
+
+    // Approximate page heights from segment positions (used for repeating-text detection).
+    let page_heights: Vec<f32> = all_page_segments
+        .iter()
+        .map(|segs| {
+            segs.iter().map(|s| s.y + s.height).fold(0.0_f32, f32::max).max(792.0) // Letter-size fallback
+        })
+        .collect();
+
+    // Stage 3: Per-page structured extraction.
+    let page_inputs: Vec<PageInput> = (0..page_count)
+        .map(|i| PageInput {
+            page_index: i,
+            struct_paragraphs: None,
+            heuristic_segments: std::mem::take(&mut all_page_segments[i]),
+            page_hints: None,
+            table_bboxes: extracted_table_bboxes_by_page.get(&i).cloned().unwrap_or_default(),
+            hint_validations: Vec::new(),
+            needs_classify: false,
+            paragraph_gap_ys: Vec::new(),
+            include_headers,
+            include_footers,
+        })
+        .collect();
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut all_page_paragraphs: Vec<Vec<PdfParagraph>> = page_inputs
+        .into_par_iter()
+        .map(|input| process_single_page(input, &heading_map, doc_body_font_size))
+        .collect();
+    #[cfg(target_arch = "wasm32")]
+    let mut all_page_paragraphs: Vec<Vec<PdfParagraph>> = page_inputs
+        .into_iter()
+        .map(|input| process_single_page(input, &heading_map, doc_body_font_size))
+        .collect();
+
+    // Post-processing: refine heading hierarchy, strip repeating text, deduplicate.
+    refine_heading_hierarchy(&mut all_page_paragraphs);
+    demote_unnumbered_subsections(&mut all_page_paragraphs);
+    demote_heading_runs(&mut all_page_paragraphs);
+
+    if strip_repeating_text {
+        mark_cross_page_repeating_text(&mut all_page_paragraphs, &page_heights);
+        mark_cross_page_repeating_short_text(&mut all_page_paragraphs);
+    }
+    mark_arxiv_noise(&mut all_page_paragraphs);
+    for page in &mut all_page_paragraphs {
+        retain_page_furniture_safely(page);
+    }
+    if strip_repeating_text {
+        deduplicate_paragraphs(&mut all_page_paragraphs);
+    }
+
+    let total_paragraphs: usize = all_page_paragraphs.iter().map(|p| p.len()).sum();
+    tracing::debug!(
+        total_paragraphs,
+        heading_map_len = heading_map.len(),
+        "oxide structure pipeline: paragraph extraction complete, assembling document"
+    );
+
+    // Stage 4: Assemble InternalDocument.
+    let mut doc = assemble_internal_document(all_page_paragraphs, tables, &[]);
+
+    // Stage 5: Element-level text normalization.
+    for elem in &mut doc.elements {
+        if elem.text.is_empty() {
+            continue;
+        }
+        let t1 = repair_contextual_ligatures(&elem.text);
+        let t2 = expand_ligatures_with_space_absorption(&t1);
+        let t3 = normalize_unicode_text(&t2);
+        if let Cow::Owned(normalized) = t3 {
+            elem.text = normalized;
+        } else if let Cow::Owned(normalized) = t2 {
+            elem.text = normalized;
+        } else if let Cow::Owned(normalized) = t1 {
+            elem.text = normalized;
+        }
+    }
+
+    tracing::debug!(
+        elements = doc.elements.len(),
+        "oxide structure pipeline: assembly complete"
+    );
+
+    Ok(doc)
+}
+
 /// Filter out segments that overlap >=50% with any table bounding box.
 ///
 /// Segments with zero area or empty text are always kept.

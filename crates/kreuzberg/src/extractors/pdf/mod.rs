@@ -1079,7 +1079,7 @@ impl PdfExtractor {
             mut tables,
             page_contents,
             boundaries,
-            _pre_rendered_doc,
+            pre_rendered_doc,
             _has_font_encoding_issues,
             pdf_annotations,
         ) = extract_all_from_oxide_document(content, config)?;
@@ -1184,13 +1184,29 @@ impl PdfExtractor {
         let final_pages = assign_tables_and_images_to_pages(page_contents, &tables, &[]);
 
         // --- Build InternalDocument ---
-        // The oxide path does not produce pre-formatted structured output (yet).
         let pre_formatted_output: Option<String> = None;
+
+        // When a pre-rendered structured document is available (headings, paragraphs from
+        // font-size clustering), use it directly. Otherwise fall back to flat paragraph splitting.
+        let used_ocr;
+        #[cfg(feature = "ocr")]
+        {
+            used_ocr = ocr_internal_doc.is_some();
+        }
+        #[cfg(not(feature = "ocr"))]
+        {
+            used_ocr = false;
+        }
+
+        let use_structured_doc = !used_ocr && pre_rendered_doc.is_some();
 
         #[cfg(feature = "ocr")]
         let mut doc = if let Some(mut ocr_doc) = ocr_internal_doc.take() {
             ocr_doc.mime_type = std::borrow::Cow::Owned(mime_type.to_string());
             ocr_doc
+        } else if let Some(mut pre_doc) = pre_rendered_doc {
+            pre_doc.mime_type = std::borrow::Cow::Owned(mime_type.to_string());
+            pre_doc
         } else {
             let mut d = InternalDocument::new("pdf");
             d.mime_type = std::borrow::Cow::Owned(mime_type.to_string());
@@ -1203,7 +1219,10 @@ impl PdfExtractor {
             d
         };
         #[cfg(not(feature = "ocr"))]
-        let mut doc = {
+        let mut doc = if let Some(mut pre_doc) = pre_rendered_doc {
+            pre_doc.mime_type = std::borrow::Cow::Owned(mime_type.to_string());
+            pre_doc
+        } else {
             let mut d = InternalDocument::new("pdf");
             d.mime_type = std::borrow::Cow::Owned(mime_type.to_string());
             for paragraph in text.split("\n\n") {
@@ -1229,9 +1248,13 @@ impl PdfExtractor {
             ..Default::default()
         };
 
-        for table in tables {
-            let table_index = doc.push_table(table);
-            doc.push_element(InternalElement::text(ElementKind::Table { table_index }, "", 0));
+        // When using the structured doc, tables are already interleaved by the assembly pipeline.
+        // Only add tables separately for the flat-text fallback path.
+        if !use_structured_doc {
+            for table in tables {
+                let table_index = doc.push_table(table);
+                doc.push_element(InternalElement::text(ElementKind::Table { table_index }, "", 0));
+            }
         }
 
         if let Some(imgs) = images {

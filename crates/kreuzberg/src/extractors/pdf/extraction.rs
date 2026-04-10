@@ -407,8 +407,9 @@ fn extract_tables_from_document(
 ///
 /// # Notes
 ///
-/// - Layout detection and structured-document pre-rendering are not yet supported on the
-///   oxide path. The `pre_rendered_doc` slot is always `None`.
+/// - Layout detection is not yet supported on the oxide path.
+/// - When output format is Markdown/Djot/HTML, the oxide hierarchy module extracts font
+///   metrics and feeds them into the backend-agnostic structure pipeline for heading detection.
 /// - Font encoding issue detection is not available; the flag is always `false`.
 #[cfg(feature = "pdf-oxide")]
 pub(crate) fn extract_all_from_oxide_document(
@@ -443,8 +444,73 @@ pub(crate) fn extract_all_from_oxide_document(
         None
     };
 
-    // Structured document rendering is not yet supported on the oxide path.
-    let pre_rendered_doc = None;
+    // Pre-render structured document for output formats that benefit from headings.
+    let needs_structured = matches!(
+        config.output_format,
+        OutputFormat::Markdown | OutputFormat::Djot | OutputFormat::Html
+    );
+
+    let pre_rendered_doc = if needs_structured && !config.force_ocr {
+        let k = config
+            .pdf_options
+            .as_ref()
+            .and_then(|opts| opts.hierarchy.as_ref())
+            .map(|h| h.k_clusters)
+            .unwrap_or(4);
+
+        let (strip_repeating_text, include_headers, include_footers) = config
+            .content_filter
+            .as_ref()
+            .map(|cf| (cf.strip_repeating_text, cf.include_headers, cf.include_footers))
+            .unwrap_or((true, false, false));
+
+        // Extract font-metric segments from oxide for heading detection.
+        let segments = crate::pdf::oxide::hierarchy::extract_all_segments(&mut doc).map_err(|e| {
+            crate::error::KreuzbergError::Parsing {
+                message: format!("pdf_oxide hierarchy extraction failed: {e}"),
+                source: None,
+            }
+        })?;
+
+        let total_segs: usize = segments.iter().map(|s| s.len()).sum();
+        tracing::debug!(
+            total_segs,
+            k,
+            "oxide structure: extracted segments for heading detection"
+        );
+
+        match crate::pdf::structure::extract_document_structure_from_segments(
+            segments,
+            k,
+            &tables,
+            strip_repeating_text,
+            include_headers,
+            include_footers,
+        ) {
+            Ok(structured_doc) if !structured_doc.elements.is_empty() => {
+                tracing::debug!(
+                    elements = structured_doc.elements.len(),
+                    has_headings = structured_doc
+                        .elements
+                        .iter()
+                        .any(|e| matches!(e.kind, crate::types::internal::ElementKind::Heading { .. })),
+                    "oxide structure: render succeeded"
+                );
+                Some(structured_doc)
+            }
+            Ok(_) => {
+                tracing::warn!("oxide structure: rendering produced empty output, falling back to plain text");
+                None
+            }
+            Err(e) => {
+                tracing::warn!("oxide structure: rendering failed: {:?}, falling back to plain text", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+
     let has_font_encoding_issues = false;
 
     Ok((
