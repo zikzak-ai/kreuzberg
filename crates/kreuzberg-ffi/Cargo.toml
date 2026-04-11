@@ -21,13 +21,7 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 
 [features]
 default = []
-embeddings = []
 rayon = ["dep:rayon"]
-pdf = []
-keywords-yake = []
-keywords-rake = []
-layout-detection = ["kreuzberg/layout-detection"]
-tree-sitter = []
 
 [dependencies]
 ahash = { workspace = true }

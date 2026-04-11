@@ -59,7 +59,7 @@ namespace Kreuzberg.E2E.Image
             TestHelpers.SkipIfLegacyOfficeDisabled("images/example.jpg");
             TestHelpers.SkipIfOfficeTestOnWindows("images/example.jpg");
             var documentPath = TestHelpers.EnsureDocument("images/example.jpg", true);
-            var config = TestHelpers.BuildConfig("{\"ocr\":null}");
+            var config = TestHelpers.BuildConfig("{\"ocr\":null,\"disable_ocr\":true}");
 
             var result = KreuzbergClient.ExtractFileSync(documentPath, config);
             TestHelpers.AssertExpectedMime(result, new[] { "image/jpeg" });

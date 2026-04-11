@@ -415,10 +415,10 @@ func assertOcrElements(t *testing.T, result *kreuzberg.ExtractionResult, hasElem
 
 func skipIfFeatureUnavailable(t *testing.T, feature string) {
 	t.Helper()
-	envVar := "KREUZBERG_" + strings.ToUpper(strings.ReplaceAll(feature, "-", "_")) + "_AVAILABLE"
+	envVar := "KREUZBERG_" + strings.ToUpper(strings.ReplaceAll(feature, "-", "_")) + "_DISABLED"
 	flag := os.Getenv(envVar)
-	if flag == "" || flag == "0" || strings.EqualFold(flag, "false") {
-		t.Skipf("Skipping: feature %q not available (set %s=1)", feature, envVar)
+	if flag == "1" || strings.EqualFold(flag, "true") {
+		t.Skipf("Skipping: feature %q disabled (via %s=1)", feature, envVar)
 	}
 }
 
@@ -854,7 +854,16 @@ fn write_scripts(go_root: &Utf8Path, mode: &GenerationMode) -> Result<()> {
         r#"#!/usr/bin/env bash
 set -euo pipefail
 echo "Setting up Go test app..."
-go generate github.com/kreuzberg-dev/kreuzberg/packages/go/v4/...
+
+# Download pre-built FFI binaries from GitHub releases.
+# The install command places libraries under ~/.kreuzberg/lib/<platform>/
+# and a header under ~/.kreuzberg/include/.
+GOWORK=off go run github.com/kreuzberg-dev/kreuzberg/packages/go/v4/cmd/install@latest
+
+# Remove the cgo_flags.go generated in CWD — it has package kreuzberg
+# which conflicts with our package e2e. We use CGO env vars instead.
+rm -f cgo_flags.go
+
 GOWORK=off go mod tidy
 echo "Setup complete."
 "#,
@@ -871,8 +880,42 @@ echo "Setup complete."
         &run,
         r#"#!/usr/bin/env bash
 set -euo pipefail
+
+KREUZBERG_HOME="${HOME}/.kreuzberg"
+ARCH="$(uname -m)"
+OS="$(uname -s)"
+
+case "${OS}" in
+  Darwin)
+    case "${ARCH}" in
+      arm64) PLATFORM="darwin_arm64" ;;
+      x86_64) PLATFORM="darwin_amd64" ;;
+    esac
+    LDFLAGS="${KREUZBERG_HOME}/lib/${PLATFORM}/libkreuzberg_ffi.a -framework CoreFoundation -framework CoreServices -framework SystemConfiguration -framework Security -framework Foundation -lc++"
+    ;;
+  Linux)
+    case "${ARCH}" in
+      aarch64) PLATFORM="linux_arm64" ;;
+      x86_64) PLATFORM="linux_amd64" ;;
+    esac
+    LDFLAGS="-L${KREUZBERG_HOME}/lib/${PLATFORM} -Wl,-Bstatic -lkreuzberg_ffi -Wl,-Bdynamic -lpthread -ldl -lm -lstdc++"
+    ;;
+  *)
+    echo "Unsupported OS: ${OS}" >&2
+    exit 1
+    ;;
+esac
+
+if [ ! -d "${KREUZBERG_HOME}/lib/${PLATFORM}" ]; then
+  echo "FFI library not found. Run setup.sh first." >&2
+  exit 1
+fi
+
+export CGO_CFLAGS="-I${KREUZBERG_HOME}/include"
+export CGO_LDFLAGS="${LDFLAGS}"
+
 echo "Running Go tests..."
-GOWORK=off go test -v -count=1 ./...
+GOWORK=off go test -v -count=1 -timeout 10m ./...
 "#,
     )
     .context("Failed to write run_tests.sh")?;

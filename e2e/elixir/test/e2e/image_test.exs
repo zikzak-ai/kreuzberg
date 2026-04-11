@@ -79,7 +79,7 @@ defmodule E2E.ImageTest do
       case E2E.Helpers.run_fixture(
              "image_metadata_only",
              "images/example.jpg",
-             %{ocr: nil},
+             %{ocr: nil, disable_ocr: true},
              requirements: [],
              notes: nil,
              skip_if_missing: true

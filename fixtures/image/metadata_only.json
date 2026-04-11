@@ -8,7 +8,8 @@
 	},
 	"extraction": {
 		"config": {
-			"ocr": null
+			"ocr": null,
+			"disable_ocr": true
 		}
 	},
 	"assertions": {

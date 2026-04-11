@@ -46,9 +46,9 @@ CExtractionResult *run_extraction(const char *relative, const char *config_json)
 /* Like run_extraction but reads the file into memory and calls the bytes API. */
 CExtractionResult *run_extraction_bytes(const char *relative, const char *config_json);
 
-/* Check an environment variable like KREUZBERG_PADDLE_OCR_AVAILABLE.
-   If unset / "0" / "false", prints "SKIP:" and returns 1 (caller should return).
-   Otherwise returns 0. */
+/* Check an environment variable like KREUZBERG_PADDLE_OCR_DISABLED.
+   If set to "1" / "true", prints "SKIP:" and returns 1 (caller should return).
+   Otherwise returns 0 (feature assumed available by default). */
 int skip_if_feature_unavailable(const char *feature);
 
 /* Case-insensitive substring search.  Returns non-zero if needle found in haystack. */
@@ -134,10 +134,12 @@ void assert_annotations(const CExtractionResult *result,
                         int has_annotations,
                         int has_min, size_t min_count);
 
+#ifdef KREUZBERG_HAS_EMBED
 void assert_embed_result(const CEmbedResult *result,
                          int has_count, size_t count,
                          int has_dimensions, size_t dimensions,
                          int no_nan, int no_inf, int non_zero);
+#endif
 
 void assert_structured_output(const CExtractionResult *result,
                               int check_has_output, int has_output,

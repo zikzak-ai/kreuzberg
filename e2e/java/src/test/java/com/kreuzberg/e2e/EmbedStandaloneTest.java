@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import dev.kreuzberg.Kreuzberg;
 import dev.kreuzberg.config.EmbeddingConfig;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Tests for standalone embedding fixtures. */
@@ -22,7 +22,7 @@ public class EmbedStandaloneTest {
           false, "Skipping embed_async: embeddings not supported on Windows x64 via ONNX yet");
       return;
     }
-    List<float[]> results;
+    float[][] results;
     try {
       results =
           Kreuzberg.embed(
@@ -49,7 +49,7 @@ public class EmbedStandaloneTest {
           "Skipping embed_batch_texts: embeddings not supported on Windows x64 via ONNX yet");
       return;
     }
-    List<float[]> results;
+    float[][] results;
     try {
       results =
           Kreuzberg.embed(
@@ -76,7 +76,7 @@ public class EmbedStandaloneTest {
           "Skipping embed_empty_input: embeddings not supported on Windows x64 via ONNX yet");
       return;
     }
-    List<float[]> results;
+    float[][] results;
     try {
       results =
           Kreuzberg.embed(
@@ -102,7 +102,7 @@ public class EmbedStandaloneTest {
           "Skipping embed_multilingual: embeddings not supported on Windows x64 via ONNX yet");
       return;
     }
-    List<float[]> results;
+    float[][] results;
     try {
       results =
           Kreuzberg.embed(
@@ -129,7 +129,7 @@ public class EmbedStandaloneTest {
           "Skipping embed_single_text: embeddings not supported on Windows x64 via ONNX yet");
       return;
     }
-    List<float[]> results;
+    float[][] results;
     try {
       results =
           Kreuzberg.embed(

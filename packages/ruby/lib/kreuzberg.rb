@@ -37,14 +37,10 @@ module Kreuzberg
   autoload :DocumentStructure, 'kreuzberg/types'
   autoload :PdfAnnotation, 'kreuzberg/types'
   autoload :PdfAnnotationBoundingBox, 'kreuzberg/types'
+  autoload :KeywordAlgorithm, 'kreuzberg/types'
 
   ExtractionConfig = Config::Extraction
   PageConfig = Config::PageConfig
-
-  module KeywordAlgorithm
-    YAKE = :yake
-    RAKE = :rake
-  end
 
   @__cache_tracker = { entries: 0, bytes: 0 }
 

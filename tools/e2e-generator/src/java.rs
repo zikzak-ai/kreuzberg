@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -119,11 +120,11 @@ public final class E2EHelpers {
     }
 
     public static void skipIfFeatureUnavailable(String feature) {
-        String envVar = "KREUZBERG_" + feature.replace("-", "_").toUpperCase() + "_AVAILABLE";
+        String envVar = "KREUZBERG_" + feature.replace("-", "_").toUpperCase() + "_DISABLED";
         String flag = System.getenv(envVar);
-        Assumptions.assumeTrue(
-                flag != null && !flag.isEmpty() && !"0".equals(flag) && !"false".equalsIgnoreCase(flag),
-                String.format("Skipping: feature '%s' not available (set %s=1)", feature, envVar)
+        Assumptions.assumeFalse(
+                flag != null && ("1".equals(flag) || "true".equalsIgnoreCase(flag)),
+                String.format("Skipping: feature '%s' disabled (via %s=1)", feature, envVar)
         );
     }
 
@@ -174,14 +175,14 @@ public final class E2EHelpers {
      * Assertion utilities for E2E tests.
      */
     public static final class Assertions {
-        public static void assertEmbedResult(List<float[]> results, int count, int dimensions, boolean noNan, boolean noInf, boolean nonZero, boolean normalized) {
+        public static void assertEmbedResult(float[][] results, int count, int dimensions, boolean noNan, boolean noInf, boolean nonZero, boolean normalized) {
             assertNotNull(results, "Embedding results should not be null");
             if (count >= 0) {
-                org.junit.jupiter.api.Assertions.assertEquals(count, results.size(), String.format("Expected %d vectors, got %d", count, results.size()));
+                org.junit.jupiter.api.Assertions.assertEquals(count, results.length, String.format("Expected %d vectors, got %d", count, results.length));
             }
-            if (results.size() > 0) {
-                for (int i = 0; i < results.size(); i++) {
-                    float[] vector = results.get(i);
+            if (results.length > 0) {
+                for (int i = 0; i < results.length; i++) {
+                    float[] vector = results[i];
                     assertNotNull(vector, String.format("Vector %d should not be null", i));
                     if (dimensions > 0) {
                         org.junit.jupiter.api.Assertions.assertEquals(dimensions, vector.length, String.format("Vector %d expected length %d, got %d", i, dimensions, vector.length));
@@ -2955,6 +2956,9 @@ fn render_embed_category(fixtures: &[&Fixture]) -> Result<String> {
     writeln!(buffer)?;
     writeln!(buffer, "import dev.kreuzberg.Kreuzberg;")?;
     writeln!(buffer, "import dev.kreuzberg.config.EmbeddingConfig;")?;
+    writeln!(buffer, "import java.util.Arrays;")?;
+    writeln!(buffer, "import java.util.Collections;")?;
+    writeln!(buffer, "import java.util.List;")?;
     writeln!(buffer, "import org.junit.jupiter.api.Test;")?;
     writeln!(buffer)?;
     writeln!(buffer, "import java.util.Arrays;")?;
@@ -3007,7 +3011,7 @@ fn render_embed_test_java(fixture: &Fixture) -> Result<String> {
         "null".to_string()
     };
 
-    writeln!(body, "        List<float[]> results;")?;
+    writeln!(body, "        float[][] results;")?;
     writeln!(body, "        try {{")?;
     writeln!(
         body,

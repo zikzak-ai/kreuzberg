@@ -406,10 +406,10 @@ func assertOcrElements(t *testing.T, result *kreuzberg.ExtractionResult, hasElem
 
 func skipIfFeatureUnavailable(t *testing.T, feature string) {
 	t.Helper()
-	envVar := "KREUZBERG_" + strings.ToUpper(strings.ReplaceAll(feature, "-", "_")) + "_AVAILABLE"
+	envVar := "KREUZBERG_" + strings.ToUpper(strings.ReplaceAll(feature, "-", "_")) + "_DISABLED"
 	flag := os.Getenv(envVar)
-	if flag == "" || flag == "0" || strings.EqualFold(flag, "false") {
-		t.Skipf("Skipping: feature %q not available (set %s=1)", feature, envVar)
+	if flag == "1" || strings.EqualFold(flag, "true") {
+		t.Skipf("Skipping: feature %q disabled (via %s=1)", feature, envVar)
 	}
 }
 

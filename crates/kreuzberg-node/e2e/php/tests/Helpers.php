@@ -799,11 +799,11 @@ class Helpers
 
     public static function skipIfFeatureUnavailable(string $feature): void
     {
-        $envVar = 'KREUZBERG_' . strtoupper(str_replace('-', '_', $feature)) . '_AVAILABLE';
+        $envVar = 'KREUZBERG_' . strtoupper(str_replace('-', '_', $feature)) . '_DISABLED';
         $flag = getenv($envVar);
-        if ($flag === false || $flag === '' || $flag === '0' || strtolower($flag) === 'false') {
+        if ($flag === '1' || strtolower((string) $flag) === 'true') {
             Assert::markTestSkipped(
-                sprintf('Feature "%s" not available (set %s=1)', $feature, $envVar)
+                sprintf('Feature "%s" disabled (via %s=1)', $feature, $envVar)
             );
         }
     }

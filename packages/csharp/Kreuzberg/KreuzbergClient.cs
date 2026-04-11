@@ -1377,6 +1377,7 @@ public static class KreuzbergClient
             result.Annotations = DeserializeField<List<PdfAnnotation>>(cRes.AnnotationsJson);
             result.Uris = DeserializeField<List<ExtractedUri>>(cRes.UrisJson);
             result.Children = DeserializeField<List<ArchiveEntry>>(cRes.ChildrenJson);
+            result.StructuredOutput = DeserializeField<Dictionary<string, object>>(cRes.StructuredOutputJson);
 
             if (result.Metadata.Pages == null && cRes.PageStructureJson != IntPtr.Zero)
             {

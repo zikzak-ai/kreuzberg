@@ -565,6 +565,13 @@ public sealed class ExtractionResult
     /// </summary>
     [JsonPropertyName("code_intelligence")]
     public CodeProcessResult? CodeIntelligence { get; set; }
+
+    /// <summary>
+    /// Structured output from structured extraction mode.
+    /// Available when the output format is set to "structured".
+    /// </summary>
+    [JsonPropertyName("structured_output")]
+    public Dictionary<string, object>? StructuredOutput { get; set; }
 }
 
 /// <summary>

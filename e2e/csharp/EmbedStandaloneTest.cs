@@ -20,7 +20,7 @@ public class EmbedStandaloneTest
         IEnumerable<float[]> results;
         try
         {
-            results = await KreuzbergClient.EmbedAsync(new[] { "Async embedding test" }, new EmbeddingConfig { Model = EmbeddingModelType.FromPreset("balanced"), Normalize = true });
+            results = await KreuzbergClient.EmbedAsync(new[] { "Async embedding test" }, new EmbeddingConfig { Model = "balanced", Normalize = true });
         }
         catch (Exception)
         {
@@ -41,7 +41,7 @@ public class EmbedStandaloneTest
         IEnumerable<float[]> results;
         try
         {
-            results = KreuzbergClient.EmbedSync(new[] { "Text one", "Text two", "Text three" }, new EmbeddingConfig { Model = EmbeddingModelType.FromPreset("fast"), Normalize = true, BatchSize = 32 });
+            results = KreuzbergClient.EmbedSync(new[] { "Text one", "Text two", "Text three" }, new EmbeddingConfig { Model = "fast", Normalize = true, BatchSize = 32 });
         }
         catch (Exception)
         {
@@ -62,7 +62,7 @@ public class EmbedStandaloneTest
         IEnumerable<float[]> results;
         try
         {
-            results = KreuzbergClient.EmbedSync(new[] { }, new EmbeddingConfig { Model = EmbeddingModelType.FromPreset("balanced") });
+            results = KreuzbergClient.EmbedSync(new string[] { }, new EmbeddingConfig { Model = "balanced" });
         }
         catch (Exception)
         {
@@ -83,7 +83,7 @@ public class EmbedStandaloneTest
         IEnumerable<float[]> results;
         try
         {
-            results = KreuzbergClient.EmbedSync(new[] { "Bonjour le monde", "Hallo Welt", "¡Hola Mundo!" }, new EmbeddingConfig { Model = EmbeddingModelType.FromPreset("multilingual"), Normalize = true });
+            results = KreuzbergClient.EmbedSync(new[] { "Bonjour le monde", "Hallo Welt", "¡Hola Mundo!" }, new EmbeddingConfig { Model = "multilingual", Normalize = true });
         }
         catch (Exception)
         {
@@ -104,7 +104,7 @@ public class EmbedStandaloneTest
         IEnumerable<float[]> results;
         try
         {
-            results = KreuzbergClient.EmbedSync(new[] { "Hello, Kreuzberg!" }, new EmbeddingConfig { Model = EmbeddingModelType.FromPreset("balanced"), Normalize = true });
+            results = KreuzbergClient.EmbedSync(new[] { "Hello, Kreuzberg!" }, new EmbeddingConfig { Model = "balanced", Normalize = true });
         }
         catch (Exception)
         {

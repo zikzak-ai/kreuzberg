@@ -72,7 +72,7 @@ public class ImageTest {
 
   @Test
   public void imageMetadataOnly() throws Exception {
-    JsonNode config = MAPPER.readTree("{\"ocr\":null}");
+    JsonNode config = MAPPER.readTree("{\"ocr\":null,\"disable_ocr\":true}");
     E2EHelpers.runFixture(
         "image_metadata_only",
         "images/example.jpg",

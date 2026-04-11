@@ -807,7 +807,7 @@ pub fn extract_document_structure(
             }
 
             if has_table_model {
-                if let (Some(images), Some(results)) = (layout_images, layout_results) {
+                if let (Some(images @ [_, ..]), Some(results @ [_, ..])) = (layout_images, layout_results) {
                     #[cfg(not(target_arch = "wasm32"))]
                     let parallel_tables: Vec<Vec<crate::types::Table>> = table_pages
                         .par_iter()

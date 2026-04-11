@@ -134,7 +134,8 @@ fn test_image_metadata_only() {
     }
     let config: ExtractionConfig = serde_json::from_str(
         r#"{
-  "ocr": null
+  "ocr": null,
+  "disable_ocr": true
 }"#,
     )
     .expect("Fixture config should deserialize");

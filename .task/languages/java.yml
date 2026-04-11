@@ -173,9 +173,8 @@ tasks:
 
   e2e:test:
     desc: Run Java E2E tests
-    dir: e2e/java
     cmds:
-      - cmd: bash -c 'if [ -f ~/.sdkman/bin/sdkman-init.sh ]; then source ~/.sdkman/bin/sdkman-init.sh && sdk use java 25.0.2-tem && sdk use maven 3.9.11; fi && mvn -B -DtrimStackTrace=false -Dsurefire.useFile=false test'
+      - cmd: bash scripts/e2e/java/test.sh
         platforms: [linux, darwin]
       - cmd: mvn -B -DtrimStackTrace=false -Dsurefire.useFile=false test
         platforms: [windows]

@@ -67,10 +67,10 @@ skip_reason_for <- function(error, fixture_id, requirements, notes = NULL) {
 }
 
 skip_if_feature_unavailable <- function(feature) {
-  env_var <- paste0("KREUZBERG_", toupper(gsub("-", "_", feature)), "_AVAILABLE")
+  env_var <- paste0("KREUZBERG_", toupper(gsub("-", "_", feature)), "_DISABLED")
   flag <- Sys.getenv(env_var, unset = "")
-  if (flag == "" || flag == "0" || tolower(flag) == "false") {
-    testthat::skip(paste0("Feature ", feature, " not available (set ", env_var, "=1)"))
+  if (flag == "1" || tolower(flag) == "true") {
+    testthat::skip(paste0("Feature ", feature, " disabled (via ", env_var, "=1)"))
   }
 }
 

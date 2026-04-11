@@ -91,12 +91,12 @@ module E2ERuby
   end
 
   def skip_if_feature_unavailable(feature)
-    env_var = "KREUZBERG_#{feature.tr('-', '_').upcase}_AVAILABLE"
+    env_var = "KREUZBERG_#{feature.tr('-', '_').upcase}_DISABLED"
     flag = ENV.fetch(env_var, nil)
-    return unless flag.nil? || flag.empty? || flag == '0' || flag.casecmp('false').zero?
+    return unless flag == '1' || flag&.casecmp('true')&.zero?
 
     raise RSpec::Core::Pending::SkipDeclaredInExample,
-          "Feature #{feature} not available (set #{env_var}=1)"
+          "Feature #{feature} disabled (via #{env_var}=1)"
   end
 
   def run_fixture(fixture_id, relative_path, config_hash, requirements:, notes:, skip_if_missing: true, &)

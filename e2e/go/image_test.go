@@ -28,7 +28,8 @@ func TestImageImageJp2Basic(t *testing.T) {
 
 func TestImageImageMetadataOnly(t *testing.T) {
 	result := runExtraction(t, "images/example.jpg", []byte(`{
-"ocr": null
+"ocr": null,
+"disable_ocr": true
 }`))
 	assertExpectedMime(t, result, []string{"image/jpeg"})
 	assertMaxContentLength(t, result, 200)

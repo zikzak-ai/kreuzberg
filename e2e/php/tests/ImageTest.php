@@ -88,7 +88,7 @@ class ImageTest extends TestCase
             $this->markTestSkipped('Skipping image_metadata_only: missing document at ' . $documentPath);
         }
 
-        $config = Helpers::buildConfig(['ocr' => null]);
+        $config = Helpers::buildConfig(['ocr' => null, 'disable_ocr' => true]);
 
         $kreuzberg = new Kreuzberg($config);
         $result = $kreuzberg->extractFile($documentPath);

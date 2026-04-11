@@ -43,6 +43,8 @@ public final class ExtractionResult {
 	private final List<Uri> uris;
 	@JsonProperty("children")
 	private final List<ArchiveEntry> children;
+	@JsonProperty("structured_output")
+	private final Map<String, Object> structuredOutput;
 	@JsonProperty("code_intelligence")
 	private final CodeProcessResult codeIntelligence;
 
@@ -73,6 +75,17 @@ public final class ExtractionResult {
 			DocumentStructure document, List<ExtractedKeyword> extractedKeywords, Double qualityScore,
 			List<ProcessingWarning> processingWarnings, List<PdfAnnotation> annotations, List<Uri> uris,
 			List<ArchiveEntry> children, CodeProcessResult codeIntelligence) {
+		this(content, mimeType, metadata, tables, detectedLanguages, chunks, images, pages, pageStructure, elements,
+				ocrElements, djotContent, document, extractedKeywords, qualityScore, processingWarnings, annotations,
+				uris, children, codeIntelligence, null);
+	}
+
+	ExtractionResult(String content, String mimeType, Metadata metadata, List<Table> tables,
+			List<String> detectedLanguages, List<Chunk> chunks, List<ExtractedImage> images, List<PageContent> pages,
+			PageStructure pageStructure, List<Element> elements, List<OcrElement> ocrElements, DjotContent djotContent,
+			DocumentStructure document, List<ExtractedKeyword> extractedKeywords, Double qualityScore,
+			List<ProcessingWarning> processingWarnings, List<PdfAnnotation> annotations, List<Uri> uris,
+			List<ArchiveEntry> children, CodeProcessResult codeIntelligence, Map<String, Object> structuredOutput) {
 		this.content = Objects.requireNonNull(content, "content must not be null");
 		this.mimeType = Objects.requireNonNull(mimeType, "mimeType must not be null");
 		this.metadata = metadata != null ? metadata : Metadata.empty();
@@ -97,6 +110,7 @@ public final class ExtractionResult {
 		this.uris = uris != null ? Collections.unmodifiableList(uris) : null;
 		this.children = children != null ? Collections.unmodifiableList(children) : null;
 		this.codeIntelligence = codeIntelligence;
+		this.structuredOutput = structuredOutput;
 	}
 
 	public String getContent() {
@@ -323,6 +337,19 @@ public final class ExtractionResult {
 	 */
 	public Optional<CodeProcessResult> getCodeIntelligence() {
 		return Optional.ofNullable(codeIntelligence);
+	}
+
+	/**
+	 * Get the structured output from structured extraction (optional).
+	 *
+	 * <p>
+	 * Available when the output format is set to "structured" in the extraction
+	 * configuration. Contains key-value pairs extracted from the document.
+	 *
+	 * @return optional map of structured output fields, or empty if not available
+	 */
+	public Optional<Map<String, Object>> getStructuredOutput() {
+		return Optional.ofNullable(structuredOutput);
 	}
 
 	/**

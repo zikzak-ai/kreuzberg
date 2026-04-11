@@ -92,7 +92,7 @@ def test_image_metadata_only() -> None:
     if not document_path.exists():
         pytest.skip(f"Skipping image_metadata_only: missing document at {document_path}")
 
-    config = helpers.build_config({"ocr": None})
+    config = helpers.build_config({"ocr": None, "disable_ocr": True})
 
     result = extract_file_sync(document_path, None, config)
 

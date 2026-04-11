@@ -35,7 +35,6 @@ pub use config::{
     kreuzberg_config_get_field, kreuzberg_config_is_valid, kreuzberg_config_merge, kreuzberg_config_to_json,
     kreuzberg_get_embedding_preset, kreuzberg_list_embedding_presets, kreuzberg_load_extraction_config_from_file,
 };
-#[cfg(feature = "layout-detection")]
 pub use config_builder::kreuzberg_config_builder_set_layout;
 pub use config_builder::{
     kreuzberg_config_builder_build, kreuzberg_config_builder_free, kreuzberg_config_builder_new,

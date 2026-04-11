@@ -534,9 +534,6 @@ jobs:
           TESSDATA_PREFIX: "/usr/share/tesseract-ocr/5/tessdata"
           LD_LIBRARY_PATH: "${{ github.workspace }}/target/release:${{ env.LD_LIBRARY_PATH || '' }}"
           DYLD_LIBRARY_PATH: "${{ github.workspace }}/target/release:${{ env.DYLD_LIBRARY_PATH || '' }}"
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: task rust:e2e:test
         shell: bash
 
@@ -2032,9 +2029,6 @@ jobs:
         shell: bash
         env:
           PYTEST_TIMEOUT: 300
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: task python:e2e:test
 
   test-node:
@@ -2132,9 +2126,6 @@ jobs:
         env:
           VERBOSE: "1"
           DEBUG: "kreuzberg*"
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: |
           set -x
           time task node:e2e:test
@@ -2265,10 +2256,6 @@ jobs:
 
       - name: Run E2E tests
         shell: bash
-        env:
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: task ruby:e2e:test
 
   test-php:
@@ -2374,10 +2361,6 @@ jobs:
 
       - name: Run E2E tests
         shell: bash
-        env:
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: task php:e2e:test
 
   test-go:
@@ -2590,9 +2573,6 @@ jobs:
           CGO_CFLAGS: ${{ env.CGO_CFLAGS }}
           CGO_LDFLAGS: ${{ env.CGO_LDFLAGS }}
           PKG_CONFIG_PATH: ${{ env.PKG_CONFIG_PATH }}
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
 
   test-java:
     name: "Test: Java (${{ matrix.os }})"
@@ -2701,19 +2681,11 @@ jobs:
       - name: Run E2E tests (Unix)
         if: runner.os != 'Windows'
         shell: bash
-        env:
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: task -vv java:e2e:test
 
       - name: Run E2E tests (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        env:
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: task -vv java:e2e:test
 
       - name: Upload Java unit test reports
@@ -2852,9 +2824,6 @@ jobs:
           LD_LIBRARY_PATH: ${{ github.workspace }}/target/release:${{ env.LD_LIBRARY_PATH }}
           DYLD_LIBRARY_PATH: ${{ github.workspace }}/target/release:${{ env.DYLD_LIBRARY_PATH }}
           KREUZBERG_SKIP_LEGACY_OFFICE: ${{ runner.os == 'Windows' && '1' || '' }}
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
           KREUZBERG_CACHE_DIR: ${{ github.workspace }}/.kreuzberg-cache
         run: task csharp:e2e:test
 
@@ -3039,9 +3008,6 @@ jobs:
         shell: bash
         env:
           KREUZBERG_BUILD: "1"
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
           KREUZBERG_CACHE_DIR: ${{ github.workspace }}/.kreuzberg-cache
         run: task elixir:e2e:test
 
@@ -3129,10 +3095,6 @@ jobs:
 
       - name: Run E2E tests
         shell: bash
-        env:
-          KREUZBERG_EMBEDDINGS_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_RAKE_AVAILABLE: "1"
-          KREUZBERG_KEYWORDS_YAKE_AVAILABLE: "1"
         run: task r:e2e:test
 
   test-c-ffi:

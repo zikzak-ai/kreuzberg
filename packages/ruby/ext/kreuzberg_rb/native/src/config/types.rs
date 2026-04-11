@@ -334,6 +334,7 @@ pub fn parse_pdf_config(ruby: &Ruby, hash: RHash) -> Result<PdfConfig, Error> {
     };
 
     let config = PdfConfig {
+        backend: kreuzberg::PdfBackend::default(),
         extract_images,
         passwords,
         extract_metadata,

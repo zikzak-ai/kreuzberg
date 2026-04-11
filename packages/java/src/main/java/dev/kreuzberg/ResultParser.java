@@ -104,6 +104,18 @@ final class ResultParser {
 			String elementsJson, String ocrElementsJson, String djotContentJson, String language, String date,
 			String subject, String documentStructureJson, String extractedKeywordsJson, String qualityScoreStr,
 			String processingWarningsJson, String annotationsJson, String urisJson) throws KreuzbergException {
+		return parse(content, mimeType, tablesJson, detectedLanguagesJson, metadataJson, chunksJson, imagesJson,
+				pagesJson, pageStructureJson, elementsJson, ocrElementsJson, djotContentJson, language, date, subject,
+				documentStructureJson, extractedKeywordsJson, qualityScoreStr, processingWarningsJson, annotationsJson,
+				urisJson, null);
+	}
+
+	static ExtractionResult parse(String content, String mimeType, String tablesJson, String detectedLanguagesJson,
+			String metadataJson, String chunksJson, String imagesJson, String pagesJson, String pageStructureJson,
+			String elementsJson, String ocrElementsJson, String djotContentJson, String language, String date,
+			String subject, String documentStructureJson, String extractedKeywordsJson, String qualityScoreStr,
+			String processingWarningsJson, String annotationsJson, String urisJson, String structuredOutputJson)
+			throws KreuzbergException {
 		try {
 			Map<String, Object> metadata = decode(metadataJson, METADATA_MAP, Collections.emptyMap());
 			List<Table> tables = decode(tablesJson, TABLE_LIST, List.of());
@@ -123,13 +135,15 @@ final class ResultParser {
 			List<ProcessingWarning> processingWarnings = decode(processingWarningsJson, WARNING_LIST, null);
 			List<PdfAnnotation> annotations = decode(annotationsJson, ANNOTATION_LIST, null);
 			List<Uri> uris = decode(urisJson, URI_LIST, null);
+			Map<String, Object> structuredOutput = decode(structuredOutputJson, METADATA_MAP, null);
 
 			// Build Metadata with FFI-provided language, date, and subject if available
 			Metadata metadataObj = buildMetadata(metadata, language, date, subject);
 
 			return new ExtractionResult(content != null ? content : "", mimeType != null ? mimeType : "", metadataObj,
 					tables, detectedLanguages, chunks, images, pages, pageStructure, elements, ocrElements, djotContent,
-					documentStructure, extractedKeywords, qualityScore, processingWarnings, annotations, uris);
+					documentStructure, extractedKeywords, qualityScore, processingWarnings, annotations, uris, null,
+					null, structuredOutput);
 		} catch (Exception e) {
 			throw new KreuzbergException("Failed to parse extraction result", e);
 		}
