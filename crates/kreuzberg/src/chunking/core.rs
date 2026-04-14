@@ -648,17 +648,18 @@ mod tests {
         // No heading should appear more than once per chunk (breadcrumb + body duplication).
         for chunk in &result.chunks {
             if let Some(ref ctx) = chunk.metadata.heading_context
-                && let Some(deepest) = ctx.headings.last() {
-                    let heading_line = format!("{} {}", "#".repeat(deepest.level as usize), deepest.text);
-                    let occurrences = chunk.content.matches(&heading_line).count();
-                    assert!(
-                        occurrences <= 1,
-                        "Heading '{}' appears {} times in chunk (expected at most 1): {:?}",
-                        heading_line,
-                        occurrences,
-                        &chunk.content
-                    );
-                }
+                && let Some(deepest) = ctx.headings.last()
+            {
+                let heading_line = format!("{} {}", "#".repeat(deepest.level as usize), deepest.text);
+                let occurrences = chunk.content.matches(&heading_line).count();
+                assert!(
+                    occurrences <= 1,
+                    "Heading '{}' appears {} times in chunk (expected at most 1): {:?}",
+                    heading_line,
+                    occurrences,
+                    &chunk.content
+                );
+            }
         }
     }
 

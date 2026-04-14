@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Markdown chunker duplicates heading when `prepend_heading_context` is enabled** — the heading was prepended twice when a chunk boundary aligned with a heading node, producing repeated heading text in the output. (#701)
+- **Helm chart icon 404 on Artifact Hub** — `Chart.yaml` referenced `logo.png` but the file is `logo.svg`.
+
+---
+
 ## [4.8.4] - 2026-04-13
 
 ### Added
