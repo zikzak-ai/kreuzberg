@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Layout detection regions on PageContent** — new `layout_regions` field exposes detected layout regions (class, confidence, bounding box, area fraction) from the RT-DETR model when layout detection is enabled. Enables programmatic detection of diagrams, figures, tables, and other content types per page. Available across all 10 bindings. (#579)
+- **LayoutRegion type files** for Java, PHP, and Elixir bindings (were referenced but missing).
+- **E2E assertions for layout regions** — `has_layout_regions` and `layout_classes_include` assertion types in all 12 language generators.
+
+### Fixed
+
+- **Cross-format parity test failure** — HTML extractor now normalizes setext headings to ATX and strips trailing whitespace from html-to-markdown-rs output.
+- **Broken wasm-deno/wasm-workers e2e tasks** — removed non-functional deno and workers e2e generate/lint/test tasks that referenced invalid generator lang values.
+- **oxlint path in node e2e lint** — `oxlint --fix typescript` changed to `oxlint --fix .` (was looking for nonexistent `typescript/` directory).
+- **Clippy warnings in benchmark-harness** — `sort_by` replaced with `sort_by_key` + `Reverse`.
+
+### Changed
+
+- Removed redundant `.task/workflows/e2e.yml` — e2e tasks consolidated in top-level `Taskfile.yml`.
+
+---
+
 ## [4.8.6] - 2026-04-17
 
 ### Added

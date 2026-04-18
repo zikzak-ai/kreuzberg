@@ -5618,6 +5618,121 @@ export interface BoundingBox {
 }
 ```
 
+## LayoutRegion
+
+Represents a detected layout region on a page when layout detection is enabled. Identifies content types (text, pictures, tables, section headers, etc.) with spatial coordinates and confidence scores.
+
+### Rust
+
+```rust title="layout_region.rs"
+pub struct LayoutRegion {
+    pub class: String,
+    pub confidence: f64,
+    pub bounding_box: BoundingBox,
+    pub area_fraction: f64,
+}
+```
+
+### Python
+
+```python title="layout_region.py"
+class LayoutRegion(TypedDict):
+    """Detected layout region on a page."""
+    class: str
+    confidence: float
+    bounding_box: BoundingBox
+    area_fraction: float
+```
+
+### TypeScript
+
+```typescript title="layout_region.ts"
+export interface LayoutRegion {
+  class: string;
+  confidence: number;
+  boundingBox: BoundingBox;
+  areaFraction: number;
+}
+```
+
+### Ruby
+
+```ruby title="layout_region.rb"
+class Kreuzberg::LayoutRegion
+    attr_reader :class, :confidence, :bounding_box, :area_fraction
+end
+```
+
+### Java
+
+```java title="LayoutRegion.java"
+public record LayoutRegion(
+    String layoutClass,
+    double confidence,
+    BoundingBox boundingBox,
+    double areaFraction
+) {}
+```
+
+### Go
+
+```go title="layout_region.go"
+type LayoutRegion struct {
+    Class        string       `json:"class"`
+    Confidence   float64      `json:"confidence"`
+    BoundingBox  BoundingBox  `json:"bounding_box"`
+    AreaFraction float64      `json:"area_fraction"`
+}
+```
+
+### C
+
+```csharp title="LayoutRegion.cs"
+public record LayoutRegion(
+    string Class,
+    double Confidence,
+    BoundingBox BoundingBox,
+    double AreaFraction
+);
+```
+
+### PHP
+
+```php title="LayoutRegion.php"
+class LayoutRegion {
+    public string $class;
+    public float $confidence;
+    public BoundingBox $boundingBox;
+    public float $areaFraction;
+}
+```
+
+### Elixir
+
+```elixir title="layout_region.ex"
+defmodule Kreuzberg.LayoutRegion do
+  @type t :: %__MODULE__{
+    class: String.t(),
+    confidence: float(),
+    bounding_box: Kreuzberg.BoundingBox.t(),
+    area_fraction: float()
+  }
+
+  defstruct [:class, :confidence, :bounding_box, :area_fraction]
+end
+```
+
+### WASM
+
+```typescript title="layout_region.ts"
+export interface LayoutRegion {
+  class: string;
+  confidence: number;
+  boundingBox: BoundingBox;
+  areaFraction: number;
+}
+```
+
 ## OutputFormat (Result Structure)
 
 Output format selection for extraction results. Controls whether results are returned in unified format (default) or element-based format (Unstructured.io compatible).

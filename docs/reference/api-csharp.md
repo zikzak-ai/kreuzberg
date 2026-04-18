@@ -1624,6 +1624,7 @@ Represents the extracted text and structured content for a specific page.
 - `IsBlank` (bool): Whether the page is determined to be blank.
 - `PageNumber` (int): The page number (1-indexed).
 - `Tables` (List<Table>): Tables extracted from this page.
+- `LayoutRegions` (List<LayoutRegion>?): Detected layout regions when layout detection is enabled. Each region has `Class` (string), `Confidence` (double, 0–1), `BoundingBox`, and `AreaFraction` (double, 0–1). `null` when layout detection is not configured.
 
 ---
 

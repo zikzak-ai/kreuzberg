@@ -1002,6 +1002,7 @@ Each page contains:
 - Text content for that page
 - Tables on that page
 - Images on that page
+- Layout regions when layout detection is enabled, each with `getClass()` (String), `getConfidence()` (double, 0–1), `getBoundingBox()`, and `getAreaFraction()` (double, 0–1)
 
 **Example:**
 

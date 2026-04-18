@@ -157,6 +157,128 @@ The RT-DETR v2 model detects 17 layout classes:
 | `Form` | Form region |
 | `KeyValueRegion` | Key-value pair region |
 
+## Accessing Layout Regions
+
+When layout detection is enabled AND page extraction is enabled, each page in the result includes `layout_regions` — a list of detected regions with class, confidence score, bounding box, and area fraction. This enables programmatic filtering and analysis of specific layout elements.
+
+=== "Python"
+
+    ```python
+    from kreuzberg import extract_file, ExtractionConfig, LayoutDetectionConfig, PagesConfig
+
+    result = await extract_file(
+        "document.pdf",
+        config=ExtractionConfig(
+            layout=LayoutDetectionConfig(),
+            pages=PagesConfig(extract_pages=True),
+        ),
+    )
+
+    for page in result.pages:
+        if page.get("layout_regions"):
+            for region in page["layout_regions"]:
+                if region["class"] == "picture" and region["confidence"] > 0.9:
+                    print(f"Page {page['page_number']}: diagram detected "
+                          f"(confidence={region['confidence']:.2f}, "
+                          f"area={region['area_fraction']:.0%})")
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    const result = await extract("document.pdf", {
+      layout: {},
+      pages: { extractPages: true },
+    });
+
+    for (const page of result.pages ?? []) {
+      if (page.layoutRegions) {
+        for (const region of page.layoutRegions) {
+          if (region.class === "picture" && region.confidence > 0.9) {
+            console.log(
+              `Page ${page.pageNumber}: diagram detected ` +
+              `(confidence=${region.confidence.toFixed(2)}, ` +
+              `area=${(region.areaFraction * 100).toFixed(0)}%)`
+            );
+          }
+        }
+      }
+    }
+    ```
+
+=== "Rust"
+
+    ```rust
+    use kreuzberg::core::{ExtractionConfig, LayoutDetectionConfig, PagesConfig};
+
+    let result = extract_file(
+        "document.pdf",
+        ExtractionConfig {
+            layout: Some(LayoutDetectionConfig::default()),
+            pages: Some(PagesConfig {
+                extract_pages: true,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    ).await?;
+
+    for page in &result.pages {
+        if let Some(regions) = &page.layout_regions {
+            for region in regions {
+                if region.class == "picture" && region.confidence > 0.9 {
+                    println!(
+                        "Page {}: diagram detected (confidence={:.2}, area={:.0}%)",
+                        page.page_number,
+                        region.confidence,
+                        region.area_fraction * 100.0
+                    );
+                }
+            }
+        }
+    }
+    ```
+
+### Region Fields
+
+Each region in `layout_regions` contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `class` | string | Layout class (see table below) |
+| `confidence` | float | Detection confidence [0.0–1.0] |
+| `bbox` | object/array | Bounding box (format varies by binding) |
+| `area_fraction` | float | Region area as fraction of page [0.0–1.0] |
+
+### Available Classes
+
+The available layout classes are:
+
+- `picture` — Image, chart, or diagram
+- `table` — Tabular data region
+- `text` — Body text paragraph
+- `title` — Document or page title
+- `section_header` — Section heading
+- `list_item` — List item or bullet point
+- `code` — Code block
+- `formula` — Mathematical formula
+- `caption` — Figure or table caption
+- `footnote` — Page footnote
+- `page_header` — Running page header
+- `page_footer` — Running page footer
+- `document_index` — Table of contents
+- `checkbox_selected` — Checked checkbox
+- `checkbox_unselected` — Unchecked checkbox
+- `form` — Form region
+- `key_value_region` — Key-value pair region
+
+### Tips
+
+- Use `confidence` to filter low-confidence detections — typically ≥ 0.8–0.9 for downstream operations
+- Use `area_fraction` to distinguish between inline images and full-page diagrams (e.g., `area_fraction > 0.1` for significant figures)
+- Regions are independent of page extraction — enable both to access both content and layout structure
+- Available across all bindings (Python, TypeScript, Rust, Ruby, Java, Go, Elixir, C#, PHP)
+
 ## Acknowledgments
 
 - **[Docling](https://github.com/DS4SD/docling)** — RT-DETR v2 model and layout classification approach
