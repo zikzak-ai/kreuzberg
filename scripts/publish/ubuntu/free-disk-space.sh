@@ -7,7 +7,7 @@ df -h /
 
 echo "=== Removing unnecessary packages ==="
 sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
-sudo rm -rf /usr/local/share/boost /usr/local/lib/node_modules /opt/microsoft /usr/local/.ghcup || true
+sudo rm -rf /usr/local/share/boost /opt/microsoft /usr/local/.ghcup || true
 
 echo "=== Removing large apt packages ==="
 sudo apt-get remove --yes -o APT::AutoRemove::SuggestsImportant=false \

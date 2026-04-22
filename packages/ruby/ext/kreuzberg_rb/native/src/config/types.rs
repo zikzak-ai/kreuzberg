@@ -404,6 +404,12 @@ pub fn parse_image_extraction_config(ruby: &Ruby, hash: RHash) -> Result<ImageEx
         true
     };
 
+    let max_images_per_page = if let Some(val) = get_kw(ruby, hash, "max_images_per_page") {
+        Some(u32::try_convert(val)?)
+    } else {
+        None
+    };
+
     let config = ImageExtractionConfig {
         extract_images,
         target_dpi,
@@ -412,6 +418,7 @@ pub fn parse_image_extraction_config(ruby: &Ruby, hash: RHash) -> Result<ImageEx
         auto_adjust_dpi,
         min_dpi,
         max_dpi,
+        max_images_per_page,
     };
 
     Ok(config)
