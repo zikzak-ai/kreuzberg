@@ -3831,7 +3831,7 @@ Controls hardware acceleration for ONNX Runtime inference (layout detection and 
 - `cuda`: NVIDIA CUDA GPU acceleration
 - `tensorrt`: NVIDIA TensorRT (optimized CUDA inference)
 
-`cuda` and `tensorrt` only work when the Kreuzberg build was compiled against an ONNX Runtime that ships those execution providers. If a requested provider isn't compiled in or isn't available at runtime, ORT falls back to CPU silently. To verify which provider is actually selected, run with `RUST_LOG=ort=info` and check the startup log.
+Kreuzberg bundles a CPU-only ONNX Runtime by default. When a GPU provider (`cuda`, `tensorrt`, `coreml`) is **explicitly requested** and the corresponding execution provider is not available, Kreuzberg returns an error with instructions to install a GPU-enabled ONNX Runtime and set `ORT_DYLIB_PATH`. When `auto` is used, unavailable GPU providers fall back to CPU gracefully with an info-level log. To verify which provider is active, run with `RUST_LOG=kreuzberg=info`.
 
 ### Platform Defaults
 

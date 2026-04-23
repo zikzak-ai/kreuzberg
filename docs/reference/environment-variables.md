@@ -764,6 +764,33 @@ spec:
         claimName: kreuzberg-cache-pvc
 ```
 
+## ONNX Runtime Configuration
+
+### ORT_DYLIB_PATH
+
+**Type**: `String`
+**Default**: Not set (bundled CPU ONNX Runtime is used)
+
+Path to a custom ONNX Runtime shared library. Set this to use a GPU-enabled ONNX Runtime instead of the bundled CPU-only version.
+
+Required for GPU acceleration (`cuda`, `tensorrt`) with PaddleOCR, layout detection, embeddings, and document orientation detection.
+
+```bash title="GPU Acceleration Setup"
+# Linux — using ONNX Runtime GPU release
+export ORT_DYLIB_PATH=/usr/local/lib/libonnxruntime.so
+
+# Linux — using pip-installed onnxruntime-gpu
+export ORT_DYLIB_PATH=$(python -c "import onnxruntime; print(onnxruntime.__path__[0])")/capi/libonnxruntime.so
+
+# macOS — using Homebrew
+export ORT_DYLIB_PATH=/opt/homebrew/lib/libonnxruntime.dylib
+
+# Windows
+set ORT_DYLIB_PATH=C:\path\to\onnxruntime.dll
+```
+
+When not set, Kreuzberg auto-discovers system-installed ONNX Runtime on common paths. If no system library is found, the bundled CPU-only version is used.
+
 ## See Also
 
 - [Configuration Guide](./configuration.md) - Detailed configuration file format and options

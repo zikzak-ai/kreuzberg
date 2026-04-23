@@ -70,11 +70,11 @@ pub fn render_plain(doc: &InternalDocument) -> String {
                     }
 
                     // If the image has an OCR result, append its content
-                    if let Some(ocr_result) = &img.ocr_result {
-                        if !ocr_result.content.is_empty() {
-                            out.push_str(&ocr_result.content);
-                            out.push_str("\n\n");
-                        }
+                    if let Some(ocr_result) = &img.ocr_result
+                        && !ocr_result.content.is_empty()
+                    {
+                        out.push_str(&ocr_result.content);
+                        out.push_str("\n\n");
                     }
                 }
             }

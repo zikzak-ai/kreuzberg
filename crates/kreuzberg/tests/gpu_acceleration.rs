@@ -13,7 +13,10 @@
 //! - Network access (models auto-downloaded from HuggingFace)
 //!
 //! Run all GPU tests:
-//!   cargo test -p kreuzberg --features full --test gpu_acceleration -- --ignored
+//!   cargo test -p kreuzberg --features "full,ort-dynamic" --test gpu_acceleration -- --ignored
+//!
+//! The `ort-dynamic` feature overrides the bundled CPU-only ORT so a
+//! GPU-enabled ONNX Runtime (via `ORT_DYLIB_PATH`) is loaded at runtime.
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};

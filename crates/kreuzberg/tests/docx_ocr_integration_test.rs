@@ -56,18 +56,19 @@ fn test_docx_ocr_content_injection() {
     let has_ocr_content = images.iter().any(|img| {
         img.ocr_result
             .as_ref()
-            .map_or(false, |ocr| !ocr.content.trim().is_empty())
+            .is_some_and(|ocr| !ocr.content.trim().is_empty())
     });
 
     // If Tesseract actually worked and produced text, it MUST be in the top-level content.
     if has_ocr_content {
         let mut found_in_content = false;
         for img in images {
-            if let Some(ocr) = &img.ocr_result {
-                if !ocr.content.trim().is_empty() && result.content.contains(&ocr.content) {
-                    found_in_content = true;
-                    break;
-                }
+            if let Some(ocr) = &img.ocr_result
+                && !ocr.content.trim().is_empty()
+                && result.content.contains(&ocr.content)
+            {
+                found_in_content = true;
+                break;
             }
         }
         assert!(

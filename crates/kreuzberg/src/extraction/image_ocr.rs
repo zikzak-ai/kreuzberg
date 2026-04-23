@@ -119,7 +119,7 @@ pub async fn process_images_with_ocr(
                 // keywords, etc.) to prevent further extraction cycles and
                 // minimize overhead.
                 let extraction_result = ExtractionResult {
-                    content: "MOCK OCR TEXT".to_string(),
+                    content: ocr_extraction.content,
                     mime_type: ocr_extraction.mime_type.into(),
                     ocr_elements: ocr_extraction.ocr_elements,
                     ..Default::default()

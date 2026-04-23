@@ -22,7 +22,6 @@ path = "src/main.rs"
 [features]
 default = [
     "bundled-pdfium",
-    "ort-bundled",
     "embeddings",
     "html",
     "liter-llm",

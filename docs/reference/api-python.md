@@ -28,13 +28,19 @@ pip install "kreuzberg[all]"
 
 ### Hardware Acceleration
 
-To enable GPU acceleration (CUDA) for PaddleOCR, layout detection, and embeddings, install the GPU version of ONNX Runtime:
+Kreuzberg bundles a CPU-only ONNX Runtime by default. To enable GPU acceleration (CUDA) for PaddleOCR, layout detection, and embeddings:
+
+1. Install a GPU-enabled ONNX Runtime (e.g. `pip install onnxruntime-gpu`)
+2. Set `ORT_DYLIB_PATH` to point at the GPU library:
 
 ```bash title="Terminal"
-pip install onnxruntime-gpu
+# Find your onnxruntime-gpu library path
+python -c "import onnxruntime; print(onnxruntime.__path__[0] + '/capi')"
+# Set it (add to your shell profile for persistence)
+export ORT_DYLIB_PATH=/path/to/libonnxruntime.so
 ```
 
-Kreuzberg will automatically detect and use the GPU-enabled library from your Python environment.
+If a GPU provider is explicitly requested but unavailable, Kreuzberg returns an error with setup instructions. Use `RUST_LOG=kreuzberg=info` to verify which execution provider is active.
 
 ## Core Functions
 

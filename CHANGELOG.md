@@ -7,19 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [4.9.5] - 2026-04-23
 
 ### Fixed
 
-- **#783**: Fix GPU acceleration silent fallback to CPU. `kreuzberg` now uses dynamic ONNX Runtime loading (`ort-dynamic`) for Python and CI environments. This ensures that manually provided GPU-enabled binaries (e.g., via `pip install onnxruntime-gpu`) are correctly utilized instead of being ignored by compile-time bundled CPU binaries.
-- **Python Bindings**: Added auto-discovery for Python's `onnxruntime` package. `kreuzberg` now automatically detects and loads `libonnxruntime` from the user's Python environment, enabling seamless GPU support.
-- **Breaking**: Removed `ort-bundled` from `layout-detection`, `embeddings`, and `auto-rotate` features in the core library. Consumers using these features as a library must now explicitly opt-in to `ort-bundled` if they want auto-downloading of CPU binaries.
+- **#790**: Fix GPU acceleration — kreuzberg now bundles CPU-only ONNX Runtime by default (zero-config). When a GPU execution provider (`cuda`, `tensorrt`, `coreml`) is explicitly requested via `AccelerationConfig` but unavailable, kreuzberg returns an error with setup instructions instead of silently falling back to CPU. `Auto` mode gracefully falls back to CPU with an info log. For GPU support, set `ORT_DYLIB_PATH` to a GPU-enabled ONNX Runtime.
+- **#791**: Fix DOCX OCR extraction — OCR now runs on embedded images before document rendering, and OCR text is injected into the rendered output. Previously, OCR results were discarded and replaced with placeholder text.
 - **#783**: PaddleOCR backend not utilizing GPU (CUDA) despite `AccelerationConfig` — `AccelerationConfig` from `ExtractionConfig` was never reaching PaddleOCR ONNX sessions, silently falling back to CPU. Acceleration is now propagated through `OcrConfig` to all OCR call sites (image extractor, PDF OCR).
 - **#779**: Expose `PaddleOcrConfig` in Python bindings and update `OcrConfig` for backward compatibility.
+- **#792**: Fix Ruby gem packaging — exclude staged `libpdfium.dylib` from gem artifacts by narrowing the native extension glob to only include the compiled `kreuzberg_rb.*` extension.
 
 ### Added
 
-- GPU CI workflow (`ci-gpu.yaml`) targeting self-hosted `runner-gpu-t4-spot` runners with NVIDIA T4 GPUs.
+- GPU CI workflow (`ci-gpu.yaml`) targeting self-hosted GPU runners with NVIDIA GPUs.
 - Comprehensive GPU integration tests covering all ORT-accelerated paths: PaddleOCR (det/cls/rec), layout detection (RT-DETR), embeddings, document orientation detection, and end-to-end extraction. Tests use tracing log capture to verify CUDA EP is actually invoked.
 
 ---

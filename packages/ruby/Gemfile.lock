@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kreuzberg (4.9.4)
+    kreuzberg (4.9.5)
       rb_sys (~> 0.9.119)
       sorbet-runtime (~> 0.5)
 
@@ -104,7 +104,7 @@ GEM
       rubocop (~> 1.81)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
-    sorbet-runtime (0.6.13153)
+    sorbet-runtime (0.6.13158)
     steep (2.0.0)
       concurrent-ruby (>= 1.1.10)
       csv (>= 3.0.9)
@@ -181,7 +181,7 @@ CHECKSUMS
   fileutils (1.8.0) sha256=8c6b1df54e2540bdb2f39258f08af78853aa70bad52b4d394bbc6424593c6e02
   io-console (0.8.2) sha256=d6e3ae7a7cc7574f4b8893b4fca2162e57a825b223a177b7afa236c5ef9814cc
   json (2.19.4) sha256=670a7d333fb3b18ca5b29cb255eb7bef099e40d88c02c80bd42a3f30fe5239ac
-  kreuzberg (4.9.4)
+  kreuzberg (4.9.5)
   language_server-protocol (3.17.0.5) sha256=fd1e39a51a28bf3eec959379985a72e296e9f9acfce46f6a79d31ca8760803cc
   lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87
   listen (3.10.0) sha256=c6e182db62143aeccc2e1960033bebe7445309c7272061979bb098d03760c9d2
@@ -214,7 +214,7 @@ CHECKSUMS
   rubocop-rspec (3.9.0) sha256=8fa70a3619408237d789aeecfb9beef40576acc855173e60939d63332fdb55e2
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
-  sorbet-runtime (0.6.13153) sha256=e91c31db8b91995edf89784e832647217ace5aeeace95edc0affe2db8d37df5d
+  sorbet-runtime (0.6.13158) sha256=b82fb361c9d7a5172e8ba767b0fa5e2a1837cc6419f49ce7dafb9861b685d6f1
   steep (2.0.0) sha256=6eb0ecc09637bbb54f0a5f2cf63daea6d3208ccace64b4f1107d976333605c30
   strscan (3.1.8) sha256=aae2db611a225559f21ffbb71765c9a4e60fd262534a9ea84f4f11c7f32f679e
   terminal-table (4.0.0) sha256=f504793203f8251b2ea7c7068333053f0beeea26093ec9962e62ea79f94301d2

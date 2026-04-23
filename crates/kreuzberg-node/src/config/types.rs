@@ -159,6 +159,7 @@ impl From<JsOcrConfig> for RustOcrConfig {
             auto_rotate: false,
             vlm_config: val.vlm_config.map(Into::into),
             vlm_prompt: val.vlm_prompt,
+            acceleration: None,
         }
     }
 }

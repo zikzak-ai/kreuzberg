@@ -122,7 +122,7 @@ The fastest way to try Kreuzberg - no SDK, no code, just your terminal.
     ---
 
     ```gradle
-    implementation 'dev.kreuzberg:kreuzberg:4.9.4'
+    implementation 'dev.kreuzberg:kreuzberg:4.9.5'
     ```
 
     [API Reference](../reference/api-java.md){ .install-btn .install-btn--ghost }
@@ -213,6 +213,20 @@ Most of the time you won't need anything beyond the install command above. The t
 
 The WASM package (`@kreuzberg/wasm`) has **zero** system dependencies.
 
+### GPU Acceleration
+
+Kreuzberg bundles a CPU-only ONNX Runtime — ML features (PaddleOCR, layout detection, embeddings) work out of the box on CPU.
+
+For GPU acceleration, install a GPU-enabled ONNX Runtime and set `ORT_DYLIB_PATH`:
+
+| Platform | Install | Set ORT_DYLIB_PATH |
+|---|---|---|
+| Linux (CUDA) | Download from [ONNX Runtime releases](https://github.com/microsoft/onnxruntime/releases) | `export ORT_DYLIB_PATH=/path/to/libonnxruntime.so` |
+| Python (any OS) | `pip install onnxruntime-gpu` | Point at the pip package's `capi/` directory |
+| macOS (CoreML) | Works with bundled ORT — no extra setup needed | — |
+
+See [AccelerationConfig](../reference/configuration.md#accelerationconfig) and [ORT_DYLIB_PATH](../reference/environment-variables.md#ort_dylib_path) for details.
+
 ---
 
 ## Language-specific notes
@@ -294,14 +308,14 @@ Both work with **pnpm** (`pnpm add`) and **yarn** (`yarn add`) as well.
     <dependency>
         <groupId>dev.kreuzberg</groupId>
         <artifactId>kreuzberg</artifactId>
-        <version>4.9.4</version>
+        <version>4.9.5</version>
     </dependency>
     ```
 
 === "Gradle"
 
     ```gradle
-    implementation 'dev.kreuzberg:kreuzberg:4.9.4'
+    implementation 'dev.kreuzberg:kreuzberg:4.9.5'
     ```
 
 Requires Java 25+ (FFM/Panama API). Native libraries are bundled in the JAR.
