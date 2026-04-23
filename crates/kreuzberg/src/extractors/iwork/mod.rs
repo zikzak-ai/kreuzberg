@@ -398,3 +398,81 @@ pub fn dedup_text(texts: Vec<String>) -> Vec<String> {
     }
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_text_from_proto_basic() {
+        // Protobuf: field 3, wire type 2 (length-delimited) = tag 0x1A
+        let text = b"Hello World from iWork";
+        let mut proto = vec![0x1A, text.len() as u8];
+        proto.extend_from_slice(text);
+
+        let extracted = extract_text_from_proto(&proto);
+        assert!(
+            extracted.iter().any(|s| s.contains("Hello World")),
+            "Should extract the embedded UTF-8 string: {:?}",
+            extracted
+        );
+    }
+
+    #[test]
+    fn test_extract_text_from_proto_skips_binary() {
+        // Craft a proto payload with binary blob (non-UTF-8)
+        let binary: Vec<u8> = (0..20).map(|i| i * 7 + 3).collect();
+        let mut proto = vec![0x1A, binary.len() as u8];
+        proto.extend_from_slice(&binary);
+
+        // Should not panic and should produce no valid text strings
+        let extracted = extract_text_from_proto(&proto);
+        // Binary data should not produce alphabetic strings
+        for s in &extracted {
+            assert!(
+                !s.chars().all(|c| c.is_alphabetic()),
+                "Binary blob should not produce clean alphabetic strings: {s}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_extract_text_from_proto_nested() {
+        // Nested message: outer field 2 wrapping an inner field 3 with text
+        let inner_text = b"Nested Content";
+        let mut inner = vec![0x1A, inner_text.len() as u8];
+        inner.extend_from_slice(inner_text);
+
+        let mut outer = vec![0x12, inner.len() as u8]; // field 2, wire type 2
+        outer.extend_from_slice(&inner);
+
+        let extracted = extract_text_from_proto(&outer);
+        assert!(
+            extracted.iter().any(|s| s.contains("Nested Content")),
+            "Should extract text from nested protobuf messages: {:?}",
+            extracted
+        );
+    }
+
+    #[test]
+    fn test_collect_iwa_paths_returns_only_iwa() {
+        use std::io::Write;
+
+        // Build a minimal ZIP in memory with one .iwa and one .xml entry
+        let mut buf = Vec::new();
+        {
+            let cursor = std::io::Cursor::new(&mut buf);
+            let mut zip = zip::ZipWriter::new(cursor);
+            let options = zip::write::FileOptions::<()>::default().compression_method(zip::CompressionMethod::Stored);
+            zip.start_file("Index/Document.iwa", options).unwrap();
+            zip.write_all(b"fake iwa content").unwrap();
+            zip.start_file("metadata.xml", options).unwrap();
+            zip.write_all(b"<xml/>").unwrap();
+            zip.finish().unwrap();
+        }
+
+        let paths = collect_iwa_paths(&buf).expect("Should list IWA entries");
+        assert_eq!(paths.len(), 1, "Should find exactly one .iwa entry");
+        assert_eq!(paths[0], "Index/Document.iwa");
+    }
+}

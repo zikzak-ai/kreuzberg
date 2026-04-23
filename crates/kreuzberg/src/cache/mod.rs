@@ -8,7 +8,7 @@ mod core;
 mod utilities;
 
 // Re-export all public types and functions for backward compatibility
-pub(crate) use cleanup::{clear_cache_directory, get_cache_metadata};
+pub use cleanup::{clear_cache_directory, get_cache_metadata};
 pub use core::{CacheStats, GenericCache};
 pub use utilities::{blake3_hash_bytes, blake3_hash_file, fast_hash, generate_cache_key, validate_cache_key};
 

@@ -47,11 +47,7 @@ pub async fn run_survey(config: &SurveyConfig) -> Result<Vec<DocStats>> {
     for (idx, doc) in docs.iter().enumerate() {
         eprint!("[{}/{}] {} ...", idx + 1, total, doc.name);
         let t = Instant::now();
-        let extraction_future = kreuzberg::core::batch_mode::with_batch_mode(kreuzberg::extract_file(
-            &doc.document_path,
-            None,
-            &extraction_config,
-        ));
+        let extraction_future = kreuzberg::extract_file(&doc.document_path, None, &extraction_config);
         let (content, error) = match tokio::time::timeout(std::time::Duration::from_secs(180), extraction_future).await
         {
             Ok(Ok(r)) => (r.content, None),

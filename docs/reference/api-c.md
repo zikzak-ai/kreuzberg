@@ -2,9 +2,212 @@
 title: "C API Reference"
 ---
 
-## C API Reference <span class="version-badge">v4.9.2</span>
+## C API Reference <span class="version-badge">v4.9.5</span>
 
 ### Functions
+
+#### kreuzberg_blake3_hash_bytes()
+
+Hash arbitrary bytes with blake3, returning a 32-char hex string.
+
+**Signature:**
+
+```c
+const char* kreuzberg_blake3_hash_bytes(const uint8_t* data);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `const uint8_t*` | Yes | The data |
+
+**Returns:** `const char*`
+
+
+---
+
+#### kreuzberg_blake3_hash_file()
+
+Hash a file's content with blake3 using streaming 64 KiB reads.
+
+Returns a 32-char hex string (128 bits of blake3 output).
+
+**Signature:**
+
+```c
+const char* kreuzberg_blake3_hash_file(const char* path);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `path` | `const char*` | Yes | Path to the file |
+
+**Returns:** `const char*`
+
+**Errors:** Returns `NULL` on error.
+
+
+---
+
+#### kreuzberg_fast_hash()
+
+**Signature:**
+
+```c
+uint64_t kreuzberg_fast_hash(const uint8_t* data);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `const uint8_t*` | Yes | The data |
+
+**Returns:** `uint64_t`
+
+
+---
+
+#### kreuzberg_validate_cache_key()
+
+**Signature:**
+
+```c
+bool kreuzberg_validate_cache_key(const char* key);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `key` | `const char*` | Yes | The key |
+
+**Returns:** `bool`
+
+
+---
+
+#### kreuzberg_validate_port()
+
+Validate a port number for server configuration.
+
+Port must be in the range 1-65535. While ports 1-1023 are privileged and may require
+special permissions on some systems, they are still valid port numbers.
+
+**Returns:**
+
+`Ok(())` if the port is valid, or a `ValidationError` with details about valid ranges.
+
+**Signature:**
+
+```c
+void kreuzberg_validate_port(uint16_t port);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `port` | `uint16_t` | Yes | The port number to validate |
+
+**Returns:** `void`
+
+**Errors:** Returns `NULL` on error.
+
+
+---
+
+#### kreuzberg_validate_host()
+
+Validate a host/IP address string for server configuration.
+
+Accepts valid IPv4 addresses (e.g., "127.0.0.1", "0.0.0.0"), valid IPv6 addresses
+(e.g., ".1", "."), and hostnames (e.g., "localhost", "example.com").
+
+**Returns:**
+
+`Ok(())` if the host is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```c
+void kreuzberg_validate_host(const char* host);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `host` | `const char*` | Yes | The host/IP address string to validate |
+
+**Returns:** `void`
+
+**Errors:** Returns `NULL` on error.
+
+
+---
+
+#### kreuzberg_validate_cors_origin()
+
+Validate a CORS (Cross-Origin Resource Sharing) origin URL.
+
+Accepts valid HTTP/HTTPS URLs (e.g., "<https://example.com">) or the wildcard "*"
+to allow all origins. URLs must start with "<http://"> or "<https://",> or be exactly "*".
+
+**Returns:**
+
+`Ok(())` if the origin is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```c
+void kreuzberg_validate_cors_origin(const char* origin);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `origin` | `const char*` | Yes | The CORS origin URL to validate |
+
+**Returns:** `void`
+
+**Errors:** Returns `NULL` on error.
+
+
+---
+
+#### kreuzberg_validate_upload_size()
+
+Validate an upload size limit for server configuration.
+
+Upload size must be greater than 0 (measured in bytes).
+
+**Returns:**
+
+`Ok(())` if the size is valid, or a `ValidationError` with details about constraints.
+
+**Signature:**
+
+```c
+void kreuzberg_validate_upload_size(uintptr_t size);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `size` | `uintptr_t` | Yes | The maximum upload size in bytes to validate |
+
+**Returns:** `void`
+
+**Errors:** Returns `NULL` on error.
+
+
+---
 
 #### kreuzberg_validate_binarization_method()
 
@@ -791,6 +994,23 @@ KreuzbergSupportedFormat* kreuzberg_list_supported_formats();
 
 ---
 
+#### kreuzberg_clear_processor_cache()
+
+Clear the processor cache (primarily for testing when registry changes).
+
+**Signature:**
+
+```c
+void kreuzberg_clear_processor_cache();
+```
+
+**Returns:** `void`
+
+**Errors:** Returns `NULL` on error.
+
+
+---
+
 #### kreuzberg_transform_extraction_result_to_elements()
 
 Transform an extraction result into semantic elements.
@@ -1539,6 +1759,104 @@ double kreuzberg_calculate_text_confidence(const char* text);
 
 ---
 
+#### kreuzberg_create_string_buffer_pool()
+
+Create a pre-configured string buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for text accumulation with reasonable defaults.
+
+**Signature:**
+
+```c
+KreuzbergStringBufferPool* kreuzberg_create_string_buffer_pool(uintptr_t pool_size, uintptr_t buffer_capacity);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `pool_size` | `uintptr_t` | Yes | Maximum number of buffers to keep in the pool |
+| `buffer_capacity` | `uintptr_t` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `KreuzbergStringBufferPool`
+
+
+---
+
+#### kreuzberg_create_byte_buffer_pool()
+
+Create a pre-configured byte buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for binary data handling with reasonable defaults.
+
+**Signature:**
+
+```c
+KreuzbergByteBufferPool* kreuzberg_create_byte_buffer_pool(uintptr_t pool_size, uintptr_t buffer_capacity);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `pool_size` | `uintptr_t` | Yes | Maximum number of buffers to keep in the pool |
+| `buffer_capacity` | `uintptr_t` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `KreuzbergByteBufferPool`
+
+
+---
+
+#### kreuzberg_openapi_json()
+
+Generate OpenAPI JSON schema.
+
+Returns the complete OpenAPI 3.1 specification as a JSON string.
+
+**Signature:**
+
+```c
+const char* kreuzberg_openapi_json();
+```
+
+**Returns:** `const char*`
+
+
+---
+
+#### kreuzberg_serve_with_server_config()
+
+Start the API server with explicit extraction config and server config.
+
+This function accepts a fully-configured ServerConfig, including CORS origins,
+size limits, host, and port. It respects all ServerConfig fields without
+re-parsing environment variables, making it ideal for CLI usage where
+configuration precedence has already been applied.
+
+**Signature:**
+
+```c
+void kreuzberg_serve_with_server_config(KreuzbergExtractionConfig extraction_config, KreuzbergServerConfig server_config);
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `extraction_config` | `KreuzbergExtractionConfig` | Yes | Default extraction configuration for all requests |
+| `server_config` | `KreuzbergServerConfig` | Yes | Server configuration including host, port, CORS, and size limits |
+
+**Returns:** `void`
+
+**Errors:** Returns `NULL` on error.
+
+
+---
+
 #### kreuzberg_chunk_text()
 
 Split text into chunks with optional page boundary tracking.
@@ -2125,7 +2443,7 @@ BibTeX bibliography metadata.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `entry_count` | `uintptr_t` | — | Number of entrys |
+| `entry_count` | `uintptr_t` | — | Number of entries in the bibliography. |
 | `citation_keys` | `const char**` | `NULL` | Citation keys |
 | `authors` | `const char**` | `NULL` | Authors |
 | `year_range` | `KreuzbergYearRange*` | `NULL` | Year range (year range) |
@@ -2178,25 +2496,6 @@ Request parameters for cache warm (model download).
 |-------|------|---------|-------------|
 | `all_embeddings` | `bool` | — | Download all embedding model presets |
 | `embedding_model` | `const char**` | `NULL` | Specific embedding preset name to download (e.g. "balanced", "speed", "quality") |
-
-
----
-
-#### KreuzbergCharData
-
-Character information extracted from PDF with font metrics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `const char*` | — | The character text content |
-| `x` | `float` | — | X position in PDF units |
-| `y` | `float` | — | Y position in PDF units |
-| `font_size` | `float` | — | Font size in points |
-| `width` | `float` | — | Character width in PDF units |
-| `height` | `float` | — | Character height in PDF units |
-| `is_bold` | `bool` | — | Whether the font is bold (from pdfium force-bold flag) |
-| `is_italic` | `bool` | — | Whether the font is italic |
-| `baseline_y` | `float` | — | Baseline Y position (from character origin, falls back to bounds bottom) |
 
 
 ---
@@ -3042,7 +3341,7 @@ Extracted inline image with metadata.
 | `format` | `const char*` | — | Format |
 | `filename` | `const char**` | `NULL` | Filename |
 | `description` | `const char**` | `NULL` | Human-readable description |
-| `dimensions` | `const char**` | `NULL` | Dimensions |
+| `dimensions` | `uint32_t**` | `NULL` | Dimensions |
 | `attributes` | `const char**` | — | Attributes |
 
 
@@ -3098,6 +3397,26 @@ It can be loaded from TOML, YAML, or JSON files, or created programmatically.
 
 ```c
 KreuzbergExtractionConfig kreuzberg_default();
+```
+
+###### kreuzberg_needs_image_processing()
+
+Check if image processing is needed by examining OCR and image extraction settings.
+
+Returns `true` if either OCR is enabled or image extraction is configured,
+indicating that image decompression and processing should occur.
+Returns `false` if both are disabled, allowing optimization to skip unnecessary
+image decompression for text-only extraction workflows.
+
+# Optimization Impact
+For text-only extractions (no OCR, no image extraction), skipping image
+decompression can improve CPU utilization by 5-10% by avoiding wasteful
+image I/O and processing when results won't be used.
+
+**Signature:**
+
+```c
+bool kreuzberg_needs_image_processing();
 ```
 
 
@@ -3191,18 +3510,6 @@ cannot be overridden per file:
 | `timeout_secs` | `uint64_t*` | `NULL` | Override per-file extraction timeout in seconds. When set, the extraction for this file will be canceled after the specified duration. A timed-out file produces an error result without affecting other files in the batch. |
 | `tree_sitter` | `KreuzbergTreeSitterConfig*` | `NULL` | Override tree-sitter configuration for this file. |
 | `structured_extraction` | `KreuzbergStructuredExtractionConfig*` | `NULL` | Override structured extraction configuration for this file. When set, enables LLM-based structured extraction with a JSON schema for this specific file. The extracted content is sent to a VLM/LLM and the response is parsed according to the provided schema. |
-
-
----
-
-#### KreuzbergFontSizeCluster
-
-A cluster of text blocks with the same font size characteristics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `centroid` | `float` | — | The centroid (mean) font size of this cluster |
-| `members` | `const char**` | — | The text blocks that belong to this cluster |
 
 
 ---
@@ -3331,21 +3638,7 @@ font size clustering and hierarchical analysis.
 | `text` | `const char*` | — | The text content of this block |
 | `font_size` | `float` | — | The font size of the text in this block |
 | `level` | `const char*` | — | The hierarchy level of this block (H1-H6 or Body) Levels correspond to HTML heading tags: - "h1": Top-level heading - "h2": Secondary heading - "h3": Tertiary heading - "h4": Quaternary heading - "h5": Quinary heading - "h6": Senary heading - "body": Body text (no heading level) |
-| `bbox` | `const char**` | `NULL` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
-
-
----
-
-#### KreuzbergHierarchyBlock
-
-A TextBlock with hierarchy level assignment.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `const char*` | — | The text content |
-| `bbox` | `const char*` | — | The bounding box of the block |
-| `font_size` | `float` | — | The font size of the text in this block |
-| `hierarchy_level` | `const char*` | — | The hierarchy level of this block (H1-H6 or Body) |
+| `bbox` | `float**` | `NULL` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
 
 
 ---
@@ -3472,6 +3765,7 @@ Image extraction configuration.
 | `auto_adjust_dpi` | `bool` | — | Automatically adjust DPI based on image content |
 | `min_dpi` | `int32_t` | — | Minimum DPI threshold |
 | `max_dpi` | `int32_t` | — | Maximum DPI threshold |
+| `max_images_per_page` | `uint32_t*` | `NULL` | Maximum number of image objects to extract per PDF page. Some PDFs (e.g. technical diagrams stored as thousands of raster fragments) can trigger extremely long or indefinite extraction times when every image object on a dense page is decoded individually via pdfium FFI. Setting this limit causes kreuzberg to stop collecting individual images once the count per page reaches the cap and emit a warning instead. `NULL` (default) means no limit — all images are extracted. |
 
 
 ---
@@ -3485,7 +3779,7 @@ Image element metadata.
 | `src` | `const char*` | — | Image source (URL, data URI, or SVG content) |
 | `alt` | `const char**` | `NULL` | Alternative text from alt attribute |
 | `title` | `const char**` | `NULL` | Title attribute |
-| `dimensions` | `const char**` | `NULL` | Image dimensions as (width, height) if available |
+| `dimensions` | `uint32_t**` | `NULL` | Image dimensions as (width, height) if available |
 | `image_type` | `KreuzbergImageType` | — | Image type classification |
 | `attributes` | `const char**` | — | Additional attributes as key-value pairs |
 
@@ -3545,13 +3839,13 @@ including DPI normalization, resizing, and resampling.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `original_dimensions` | `const char*` | — | Original image dimensions (width, height) in pixels |
-| `original_dpi` | `const char*` | — | Original image DPI (horizontal, vertical) |
+| `original_dimensions` | `uintptr_t*` | — | Original image dimensions (width, height) in pixels |
+| `original_dpi` | `double*` | — | Original image DPI (horizontal, vertical) |
 | `target_dpi` | `int32_t` | — | Target DPI from configuration |
 | `scale_factor` | `double` | — | Scaling factor applied to the image |
 | `auto_adjusted` | `bool` | — | Whether DPI was auto-adjusted based on content |
 | `final_dpi` | `int32_t` | — | Final DPI after processing |
-| `new_dimensions` | `const char**` | `NULL` | New dimensions after resizing (if resized) |
+| `new_dimensions` | `uintptr_t**` | `NULL` | New dimensions after resizing (if resized) |
 | `resample_method` | `const char*` | — | Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.) |
 | `dimension_clamped` | `bool` | — | Whether dimensions were clamped to max_image_dimension |
 | `calculated_dpi` | `int32_t*` | `NULL` | Calculated optimal DPI (if auto_adjust_dpi enabled) |
@@ -3633,7 +3927,7 @@ Keyword extraction configuration.
 | `algorithm` | `KreuzbergKeywordAlgorithm` | `KREUZBERG_KREUZBERG_YAKE` | Algorithm to use for extraction. |
 | `max_keywords` | `uintptr_t` | `10` | Maximum number of keywords to extract (default: 10). |
 | `min_score` | `float` | `0` | Minimum score threshold (0.0-1.0, default: 0.0). Keywords with scores below this threshold are filtered out. Note: Score ranges differ between algorithms. |
-| `ngram_range` | `const char*` | — | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
+| `ngram_range` | `uintptr_t*` | `NULL` | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
 | `language` | `const char**` | `NULL` | Language code for stopword filtering (e.g., "en", "de", "fr"). If None, no stopword filtering is applied. |
 | `yake_params` | `KreuzbergYakeParams*` | `NULL` | YAKE-specific tuning parameters. |
 | `rake_params` | `KreuzbergRakeParams*` | `NULL` | RAKE-specific tuning parameters. |
@@ -3880,6 +4174,137 @@ Combined paths to all models needed for OCR (backward compatibility).
 
 ---
 
+#### KreuzbergOcrBackend
+
+Trait for OCR backend plugins.
+
+Implement this trait to add custom OCR capabilities. OCR backends can be:
+- Native Rust implementations (like Tesseract)
+- FFI bridges to Python libraries (like EasyOCR, PaddleOCR)
+- Cloud-based OCR services (Google Vision, AWS Textract, etc.)
+
+# Thread Safety
+
+OCR backends must be thread-safe (`Send + Sync`) to support concurrent processing.
+
+##### Methods
+
+###### kreuzberg_process_image()
+
+Process an image and extract text via OCR.
+
+**Returns:**
+
+An `ExtractionResult` containing the extracted text and metadata.
+
+**Errors:**
+
+- `KreuzbergError.Ocr` - OCR processing failed
+- `KreuzbergError.Validation` - Invalid image format or configuration
+- `KreuzbergError.Io` - I/O errors (these always bubble up)
+
+**Signature:**
+
+```c
+KreuzbergExtractionResult kreuzberg_process_image(const uint8_t* image_bytes, KreuzbergOcrConfig config);
+```
+
+###### kreuzberg_process_image_file()
+
+Process a file and extract text via OCR.
+
+Default implementation reads the file and calls `process_image`.
+Override for custom file handling or optimizations.
+
+**Errors:**
+
+Same as `process_image`, plus file I/O errors.
+
+**Signature:**
+
+```c
+KreuzbergExtractionResult kreuzberg_process_image_file(const char* path, KreuzbergOcrConfig config);
+```
+
+###### kreuzberg_supports_language()
+
+Check if this backend supports a given language code.
+
+**Returns:**
+
+`true` if the language is supported, `false` otherwise.
+
+**Signature:**
+
+```c
+bool kreuzberg_supports_language(const char* lang);
+```
+
+###### kreuzberg_backend_type()
+
+Get the backend type identifier.
+
+**Returns:**
+
+The backend type enum value.
+
+**Signature:**
+
+```c
+KreuzbergOcrBackendType kreuzberg_backend_type();
+```
+
+###### kreuzberg_supported_languages()
+
+Optional: Get a list of all supported languages.
+
+Defaults to empty list. Override to provide comprehensive language support info.
+
+**Signature:**
+
+```c
+const char** kreuzberg_supported_languages();
+```
+
+###### kreuzberg_supports_table_detection()
+
+Optional: Check if the backend supports table detection.
+
+Defaults to `false`. Override if your backend can detect and extract tables.
+
+**Signature:**
+
+```c
+bool kreuzberg_supports_table_detection();
+```
+
+###### kreuzberg_supports_document_processing()
+
+Check if the backend supports direct document-level processing (e.g. for PDFs).
+
+Defaults to `false`. Override if the backend has optimized document processing.
+
+**Signature:**
+
+```c
+bool kreuzberg_supports_document_processing();
+```
+
+###### kreuzberg_process_document()
+
+Process a document file directly via OCR.
+
+Only called if `supports_document_processing` returns `true`.
+
+**Signature:**
+
+```c
+KreuzbergExtractionResult kreuzberg_process_document(const char* path, KreuzbergOcrConfig config);
+```
+
+
+---
+
 #### KreuzbergOcrCacheStats
 
 | Field | Type | Default | Description |
@@ -3923,6 +4348,7 @@ OCR configuration.
 | `auto_rotate` | `bool` | `false` | Enable automatic page rotation based on orientation detection. When enabled, uses Tesseract's `DetectOrientationScript()` to detect page orientation (0/90/180/270 degrees) before OCR. If the page is rotated with high confidence, the image is corrected before recognition. This is critical for handling rotated scanned documents. |
 | `vlm_config` | `KreuzbergLlmConfig*` | `NULL` | VLM (Vision Language Model) OCR configuration. Required when `backend` is `"vlm"`. Uses liter-llm to send page images to a vision model for text extraction. |
 | `vlm_prompt` | `const char**` | `NULL` | Custom Jinja2 prompt template for VLM OCR. When `NULL`, uses the default template. Available variables: - `{{ language }}` — The document language code (e.g., "eng", "deu"). |
+| `acceleration` | `KreuzbergAccelerationConfig*` | `NULL` | Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection). Not user-configurable via config files — injected at runtime from `ExtractionConfig.acceleration` before each `process_image` call. |
 
 ##### Methods
 
@@ -3989,18 +4415,6 @@ including recognized text and detected tables.
 | `tables` | `KreuzbergOcrTable*` | — | Tables detected and extracted via OCR |
 | `ocr_elements` | `KreuzbergOcrElement**` | `NULL` | Structured OCR elements with bounding boxes and confidence scores. Available when TSV output is requested or table detection is enabled. |
 | `internal_document` | `const char**` | `NULL` | Structured document produced from hOCR parsing. Carries paragraph structure, bounding boxes, and confidence scores that the flattened `content` string discards. |
-
-
----
-
-#### KreuzbergOcrFallbackDecision
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `stats` | `const char*` | — | Stats |
-| `avg_non_whitespace` | `double` | — | Avg non whitespace |
-| `avg_alnum` | `double` | — | Avg alnum |
-| `fallback` | `bool` | — | Fallback |
 
 
 ---
@@ -4336,7 +4750,7 @@ and visibility state (for presentations).
 |-------|------|---------|-------------|
 | `number` | `uintptr_t` | — | Page number (1-indexed) |
 | `title` | `const char**` | `NULL` | Page title (usually for presentations) |
-| `dimensions` | `const char**` | `NULL` | Dimensions in points (PDF) or pixels (images): (width, height) |
+| `dimensions` | `double**` | `NULL` | Dimensions in points (PDF) or pixels (images): (width, height) |
 | `image_count` | `uintptr_t*` | `NULL` | Number of images on this page |
 | `table_count` | `uintptr_t*` | `NULL` | Number of tables on this page |
 | `hidden` | `bool*` | `NULL` | Whether this page is hidden (e.g., in presentations) |
@@ -5058,6 +5472,42 @@ Helper struct for validating table cell counts.
 
 Manages tessdata file downloading, caching, and manifest generation.
 
+##### Methods
+
+###### kreuzberg_cache_dir()
+
+Get the cache directory path.
+
+**Signature:**
+
+```c
+const char* kreuzberg_cache_dir();
+```
+
+###### kreuzberg_is_language_cached()
+
+Check if a specific language traineddata file is cached.
+
+**Signature:**
+
+```c
+bool kreuzberg_is_language_cached(const char* lang);
+```
+
+###### kreuzberg_ensure_all_languages()
+
+Downloads all tessdata_fast traineddata files to the cache directory.
+
+Skips files that already exist. Returns the count of newly downloaded files.
+
+Requires the `paddle-ocr` feature for HTTP download support (ureq).
+
+**Signature:**
+
+```c
+uintptr_t kreuzberg_ensure_all_languages();
+```
+
 
 ---
 
@@ -5581,6 +6031,20 @@ of `ExtractionResult`.
 | `KREUZBERG_NO_BAR` | No bar |
 | `KREUZBERG_LINEAR` | Linear |
 | `KREUZBERG_SKEWED` | Skewed |
+
+
+---
+
+#### KreuzbergOcrBackendType
+
+OCR backend types.
+
+| Value | Description |
+|-------|-------------|
+| `KREUZBERG_TESSERACT` | Tesseract OCR (native Rust binding) |
+| `KREUZBERG_EASY_OCR` | EasyOCR (Python-based, via FFI) |
+| `KREUZBERG_PADDLE_OCR` | PaddleOCR (Python-based, via FFI) |
+| `KREUZBERG_CUSTOM` | Custom/third-party OCR backend |
 
 
 ---

@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 use super::bounding_box::BoundingBox;
 use super::clustering::FontSizeCluster;
-use crate::core::config::ExtractionConfig;
 use crate::pdf::error::{PdfError, Result};
 use pdfium_render::prelude::*;
 
@@ -675,58 +674,6 @@ pub(crate) fn merge_chars_into_blocks(chars: Vec<CharData>) -> Vec<TextBlock> {
             }
         })
         .collect()
-}
-
-/// Determine whether OCR should be triggered based on text block coverage.
-///
-/// Analyzes the coverage of text blocks on a PDF page and decides if OCR
-/// should be run. OCR is triggered when the text blocks cover less than a
-/// certain percentage (default 50%) of the page area.
-///
-/// # Arguments
-///
-/// * `page` - The PDF page to analyze
-/// * `blocks` - Slice of TextBlock objects present on the page
-/// * `config` - Extraction configuration containing OCR and PDF settings
-///
-/// # Returns
-///
-/// `true` if OCR should be triggered (coverage below threshold), `false` otherwise.
-pub(crate) fn should_trigger_ocr(page: &PdfPage, blocks: &[TextBlock], config: &ExtractionConfig) -> bool {
-    // Get page dimensions using width() and height() methods
-    let page_width = page.width().value;
-    let page_height = page.height().value;
-    let page_area = page_width * page_height;
-
-    // Handle edge case: invalid page area
-    if page_area <= 0.0 {
-        return true; // Trigger OCR for invalid pages
-    }
-
-    // Calculate total text block area
-    let text_area: f32 = blocks
-        .iter()
-        .map(|block| {
-            let width = (block.bbox.right - block.bbox.left).max(0.0);
-            let height = (block.bbox.bottom - block.bbox.top).max(0.0);
-            width * height
-        })
-        .sum();
-
-    // Calculate coverage ratio
-    let coverage = text_area / page_area;
-
-    // Get the OCR coverage threshold from config
-    // Try to get from hierarchy config first, then fall back to default 0.5 (50%)
-    let threshold = config
-        .pdf_options
-        .as_ref()
-        .and_then(|pdf_config| pdf_config.hierarchy.as_ref())
-        .and_then(|hierarchy_config| hierarchy_config.ocr_coverage_threshold)
-        .unwrap_or(0.5);
-
-    // Trigger OCR if coverage is below threshold
-    coverage < threshold
 }
 
 #[cfg(test)]

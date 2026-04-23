@@ -118,7 +118,7 @@ pub struct ApiDoc;
 /// println!("{}", schema);
 /// ```
 #[cfg(feature = "api")]
-pub(crate) fn openapi_json() -> String {
+pub fn openapi_json() -> String {
     ApiDoc::openapi().to_pretty_json().unwrap_or_else(|_| "{}".to_string())
 }
 

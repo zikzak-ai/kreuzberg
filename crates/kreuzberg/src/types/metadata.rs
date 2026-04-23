@@ -754,6 +754,7 @@ pub struct CsvMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[cfg_attr(feature = "api", derive(utoipa::ToSchema))]
 pub struct BibtexMetadata {
+    /// Number of entries in the bibliography.
     pub entry_count: usize,
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub citation_keys: Vec<String>,

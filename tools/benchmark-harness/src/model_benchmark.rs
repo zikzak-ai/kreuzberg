@@ -87,7 +87,7 @@ pub async fn run_model_benchmark(config: &ModelBenchmarkConfig) -> Result<Vec<Mo
         let t = Instant::now();
         let result_a = match tokio::time::timeout(
             std::time::Duration::from_secs(180),
-            kreuzberg::core::batch_mode::with_batch_mode(kreuzberg::extract_file(&doc.document_path, None, &config_a)),
+            kreuzberg::extract_file(&doc.document_path, None, &config_a),
         )
         .await
         {
@@ -112,7 +112,7 @@ pub async fn run_model_benchmark(config: &ModelBenchmarkConfig) -> Result<Vec<Mo
         let t = Instant::now();
         let result_b = match tokio::time::timeout(
             std::time::Duration::from_secs(180),
-            kreuzberg::core::batch_mode::with_batch_mode(kreuzberg::extract_file(&doc.document_path, None, &config_b)),
+            kreuzberg::extract_file(&doc.document_path, None, &config_b),
         )
         .await
         {

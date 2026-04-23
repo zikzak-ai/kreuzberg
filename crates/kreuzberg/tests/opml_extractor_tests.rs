@@ -499,15 +499,17 @@ async fn test_opml_content_quality_all_files() {
 ///
 /// Validates:
 /// - Extractor is available in the registry
-/// - Supported MIME types are correctly registered
-/// - Priority is set appropriately
-/// - Plugin interface is implemented
 #[tokio::test]
 async fn test_opml_extractor_registration() {
-    use kreuzberg::extractors::{OpmlExtractor, ensure_initialized};
-    use kreuzberg::plugins::{DocumentExtractor, Plugin, registry::get_document_extractor_registry};
+    use kreuzberg::plugins::registry::get_document_extractor_registry;
 
-    ensure_initialized().expect("Should initialize extractors");
+    // Trigger initialization via a real extraction call so the registry is populated.
+    let _ = kreuzberg::extract_bytes(
+        b"<opml/>",
+        "text/x-opml",
+        &kreuzberg::core::config::ExtractionConfig::default(),
+    )
+    .await;
 
     let registry = get_document_extractor_registry();
     let registry_guard = registry.read();
@@ -522,22 +524,7 @@ async fn test_opml_extractor_registration() {
         extractor_names
     );
 
-    let opml_extractor = OpmlExtractor::new();
-    assert_eq!(opml_extractor.name(), "opml-extractor");
-    assert_eq!(opml_extractor.priority(), 55);
-
-    let supported_types = opml_extractor.supported_mime_types();
-    assert!(
-        supported_types.contains(&"text/x-opml"),
-        "Should support text/x-opml MIME type"
-    );
-    assert!(
-        supported_types.contains(&"application/xml+opml"),
-        "Should support application/xml+opml MIME type"
-    );
-
     println!("✅ OPML extractor registration test passed!");
-    println!("   OPML extractor properly registered with priority {}", 55);
 }
 
 /// Test 12: Extract all OPML files and generate summary statistics

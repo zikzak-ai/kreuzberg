@@ -125,7 +125,7 @@ pub fn test_config_with_ocr() -> kreuzberg::core::config::ExtractionConfig {
 #[cfg(feature = "pdf")]
 pub mod pdf_helpers {
     use kreuzberg::core::config::ExtractionConfig;
-    use kreuzberg::pdf::hierarchy::{BoundingBox, CharData};
+    use kreuzberg::pdf::hierarchy::BoundingBox;
 
     /// Create a bounding box with simple coordinates.
     ///
@@ -145,32 +145,6 @@ pub mod pdf_helpers {
             top,
             right,
             bottom,
-        }
-    }
-
-    /// Create a character data with minimal parameters.
-    ///
-    /// # Arguments
-    ///
-    /// * `text` - Character text content
-    /// * `x` - X position
-    /// * `y` - Y position
-    /// * `font_size` - Font size in points
-    ///
-    /// # Returns
-    ///
-    /// A new CharData with calculated width and height
-    pub fn create_char_data(text: &str, x: f32, y: f32, font_size: f32) -> CharData {
-        CharData {
-            text: text.to_string(),
-            x,
-            y,
-            font_size,
-            width: font_size * 0.6,
-            height: font_size,
-            is_bold: false,
-            is_italic: false,
-            baseline_y: y,
         }
     }
 

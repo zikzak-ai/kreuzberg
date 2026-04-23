@@ -451,7 +451,7 @@ pub async fn extract_pipeline(
             let extraction_future = async {
                 tokio::time::timeout(
                     std::time::Duration::from_secs(180),
-                    kreuzberg::core::batch_mode::with_batch_mode(kreuzberg::extract_file(&doc_path, None, &config)),
+                    kreuzberg::extract_file(&doc_path, None, &config),
                 )
                 .await
             };

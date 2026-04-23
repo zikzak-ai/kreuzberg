@@ -2,9 +2,212 @@
 title: "PHP API Reference"
 ---
 
-## PHP API Reference <span class="version-badge">v4.9.2</span>
+## PHP API Reference <span class="version-badge">v4.9.5</span>
 
 ### Functions
+
+#### blake3HashBytes()
+
+Hash arbitrary bytes with blake3, returning a 32-char hex string.
+
+**Signature:**
+
+```php
+public static function blake3HashBytes(string $data): string
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `string` | Yes | The data |
+
+**Returns:** `string`
+
+
+---
+
+#### blake3HashFile()
+
+Hash a file's content with blake3 using streaming 64 KiB reads.
+
+Returns a 32-char hex string (128 bits of blake3 output).
+
+**Signature:**
+
+```php
+public static function blake3HashFile(string $path): string
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `path` | `string` | Yes | Path to the file |
+
+**Returns:** `string`
+
+**Errors:** Throws `Error`.
+
+
+---
+
+#### fastHash()
+
+**Signature:**
+
+```php
+public static function fastHash(string $data): int
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `string` | Yes | The data |
+
+**Returns:** `int`
+
+
+---
+
+#### validateCacheKey()
+
+**Signature:**
+
+```php
+public static function validateCacheKey(string $key): bool
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `key` | `string` | Yes | The key |
+
+**Returns:** `bool`
+
+
+---
+
+#### validatePort()
+
+Validate a port number for server configuration.
+
+Port must be in the range 1-65535. While ports 1-1023 are privileged and may require
+special permissions on some systems, they are still valid port numbers.
+
+**Returns:**
+
+`Ok(())` if the port is valid, or a `ValidationError` with details about valid ranges.
+
+**Signature:**
+
+```php
+public static function validatePort(int $port): void
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `port` | `int` | Yes | The port number to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `Error`.
+
+
+---
+
+#### validateHost()
+
+Validate a host/IP address string for server configuration.
+
+Accepts valid IPv4 addresses (e.g., "127.0.0.1", "0.0.0.0"), valid IPv6 addresses
+(e.g., "::1", "::"), and hostnames (e.g., "localhost", "example.com").
+
+**Returns:**
+
+`Ok(())` if the host is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```php
+public static function validateHost(string $host): void
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `host` | `string` | Yes | The host/IP address string to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `Error`.
+
+
+---
+
+#### validateCorsOrigin()
+
+Validate a CORS (Cross-Origin Resource Sharing) origin URL.
+
+Accepts valid HTTP/HTTPS URLs (e.g., "<https://example.com">) or the wildcard "*"
+to allow all origins. URLs must start with "<http://"> or "<https://",> or be exactly "*".
+
+**Returns:**
+
+`Ok(())` if the origin is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```php
+public static function validateCorsOrigin(string $origin): void
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `origin` | `string` | Yes | The CORS origin URL to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `Error`.
+
+
+---
+
+#### validateUploadSize()
+
+Validate an upload size limit for server configuration.
+
+Upload size must be greater than 0 (measured in bytes).
+
+**Returns:**
+
+`Ok(())` if the size is valid, or a `ValidationError` with details about constraints.
+
+**Signature:**
+
+```php
+public static function validateUploadSize(int $size): void
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `size` | `int` | Yes | The maximum upload size in bytes to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `Error`.
+
+
+---
 
 #### validateBinarizationMethod()
 
@@ -791,6 +994,23 @@ public static function listSupportedFormats(): array<SupportedFormat>
 
 ---
 
+#### clearProcessorCache()
+
+Clear the processor cache (primarily for testing when registry changes).
+
+**Signature:**
+
+```php
+public static function clearProcessorCache(): void
+```
+
+**Returns:** `void`
+
+**Errors:** Throws `Error`.
+
+
+---
+
 #### transformExtractionResultToElements()
 
 Transform an extraction result into semantic elements.
@@ -1539,6 +1759,104 @@ public static function calculateTextConfidence(string $text): float
 
 ---
 
+#### createStringBufferPool()
+
+Create a pre-configured string buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for text accumulation with reasonable defaults.
+
+**Signature:**
+
+```php
+public static function createStringBufferPool(int $poolSize, int $bufferCapacity): StringBufferPool
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `poolSize` | `int` | Yes | Maximum number of buffers to keep in the pool |
+| `bufferCapacity` | `int` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `StringBufferPool`
+
+
+---
+
+#### createByteBufferPool()
+
+Create a pre-configured byte buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for binary data handling with reasonable defaults.
+
+**Signature:**
+
+```php
+public static function createByteBufferPool(int $poolSize, int $bufferCapacity): ByteBufferPool
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `poolSize` | `int` | Yes | Maximum number of buffers to keep in the pool |
+| `bufferCapacity` | `int` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `ByteBufferPool`
+
+
+---
+
+#### openapiJson()
+
+Generate OpenAPI JSON schema.
+
+Returns the complete OpenAPI 3.1 specification as a JSON string.
+
+**Signature:**
+
+```php
+public static function openapiJson(): string
+```
+
+**Returns:** `string`
+
+
+---
+
+#### serveWithServerConfig()
+
+Start the API server with explicit extraction config and server config.
+
+This function accepts a fully-configured ServerConfig, including CORS origins,
+size limits, host, and port. It respects all ServerConfig fields without
+re-parsing environment variables, making it ideal for CLI usage where
+configuration precedence has already been applied.
+
+**Signature:**
+
+```php
+public static function serveWithServerConfig(ExtractionConfig $extractionConfig, ServerConfig $serverConfig): void
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `extractionConfig` | `ExtractionConfig` | Yes | Default extraction configuration for all requests |
+| `serverConfig` | `ServerConfig` | Yes | Server configuration including host, port, CORS, and size limits |
+
+**Returns:** `void`
+
+**Errors:** Throws `Error`.
+
+
+---
+
 #### chunkText()
 
 Split text into chunks with optional page boundary tracking.
@@ -2125,7 +2443,7 @@ BibTeX bibliography metadata.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `entryCount` | `int` | — | Number of entrys |
+| `entryCount` | `int` | — | Number of entries in the bibliography. |
 | `citationKeys` | `array<string>` | `[]` | Citation keys |
 | `authors` | `array<string>` | `[]` | Authors |
 | `yearRange` | `?YearRange` | `null` | Year range (year range) |
@@ -2178,25 +2496,6 @@ Request parameters for cache warm (model download).
 |-------|------|---------|-------------|
 | `allEmbeddings` | `bool` | — | Download all embedding model presets |
 | `embeddingModel` | `?string` | `null` | Specific embedding preset name to download (e.g. "balanced", "speed", "quality") |
-
-
----
-
-#### CharData
-
-Character information extracted from PDF with font metrics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `string` | — | The character text content |
-| `x` | `float` | — | X position in PDF units |
-| `y` | `float` | — | Y position in PDF units |
-| `fontSize` | `float` | — | Font size in points |
-| `width` | `float` | — | Character width in PDF units |
-| `height` | `float` | — | Character height in PDF units |
-| `isBold` | `bool` | — | Whether the font is bold (from pdfium force-bold flag) |
-| `isItalic` | `bool` | — | Whether the font is italic |
-| `baselineY` | `float` | — | Baseline Y position (from character origin, falls back to bounds bottom) |
 
 
 ---
@@ -3042,7 +3341,7 @@ Extracted inline image with metadata.
 | `format` | `string` | — | Format |
 | `filename` | `?string` | `null` | Filename |
 | `description` | `?string` | `null` | Human-readable description |
-| `dimensions` | `?string` | `null` | Dimensions |
+| `dimensions` | `?array<int>` | `null` | Dimensions |
 | `attributes` | `array<string>` | — | Attributes |
 
 
@@ -3098,6 +3397,26 @@ It can be loaded from TOML, YAML, or JSON files, or created programmatically.
 
 ```php
 public static function default(): ExtractionConfig
+```
+
+###### needsImageProcessing()
+
+Check if image processing is needed by examining OCR and image extraction settings.
+
+Returns `true` if either OCR is enabled or image extraction is configured,
+indicating that image decompression and processing should occur.
+Returns `false` if both are disabled, allowing optimization to skip unnecessary
+image decompression for text-only extraction workflows.
+
+# Optimization Impact
+For text-only extractions (no OCR, no image extraction), skipping image
+decompression can improve CPU utilization by 5-10% by avoiding wasteful
+image I/O and processing when results won't be used.
+
+**Signature:**
+
+```php
+public function needsImageProcessing(): bool
 ```
 
 
@@ -3191,18 +3510,6 @@ cannot be overridden per file:
 | `timeoutSecs` | `?int` | `null` | Override per-file extraction timeout in seconds. When set, the extraction for this file will be canceled after the specified duration. A timed-out file produces an error result without affecting other files in the batch. |
 | `treeSitter` | `?TreeSitterConfig` | `null` | Override tree-sitter configuration for this file. |
 | `structuredExtraction` | `?StructuredExtractionConfig` | `null` | Override structured extraction configuration for this file. When set, enables LLM-based structured extraction with a JSON schema for this specific file. The extracted content is sent to a VLM/LLM and the response is parsed according to the provided schema. |
-
-
----
-
-#### FontSizeCluster
-
-A cluster of text blocks with the same font size characteristics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `centroid` | `float` | — | The centroid (mean) font size of this cluster |
-| `members` | `array<string>` | — | The text blocks that belong to this cluster |
 
 
 ---
@@ -3331,21 +3638,7 @@ font size clustering and hierarchical analysis.
 | `text` | `string` | — | The text content of this block |
 | `fontSize` | `float` | — | The font size of the text in this block |
 | `level` | `string` | — | The hierarchy level of this block (H1-H6 or Body) Levels correspond to HTML heading tags: - "h1": Top-level heading - "h2": Secondary heading - "h3": Tertiary heading - "h4": Quaternary heading - "h5": Quinary heading - "h6": Senary heading - "body": Body text (no heading level) |
-| `bbox` | `?string` | `null` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
-
-
----
-
-#### HierarchyBlock
-
-A TextBlock with hierarchy level assignment.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `string` | — | The text content |
-| `bbox` | `string` | — | The bounding box of the block |
-| `fontSize` | `float` | — | The font size of the text in this block |
-| `hierarchyLevel` | `string` | — | The hierarchy level of this block (H1-H6 or Body) |
+| `bbox` | `?array<float>` | `null` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
 
 
 ---
@@ -3472,6 +3765,7 @@ Image extraction configuration.
 | `autoAdjustDpi` | `bool` | — | Automatically adjust DPI based on image content |
 | `minDpi` | `int` | — | Minimum DPI threshold |
 | `maxDpi` | `int` | — | Maximum DPI threshold |
+| `maxImagesPerPage` | `?int` | `null` | Maximum number of image objects to extract per PDF page. Some PDFs (e.g. technical diagrams stored as thousands of raster fragments) can trigger extremely long or indefinite extraction times when every image object on a dense page is decoded individually via pdfium FFI. Setting this limit causes kreuzberg to stop collecting individual images once the count per page reaches the cap and emit a warning instead. `null` (default) means no limit — all images are extracted. |
 
 
 ---
@@ -3485,7 +3779,7 @@ Image element metadata.
 | `src` | `string` | — | Image source (URL, data URI, or SVG content) |
 | `alt` | `?string` | `null` | Alternative text from alt attribute |
 | `title` | `?string` | `null` | Title attribute |
-| `dimensions` | `?string` | `null` | Image dimensions as (width, height) if available |
+| `dimensions` | `?array<int>` | `null` | Image dimensions as (width, height) if available |
 | `imageType` | `ImageType` | — | Image type classification |
 | `attributes` | `array<string>` | — | Additional attributes as key-value pairs |
 
@@ -3545,13 +3839,13 @@ including DPI normalization, resizing, and resampling.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `originalDimensions` | `string` | — | Original image dimensions (width, height) in pixels |
-| `originalDpi` | `string` | — | Original image DPI (horizontal, vertical) |
+| `originalDimensions` | `array<int>` | — | Original image dimensions (width, height) in pixels |
+| `originalDpi` | `array<float>` | — | Original image DPI (horizontal, vertical) |
 | `targetDpi` | `int` | — | Target DPI from configuration |
 | `scaleFactor` | `float` | — | Scaling factor applied to the image |
 | `autoAdjusted` | `bool` | — | Whether DPI was auto-adjusted based on content |
 | `finalDpi` | `int` | — | Final DPI after processing |
-| `newDimensions` | `?string` | `null` | New dimensions after resizing (if resized) |
+| `newDimensions` | `?array<int>` | `null` | New dimensions after resizing (if resized) |
 | `resampleMethod` | `string` | — | Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.) |
 | `dimensionClamped` | `bool` | — | Whether dimensions were clamped to max_image_dimension |
 | `calculatedDpi` | `?int` | `null` | Calculated optimal DPI (if auto_adjust_dpi enabled) |
@@ -3633,7 +3927,7 @@ Keyword extraction configuration.
 | `algorithm` | `KeywordAlgorithm` | `KeywordAlgorithm::Yake` | Algorithm to use for extraction. |
 | `maxKeywords` | `int` | `10` | Maximum number of keywords to extract (default: 10). |
 | `minScore` | `float` | `0` | Minimum score threshold (0.0-1.0, default: 0.0). Keywords with scores below this threshold are filtered out. Note: Score ranges differ between algorithms. |
-| `ngramRange` | `string` | — | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
+| `ngramRange` | `array<int>` | `[]` | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
 | `language` | `?string` | `null` | Language code for stopword filtering (e.g., "en", "de", "fr"). If None, no stopword filtering is applied. |
 | `yakeParams` | `?YakeParams` | `null` | YAKE-specific tuning parameters. |
 | `rakeParams` | `?RakeParams` | `null` | RAKE-specific tuning parameters. |
@@ -3880,6 +4174,137 @@ Combined paths to all models needed for OCR (backward compatibility).
 
 ---
 
+#### OcrBackend
+
+Trait for OCR backend plugins.
+
+Implement this trait to add custom OCR capabilities. OCR backends can be:
+- Native Rust implementations (like Tesseract)
+- FFI bridges to Python libraries (like EasyOCR, PaddleOCR)
+- Cloud-based OCR services (Google Vision, AWS Textract, etc.)
+
+# Thread Safety
+
+OCR backends must be thread-safe (`Send + Sync`) to support concurrent processing.
+
+##### Methods
+
+###### processImage()
+
+Process an image and extract text via OCR.
+
+**Returns:**
+
+An `ExtractionResult` containing the extracted text and metadata.
+
+**Errors:**
+
+- `KreuzbergError::Ocr` - OCR processing failed
+- `KreuzbergError::Validation` - Invalid image format or configuration
+- `KreuzbergError::Io` - I/O errors (these always bubble up)
+
+**Signature:**
+
+```php
+public function processImage(string $imageBytes, OcrConfig $config): ExtractionResult
+```
+
+###### processImageFile()
+
+Process a file and extract text via OCR.
+
+Default implementation reads the file and calls `process_image`.
+Override for custom file handling or optimizations.
+
+**Errors:**
+
+Same as `process_image`, plus file I/O errors.
+
+**Signature:**
+
+```php
+public function processImageFile(string $path, OcrConfig $config): ExtractionResult
+```
+
+###### supportsLanguage()
+
+Check if this backend supports a given language code.
+
+**Returns:**
+
+`true` if the language is supported, `false` otherwise.
+
+**Signature:**
+
+```php
+public function supportsLanguage(string $lang): bool
+```
+
+###### backendType()
+
+Get the backend type identifier.
+
+**Returns:**
+
+The backend type enum value.
+
+**Signature:**
+
+```php
+public function backendType(): OcrBackendType
+```
+
+###### supportedLanguages()
+
+Optional: Get a list of all supported languages.
+
+Defaults to empty list. Override to provide comprehensive language support info.
+
+**Signature:**
+
+```php
+public function supportedLanguages(): array<string>
+```
+
+###### supportsTableDetection()
+
+Optional: Check if the backend supports table detection.
+
+Defaults to `false`. Override if your backend can detect and extract tables.
+
+**Signature:**
+
+```php
+public function supportsTableDetection(): bool
+```
+
+###### supportsDocumentProcessing()
+
+Check if the backend supports direct document-level processing (e.g. for PDFs).
+
+Defaults to `false`. Override if the backend has optimized document processing.
+
+**Signature:**
+
+```php
+public function supportsDocumentProcessing(): bool
+```
+
+###### processDocument()
+
+Process a document file directly via OCR.
+
+Only called if `supports_document_processing` returns `true`.
+
+**Signature:**
+
+```php
+public function processDocument(string $path, OcrConfig $config): ExtractionResult
+```
+
+
+---
+
 #### OcrCacheStats
 
 | Field | Type | Default | Description |
@@ -3923,6 +4348,7 @@ OCR configuration.
 | `autoRotate` | `bool` | `false` | Enable automatic page rotation based on orientation detection. When enabled, uses Tesseract's `DetectOrientationScript()` to detect page orientation (0/90/180/270 degrees) before OCR. If the page is rotated with high confidence, the image is corrected before recognition. This is critical for handling rotated scanned documents. |
 | `vlmConfig` | `?LlmConfig` | `null` | VLM (Vision Language Model) OCR configuration. Required when `backend` is `"vlm"`. Uses liter-llm to send page images to a vision model for text extraction. |
 | `vlmPrompt` | `?string` | `null` | Custom Jinja2 prompt template for VLM OCR. When `null`, uses the default template. Available variables: - `{{ language }}` — The document language code (e.g., "eng", "deu"). |
+| `acceleration` | `?AccelerationConfig` | `null` | Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection). Not user-configurable via config files — injected at runtime from `ExtractionConfig::acceleration` before each `process_image` call. |
 
 ##### Methods
 
@@ -3989,18 +4415,6 @@ including recognized text and detected tables.
 | `tables` | `array<OcrTable>` | — | Tables detected and extracted via OCR |
 | `ocrElements` | `?array<OcrElement>` | `null` | Structured OCR elements with bounding boxes and confidence scores. Available when TSV output is requested or table detection is enabled. |
 | `internalDocument` | `?string` | `null` | Structured document produced from hOCR parsing. Carries paragraph structure, bounding boxes, and confidence scores that the flattened `content` string discards. |
-
-
----
-
-#### OcrFallbackDecision
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `stats` | `string` | — | Stats |
-| `avgNonWhitespace` | `float` | — | Avg non whitespace |
-| `avgAlnum` | `float` | — | Avg alnum |
-| `fallback` | `bool` | — | Fallback |
 
 
 ---
@@ -4336,7 +4750,7 @@ and visibility state (for presentations).
 |-------|------|---------|-------------|
 | `number` | `int` | — | Page number (1-indexed) |
 | `title` | `?string` | `null` | Page title (usually for presentations) |
-| `dimensions` | `?string` | `null` | Dimensions in points (PDF) or pixels (images): (width, height) |
+| `dimensions` | `?array<float>` | `null` | Dimensions in points (PDF) or pixels (images): (width, height) |
 | `imageCount` | `?int` | `null` | Number of images on this page |
 | `tableCount` | `?int` | `null` | Number of tables on this page |
 | `hidden` | `?bool` | `null` | Whether this page is hidden (e.g., in presentations) |
@@ -5058,6 +5472,42 @@ Helper struct for validating table cell counts.
 
 Manages tessdata file downloading, caching, and manifest generation.
 
+##### Methods
+
+###### cacheDir()
+
+Get the cache directory path.
+
+**Signature:**
+
+```php
+public function cacheDir(): string
+```
+
+###### isLanguageCached()
+
+Check if a specific language traineddata file is cached.
+
+**Signature:**
+
+```php
+public function isLanguageCached(string $lang): bool
+```
+
+###### ensureAllLanguages()
+
+Downloads all tessdata_fast traineddata files to the cache directory.
+
+Skips files that already exist. Returns the count of newly downloaded files.
+
+Requires the `paddle-ocr` feature for HTTP download support (ureq).
+
+**Signature:**
+
+```php
+public function ensureAllLanguages(): int
+```
+
 
 ---
 
@@ -5581,6 +6031,20 @@ of `ExtractionResult`.
 | `NoBar` | No bar |
 | `Linear` | Linear |
 | `Skewed` | Skewed |
+
+
+---
+
+#### OcrBackendType
+
+OCR backend types.
+
+| Value | Description |
+|-------|-------------|
+| `Tesseract` | Tesseract OCR (native Rust binding) |
+| `EasyOcr` | EasyOCR (Python-based, via FFI) |
+| `PaddleOcr` | PaddleOCR (Python-based, via FFI) |
+| `Custom` | Custom/third-party OCR backend |
 
 
 ---

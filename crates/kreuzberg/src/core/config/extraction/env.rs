@@ -56,7 +56,7 @@ impl ExtractionConfig {
     /// - An environment variable contains an invalid value
     /// - A number cannot be parsed as the expected type
     /// - A boolean is not "true" or "false"
-    pub(crate) fn apply_env_overrides(&mut self) -> Result<()> {
+    pub fn apply_env_overrides(&mut self) -> Result<()> {
         use crate::core::config_validation::{
             validate_chunking_params, validate_language_code, validate_ocr_backend, validate_token_reduction_level,
         };

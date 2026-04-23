@@ -2,9 +2,212 @@
 title: "Java API Reference"
 ---
 
-## Java API Reference <span class="version-badge">v4.9.2</span>
+## Java API Reference <span class="version-badge">v4.9.5</span>
 
 ### Functions
+
+#### blake3HashBytes()
+
+Hash arbitrary bytes with blake3, returning a 32-char hex string.
+
+**Signature:**
+
+```java
+public static String blake3HashBytes(byte[] data)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `byte[]` | Yes | The data |
+
+**Returns:** `String`
+
+
+---
+
+#### blake3HashFile()
+
+Hash a file's content with blake3 using streaming 64 KiB reads.
+
+Returns a 32-char hex string (128 bits of blake3 output).
+
+**Signature:**
+
+```java
+public static String blake3HashFile(String path) throws Error
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `path` | `String` | Yes | Path to the file |
+
+**Returns:** `String`
+
+**Errors:** Throws `ErrorException`.
+
+
+---
+
+#### fastHash()
+
+**Signature:**
+
+```java
+public static long fastHash(byte[] data)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `byte[]` | Yes | The data |
+
+**Returns:** `long`
+
+
+---
+
+#### validateCacheKey()
+
+**Signature:**
+
+```java
+public static boolean validateCacheKey(String key)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `key` | `String` | Yes | The key |
+
+**Returns:** `boolean`
+
+
+---
+
+#### validatePort()
+
+Validate a port number for server configuration.
+
+Port must be in the range 1-65535. While ports 1-1023 are privileged and may require
+special permissions on some systems, they are still valid port numbers.
+
+**Returns:**
+
+`Ok(())` if the port is valid, or a `ValidationError` with details about valid ranges.
+
+**Signature:**
+
+```java
+public static void validatePort(short port) throws Error
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `port` | `short` | Yes | The port number to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `ErrorException`.
+
+
+---
+
+#### validateHost()
+
+Validate a host/IP address string for server configuration.
+
+Accepts valid IPv4 addresses (e.g., "127.0.0.1", "0.0.0.0"), valid IPv6 addresses
+(e.g., ".1", "."), and hostnames (e.g., "localhost", "example.com").
+
+**Returns:**
+
+`Ok(())` if the host is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```java
+public static void validateHost(String host) throws Error
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `host` | `String` | Yes | The host/IP address string to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `ErrorException`.
+
+
+---
+
+#### validateCorsOrigin()
+
+Validate a CORS (Cross-Origin Resource Sharing) origin URL.
+
+Accepts valid HTTP/HTTPS URLs (e.g., "<https://example.com">) or the wildcard "*"
+to allow all origins. URLs must start with "<http://"> or "<https://",> or be exactly "*".
+
+**Returns:**
+
+`Ok(())` if the origin is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```java
+public static void validateCorsOrigin(String origin) throws Error
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `origin` | `String` | Yes | The CORS origin URL to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `ErrorException`.
+
+
+---
+
+#### validateUploadSize()
+
+Validate an upload size limit for server configuration.
+
+Upload size must be greater than 0 (measured in bytes).
+
+**Returns:**
+
+`Ok(())` if the size is valid, or a `ValidationError` with details about constraints.
+
+**Signature:**
+
+```java
+public static void validateUploadSize(long size) throws Error
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `size` | `long` | Yes | The maximum upload size in bytes to validate |
+
+**Returns:** `void`
+
+**Errors:** Throws `ErrorException`.
+
+
+---
 
 #### validateBinarizationMethod()
 
@@ -791,6 +994,23 @@ public static List<SupportedFormat> listSupportedFormats()
 
 ---
 
+#### clearProcessorCache()
+
+Clear the processor cache (primarily for testing when registry changes).
+
+**Signature:**
+
+```java
+public static void clearProcessorCache() throws Error
+```
+
+**Returns:** `void`
+
+**Errors:** Throws `ErrorException`.
+
+
+---
+
 #### transformExtractionResultToElements()
 
 Transform an extraction result into semantic elements.
@@ -1539,6 +1759,104 @@ public static double calculateTextConfidence(String text)
 
 ---
 
+#### createStringBufferPool()
+
+Create a pre-configured string buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for text accumulation with reasonable defaults.
+
+**Signature:**
+
+```java
+public static StringBufferPool createStringBufferPool(long poolSize, long bufferCapacity)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `poolSize` | `long` | Yes | Maximum number of buffers to keep in the pool |
+| `bufferCapacity` | `long` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `StringBufferPool`
+
+
+---
+
+#### createByteBufferPool()
+
+Create a pre-configured byte buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for binary data handling with reasonable defaults.
+
+**Signature:**
+
+```java
+public static ByteBufferPool createByteBufferPool(long poolSize, long bufferCapacity)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `poolSize` | `long` | Yes | Maximum number of buffers to keep in the pool |
+| `bufferCapacity` | `long` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `ByteBufferPool`
+
+
+---
+
+#### openapiJson()
+
+Generate OpenAPI JSON schema.
+
+Returns the complete OpenAPI 3.1 specification as a JSON string.
+
+**Signature:**
+
+```java
+public static String openapiJson()
+```
+
+**Returns:** `String`
+
+
+---
+
+#### serveWithServerConfig()
+
+Start the API server with explicit extraction config and server config.
+
+This function accepts a fully-configured ServerConfig, including CORS origins,
+size limits, host, and port. It respects all ServerConfig fields without
+re-parsing environment variables, making it ideal for CLI usage where
+configuration precedence has already been applied.
+
+**Signature:**
+
+```java
+public static void serveWithServerConfig(ExtractionConfig extractionConfig, ServerConfig serverConfig) throws Error
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `extractionConfig` | `ExtractionConfig` | Yes | Default extraction configuration for all requests |
+| `serverConfig` | `ServerConfig` | Yes | Server configuration including host, port, CORS, and size limits |
+
+**Returns:** `void`
+
+**Errors:** Throws `ErrorException`.
+
+
+---
+
 #### chunkText()
 
 Split text into chunks with optional page boundary tracking.
@@ -2125,7 +2443,7 @@ BibTeX bibliography metadata.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `entryCount` | `long` | — | Number of entrys |
+| `entryCount` | `long` | — | Number of entries in the bibliography. |
 | `citationKeys` | `List<String>` | `Collections.emptyList()` | Citation keys |
 | `authors` | `List<String>` | `Collections.emptyList()` | Authors |
 | `yearRange` | `Optional<YearRange>` | `null` | Year range (year range) |
@@ -2178,25 +2496,6 @@ Request parameters for cache warm (model download).
 |-------|------|---------|-------------|
 | `allEmbeddings` | `boolean` | — | Download all embedding model presets |
 | `embeddingModel` | `Optional<String>` | `null` | Specific embedding preset name to download (e.g. "balanced", "speed", "quality") |
-
-
----
-
-#### CharData
-
-Character information extracted from PDF with font metrics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String` | — | The character text content |
-| `x` | `float` | — | X position in PDF units |
-| `y` | `float` | — | Y position in PDF units |
-| `fontSize` | `float` | — | Font size in points |
-| `width` | `float` | — | Character width in PDF units |
-| `height` | `float` | — | Character height in PDF units |
-| `isBold` | `boolean` | — | Whether the font is bold (from pdfium force-bold flag) |
-| `isItalic` | `boolean` | — | Whether the font is italic |
-| `baselineY` | `float` | — | Baseline Y position (from character origin, falls back to bounds bottom) |
 
 
 ---
@@ -3042,7 +3341,7 @@ Extracted inline image with metadata.
 | `format` | `String` | — | Format |
 | `filename` | `Optional<String>` | `null` | Filename |
 | `description` | `Optional<String>` | `null` | Human-readable description |
-| `dimensions` | `Optional<String>` | `null` | Dimensions |
+| `dimensions` | `Optional<List<Integer>>` | `null` | Dimensions |
 | `attributes` | `List<String>` | — | Attributes |
 
 
@@ -3098,6 +3397,26 @@ It can be loaded from TOML, YAML, or JSON files, or created programmatically.
 
 ```java
 public static ExtractionConfig defaultOptions()
+```
+
+###### needsImageProcessing()
+
+Check if image processing is needed by examining OCR and image extraction settings.
+
+Returns `true` if either OCR is enabled or image extraction is configured,
+indicating that image decompression and processing should occur.
+Returns `false` if both are disabled, allowing optimization to skip unnecessary
+image decompression for text-only extraction workflows.
+
+# Optimization Impact
+For text-only extractions (no OCR, no image extraction), skipping image
+decompression can improve CPU utilization by 5-10% by avoiding wasteful
+image I/O and processing when results won't be used.
+
+**Signature:**
+
+```java
+public boolean needsImageProcessing()
 ```
 
 
@@ -3191,18 +3510,6 @@ cannot be overridden per file:
 | `timeoutSecs` | `Optional<Long>` | `null` | Override per-file extraction timeout in seconds. When set, the extraction for this file will be canceled after the specified duration. A timed-out file produces an error result without affecting other files in the batch. |
 | `treeSitter` | `Optional<TreeSitterConfig>` | `null` | Override tree-sitter configuration for this file. |
 | `structuredExtraction` | `Optional<StructuredExtractionConfig>` | `null` | Override structured extraction configuration for this file. When set, enables LLM-based structured extraction with a JSON schema for this specific file. The extracted content is sent to a VLM/LLM and the response is parsed according to the provided schema. |
-
-
----
-
-#### FontSizeCluster
-
-A cluster of text blocks with the same font size characteristics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `centroid` | `float` | — | The centroid (mean) font size of this cluster |
-| `members` | `List<String>` | — | The text blocks that belong to this cluster |
 
 
 ---
@@ -3331,21 +3638,7 @@ font size clustering and hierarchical analysis.
 | `text` | `String` | — | The text content of this block |
 | `fontSize` | `float` | — | The font size of the text in this block |
 | `level` | `String` | — | The hierarchy level of this block (H1-H6 or Body) Levels correspond to HTML heading tags: - "h1": Top-level heading - "h2": Secondary heading - "h3": Tertiary heading - "h4": Quaternary heading - "h5": Quinary heading - "h6": Senary heading - "body": Body text (no heading level) |
-| `bbox` | `Optional<String>` | `null` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
-
-
----
-
-#### HierarchyBlock
-
-A TextBlock with hierarchy level assignment.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String` | — | The text content |
-| `bbox` | `String` | — | The bounding box of the block |
-| `fontSize` | `float` | — | The font size of the text in this block |
-| `hierarchyLevel` | `String` | — | The hierarchy level of this block (H1-H6 or Body) |
+| `bbox` | `Optional<List<Float>>` | `null` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
 
 
 ---
@@ -3472,6 +3765,7 @@ Image extraction configuration.
 | `autoAdjustDpi` | `boolean` | — | Automatically adjust DPI based on image content |
 | `minDpi` | `int` | — | Minimum DPI threshold |
 | `maxDpi` | `int` | — | Maximum DPI threshold |
+| `maxImagesPerPage` | `Optional<Integer>` | `null` | Maximum number of image objects to extract per PDF page. Some PDFs (e.g. technical diagrams stored as thousands of raster fragments) can trigger extremely long or indefinite extraction times when every image object on a dense page is decoded individually via pdfium FFI. Setting this limit causes kreuzberg to stop collecting individual images once the count per page reaches the cap and emit a warning instead. `null` (default) means no limit — all images are extracted. |
 
 
 ---
@@ -3485,7 +3779,7 @@ Image element metadata.
 | `src` | `String` | — | Image source (URL, data URI, or SVG content) |
 | `alt` | `Optional<String>` | `null` | Alternative text from alt attribute |
 | `title` | `Optional<String>` | `null` | Title attribute |
-| `dimensions` | `Optional<String>` | `null` | Image dimensions as (width, height) if available |
+| `dimensions` | `Optional<List<Integer>>` | `null` | Image dimensions as (width, height) if available |
 | `imageType` | `ImageType` | — | Image type classification |
 | `attributes` | `List<String>` | — | Additional attributes as key-value pairs |
 
@@ -3545,13 +3839,13 @@ including DPI normalization, resizing, and resampling.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `originalDimensions` | `String` | — | Original image dimensions (width, height) in pixels |
-| `originalDpi` | `String` | — | Original image DPI (horizontal, vertical) |
+| `originalDimensions` | `List<Long>` | — | Original image dimensions (width, height) in pixels |
+| `originalDpi` | `List<Double>` | — | Original image DPI (horizontal, vertical) |
 | `targetDpi` | `int` | — | Target DPI from configuration |
 | `scaleFactor` | `double` | — | Scaling factor applied to the image |
 | `autoAdjusted` | `boolean` | — | Whether DPI was auto-adjusted based on content |
 | `finalDpi` | `int` | — | Final DPI after processing |
-| `newDimensions` | `Optional<String>` | `null` | New dimensions after resizing (if resized) |
+| `newDimensions` | `Optional<List<Long>>` | `null` | New dimensions after resizing (if resized) |
 | `resampleMethod` | `String` | — | Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.) |
 | `dimensionClamped` | `boolean` | — | Whether dimensions were clamped to max_image_dimension |
 | `calculatedDpi` | `Optional<Integer>` | `null` | Calculated optimal DPI (if auto_adjust_dpi enabled) |
@@ -3633,7 +3927,7 @@ Keyword extraction configuration.
 | `algorithm` | `KeywordAlgorithm` | `KeywordAlgorithm.YAKE` | Algorithm to use for extraction. |
 | `maxKeywords` | `long` | `10` | Maximum number of keywords to extract (default: 10). |
 | `minScore` | `float` | `0` | Minimum score threshold (0.0-1.0, default: 0.0). Keywords with scores below this threshold are filtered out. Note: Score ranges differ between algorithms. |
-| `ngramRange` | `String` | — | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
+| `ngramRange` | `List<Long>` | `Collections.emptyList()` | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
 | `language` | `Optional<String>` | `null` | Language code for stopword filtering (e.g., "en", "de", "fr"). If None, no stopword filtering is applied. |
 | `yakeParams` | `Optional<YakeParams>` | `null` | YAKE-specific tuning parameters. |
 | `rakeParams` | `Optional<RakeParams>` | `null` | RAKE-specific tuning parameters. |
@@ -3880,6 +4174,137 @@ Combined paths to all models needed for OCR (backward compatibility).
 
 ---
 
+#### OcrBackend
+
+Trait for OCR backend plugins.
+
+Implement this trait to add custom OCR capabilities. OCR backends can be:
+- Native Rust implementations (like Tesseract)
+- FFI bridges to Python libraries (like EasyOCR, PaddleOCR)
+- Cloud-based OCR services (Google Vision, AWS Textract, etc.)
+
+# Thread Safety
+
+OCR backends must be thread-safe (`Send + Sync`) to support concurrent processing.
+
+##### Methods
+
+###### processImage()
+
+Process an image and extract text via OCR.
+
+**Returns:**
+
+An `ExtractionResult` containing the extracted text and metadata.
+
+**Errors:**
+
+- `KreuzbergError.Ocr` - OCR processing failed
+- `KreuzbergError.Validation` - Invalid image format or configuration
+- `KreuzbergError.Io` - I/O errors (these always bubble up)
+
+**Signature:**
+
+```java
+public ExtractionResult processImage(byte[] imageBytes, OcrConfig config) throws Error
+```
+
+###### processImageFile()
+
+Process a file and extract text via OCR.
+
+Default implementation reads the file and calls `process_image`.
+Override for custom file handling or optimizations.
+
+**Errors:**
+
+Same as `process_image`, plus file I/O errors.
+
+**Signature:**
+
+```java
+public ExtractionResult processImageFile(String path, OcrConfig config) throws Error
+```
+
+###### supportsLanguage()
+
+Check if this backend supports a given language code.
+
+**Returns:**
+
+`true` if the language is supported, `false` otherwise.
+
+**Signature:**
+
+```java
+public boolean supportsLanguage(String lang)
+```
+
+###### backendType()
+
+Get the backend type identifier.
+
+**Returns:**
+
+The backend type enum value.
+
+**Signature:**
+
+```java
+public OcrBackendType backendType()
+```
+
+###### supportedLanguages()
+
+Optional: Get a list of all supported languages.
+
+Defaults to empty list. Override to provide comprehensive language support info.
+
+**Signature:**
+
+```java
+public List<String> supportedLanguages()
+```
+
+###### supportsTableDetection()
+
+Optional: Check if the backend supports table detection.
+
+Defaults to `false`. Override if your backend can detect and extract tables.
+
+**Signature:**
+
+```java
+public boolean supportsTableDetection()
+```
+
+###### supportsDocumentProcessing()
+
+Check if the backend supports direct document-level processing (e.g. for PDFs).
+
+Defaults to `false`. Override if the backend has optimized document processing.
+
+**Signature:**
+
+```java
+public boolean supportsDocumentProcessing()
+```
+
+###### processDocument()
+
+Process a document file directly via OCR.
+
+Only called if `supports_document_processing` returns `true`.
+
+**Signature:**
+
+```java
+public ExtractionResult processDocument(String path, OcrConfig config) throws Error
+```
+
+
+---
+
 #### OcrCacheStats
 
 | Field | Type | Default | Description |
@@ -3923,6 +4348,7 @@ OCR configuration.
 | `autoRotate` | `boolean` | `false` | Enable automatic page rotation based on orientation detection. When enabled, uses Tesseract's `DetectOrientationScript()` to detect page orientation (0/90/180/270 degrees) before OCR. If the page is rotated with high confidence, the image is corrected before recognition. This is critical for handling rotated scanned documents. |
 | `vlmConfig` | `Optional<LlmConfig>` | `null` | VLM (Vision Language Model) OCR configuration. Required when `backend` is `"vlm"`. Uses liter-llm to send page images to a vision model for text extraction. |
 | `vlmPrompt` | `Optional<String>` | `null` | Custom Jinja2 prompt template for VLM OCR. When `null`, uses the default template. Available variables: - `{{ language }}` — The document language code (e.g., "eng", "deu"). |
+| `acceleration` | `Optional<AccelerationConfig>` | `null` | Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection). Not user-configurable via config files — injected at runtime from `ExtractionConfig.acceleration` before each `process_image` call. |
 
 ##### Methods
 
@@ -3989,18 +4415,6 @@ including recognized text and detected tables.
 | `tables` | `List<OcrTable>` | — | Tables detected and extracted via OCR |
 | `ocrElements` | `Optional<List<OcrElement>>` | `null` | Structured OCR elements with bounding boxes and confidence scores. Available when TSV output is requested or table detection is enabled. |
 | `internalDocument` | `Optional<String>` | `null` | Structured document produced from hOCR parsing. Carries paragraph structure, bounding boxes, and confidence scores that the flattened `content` string discards. |
-
-
----
-
-#### OcrFallbackDecision
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `stats` | `String` | — | Stats |
-| `avgNonWhitespace` | `double` | — | Avg non whitespace |
-| `avgAlnum` | `double` | — | Avg alnum |
-| `fallback` | `boolean` | — | Fallback |
 
 
 ---
@@ -4336,7 +4750,7 @@ and visibility state (for presentations).
 |-------|------|---------|-------------|
 | `number` | `long` | — | Page number (1-indexed) |
 | `title` | `Optional<String>` | `null` | Page title (usually for presentations) |
-| `dimensions` | `Optional<String>` | `null` | Dimensions in points (PDF) or pixels (images): (width, height) |
+| `dimensions` | `Optional<List<Double>>` | `null` | Dimensions in points (PDF) or pixels (images): (width, height) |
 | `imageCount` | `Optional<Long>` | `null` | Number of images on this page |
 | `tableCount` | `Optional<Long>` | `null` | Number of tables on this page |
 | `hidden` | `Optional<Boolean>` | `null` | Whether this page is hidden (e.g., in presentations) |
@@ -5058,6 +5472,42 @@ Helper struct for validating table cell counts.
 
 Manages tessdata file downloading, caching, and manifest generation.
 
+##### Methods
+
+###### cacheDir()
+
+Get the cache directory path.
+
+**Signature:**
+
+```java
+public String cacheDir()
+```
+
+###### isLanguageCached()
+
+Check if a specific language traineddata file is cached.
+
+**Signature:**
+
+```java
+public boolean isLanguageCached(String lang)
+```
+
+###### ensureAllLanguages()
+
+Downloads all tessdata_fast traineddata files to the cache directory.
+
+Skips files that already exist. Returns the count of newly downloaded files.
+
+Requires the `paddle-ocr` feature for HTTP download support (ureq).
+
+**Signature:**
+
+```java
+public long ensureAllLanguages() throws OcrError
+```
+
 
 ---
 
@@ -5581,6 +6031,20 @@ of `ExtractionResult`.
 | `NO_BAR` | No bar |
 | `LINEAR` | Linear |
 | `SKEWED` | Skewed |
+
+
+---
+
+#### OcrBackendType
+
+OCR backend types.
+
+| Value | Description |
+|-------|-------------|
+| `TESSERACT` | Tesseract OCR (native Rust binding) |
+| `EASY_OCR` | EasyOCR (Python-based, via FFI) |
+| `PADDLE_OCR` | PaddleOCR (Python-based, via FFI) |
+| `CUSTOM` | Custom/third-party OCR backend |
 
 
 ---

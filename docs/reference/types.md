@@ -385,6 +385,7 @@ Image extraction configuration.
 | `auto_adjust_dpi` | `bool` | — | Automatically adjust DPI based on image content |
 | `min_dpi` | `i32` | — | Minimum DPI threshold |
 | `max_dpi` | `i32` | — | Maximum DPI threshold |
+| `max_images_per_page` | `Option<u32>` | `Default::default()` | Maximum number of image objects to extract per PDF page. Some PDFs (e.g. technical diagrams stored as thousands of raster fragments) can trigger extremely long or indefinite extraction times when every image object on a dense page is decoded individually via pdfium FFI. Setting this limit causes kreuzberg to stop collecting individual images once the count per page reaches the cap and emit a warning instead. `None` (default) means no limit — all images are extracted. |
 
 ---
 
@@ -545,6 +546,7 @@ OCR configuration.
 | `auto_rotate` | `bool` | `false` | Enable automatic page rotation based on orientation detection. When enabled, uses Tesseract's `DetectOrientationScript()` to detect page orientation (0/90/180/270 degrees) before OCR. If the page is rotated with high confidence, the image is corrected before recognition. This is critical for handling rotated scanned documents. |
 | `vlm_config` | `Option<LlmConfig>` | `None` | VLM (Vision Language Model) OCR configuration. Required when `backend` is `"vlm"`. Uses liter-llm to send page images to a vision model for text extraction. |
 | `vlm_prompt` | `Option<String>` | `None` | Custom Jinja2 prompt template for VLM OCR. When `None`, uses the default template. Available variables: - `{{ language }}` — The document language code (e.g., "eng", "deu"). |
+| `acceleration` | `Option<AccelerationConfig>` | `None` | Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection). Not user-configurable via config files — injected at runtime from `ExtractionConfig.acceleration` before each `process_image` call. |
 
 ---
 
@@ -1121,7 +1123,7 @@ Keyword extraction configuration.
 | `algorithm` | `KeywordAlgorithm` | `KeywordAlgorithm::Yake` | Algorithm to use for extraction. |
 | `max_keywords` | `usize` | `10` | Maximum number of keywords to extract (default: 10). |
 | `min_score` | `f32` | `0` | Minimum score threshold (0.0-1.0, default: 0.0). Keywords with scores below this threshold are filtered out. Note: Score ranges differ between algorithms. |
-| `ngram_range` | `String` | — | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
+| `ngram_range` | `Vec<usize>` | `vec![]` | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
 | `language` | `Option<String>` | `Default::default()` | Language code for stopword filtering (e.g., "en", "de", "fr"). If None, no stopword filtering is applied. |
 | `yake_params` | `Option<YakeParams>` | `None` | YAKE-specific tuning parameters. |
 | `rake_params` | `Option<RakeParams>` | `None` | RAKE-specific tuning parameters. |
@@ -1203,13 +1205,13 @@ including DPI normalization, resizing, and resampling.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `original_dimensions` | `String` | — | Original image dimensions (width, height) in pixels |
-| `original_dpi` | `String` | — | Original image DPI (horizontal, vertical) |
+| `original_dimensions` | `Vec<usize>` | — | Original image dimensions (width, height) in pixels |
+| `original_dpi` | `Vec<f64>` | — | Original image DPI (horizontal, vertical) |
 | `target_dpi` | `i32` | — | Target DPI from configuration |
 | `scale_factor` | `f64` | — | Scaling factor applied to the image |
 | `auto_adjusted` | `bool` | — | Whether DPI was auto-adjusted based on content |
 | `final_dpi` | `i32` | — | Final DPI after processing |
-| `new_dimensions` | `Option<String>` | `None` | New dimensions after resizing (if resized) |
+| `new_dimensions` | `Vec<usize>` | `None` | New dimensions after resizing (if resized) |
 | `resample_method` | `String` | — | Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.) |
 | `dimension_clamped` | `bool` | — | Whether dimensions were clamped to max_image_dimension |
 | `calculated_dpi` | `Option<i32>` | `None` | Calculated optimal DPI (if auto_adjust_dpi enabled) |
@@ -1368,7 +1370,7 @@ Image element metadata.
 | `src` | `String` | — | Image source (URL, data URI, or SVG content) |
 | `alt` | `Option<String>` | `None` | Alternative text from alt attribute |
 | `title` | `Option<String>` | `None` | Title attribute |
-| `dimensions` | `Option<String>` | `None` | Image dimensions as (width, height) if available |
+| `dimensions` | `Vec<u32>` | `None` | Image dimensions as (width, height) if available |
 | `image_type` | `ImageType` | — | Image type classification |
 | `attributes` | `Vec<String>` | — | Additional attributes as key-value pairs |
 
@@ -1479,7 +1481,7 @@ BibTeX bibliography metadata.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `entry_count` | `usize` | — | Number of entrys |
+| `entry_count` | `usize` | — | Number of entries in the bibliography. |
 | `citation_keys` | `Vec<String>` | `vec![]` | Citation keys |
 | `authors` | `Vec<String>` | `vec![]` | Authors |
 | `year_range` | `Option<YearRange>` | `Default::default()` | Year range (year range) |
@@ -1710,14 +1712,20 @@ A single backend stage in the OCR pipeline.
 
 ---
 
-#### OcrFallbackDecision
+#### OcrBackend
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `stats` | `String` | — | Stats |
-| `avg_non_whitespace` | `f64` | — | Avg non whitespace |
-| `avg_alnum` | `f64` | — | Avg alnum |
-| `fallback` | `bool` | — | Fallback |
+Trait for OCR backend plugins.
+
+Implement this trait to add custom OCR capabilities. OCR backends can be:
+- Native Rust implementations (like Tesseract)
+- FFI bridges to Python libraries (like EasyOCR, PaddleOCR)
+- Cloud-based OCR services (Google Vision, AWS Textract, etc.)
+
+# Thread Safety
+
+OCR backends must be thread-safe (`Send + Sync`) to support concurrent processing.
+
+*Opaque type — fields are not directly accessible.*
 
 ---
 
@@ -1763,7 +1771,7 @@ Extracted inline image with metadata.
 | `format` | `String` | — | Format |
 | `filename` | `Option<String>` | `None` | Filename |
 | `description` | `Option<String>` | `None` | Human-readable description |
-| `dimensions` | `Option<String>` | `None` | Dimensions |
+| `dimensions` | `Vec<u32>` | `None` | Dimensions |
 | `attributes` | `Vec<String>` | — | Attributes |
 
 ---
@@ -2256,7 +2264,7 @@ and visibility state (for presentations).
 |-------|------|---------|-------------|
 | `number` | `usize` | — | Page number (1-indexed) |
 | `title` | `Option<String>` | `None` | Page title (usually for presentations) |
-| `dimensions` | `Option<String>` | `None` | Dimensions in points (PDF) or pixels (images): (width, height) |
+| `dimensions` | `Vec<f64>` | `None` | Dimensions in points (PDF) or pixels (images): (width, height) |
 | `image_count` | `Option<usize>` | `None` | Number of images on this page |
 | `table_count` | `Option<usize>` | `None` | Number of tables on this page |
 | `hidden` | `Option<bool>` | `None` | Whether this page is hidden (e.g., in presentations) |
@@ -2319,7 +2327,7 @@ font size clustering and hierarchical analysis.
 | `text` | `String` | — | The text content of this block |
 | `font_size` | `f32` | — | The font size of the text in this block |
 | `level` | `String` | — | The hierarchy level of this block (H1-H6 or Body) Levels correspond to HTML heading tags: - "h1": Top-level heading - "h2": Secondary heading - "h3": Tertiary heading - "h4": Quaternary heading - "h5": Quinary heading - "h6": Senary heading - "body": Body text (no heading level) |
-| `bbox` | `Option<String>` | `None` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
+| `bbox` | `Vec<f32>` | `None` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
 
 ---
 
@@ -2783,48 +2791,6 @@ Embedded file descriptor extracted from the PDF name tree.
 | `name` | `String` | — | The filename as stored in the PDF name tree. |
 | `data` | `Vec<u8>` | — | Raw file bytes from the embedded stream. |
 | `mime_type` | `Option<String>` | `None` | MIME type if specified in the filespec, otherwise `None`. |
-
----
-
-#### FontSizeCluster
-
-A cluster of text blocks with the same font size characteristics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `centroid` | `f32` | — | The centroid (mean) font size of this cluster |
-| `members` | `Vec<String>` | — | The text blocks that belong to this cluster |
-
----
-
-#### CharData
-
-Character information extracted from PDF with font metrics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String` | — | The character text content |
-| `x` | `f32` | — | X position in PDF units |
-| `y` | `f32` | — | Y position in PDF units |
-| `font_size` | `f32` | — | Font size in points |
-| `width` | `f32` | — | Character width in PDF units |
-| `height` | `f32` | — | Character height in PDF units |
-| `is_bold` | `bool` | — | Whether the font is bold (from pdfium force-bold flag) |
-| `is_italic` | `bool` | — | Whether the font is italic |
-| `baseline_y` | `f32` | — | Baseline Y position (from character origin, falls back to bounds bottom) |
-
----
-
-#### HierarchyBlock
-
-A TextBlock with hierarchy level assignment.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String` | — | The text content |
-| `bbox` | `String` | — | The bounding box of the block |
-| `font_size` | `f32` | — | The font size of the text in this block |
-| `hierarchy_level` | `String` | — | The hierarchy level of this block (H1-H6 or Body) |
 
 ---
 

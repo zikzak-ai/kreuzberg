@@ -1,8 +1,6 @@
 #![cfg(feature = "office")]
 
 use kreuzberg::core::config::{ExtractionConfig, OutputFormat};
-use kreuzberg::extraction::derive::derive_extraction_result;
-use kreuzberg::plugins::DocumentExtractor;
 use std::path::PathBuf;
 
 /// Helper to get absolute path to test documents
@@ -20,14 +18,10 @@ fn test_file_path(filename: &str) -> PathBuf {
 
 #[tokio::test]
 async fn test_fictionbook_extract_metadata_title() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("meta.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(
         result.content.contains("Book title"),
@@ -37,28 +31,20 @@ async fn test_fictionbook_extract_metadata_title() {
 
 #[tokio::test]
 async fn test_fictionbook_extract_metadata_genre() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("meta.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(result.metadata.subject.is_none());
 }
 
 #[tokio::test]
 async fn test_fictionbook_extract_content_sections() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("titles.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(
         result.content.contains("Simple title"),
@@ -72,14 +58,10 @@ async fn test_fictionbook_extract_content_sections() {
 
 #[tokio::test]
 async fn test_fictionbook_extract_section_hierarchy() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("basic.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(
         result.content.contains("Top-level title"),
@@ -94,14 +76,10 @@ async fn test_fictionbook_extract_section_hierarchy() {
 
 #[tokio::test]
 async fn test_fictionbook_extract_inline_markup() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("emphasis.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     let content = result.content.to_lowercase();
     assert!(content.contains("plain"), "Plain text should be extracted");
@@ -112,14 +90,10 @@ async fn test_fictionbook_extract_inline_markup() {
 
 #[tokio::test]
 async fn test_fictionbook_extract_emphasis() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("basic.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(
         result.content.contains("emphasized"),
@@ -129,56 +103,40 @@ async fn test_fictionbook_extract_emphasis() {
 
 #[tokio::test]
 async fn test_fictionbook_extract_strong() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("basic.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(result.content.contains("strong"), "Strong text should be extracted");
 }
 
 #[tokio::test]
 async fn test_fictionbook_extract_code() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("basic.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(result.content.contains("verbatim"), "Code content should be extracted");
 }
 
 #[tokio::test]
 async fn test_fictionbook_extract_blockquote() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("basic.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(result.content.contains("Blockquote"), "Blockquote should be extracted");
 }
 
 #[tokio::test]
 async fn test_fictionbook_extract_tables() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("tables.fb2");
-
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &ExtractionConfig::default())
+    let result = kreuzberg::extract_file(&path, None, &ExtractionConfig::default())
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
 
     assert!(
         !result.content.is_empty(),
@@ -188,18 +146,14 @@ async fn test_fictionbook_extract_tables() {
 
 #[tokio::test]
 async fn test_fictionbook_markdown_formatting_preservation() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("emphasis.fb2");
-
     let config = ExtractionConfig {
         output_format: OutputFormat::Markdown,
         ..Default::default()
     };
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &config)
+    let result = kreuzberg::extract_file(&path, None, &config)
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Markdown);
 
     let md = result
         .formatted_content
@@ -225,18 +179,14 @@ async fn test_fictionbook_markdown_formatting_preservation() {
 
 #[tokio::test]
 async fn test_fictionbook_formatting_in_body_paragraphs() {
-    let extractor = kreuzberg::extractors::FictionBookExtractor::new();
     let path = test_file_path("basic.fb2");
-
     let config = ExtractionConfig {
         output_format: OutputFormat::Markdown,
         ..Default::default()
     };
-    let doc = extractor
-        .extract_file(&path, "application/x-fictionbook+xml", &config)
+    let result = kreuzberg::extract_file(&path, None, &config)
         .await
         .expect("Failed to extract FB2 file");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Markdown);
 
     let md = result
         .formatted_content

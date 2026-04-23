@@ -569,6 +569,7 @@ functions = [
     "segment_to_hocr_word",
     "segments_to_words",
     "serve_with_config",
+    "serve_with_server_config",
     "start_mcp_server_http",
     "start_mcp_server_http_with_config",
     "start_mcp_server",

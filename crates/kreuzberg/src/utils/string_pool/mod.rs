@@ -26,13 +26,7 @@
 //! assert_eq!(mime1, mime2);
 //! ```
 
-mod buffer_pool;
 mod interned;
-mod language_pool;
-mod mime_pool;
 
 // Re-export public types and functions
 pub use interned::InternedString;
-
-#[cfg(feature = "pool-metrics")]
-pub use buffer_pool::StringBufferPoolMetrics;

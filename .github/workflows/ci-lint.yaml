@@ -5,35 +5,35 @@ on:
   push:
     branches: [main]
     paths:
-      - 'crates/**'
-      - 'packages/**'
-      - 'e2e/**'
-      - 'fixtures/**'
-      - 'scripts/**'
-      - 'tools/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'alef.toml'
-      - 'templates/**'
-      - '.github/**'
-      - 'Taskfile.yml'
-      - '.pre-commit-config.yaml'
+      - "crates/**"
+      - "packages/**"
+      - "e2e/**"
+      - "fixtures/**"
+      - "scripts/**"
+      - "tools/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "alef.toml"
+      - "templates/**"
+      - ".github/**"
+      - "Taskfile.yml"
+      - ".pre-commit-config.yaml"
   pull_request:
     branches: [main]
     paths:
-      - 'crates/**'
-      - 'packages/**'
-      - 'e2e/**'
-      - 'fixtures/**'
-      - 'scripts/**'
-      - 'tools/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'alef.toml'
-      - 'templates/**'
-      - '.github/**'
-      - 'Taskfile.yml'
-      - '.pre-commit-config.yaml'
+      - "crates/**"
+      - "packages/**"
+      - "e2e/**"
+      - "fixtures/**"
+      - "scripts/**"
+      - "tools/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "alef.toml"
+      - "templates/**"
+      - ".github/**"
+      - "Taskfile.yml"
+      - ".pre-commit-config.yaml"
 
 concurrency:
   group: ci-lint-${{ github.ref }}
@@ -81,7 +81,7 @@ jobs:
       - name: Install alef CLI
         shell: bash
         run: |
-          curl -fsSL "https://github.com/kreuzberg-dev/alef/releases/download/v0.6.0/alef-aarch64-unknown-linux-gnu.tar.gz" \
+          curl -fsSL "https://github.com/kreuzberg-dev/alef/releases/download/v0.6.1/alef-aarch64-unknown-linux-gnu.tar.gz" \
             | tar xz -C /usr/local/bin alef
           alef --help > /dev/null
 

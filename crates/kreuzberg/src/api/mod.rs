@@ -102,6 +102,9 @@ mod startup;
 mod types;
 
 pub use error::ApiError;
+#[cfg(feature = "cli")]
+#[cfg(feature = "cli")]
+pub use startup::serve_with_server_config;
 pub use types::{
     ApiSizeLimits, ApiState, CacheClearResponse, CacheStatsResponse, ChunkRequest, ChunkResponse, DetectResponse,
     DoclingCompatDocument, DoclingCompatResponse, EmbedRequest, EmbedResponse, ErrorResponse, ExtractResponse,

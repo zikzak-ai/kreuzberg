@@ -63,25 +63,6 @@ pub(crate) fn resolve_relationships(doc: &mut InternalDocument) {
 // 2. Document Structure Derivation
 // ============================================================================
 
-/// Derive a hierarchical `DocumentStructure` from the flat internal document.
-///
-/// Calls `resolve_relationships` first to resolve any key-based relationship targets,
-/// then builds the tree.
-///
-/// # Algorithm
-///
-/// 1. Walk elements in reading order, maintaining a stack of `(depth, NodeIndex)`.
-/// 2. Container start markers (`ListStart`, `QuoteStart`, `GroupStart`) push
-///    onto the stack; their matching end markers pop.
-/// 3. Headings pop the stack to a shallower depth, then create a `Group` node
-///    with a `Heading` child and push the group.
-/// 4. All other elements are parented under the current stack top.
-/// 5. Resolved relationships are mapped from element indices to node indices.
-pub(crate) fn derive_document_structure(doc: &mut InternalDocument) -> DocumentStructure {
-    resolve_relationships(doc);
-    derive_document_structure_inner(doc)
-}
-
 /// Inner implementation that assumes relationships are already resolved.
 ///
 /// Takes `&mut` so it can move data out of elements via `std::mem::take`,
@@ -832,7 +813,8 @@ mod tests {
         doc.push_element(InternalElement::text(ElementKind::Paragraph, "First paragraph.", 0));
         doc.push_element(InternalElement::text(ElementKind::Paragraph, "Second paragraph.", 0));
 
-        let ds = derive_document_structure(&mut doc);
+        resolve_relationships(&mut doc);
+        let ds = derive_document_structure_inner(&mut doc);
         assert!(ds.validate().is_ok(), "validation: {:?}", ds.validate());
         assert_eq!(ds.len(), 3);
 
@@ -863,7 +845,8 @@ mod tests {
         ));
         doc.push_element(InternalElement::text(ElementKind::Paragraph, "Section body.", 2));
 
-        let ds = derive_document_structure(&mut doc);
+        resolve_relationships(&mut doc);
+        let ds = derive_document_structure_inner(&mut doc);
         assert!(ds.validate().is_ok(), "validation: {:?}", ds.validate());
 
         // Root should have exactly 1 Group for H1
@@ -981,7 +964,8 @@ mod tests {
             kind: RelationshipKind::FootnoteReference,
         });
 
-        let ds = derive_document_structure(&mut doc);
+        resolve_relationships(&mut doc);
+        let ds = derive_document_structure_inner(&mut doc);
         assert!(ds.validate().is_ok());
         assert_eq!(ds.relationships.len(), 1);
         assert_eq!(ds.relationships[0].kind, RelationshipKind::FootnoteReference);
@@ -1007,7 +991,8 @@ mod tests {
         ));
         doc.push_element(InternalElement::text(ElementKind::ListEnd, "", 0));
 
-        let ds = derive_document_structure(&mut doc);
+        resolve_relationships(&mut doc);
+        let ds = derive_document_structure_inner(&mut doc);
         assert!(ds.validate().is_ok(), "validation: {:?}", ds.validate());
 
         // Root: List container

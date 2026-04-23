@@ -84,60 +84,6 @@ pub(crate) fn estimate_content_capacity(file_size: u64, format: &str) -> usize {
     (file_size as f64 * ratio).ceil() as usize
 }
 
-/// Estimate capacity for HTML to Markdown conversion.
-///
-/// HTML documents typically convert to Markdown with 60-70% of the original size.
-/// This function estimates capacity specifically for HTML→Markdown conversion.
-///
-/// # Arguments
-///
-/// * `html_size` - The size of the HTML file in bytes
-///
-/// # Returns
-///
-/// An estimated capacity for the Markdown output
-#[inline]
-pub(crate) fn estimate_html_markdown_capacity(html_size: u64) -> usize {
-    let estimated = (html_size as f64 * 0.65).ceil() as usize;
-    estimated.max(64)
-}
-
-/// Estimate capacity for cell extraction from spreadsheets.
-///
-/// When extracting cell data from Excel/ODS files, the extracted cells are typically
-/// 40% of the compressed file size (since the file is ZIP-compressed).
-///
-/// # Arguments
-///
-/// * `file_size` - Size of the spreadsheet file (XLSX, ODS, etc.)
-///
-/// # Returns
-///
-/// An estimated capacity for cell value accumulation
-#[inline]
-pub(crate) fn estimate_spreadsheet_capacity(file_size: u64) -> usize {
-    let estimated = (file_size as f64 * 0.40).ceil() as usize;
-    estimated.max(64)
-}
-
-/// Estimate capacity for slide content extraction from presentations.
-///
-/// PPTX files when extracted have slide content at approximately 35% of the file size.
-/// This accounts for XML overhead, compression, and embedded assets.
-///
-/// # Arguments
-///
-/// * `file_size` - Size of the PPTX file in bytes
-///
-/// # Returns
-///
-/// An estimated capacity for slide content accumulation
-#[inline]
-pub(crate) fn estimate_presentation_capacity(file_size: u64) -> usize {
-    let estimated = (file_size as f64 * 0.35).ceil() as usize;
-    estimated.max(64)
-}
-
 /// Estimate capacity for markdown table generation.
 ///
 /// Markdown tables have predictable size: ~12 bytes per cell on average
@@ -217,30 +163,6 @@ mod tests {
         let mixed = estimate_content_capacity(1_000_000, "HtMl");
         assert_eq!(lower, upper);
         assert_eq!(lower, mixed);
-    }
-
-    #[test]
-    fn test_html_markdown_capacity() {
-        let capacity = estimate_html_markdown_capacity(1_000_000);
-        assert_eq!(capacity, 650_000);
-    }
-
-    #[test]
-    fn test_html_markdown_capacity_minimum() {
-        let capacity = estimate_html_markdown_capacity(10);
-        assert!(capacity >= 64);
-    }
-
-    #[test]
-    fn test_spreadsheet_capacity() {
-        let capacity = estimate_spreadsheet_capacity(1_000_000);
-        assert_eq!(capacity, 400_000);
-    }
-
-    #[test]
-    fn test_presentation_capacity() {
-        let capacity = estimate_presentation_capacity(1_000_000);
-        assert_eq!(capacity, 350_000);
     }
 
     #[test]

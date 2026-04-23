@@ -171,74 +171,6 @@ fn test_pdf_extraction_from_bytes() {
     assert_non_empty_content(&result);
 }
 
-/// Test bundled PDFium extraction when pdf-bundled feature is enabled.
-///
-/// When `pdf-bundled` feature is enabled, PDFium is embedded in the binary.
-/// This test verifies the bundled extraction mechanism works correctly.
-#[test]
-#[cfg(feature = "bundled-pdfium")]
-fn test_bundled_pdfium_extraction() {
-    use kreuzberg::pdf::extract_bundled_pdfium;
-
-    let lib_path = extract_bundled_pdfium().expect("Should extract bundled PDFium library");
-
-    assert!(
-        lib_path.exists(),
-        "Extracted PDFium library should exist at {}",
-        lib_path.display()
-    );
-    assert!(
-        lib_path.is_file(),
-        "Extracted PDFium library should be a file, not directory"
-    );
-
-    let metadata = std::fs::metadata(&lib_path).expect("Should read library metadata");
-    assert!(
-        metadata.len() > 1_000_000,
-        "Bundled PDFium library should be at least 1MB (got {} bytes)",
-        metadata.len()
-    );
-}
-
-/// Test bundled PDFium extracts consistently.
-///
-/// Verify that repeated calls to extract_bundled_pdfium return the same path
-/// and don't create duplicate extracted libraries.
-#[test]
-#[cfg(feature = "bundled-pdfium")]
-fn test_bundled_pdfium_caching() {
-    use kreuzberg::pdf::extract_bundled_pdfium;
-
-    let path1 = extract_bundled_pdfium().expect("First extraction should succeed");
-    let path2 = extract_bundled_pdfium().expect("Second extraction should succeed");
-
-    assert_eq!(path1, path2, "Multiple extractions should return consistent path");
-
-    assert!(path1.exists(), "Extracted library should still exist");
-}
-
-/// Test bundled PDFium works with PDF extraction.
-///
-/// This integration test verifies that PDFium extracted via bundled mechanism
-/// actually works for PDF content extraction.
-#[test]
-#[cfg(feature = "bundled-pdfium")]
-fn test_bundled_pdfium_with_pdf_extraction() {
-    if skip_if_missing("pdf/tiny.pdf") {
-        return;
-    }
-
-    let _lib_path = kreuzberg::pdf::extract_bundled_pdfium().expect("Should extract bundled PDFium library");
-
-    let file_path = get_test_file_path("pdf/tiny.pdf");
-    let config = ExtractionConfig::default();
-
-    let result = extract_file_sync(&file_path, None, &config).expect("Should extract PDF with bundled PDFium");
-
-    assert_mime_type(&result, "application/pdf");
-    assert_non_empty_content(&result);
-}
-
 /// Test extraction with custom PDF configuration.
 ///
 /// Verifies that custom PDF extraction settings work correctly.
@@ -325,16 +257,10 @@ fn test_pdf_unicode_content() {
 
 /// Verify PDF module compiles with all feature combinations.
 ///
-/// This is a compile-time test that ensures the pdf module and bundled
-/// submodule (when enabled) compile correctly. It's implicitly tested
-/// by the fact that these test functions compile.
+/// This is a compile-time test that ensures the pdf module and the
+/// text extraction function compile correctly.
 #[test]
 #[cfg(feature = "pdf")]
 fn test_pdf_module_availability() {
     let _ = kreuzberg::pdf::extract_text_from_pdf;
-
-    let _ = kreuzberg::pdf::extract_metadata;
-
-    #[cfg(feature = "bundled-pdfium")]
-    let _ = kreuzberg::pdf::extract_bundled_pdfium;
 }

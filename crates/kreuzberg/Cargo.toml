@@ -223,21 +223,7 @@ server = [
     "api",
     "mcp",
 ]
-cli = [
-    "pdf",
-    "excel",
-    "office",
-    "email",
-    "html",
-    "xml",
-    "ocr",
-    "paddle-ocr",
-    "layout-detection",
-    "language-detection",
-    "chunking",
-    "quality",
-    "mdx",
-]
+cli = ["api", "mcp", "chunking"]
 
 [dependencies]
 ahash = { workspace = true }

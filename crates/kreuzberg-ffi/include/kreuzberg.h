@@ -9232,6 +9232,35 @@ char *kreuzberg_recognized_table_markdown(const KREUZBERGRecognizedTable *ptr);
 void kreuzberg_tessdata_manager_free(KREUZBERGTessdataManager *ptr);
 
 /**
+ * Get the cache directory path.
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+char *kreuzberg_tessdata_manager_cache_dir(const KREUZBERGTessdataManager *this_);
+
+/**
+ * Check if a specific language traineddata file is cached.
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+int32_t kreuzberg_tessdata_manager_is_language_cached(const KREUZBERGTessdataManager *this_,
+                                                      const char *lang);
+
+/**
+ * Downloads all tessdata_fast traineddata files to the cache directory.
+ *
+ * Skips files that already exist. Returns the count of newly downloaded files.
+ *
+ * Requires the `paddle-ocr` feature for HTTP download support (ureq).
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+uintptr_t kreuzberg_tessdata_manager_ensure_all_languages(const KREUZBERGTessdataManager *this_);
+
+/**
  * Create a `PaddleOcrConfig` from a JSON string. Returns null on failure.
  * # Safety
  * JSON string must be valid UTF-8 and null-terminated.
@@ -11846,6 +11875,25 @@ KREUZBERGByteBufferPool *kreuzberg_create_byte_buffer_pool(uintptr_t pool_size,
                                                            uintptr_t buffer_capacity);
 
 /**
+ * Generate OpenAPI JSON schema.
+ *
+ * Returns the complete OpenAPI 3.1 specification as a JSON string.
+ *
+ * # Examples
+ *
+ * ```no_run
+ * use kreuzberg::api::openapi::openapi_json;
+ *
+ * let schema = openapi_json();
+ * println!("{}", schema);
+ * ```
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+char *kreuzberg_openapi_json(void);
+
+/**
  * Split text into chunks with optional page boundary tracking.
  *
  * This is the primary API function for chunking text. It supports both plain text
@@ -12189,5 +12237,20 @@ int32_t kreuzberg_register_ocr_backend(const char *name,
                                        struct KREUZBERGKreuzbergOcrBackendVTable vtable,
                                        const void *user_data,
                                        char **out_error);
+
+/**
+ * Unregister a previously registered C plugin by name.
+ *
+ * # Parameters
+ *
+ * - `name`: null-terminated UTF-8 plugin name. Must not be null.
+ * - `out_error`: receives a heap-allocated error string on failure.
+ *
+ * # Safety
+ *
+ * `name` must point to a valid null-terminated C string.
+ */
+int32_t kreuzberg_unregister_ocr_backend(const char *name,
+                                         char **out_error);
 
 #endif  /* KREUZBERG_H */

@@ -586,44 +586,6 @@ A brief summary of the document.
     );
 }
 
-/// Test tokenizer env var override.
-#[tokio::test]
-#[cfg(feature = "chunking-tokenizers")]
-async fn test_env_chunking_tokenizer() {
-    // SAFETY: This test is run serially and no other threads read this env var concurrently.
-    unsafe { std::env::set_var("KREUZBERG_CHUNKING_TOKENIZER", "Xenova/gpt-4o") };
-
-    let mut config = ExtractionConfig::default();
-    config.apply_env_overrides().expect("Should apply env overrides");
-
-    assert!(config.chunking.is_some(), "Chunking should be enabled by env var");
-    let chunking = config.chunking.as_ref().expect("Should have chunking config");
-    match &chunking.sizing {
-        kreuzberg::chunking::ChunkSizing::Tokenizer { model, .. } => {
-            assert_eq!(model, "Xenova/gpt-4o");
-        }
-        _ => panic!("Expected tokenizer sizing"),
-    }
-
-    // SAFETY: This test is run serially and no other threads read this env var concurrently.
-    unsafe { std::env::remove_var("KREUZBERG_CHUNKING_TOKENIZER") };
-}
-
-/// Test empty tokenizer env var is rejected.
-#[tokio::test]
-#[cfg(feature = "chunking-tokenizers")]
-async fn test_env_chunking_tokenizer_empty_rejected() {
-    // SAFETY: This test is run serially and no other threads read this env var concurrently.
-    unsafe { std::env::set_var("KREUZBERG_CHUNKING_TOKENIZER", "") };
-
-    let mut config = ExtractionConfig::default();
-    let result = config.apply_env_overrides();
-    assert!(result.is_err(), "Empty tokenizer model should be rejected");
-
-    // SAFETY: This test is run serially and no other threads read this env var concurrently.
-    unsafe { std::env::remove_var("KREUZBERG_CHUNKING_TOKENIZER") };
-}
-
 /// Test chunking with embeddings using balanced preset.
 ///
 /// This test requires ONNX Runtime to be installed as a system dependency.

@@ -2,9 +2,220 @@
 title: "Elixir API Reference"
 ---
 
-## Elixir API Reference <span class="version-badge">v4.9.2</span>
+## Elixir API Reference <span class="version-badge">v4.9.5</span>
 
 ### Functions
+
+#### blake3_hash_bytes()
+
+Hash arbitrary bytes with blake3, returning a 32-char hex string.
+
+**Signature:**
+
+```elixir
+@spec blake3_hash_bytes(data) :: {:ok, term()} | {:error, term()}
+def blake3_hash_bytes(data)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `binary()` | Yes | The data |
+
+**Returns:** `String.t()`
+
+
+---
+
+#### blake3_hash_file()
+
+Hash a file's content with blake3 using streaming 64 KiB reads.
+
+Returns a 32-char hex string (128 bits of blake3 output).
+
+**Signature:**
+
+```elixir
+@spec blake3_hash_file(path) :: {:ok, term()} | {:error, term()}
+def blake3_hash_file(path)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `path` | `String.t()` | Yes | Path to the file |
+
+**Returns:** `String.t()`
+
+**Errors:** Returns `{:error, reason}`
+
+
+---
+
+#### fast_hash()
+
+**Signature:**
+
+```elixir
+@spec fast_hash(data) :: {:ok, term()} | {:error, term()}
+def fast_hash(data)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `binary()` | Yes | The data |
+
+**Returns:** `integer()`
+
+
+---
+
+#### validate_cache_key()
+
+**Signature:**
+
+```elixir
+@spec validate_cache_key(key) :: {:ok, term()} | {:error, term()}
+def validate_cache_key(key)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `key` | `String.t()` | Yes | The key |
+
+**Returns:** `boolean()`
+
+
+---
+
+#### validate_port()
+
+Validate a port number for server configuration.
+
+Port must be in the range 1-65535. While ports 1-1023 are privileged and may require
+special permissions on some systems, they are still valid port numbers.
+
+**Returns:**
+
+`Ok(())` if the port is valid, or a `ValidationError` with details about valid ranges.
+
+**Signature:**
+
+```elixir
+@spec validate_port(port) :: {:ok, term()} | {:error, term()}
+def validate_port(port)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `port` | `integer()` | Yes | The port number to validate |
+
+**Returns:** `:ok`
+
+**Errors:** Returns `{:error, reason}`
+
+
+---
+
+#### validate_host()
+
+Validate a host/IP address string for server configuration.
+
+Accepts valid IPv4 addresses (e.g., "127.0.0.1", "0.0.0.0"), valid IPv6 addresses
+(e.g., ".1", "."), and hostnames (e.g., "localhost", "example.com").
+
+**Returns:**
+
+`Ok(())` if the host is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```elixir
+@spec validate_host(host) :: {:ok, term()} | {:error, term()}
+def validate_host(host)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `host` | `String.t()` | Yes | The host/IP address string to validate |
+
+**Returns:** `:ok`
+
+**Errors:** Returns `{:error, reason}`
+
+
+---
+
+#### validate_cors_origin()
+
+Validate a CORS (Cross-Origin Resource Sharing) origin URL.
+
+Accepts valid HTTP/HTTPS URLs (e.g., "<https://example.com">) or the wildcard "*"
+to allow all origins. URLs must start with "<http://"> or "<https://",> or be exactly "*".
+
+**Returns:**
+
+`Ok(())` if the origin is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```elixir
+@spec validate_cors_origin(origin) :: {:ok, term()} | {:error, term()}
+def validate_cors_origin(origin)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `origin` | `String.t()` | Yes | The CORS origin URL to validate |
+
+**Returns:** `:ok`
+
+**Errors:** Returns `{:error, reason}`
+
+
+---
+
+#### validate_upload_size()
+
+Validate an upload size limit for server configuration.
+
+Upload size must be greater than 0 (measured in bytes).
+
+**Returns:**
+
+`Ok(())` if the size is valid, or a `ValidationError` with details about constraints.
+
+**Signature:**
+
+```elixir
+@spec validate_upload_size(size) :: {:ok, term()} | {:error, term()}
+def validate_upload_size(size)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `size` | `integer()` | Yes | The maximum upload size in bytes to validate |
+
+**Returns:** `:ok`
+
+**Errors:** Returns `{:error, reason}`
+
+
+---
 
 #### validate_binarization_method()
 
@@ -816,6 +1027,24 @@ def list_supported_formats()
 
 ---
 
+#### clear_processor_cache()
+
+Clear the processor cache (primarily for testing when registry changes).
+
+**Signature:**
+
+```elixir
+@spec clear_processor_cache() :: {:ok, term()} | {:error, term()}
+def clear_processor_cache()
+```
+
+**Returns:** `:ok`
+
+**Errors:** Returns `{:error, reason}`
+
+
+---
+
 #### transform_extraction_result_to_elements()
 
 Transform an extraction result into semantic elements.
@@ -1593,6 +1822,108 @@ def calculate_text_confidence(text)
 
 ---
 
+#### create_string_buffer_pool()
+
+Create a pre-configured string buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for text accumulation with reasonable defaults.
+
+**Signature:**
+
+```elixir
+@spec create_string_buffer_pool(pool_size, buffer_capacity) :: {:ok, term()} | {:error, term()}
+def create_string_buffer_pool(pool_size, buffer_capacity)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `pool_size` | `integer()` | Yes | Maximum number of buffers to keep in the pool |
+| `buffer_capacity` | `integer()` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `StringBufferPool`
+
+
+---
+
+#### create_byte_buffer_pool()
+
+Create a pre-configured byte buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for binary data handling with reasonable defaults.
+
+**Signature:**
+
+```elixir
+@spec create_byte_buffer_pool(pool_size, buffer_capacity) :: {:ok, term()} | {:error, term()}
+def create_byte_buffer_pool(pool_size, buffer_capacity)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `pool_size` | `integer()` | Yes | Maximum number of buffers to keep in the pool |
+| `buffer_capacity` | `integer()` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `ByteBufferPool`
+
+
+---
+
+#### openapi_json()
+
+Generate OpenAPI JSON schema.
+
+Returns the complete OpenAPI 3.1 specification as a JSON string.
+
+**Signature:**
+
+```elixir
+@spec openapi_json() :: {:ok, term()} | {:error, term()}
+def openapi_json()
+```
+
+**Returns:** `String.t()`
+
+
+---
+
+#### serve_with_server_config()
+
+Start the API server with explicit extraction config and server config.
+
+This function accepts a fully-configured ServerConfig, including CORS origins,
+size limits, host, and port. It respects all ServerConfig fields without
+re-parsing environment variables, making it ideal for CLI usage where
+configuration precedence has already been applied.
+
+**Signature:**
+
+```elixir
+@spec serve_with_server_config(extraction_config, server_config) :: {:ok, term()} | {:error, term()}
+def serve_with_server_config(extraction_config, server_config)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `extraction_config` | `ExtractionConfig` | Yes | Default extraction configuration for all requests |
+| `server_config` | `ServerConfig` | Yes | Server configuration including host, port, CORS, and size limits |
+
+**Returns:** `:ok`
+
+**Errors:** Returns `{:error, reason}`
+
+
+---
+
 #### chunk_text()
 
 Split text into chunks with optional page boundary tracking.
@@ -2196,7 +2527,7 @@ BibTeX bibliography metadata.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `entry_count` | `integer()` | — | Number of entrys |
+| `entry_count` | `integer()` | — | Number of entries in the bibliography. |
 | `citation_keys` | `list(String.t())` | `[]` | Citation keys |
 | `authors` | `list(String.t())` | `[]` | Authors |
 | `year_range` | `YearRange | nil` | `nil` | Year range (year range) |
@@ -2249,25 +2580,6 @@ Request parameters for cache warm (model download).
 |-------|------|---------|-------------|
 | `all_embeddings` | `boolean()` | — | Download all embedding model presets |
 | `embedding_model` | `String.t() | nil` | `nil` | Specific embedding preset name to download (e.g. "balanced", "speed", "quality") |
-
-
----
-
-#### CharData
-
-Character information extracted from PDF with font metrics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String.t()` | — | The character text content |
-| `x` | `float()` | — | X position in PDF units |
-| `y` | `float()` | — | Y position in PDF units |
-| `font_size` | `float()` | — | Font size in points |
-| `width` | `float()` | — | Character width in PDF units |
-| `height` | `float()` | — | Character height in PDF units |
-| `is_bold` | `boolean()` | — | Whether the font is bold (from pdfium force-bold flag) |
-| `is_italic` | `boolean()` | — | Whether the font is italic |
-| `baseline_y` | `float()` | — | Baseline Y position (from character origin, falls back to bounds bottom) |
 
 
 ---
@@ -3113,7 +3425,7 @@ Extracted inline image with metadata.
 | `format` | `String.t()` | — | Format |
 | `filename` | `String.t() | nil` | `nil` | Filename |
 | `description` | `String.t() | nil` | `nil` | Human-readable description |
-| `dimensions` | `String.t() | nil` | `nil` | Dimensions |
+| `dimensions` | `list(integer()) | nil` | `nil` | Dimensions |
 | `attributes` | `list(String.t())` | — | Attributes |
 
 
@@ -3169,6 +3481,26 @@ It can be loaded from TOML, YAML, or JSON files, or created programmatically.
 
 ```elixir
 def default()
+```
+
+###### needs_image_processing()
+
+Check if image processing is needed by examining OCR and image extraction settings.
+
+Returns `true` if either OCR is enabled or image extraction is configured,
+indicating that image decompression and processing should occur.
+Returns `false` if both are disabled, allowing optimization to skip unnecessary
+image decompression for text-only extraction workflows.
+
+# Optimization Impact
+For text-only extractions (no OCR, no image extraction), skipping image
+decompression can improve CPU utilization by 5-10% by avoiding wasteful
+image I/O and processing when results won't be used.
+
+**Signature:**
+
+```elixir
+def needs_image_processing()
 ```
 
 
@@ -3262,18 +3594,6 @@ cannot be overridden per file:
 | `timeout_secs` | `integer() | nil` | `nil` | Override per-file extraction timeout in seconds. When set, the extraction for this file will be canceled after the specified duration. A timed-out file produces an error result without affecting other files in the batch. |
 | `tree_sitter` | `TreeSitterConfig | nil` | `nil` | Override tree-sitter configuration for this file. |
 | `structured_extraction` | `StructuredExtractionConfig | nil` | `nil` | Override structured extraction configuration for this file. When set, enables LLM-based structured extraction with a JSON schema for this specific file. The extracted content is sent to a VLM/LLM and the response is parsed according to the provided schema. |
-
-
----
-
-#### FontSizeCluster
-
-A cluster of text blocks with the same font size characteristics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `centroid` | `float()` | — | The centroid (mean) font size of this cluster |
-| `members` | `list(String.t())` | — | The text blocks that belong to this cluster |
 
 
 ---
@@ -3402,21 +3722,7 @@ font size clustering and hierarchical analysis.
 | `text` | `String.t()` | — | The text content of this block |
 | `font_size` | `float()` | — | The font size of the text in this block |
 | `level` | `String.t()` | — | The hierarchy level of this block (H1-H6 or Body) Levels correspond to HTML heading tags: - "h1": Top-level heading - "h2": Secondary heading - "h3": Tertiary heading - "h4": Quaternary heading - "h5": Quinary heading - "h6": Senary heading - "body": Body text (no heading level) |
-| `bbox` | `String.t() | nil` | `nil` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
-
-
----
-
-#### HierarchyBlock
-
-A TextBlock with hierarchy level assignment.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String.t()` | — | The text content |
-| `bbox` | `String.t()` | — | The bounding box of the block |
-| `font_size` | `float()` | — | The font size of the text in this block |
-| `hierarchy_level` | `String.t()` | — | The hierarchy level of this block (H1-H6 or Body) |
+| `bbox` | `list(float()) | nil` | `nil` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
 
 
 ---
@@ -3543,6 +3849,7 @@ Image extraction configuration.
 | `auto_adjust_dpi` | `boolean()` | — | Automatically adjust DPI based on image content |
 | `min_dpi` | `integer()` | — | Minimum DPI threshold |
 | `max_dpi` | `integer()` | — | Maximum DPI threshold |
+| `max_images_per_page` | `integer() | nil` | `nil` | Maximum number of image objects to extract per PDF page. Some PDFs (e.g. technical diagrams stored as thousands of raster fragments) can trigger extremely long or indefinite extraction times when every image object on a dense page is decoded individually via pdfium FFI. Setting this limit causes kreuzberg to stop collecting individual images once the count per page reaches the cap and emit a warning instead. `nil` (default) means no limit — all images are extracted. |
 
 
 ---
@@ -3556,7 +3863,7 @@ Image element metadata.
 | `src` | `String.t()` | — | Image source (URL, data URI, or SVG content) |
 | `alt` | `String.t() | nil` | `nil` | Alternative text from alt attribute |
 | `title` | `String.t() | nil` | `nil` | Title attribute |
-| `dimensions` | `String.t() | nil` | `nil` | Image dimensions as (width, height) if available |
+| `dimensions` | `list(integer()) | nil` | `nil` | Image dimensions as (width, height) if available |
 | `image_type` | `ImageType` | — | Image type classification |
 | `attributes` | `list(String.t())` | — | Additional attributes as key-value pairs |
 
@@ -3616,13 +3923,13 @@ including DPI normalization, resizing, and resampling.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `original_dimensions` | `String.t()` | — | Original image dimensions (width, height) in pixels |
-| `original_dpi` | `String.t()` | — | Original image DPI (horizontal, vertical) |
+| `original_dimensions` | `list(integer())` | — | Original image dimensions (width, height) in pixels |
+| `original_dpi` | `list(float())` | — | Original image DPI (horizontal, vertical) |
 | `target_dpi` | `integer()` | — | Target DPI from configuration |
 | `scale_factor` | `float()` | — | Scaling factor applied to the image |
 | `auto_adjusted` | `boolean()` | — | Whether DPI was auto-adjusted based on content |
 | `final_dpi` | `integer()` | — | Final DPI after processing |
-| `new_dimensions` | `String.t() | nil` | `nil` | New dimensions after resizing (if resized) |
+| `new_dimensions` | `list(integer()) | nil` | `nil` | New dimensions after resizing (if resized) |
 | `resample_method` | `String.t()` | — | Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.) |
 | `dimension_clamped` | `boolean()` | — | Whether dimensions were clamped to max_image_dimension |
 | `calculated_dpi` | `integer() | nil` | `nil` | Calculated optimal DPI (if auto_adjust_dpi enabled) |
@@ -3704,7 +4011,7 @@ Keyword extraction configuration.
 | `algorithm` | `KeywordAlgorithm` | `:yake` | Algorithm to use for extraction. |
 | `max_keywords` | `integer()` | `10` | Maximum number of keywords to extract (default: 10). |
 | `min_score` | `float()` | `0` | Minimum score threshold (0.0-1.0, default: 0.0). Keywords with scores below this threshold are filtered out. Note: Score ranges differ between algorithms. |
-| `ngram_range` | `String.t()` | — | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
+| `ngram_range` | `list(integer())` | `[]` | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
 | `language` | `String.t() | nil` | `nil` | Language code for stopword filtering (e.g., "en", "de", "fr"). If None, no stopword filtering is applied. |
 | `yake_params` | `YakeParams | nil` | `nil` | YAKE-specific tuning parameters. |
 | `rake_params` | `RakeParams | nil` | `nil` | RAKE-specific tuning parameters. |
@@ -3951,6 +4258,137 @@ Combined paths to all models needed for OCR (backward compatibility).
 
 ---
 
+#### OcrBackend
+
+Trait for OCR backend plugins.
+
+Implement this trait to add custom OCR capabilities. OCR backends can be:
+- Native Rust implementations (like Tesseract)
+- FFI bridges to Python libraries (like EasyOCR, PaddleOCR)
+- Cloud-based OCR services (Google Vision, AWS Textract, etc.)
+
+# Thread Safety
+
+OCR backends must be thread-safe (`Send + Sync`) to support concurrent processing.
+
+##### Functions
+
+###### process_image()
+
+Process an image and extract text via OCR.
+
+**Returns:**
+
+An `ExtractionResult` containing the extracted text and metadata.
+
+**Errors:**
+
+- `KreuzbergError.Ocr` - OCR processing failed
+- `KreuzbergError.Validation` - Invalid image format or configuration
+- `KreuzbergError.Io` - I/O errors (these always bubble up)
+
+**Signature:**
+
+```elixir
+def process_image(image_bytes, config)
+```
+
+###### process_image_file()
+
+Process a file and extract text via OCR.
+
+Default implementation reads the file and calls `process_image`.
+Override for custom file handling or optimizations.
+
+**Errors:**
+
+Same as `process_image`, plus file I/O errors.
+
+**Signature:**
+
+```elixir
+def process_image_file(path, config)
+```
+
+###### supports_language()
+
+Check if this backend supports a given language code.
+
+**Returns:**
+
+`true` if the language is supported, `false` otherwise.
+
+**Signature:**
+
+```elixir
+def supports_language(lang)
+```
+
+###### backend_type()
+
+Get the backend type identifier.
+
+**Returns:**
+
+The backend type enum value.
+
+**Signature:**
+
+```elixir
+def backend_type()
+```
+
+###### supported_languages()
+
+Optional: Get a list of all supported languages.
+
+Defaults to empty list. Override to provide comprehensive language support info.
+
+**Signature:**
+
+```elixir
+def supported_languages()
+```
+
+###### supports_table_detection()
+
+Optional: Check if the backend supports table detection.
+
+Defaults to `false`. Override if your backend can detect and extract tables.
+
+**Signature:**
+
+```elixir
+def supports_table_detection()
+```
+
+###### supports_document_processing()
+
+Check if the backend supports direct document-level processing (e.g. for PDFs).
+
+Defaults to `false`. Override if the backend has optimized document processing.
+
+**Signature:**
+
+```elixir
+def supports_document_processing()
+```
+
+###### process_document()
+
+Process a document file directly via OCR.
+
+Only called if `supports_document_processing` returns `true`.
+
+**Signature:**
+
+```elixir
+def process_document(path, config)
+```
+
+
+---
+
 #### OcrCacheStats
 
 | Field | Type | Default | Description |
@@ -3994,6 +4432,7 @@ OCR configuration.
 | `auto_rotate` | `boolean()` | `false` | Enable automatic page rotation based on orientation detection. When enabled, uses Tesseract's `DetectOrientationScript()` to detect page orientation (0/90/180/270 degrees) before OCR. If the page is rotated with high confidence, the image is corrected before recognition. This is critical for handling rotated scanned documents. |
 | `vlm_config` | `LlmConfig | nil` | `nil` | VLM (Vision Language Model) OCR configuration. Required when `backend` is `"vlm"`. Uses liter-llm to send page images to a vision model for text extraction. |
 | `vlm_prompt` | `String.t() | nil` | `nil` | Custom Jinja2 prompt template for VLM OCR. When `nil`, uses the default template. Available variables: - `{{ language }}` — The document language code (e.g., "eng", "deu"). |
+| `acceleration` | `AccelerationConfig | nil` | `nil` | Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection). Not user-configurable via config files — injected at runtime from `ExtractionConfig.acceleration` before each `process_image` call. |
 
 ##### Functions
 
@@ -4060,18 +4499,6 @@ including recognized text and detected tables.
 | `tables` | `list(OcrTable)` | — | Tables detected and extracted via OCR |
 | `ocr_elements` | `list(OcrElement) | nil` | `nil` | Structured OCR elements with bounding boxes and confidence scores. Available when TSV output is requested or table detection is enabled. |
 | `internal_document` | `String.t() | nil` | `nil` | Structured document produced from hOCR parsing. Carries paragraph structure, bounding boxes, and confidence scores that the flattened `content` string discards. |
-
-
----
-
-#### OcrFallbackDecision
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `stats` | `String.t()` | — | Stats |
-| `avg_non_whitespace` | `float()` | — | Avg non whitespace |
-| `avg_alnum` | `float()` | — | Avg alnum |
-| `fallback` | `boolean()` | — | Fallback |
 
 
 ---
@@ -4407,7 +4834,7 @@ and visibility state (for presentations).
 |-------|------|---------|-------------|
 | `number` | `integer()` | — | Page number (1-indexed) |
 | `title` | `String.t() | nil` | `nil` | Page title (usually for presentations) |
-| `dimensions` | `String.t() | nil` | `nil` | Dimensions in points (PDF) or pixels (images): (width, height) |
+| `dimensions` | `list(float()) | nil` | `nil` | Dimensions in points (PDF) or pixels (images): (width, height) |
 | `image_count` | `integer() | nil` | `nil` | Number of images on this page |
 | `table_count` | `integer() | nil` | `nil` | Number of tables on this page |
 | `hidden` | `boolean() | nil` | `nil` | Whether this page is hidden (e.g., in presentations) |
@@ -5129,6 +5556,42 @@ Helper struct for validating table cell counts.
 
 Manages tessdata file downloading, caching, and manifest generation.
 
+##### Functions
+
+###### cache_dir()
+
+Get the cache directory path.
+
+**Signature:**
+
+```elixir
+def cache_dir()
+```
+
+###### is_language_cached()
+
+Check if a specific language traineddata file is cached.
+
+**Signature:**
+
+```elixir
+def is_language_cached(lang)
+```
+
+###### ensure_all_languages()
+
+Downloads all tessdata_fast traineddata files to the cache directory.
+
+Skips files that already exist. Returns the count of newly downloaded files.
+
+Requires the `paddle-ocr` feature for HTTP download support (ureq).
+
+**Signature:**
+
+```elixir
+def ensure_all_languages()
+```
+
 
 ---
 
@@ -5652,6 +6115,20 @@ of `ExtractionResult`.
 | `no_bar` | No bar |
 | `linear` | Linear |
 | `skewed` | Skewed |
+
+
+---
+
+#### OcrBackendType
+
+OCR backend types.
+
+| Value | Description |
+|-------|-------------|
+| `tesseract` | Tesseract OCR (native Rust binding) |
+| `easy_ocr` | EasyOCR (Python-based, via FFI) |
+| `paddle_ocr` | PaddleOCR (Python-based, via FFI) |
+| `custom` | Custom/third-party OCR backend |
 
 
 ---

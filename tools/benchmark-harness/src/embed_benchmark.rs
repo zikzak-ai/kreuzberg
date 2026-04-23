@@ -13,8 +13,25 @@ use std::time::Instant;
 
 use rayon::prelude::*;
 
-use kreuzberg::embeddings::{EMBEDDING_PRESETS, EmbeddingPreset, generate_embeddings_for_chunks};
+use kreuzberg::embeddings::{EMBEDDING_PRESETS, EmbeddingPreset};
 use kreuzberg::{Chunk, ChunkMetadata, EmbeddingConfig, EmbeddingModelType};
+
+/// Embed text content into each chunk using the public `embed_texts` API.
+///
+/// Mirrors the internal `embed_chunks` behaviour: collects
+/// chunk text, calls `embed_texts`, and writes each resulting vector back into
+/// `chunk.embedding`.
+fn embed_chunks(chunks: &mut [Chunk], config: &EmbeddingConfig) -> kreuzberg::Result<()> {
+    if chunks.is_empty() {
+        return Ok(());
+    }
+    let texts: Vec<&str> = chunks.iter().map(|c| c.content.as_str()).collect();
+    let embeddings = kreuzberg::embed_texts(&texts, config)?;
+    for (chunk, embedding) in chunks.iter_mut().zip(embeddings) {
+        chunk.embedding = Some(embedding);
+    }
+    Ok(())
+}
 
 /// Number of chunks to embed for throughput measurement.
 const THROUGHPUT_CHUNK_COUNT: usize = 100;
@@ -213,7 +230,7 @@ pub fn run_embed_benchmark() -> EmbedBenchmarkResults {
 
         print!("  Warming up model...");
         let warm_start = Instant::now();
-        match generate_embeddings_for_chunks(&mut warmup_chunks, &warmup_config) {
+        match embed_chunks(&mut warmup_chunks, &warmup_config) {
             Ok(()) => {}
             Err(e) => {
                 println!(" SKIP ({})", e);
@@ -229,7 +246,7 @@ pub fn run_embed_benchmark() -> EmbedBenchmarkResults {
 
         print!("  Throughput ({} chunks, batch=32)...", THROUGHPUT_CHUNK_COUNT);
         let t_start = Instant::now();
-        match generate_embeddings_for_chunks(&mut chunks, &throughput_config) {
+        match embed_chunks(&mut chunks, &throughput_config) {
             Ok(()) => {}
             Err(e) => {
                 println!(" ERROR: {}", e);
@@ -286,7 +303,7 @@ pub fn run_embed_benchmark() -> EmbedBenchmarkResults {
         let config = config_for_preset(balanced, batch_size);
 
         let t_start = Instant::now();
-        match generate_embeddings_for_chunks(&mut chunks, &config) {
+        match embed_chunks(&mut chunks, &config) {
             Ok(()) => {}
             Err(e) => {
                 println!("{:>12}  ERROR: {}", batch_size, e);
@@ -327,7 +344,7 @@ pub fn run_embed_benchmark() -> EmbedBenchmarkResults {
     let mut seq_batches = batches.clone();
     let seq_start = Instant::now();
     for batch in &mut seq_batches {
-        generate_embeddings_for_chunks(batch, &parallel_config).expect("Sequential embedding failed");
+        embed_chunks(batch, &parallel_config).expect("Sequential embedding failed");
     }
     let seq_ms = seq_start.elapsed().as_secs_f64() * 1000.0;
 
@@ -336,7 +353,7 @@ pub fn run_embed_benchmark() -> EmbedBenchmarkResults {
     // behind Arc<EmbeddingEngine>, so concurrent reads are safe.
     let par_start = Instant::now();
     batches.par_iter_mut().for_each(|batch| {
-        generate_embeddings_for_chunks(batch, &parallel_config).expect("Parallel embedding failed");
+        embed_chunks(batch, &parallel_config).expect("Parallel embedding failed");
     });
     let par_ms = par_start.elapsed().as_secs_f64() * 1000.0;
 

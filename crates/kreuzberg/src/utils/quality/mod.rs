@@ -9,6 +9,7 @@ mod patterns;
 mod scoring;
 
 // Re-export public API
+pub(crate) use scoring::calculate_quality_score;
 
 use crate::text::utf8_validation;
 use memchr::{memchr, memchr3};

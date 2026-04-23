@@ -70,7 +70,8 @@ mod yaml_section;
 
 // Re-export submodule types and functions
 pub use config::{ChunkSizing, ChunkerType, ChunkingConfig, ChunkingResult}; // ChunkingConfig re-exported from core::config::processing
-pub(crate) use core::{chunk_text, chunk_text_with_heading_source};
+pub use core::chunk_text;
+pub(crate) use core::chunk_text_with_heading_source;
 pub use processor::ChunkingProcessor;
 
 use crate::error::Result;

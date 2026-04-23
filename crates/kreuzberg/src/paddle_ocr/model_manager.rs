@@ -283,7 +283,7 @@ pub struct ModelManager {
 
 impl ModelManager {
     /// Creates a new model manager with the specified cache directory.
-    pub(crate) fn new(cache_dir: PathBuf) -> Self {
+    pub fn new(cache_dir: PathBuf) -> Self {
         ModelManager { cache_dir }
     }
 
@@ -464,7 +464,7 @@ impl ModelManager {
     ///
     /// This includes shared models (det, cls) and all 9 per-script recognition model families.
     /// Paths are relative to the cache root (prefixed with "paddle-ocr/").
-    pub(crate) fn manifest() -> Vec<ModelManifestEntry> {
+    pub fn manifest() -> Vec<ModelManifestEntry> {
         let mut entries = Vec::new();
 
         for model in SHARED_MODELS {
@@ -512,7 +512,7 @@ impl ModelManager {
     /// - Document orientation model (PP-LCNet doc_ori)
     /// - All v2 unified rec models (server, mobile, en_mobile)
     /// - All per-script rec models for uncovered scripts
-    pub(crate) fn ensure_all_models(&self) -> Result<(), KreuzbergError> {
+    pub fn ensure_all_models(&self) -> Result<(), KreuzbergError> {
         // V2 shared models (both tiers)
         self.ensure_shared_models("server")?;
         self.ensure_v2_det_model("mobile")?; // cls is same for both tiers

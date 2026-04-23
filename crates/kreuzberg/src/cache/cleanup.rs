@@ -93,7 +93,7 @@ pub(super) fn scan_cache_directory(cache_dir: &str) -> Result<CacheScanResult> {
     })
 }
 
-pub(crate) fn get_cache_metadata(cache_dir: &str) -> Result<CacheStats> {
+pub fn get_cache_metadata(cache_dir: &str) -> Result<CacheStats> {
     let scan_result = scan_cache_directory(cache_dir)?;
     Ok(scan_result.stats)
 }
@@ -217,7 +217,7 @@ pub(crate) fn is_cache_valid(cache_path: &str, max_age_days: f64) -> bool {
     }
 }
 
-pub(crate) fn clear_cache_directory(cache_dir: &str) -> Result<(usize, f64)> {
+pub fn clear_cache_directory(cache_dir: &str) -> Result<(usize, f64)> {
     let dir_path = Path::new(cache_dir);
 
     if !dir_path.exists() {

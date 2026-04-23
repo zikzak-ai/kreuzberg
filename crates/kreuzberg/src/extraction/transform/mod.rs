@@ -10,7 +10,6 @@
 //! - Safe bounds checking for text ranges
 
 mod content;
-pub(crate) mod document_tree;
 mod elements;
 mod types;
 

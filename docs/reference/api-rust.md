@@ -2,9 +2,212 @@
 title: "Rust API Reference"
 ---
 
-## Rust API Reference <span class="version-badge">v4.9.2</span>
+## Rust API Reference <span class="version-badge">v4.9.5</span>
 
 ### Functions
+
+#### blake3_hash_bytes()
+
+Hash arbitrary bytes with blake3, returning a 32-char hex string.
+
+**Signature:**
+
+```rust
+pub fn blake3_hash_bytes(data: &[u8]) -> String
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `Vec<u8>` | Yes | The data |
+
+**Returns:** `String`
+
+
+---
+
+#### blake3_hash_file()
+
+Hash a file's content with blake3 using streaming 64 KiB reads.
+
+Returns a 32-char hex string (128 bits of blake3 output).
+
+**Signature:**
+
+```rust
+pub fn blake3_hash_file(path: PathBuf) -> Result<String, Error>
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `path` | `PathBuf` | Yes | Path to the file |
+
+**Returns:** `String`
+
+**Errors:** Returns `Err(Error)`.
+
+
+---
+
+#### fast_hash()
+
+**Signature:**
+
+```rust
+pub fn fast_hash(data: &[u8]) -> u64
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `Vec<u8>` | Yes | The data |
+
+**Returns:** `u64`
+
+
+---
+
+#### validate_cache_key()
+
+**Signature:**
+
+```rust
+pub fn validate_cache_key(key: &str) -> bool
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `key` | `String` | Yes | The key |
+
+**Returns:** `bool`
+
+
+---
+
+#### validate_port()
+
+Validate a port number for server configuration.
+
+Port must be in the range 1-65535. While ports 1-1023 are privileged and may require
+special permissions on some systems, they are still valid port numbers.
+
+**Returns:**
+
+`Ok(())` if the port is valid, or a `ValidationError` with details about valid ranges.
+
+**Signature:**
+
+```rust
+pub fn validate_port(port: u16) -> Result<(), Error>
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `port` | `u16` | Yes | The port number to validate |
+
+**Returns:** `()`
+
+**Errors:** Returns `Err(Error)`.
+
+
+---
+
+#### validate_host()
+
+Validate a host/IP address string for server configuration.
+
+Accepts valid IPv4 addresses (e.g., "127.0.0.1", "0.0.0.0"), valid IPv6 addresses
+(e.g., ".1", "."), and hostnames (e.g., "localhost", "example.com").
+
+**Returns:**
+
+`Ok(())` if the host is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```rust
+pub fn validate_host(host: &str) -> Result<(), Error>
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `host` | `String` | Yes | The host/IP address string to validate |
+
+**Returns:** `()`
+
+**Errors:** Returns `Err(Error)`.
+
+
+---
+
+#### validate_cors_origin()
+
+Validate a CORS (Cross-Origin Resource Sharing) origin URL.
+
+Accepts valid HTTP/HTTPS URLs (e.g., "<https://example.com">) or the wildcard "*"
+to allow all origins. URLs must start with "<http://"> or "<https://",> or be exactly "*".
+
+**Returns:**
+
+`Ok(())` if the origin is valid, or a `ValidationError` with details about valid formats.
+
+**Signature:**
+
+```rust
+pub fn validate_cors_origin(origin: &str) -> Result<(), Error>
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `origin` | `String` | Yes | The CORS origin URL to validate |
+
+**Returns:** `()`
+
+**Errors:** Returns `Err(Error)`.
+
+
+---
+
+#### validate_upload_size()
+
+Validate an upload size limit for server configuration.
+
+Upload size must be greater than 0 (measured in bytes).
+
+**Returns:**
+
+`Ok(())` if the size is valid, or a `ValidationError` with details about constraints.
+
+**Signature:**
+
+```rust
+pub fn validate_upload_size(size: usize) -> Result<(), Error>
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `size` | `usize` | Yes | The maximum upload size in bytes to validate |
+
+**Returns:** `()`
+
+**Errors:** Returns `Err(Error)`.
+
+
+---
 
 #### validate_binarization_method()
 
@@ -791,6 +994,23 @@ pub fn list_supported_formats() -> Vec<SupportedFormat>
 
 ---
 
+#### clear_processor_cache()
+
+Clear the processor cache (primarily for testing when registry changes).
+
+**Signature:**
+
+```rust
+pub fn clear_processor_cache() -> Result<(), Error>
+```
+
+**Returns:** `()`
+
+**Errors:** Returns `Err(Error)`.
+
+
+---
+
 #### transform_extraction_result_to_elements()
 
 Transform an extraction result into semantic elements.
@@ -1539,6 +1759,104 @@ pub fn calculate_text_confidence(text: &str) -> f64
 
 ---
 
+#### create_string_buffer_pool()
+
+Create a pre-configured string buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for text accumulation with reasonable defaults.
+
+**Signature:**
+
+```rust
+pub fn create_string_buffer_pool(pool_size: usize, buffer_capacity: usize) -> StringBufferPool
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `pool_size` | `usize` | Yes | Maximum number of buffers to keep in the pool |
+| `buffer_capacity` | `usize` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `StringBufferPool`
+
+
+---
+
+#### create_byte_buffer_pool()
+
+Create a pre-configured byte buffer pool for batch processing.
+
+**Returns:**
+
+A pool configured for binary data handling with reasonable defaults.
+
+**Signature:**
+
+```rust
+pub fn create_byte_buffer_pool(pool_size: usize, buffer_capacity: usize) -> ByteBufferPool
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `pool_size` | `usize` | Yes | Maximum number of buffers to keep in the pool |
+| `buffer_capacity` | `usize` | Yes | Initial capacity for each buffer in bytes |
+
+**Returns:** `ByteBufferPool`
+
+
+---
+
+#### openapi_json()
+
+Generate OpenAPI JSON schema.
+
+Returns the complete OpenAPI 3.1 specification as a JSON string.
+
+**Signature:**
+
+```rust
+pub fn openapi_json() -> String
+```
+
+**Returns:** `String`
+
+
+---
+
+#### serve_with_server_config()
+
+Start the API server with explicit extraction config and server config.
+
+This function accepts a fully-configured ServerConfig, including CORS origins,
+size limits, host, and port. It respects all ServerConfig fields without
+re-parsing environment variables, making it ideal for CLI usage where
+configuration precedence has already been applied.
+
+**Signature:**
+
+```rust
+pub async fn serve_with_server_config(extraction_config: ExtractionConfig, server_config: ServerConfig) -> Result<(), Error>
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `extraction_config` | `ExtractionConfig` | Yes | Default extraction configuration for all requests |
+| `server_config` | `ServerConfig` | Yes | Server configuration including host, port, CORS, and size limits |
+
+**Returns:** `()`
+
+**Errors:** Returns `Err(Error)`.
+
+
+---
+
 #### chunk_text()
 
 Split text into chunks with optional page boundary tracking.
@@ -2125,7 +2443,7 @@ BibTeX bibliography metadata.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `entry_count` | `usize` | — | Number of entrys |
+| `entry_count` | `usize` | — | Number of entries in the bibliography. |
 | `citation_keys` | `Vec<String>` | `vec![]` | Citation keys |
 | `authors` | `Vec<String>` | `vec![]` | Authors |
 | `year_range` | `Option<YearRange>` | `Default::default()` | Year range (year range) |
@@ -2178,25 +2496,6 @@ Request parameters for cache warm (model download).
 |-------|------|---------|-------------|
 | `all_embeddings` | `bool` | — | Download all embedding model presets |
 | `embedding_model` | `Option<String>` | `None` | Specific embedding preset name to download (e.g. "balanced", "speed", "quality") |
-
-
----
-
-#### CharData
-
-Character information extracted from PDF with font metrics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String` | — | The character text content |
-| `x` | `f32` | — | X position in PDF units |
-| `y` | `f32` | — | Y position in PDF units |
-| `font_size` | `f32` | — | Font size in points |
-| `width` | `f32` | — | Character width in PDF units |
-| `height` | `f32` | — | Character height in PDF units |
-| `is_bold` | `bool` | — | Whether the font is bold (from pdfium force-bold flag) |
-| `is_italic` | `bool` | — | Whether the font is italic |
-| `baseline_y` | `f32` | — | Baseline Y position (from character origin, falls back to bounds bottom) |
 
 
 ---
@@ -3042,7 +3341,7 @@ Extracted inline image with metadata.
 | `format` | `String` | — | Format |
 | `filename` | `Option<String>` | `None` | Filename |
 | `description` | `Option<String>` | `None` | Human-readable description |
-| `dimensions` | `Option<String>` | `None` | Dimensions |
+| `dimensions` | `Option<Vec<u32>>` | `None` | Dimensions |
 | `attributes` | `Vec<String>` | — | Attributes |
 
 
@@ -3098,6 +3397,26 @@ It can be loaded from TOML, YAML, or JSON files, or created programmatically.
 
 ```rust
 pub fn default() -> ExtractionConfig
+```
+
+###### needs_image_processing()
+
+Check if image processing is needed by examining OCR and image extraction settings.
+
+Returns `true` if either OCR is enabled or image extraction is configured,
+indicating that image decompression and processing should occur.
+Returns `false` if both are disabled, allowing optimization to skip unnecessary
+image decompression for text-only extraction workflows.
+
+# Optimization Impact
+For text-only extractions (no OCR, no image extraction), skipping image
+decompression can improve CPU utilization by 5-10% by avoiding wasteful
+image I/O and processing when results won't be used.
+
+**Signature:**
+
+```rust
+pub fn needs_image_processing(&self) -> bool
 ```
 
 
@@ -3191,18 +3510,6 @@ cannot be overridden per file:
 | `timeout_secs` | `Option<u64>` | `Default::default()` | Override per-file extraction timeout in seconds. When set, the extraction for this file will be canceled after the specified duration. A timed-out file produces an error result without affecting other files in the batch. |
 | `tree_sitter` | `Option<TreeSitterConfig>` | `Default::default()` | Override tree-sitter configuration for this file. |
 | `structured_extraction` | `Option<StructuredExtractionConfig>` | `Default::default()` | Override structured extraction configuration for this file. When set, enables LLM-based structured extraction with a JSON schema for this specific file. The extracted content is sent to a VLM/LLM and the response is parsed according to the provided schema. |
-
-
----
-
-#### FontSizeCluster
-
-A cluster of text blocks with the same font size characteristics.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `centroid` | `f32` | — | The centroid (mean) font size of this cluster |
-| `members` | `Vec<String>` | — | The text blocks that belong to this cluster |
 
 
 ---
@@ -3331,21 +3638,7 @@ font size clustering and hierarchical analysis.
 | `text` | `String` | — | The text content of this block |
 | `font_size` | `f32` | — | The font size of the text in this block |
 | `level` | `String` | — | The hierarchy level of this block (H1-H6 or Body) Levels correspond to HTML heading tags: - "h1": Top-level heading - "h2": Secondary heading - "h3": Tertiary heading - "h4": Quaternary heading - "h5": Quinary heading - "h6": Senary heading - "body": Body text (no heading level) |
-| `bbox` | `Option<String>` | `None` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
-
-
----
-
-#### HierarchyBlock
-
-A TextBlock with hierarchy level assignment.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `text` | `String` | — | The text content |
-| `bbox` | `String` | — | The bounding box of the block |
-| `font_size` | `f32` | — | The font size of the text in this block |
-| `hierarchy_level` | `String` | — | The hierarchy level of this block (H1-H6 or Body) |
+| `bbox` | `Option<Vec<f32>>` | `None` | Bounding box information for the block Contains coordinates as (left, top, right, bottom) in PDF units. |
 
 
 ---
@@ -3472,6 +3765,7 @@ Image extraction configuration.
 | `auto_adjust_dpi` | `bool` | — | Automatically adjust DPI based on image content |
 | `min_dpi` | `i32` | — | Minimum DPI threshold |
 | `max_dpi` | `i32` | — | Maximum DPI threshold |
+| `max_images_per_page` | `Option<u32>` | `Default::default()` | Maximum number of image objects to extract per PDF page. Some PDFs (e.g. technical diagrams stored as thousands of raster fragments) can trigger extremely long or indefinite extraction times when every image object on a dense page is decoded individually via pdfium FFI. Setting this limit causes kreuzberg to stop collecting individual images once the count per page reaches the cap and emit a warning instead. `None` (default) means no limit — all images are extracted. |
 
 
 ---
@@ -3485,7 +3779,7 @@ Image element metadata.
 | `src` | `String` | — | Image source (URL, data URI, or SVG content) |
 | `alt` | `Option<String>` | `None` | Alternative text from alt attribute |
 | `title` | `Option<String>` | `None` | Title attribute |
-| `dimensions` | `Option<String>` | `None` | Image dimensions as (width, height) if available |
+| `dimensions` | `Option<Vec<u32>>` | `None` | Image dimensions as (width, height) if available |
 | `image_type` | `ImageType` | — | Image type classification |
 | `attributes` | `Vec<String>` | — | Additional attributes as key-value pairs |
 
@@ -3545,13 +3839,13 @@ including DPI normalization, resizing, and resampling.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `original_dimensions` | `String` | — | Original image dimensions (width, height) in pixels |
-| `original_dpi` | `String` | — | Original image DPI (horizontal, vertical) |
+| `original_dimensions` | `Vec<usize>` | — | Original image dimensions (width, height) in pixels |
+| `original_dpi` | `Vec<f64>` | — | Original image DPI (horizontal, vertical) |
 | `target_dpi` | `i32` | — | Target DPI from configuration |
 | `scale_factor` | `f64` | — | Scaling factor applied to the image |
 | `auto_adjusted` | `bool` | — | Whether DPI was auto-adjusted based on content |
 | `final_dpi` | `i32` | — | Final DPI after processing |
-| `new_dimensions` | `Option<String>` | `None` | New dimensions after resizing (if resized) |
+| `new_dimensions` | `Option<Vec<usize>>` | `None` | New dimensions after resizing (if resized) |
 | `resample_method` | `String` | — | Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.) |
 | `dimension_clamped` | `bool` | — | Whether dimensions were clamped to max_image_dimension |
 | `calculated_dpi` | `Option<i32>` | `None` | Calculated optimal DPI (if auto_adjust_dpi enabled) |
@@ -3633,7 +3927,7 @@ Keyword extraction configuration.
 | `algorithm` | `KeywordAlgorithm` | `KeywordAlgorithm::Yake` | Algorithm to use for extraction. |
 | `max_keywords` | `usize` | `10` | Maximum number of keywords to extract (default: 10). |
 | `min_score` | `f32` | `0` | Minimum score threshold (0.0-1.0, default: 0.0). Keywords with scores below this threshold are filtered out. Note: Score ranges differ between algorithms. |
-| `ngram_range` | `String` | — | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
+| `ngram_range` | `Vec<usize>` | `vec![]` | N-gram range for keyword extraction (min, max). (1, 1) = unigrams only (1, 2) = unigrams and bigrams (1, 3) = unigrams, bigrams, and trigrams (default) |
 | `language` | `Option<String>` | `Default::default()` | Language code for stopword filtering (e.g., "en", "de", "fr"). If None, no stopword filtering is applied. |
 | `yake_params` | `Option<YakeParams>` | `None` | YAKE-specific tuning parameters. |
 | `rake_params` | `Option<RakeParams>` | `None` | RAKE-specific tuning parameters. |
@@ -3880,6 +4174,137 @@ Combined paths to all models needed for OCR (backward compatibility).
 
 ---
 
+#### OcrBackend
+
+Trait for OCR backend plugins.
+
+Implement this trait to add custom OCR capabilities. OCR backends can be:
+- Native Rust implementations (like Tesseract)
+- FFI bridges to Python libraries (like EasyOCR, PaddleOCR)
+- Cloud-based OCR services (Google Vision, AWS Textract, etc.)
+
+# Thread Safety
+
+OCR backends must be thread-safe (`Send + Sync`) to support concurrent processing.
+
+##### Methods
+
+###### process_image()
+
+Process an image and extract text via OCR.
+
+**Returns:**
+
+An `ExtractionResult` containing the extracted text and metadata.
+
+**Errors:**
+
+- `KreuzbergError.Ocr` - OCR processing failed
+- `KreuzbergError.Validation` - Invalid image format or configuration
+- `KreuzbergError.Io` - I/O errors (these always bubble up)
+
+**Signature:**
+
+```rust
+pub fn process_image(&self, image_bytes: &[u8], config: OcrConfig) -> ExtractionResult
+```
+
+###### process_image_file()
+
+Process a file and extract text via OCR.
+
+Default implementation reads the file and calls `process_image`.
+Override for custom file handling or optimizations.
+
+**Errors:**
+
+Same as `process_image`, plus file I/O errors.
+
+**Signature:**
+
+```rust
+pub fn process_image_file(&self, path: PathBuf, config: OcrConfig) -> ExtractionResult
+```
+
+###### supports_language()
+
+Check if this backend supports a given language code.
+
+**Returns:**
+
+`true` if the language is supported, `false` otherwise.
+
+**Signature:**
+
+```rust
+pub fn supports_language(&self, lang: &str) -> bool
+```
+
+###### backend_type()
+
+Get the backend type identifier.
+
+**Returns:**
+
+The backend type enum value.
+
+**Signature:**
+
+```rust
+pub fn backend_type(&self) -> OcrBackendType
+```
+
+###### supported_languages()
+
+Optional: Get a list of all supported languages.
+
+Defaults to empty list. Override to provide comprehensive language support info.
+
+**Signature:**
+
+```rust
+pub fn supported_languages(&self) -> Vec<String>
+```
+
+###### supports_table_detection()
+
+Optional: Check if the backend supports table detection.
+
+Defaults to `false`. Override if your backend can detect and extract tables.
+
+**Signature:**
+
+```rust
+pub fn supports_table_detection(&self) -> bool
+```
+
+###### supports_document_processing()
+
+Check if the backend supports direct document-level processing (e.g. for PDFs).
+
+Defaults to `false`. Override if the backend has optimized document processing.
+
+**Signature:**
+
+```rust
+pub fn supports_document_processing(&self) -> bool
+```
+
+###### process_document()
+
+Process a document file directly via OCR.
+
+Only called if `supports_document_processing` returns `true`.
+
+**Signature:**
+
+```rust
+pub fn process_document(&self, path: PathBuf, config: OcrConfig) -> ExtractionResult
+```
+
+
+---
+
 #### OcrCacheStats
 
 | Field | Type | Default | Description |
@@ -3923,6 +4348,7 @@ OCR configuration.
 | `auto_rotate` | `bool` | `false` | Enable automatic page rotation based on orientation detection. When enabled, uses Tesseract's `DetectOrientationScript()` to detect page orientation (0/90/180/270 degrees) before OCR. If the page is rotated with high confidence, the image is corrected before recognition. This is critical for handling rotated scanned documents. |
 | `vlm_config` | `Option<LlmConfig>` | `None` | VLM (Vision Language Model) OCR configuration. Required when `backend` is `"vlm"`. Uses liter-llm to send page images to a vision model for text extraction. |
 | `vlm_prompt` | `Option<String>` | `None` | Custom Jinja2 prompt template for VLM OCR. When `None`, uses the default template. Available variables: - `{{ language }}` — The document language code (e.g., "eng", "deu"). |
+| `acceleration` | `Option<AccelerationConfig>` | `None` | Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection). Not user-configurable via config files — injected at runtime from `ExtractionConfig.acceleration` before each `process_image` call. |
 
 ##### Methods
 
@@ -3989,18 +4415,6 @@ including recognized text and detected tables.
 | `tables` | `Vec<OcrTable>` | — | Tables detected and extracted via OCR |
 | `ocr_elements` | `Option<Vec<OcrElement>>` | `None` | Structured OCR elements with bounding boxes and confidence scores. Available when TSV output is requested or table detection is enabled. |
 | `internal_document` | `Option<String>` | `None` | Structured document produced from hOCR parsing. Carries paragraph structure, bounding boxes, and confidence scores that the flattened `content` string discards. |
-
-
----
-
-#### OcrFallbackDecision
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `stats` | `String` | — | Stats |
-| `avg_non_whitespace` | `f64` | — | Avg non whitespace |
-| `avg_alnum` | `f64` | — | Avg alnum |
-| `fallback` | `bool` | — | Fallback |
 
 
 ---
@@ -4336,7 +4750,7 @@ and visibility state (for presentations).
 |-------|------|---------|-------------|
 | `number` | `usize` | — | Page number (1-indexed) |
 | `title` | `Option<String>` | `None` | Page title (usually for presentations) |
-| `dimensions` | `Option<String>` | `None` | Dimensions in points (PDF) or pixels (images): (width, height) |
+| `dimensions` | `Option<Vec<f64>>` | `None` | Dimensions in points (PDF) or pixels (images): (width, height) |
 | `image_count` | `Option<usize>` | `None` | Number of images on this page |
 | `table_count` | `Option<usize>` | `None` | Number of tables on this page |
 | `hidden` | `Option<bool>` | `None` | Whether this page is hidden (e.g., in presentations) |
@@ -5058,6 +5472,42 @@ Helper struct for validating table cell counts.
 
 Manages tessdata file downloading, caching, and manifest generation.
 
+##### Methods
+
+###### cache_dir()
+
+Get the cache directory path.
+
+**Signature:**
+
+```rust
+pub fn cache_dir(&self) -> PathBuf
+```
+
+###### is_language_cached()
+
+Check if a specific language traineddata file is cached.
+
+**Signature:**
+
+```rust
+pub fn is_language_cached(&self, lang: &str) -> bool
+```
+
+###### ensure_all_languages()
+
+Downloads all tessdata_fast traineddata files to the cache directory.
+
+Skips files that already exist. Returns the count of newly downloaded files.
+
+Requires the `paddle-ocr` feature for HTTP download support (ureq).
+
+**Signature:**
+
+```rust
+pub fn ensure_all_languages(&self) -> usize
+```
+
 
 ---
 
@@ -5581,6 +6031,20 @@ of `ExtractionResult`.
 | `NoBar` | No bar |
 | `Linear` | Linear |
 | `Skewed` | Skewed |
+
+
+---
+
+#### OcrBackendType
+
+OCR backend types.
+
+| Value | Description |
+|-------|-------------|
+| `Tesseract` | Tesseract OCR (native Rust binding) |
+| `EasyOcr` | EasyOCR (Python-based, via FFI) |
+| `PaddleOcr` | PaddleOCR (Python-based, via FFI) |
+| `Custom` | Custom/third-party OCR backend |
 
 
 ---
