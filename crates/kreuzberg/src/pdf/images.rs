@@ -449,7 +449,6 @@ impl PdfImageExtractor {
 
         Ok(all_images)
     }
-
 }
 
 pub(crate) fn extract_images_from_pdf(pdf_bytes: &[u8]) -> Result<Vec<PdfImage>> {

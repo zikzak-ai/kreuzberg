@@ -103,6 +103,8 @@ impl OcrBackend for VlmOcrBackend {
 ///
 /// - `KreuzbergError::Ocr` if the VLM returns no content or the API call fails
 /// - `KreuzbergError::MissingDependency` if the liter-llm client cannot be created
+// `stream` is pub(crate) in liter-llm, preventing struct literal initialization.
+#[allow(clippy::field_reassign_with_default)]
 pub(crate) async fn vlm_ocr(
     image_bytes: &[u8],
     image_mime_type: &str,
@@ -137,7 +139,6 @@ pub(crate) async fn vlm_ocr(
     });
 
     // Field assignment needed: `stream` is pub(crate) in liter-llm, preventing struct literal.
-    #[allow(clippy::field_reassign_with_default)]
     let mut request = ChatCompletionRequest::default();
     request.model = config.model.clone();
     request.messages = vec![message];

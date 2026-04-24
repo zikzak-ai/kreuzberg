@@ -43,5 +43,4 @@ impl Instant {
     pub(crate) fn elapsed_ms(&self) -> f64 {
         self.elapsed_secs_f64() * 1000.0
     }
-
 }

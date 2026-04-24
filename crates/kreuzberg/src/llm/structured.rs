@@ -59,6 +59,8 @@ fn strip_additional_properties(schema: &Value) -> Value {
 /// - The LLM client cannot be created (invalid provider/credentials).
 /// - The LLM request fails (network, rate-limit, etc.).
 /// - The LLM response cannot be parsed as valid JSON.
+// `stream` is pub(crate) in liter-llm, preventing struct literal initialization.
+#[allow(clippy::field_reassign_with_default)]
 pub(crate) async fn extract_structured(
     content: &str,
     config: &StructuredExtractionConfig,
@@ -93,7 +95,6 @@ pub(crate) async fn extract_structured(
 
     // Build chat request with JSON schema response format.
     // Field assignment needed: `stream` is pub(crate) in liter-llm, preventing struct literal.
-    #[allow(clippy::field_reassign_with_default)]
     let mut request = liter_llm::ChatCompletionRequest::default();
     request.model = config.llm.model.clone();
     request.messages = vec![liter_llm::Message::User(liter_llm::UserMessage {

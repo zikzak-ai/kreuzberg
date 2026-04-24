@@ -111,4 +111,3 @@ pub(crate) fn extract_pict_image(chars: &mut std::iter::Peekable<std::str::Chars
 
     (metadata, image)
 }
-

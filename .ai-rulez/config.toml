@@ -6,7 +6,19 @@ name = 'Kreuzberg'
 description = 'Rust document intelligence library with polyglot bindings (Python/TypeScript/Ruby/Java/Go/Elixir/C#/PHP)'
 gitignore = true
 presets = ['claude', 'copilot', 'cursor', 'antigravity', 'codex']
-builtins = ['rust', 'python', 'typescript', 'go', 'java', 'ruby', 'php', 'csharp', 'elixir', 'r', 'default-commands']
+builtins = [
+    'rust',
+    'python',
+    'typescript',
+    'go',
+    'java',
+    'ruby',
+    'php',
+    'csharp',
+    'elixir',
+    'r',
+    'default-commands',
+]
 
 [[includes]]
 name = 'kreuzberg-core'

@@ -213,7 +213,10 @@ impl LayoutEngine {
     /// Timing note: `preprocess_ms` and `onnx_ms` in each `DetectTimings` are the
     /// amortized per-image share of the batch operation (total / N), not independent
     /// per-image measurements.
-    #[expect(dead_code, reason = "called from vendored kreuzberg in packages/ruby/ and packages/r/")]
+    #[expect(
+        dead_code,
+        reason = "called from vendored kreuzberg in packages/ruby/ and packages/r/"
+    )]
     pub(crate) fn detect_batch(
         &mut self,
         images: &[&RgbImage],

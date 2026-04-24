@@ -16,9 +16,9 @@ use crate::ocr::hocr_parser::parse_hocr_to_internal_document;
 #[cfg(feature = "pdf")]
 use crate::ocr::table::post_process_table;
 use crate::ocr::table::{extract_words_from_tsv, reconstruct_table, table_to_markdown};
-use crate::ocr::types::TesseractConfig;
 #[cfg(test)]
 use crate::ocr::types::BatchItemResult;
+use crate::ocr::types::TesseractConfig;
 use crate::types::internal::{ElementKind, InternalDocument};
 use crate::types::{OcrExtractionResult, OcrTable, OcrTableBoundingBox};
 use kreuzberg_tesseract::{TessPageSegMode, TessPolyBlockType, TesseractAPI};

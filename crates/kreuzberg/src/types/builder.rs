@@ -293,7 +293,10 @@ impl DocumentStructureBuilder {
     }
 
     /// Push a citation / bibliographic reference.
-    #[expect(dead_code, reason = "called from citation/bibtex/rst extractors behind the office feature gate")]
+    #[expect(
+        dead_code,
+        reason = "called from citation/bibtex/rst extractors behind the office feature gate"
+    )]
     pub(crate) fn push_citation(&mut self, key: &str, text: &str, page: Option<u32>) -> NodeIndex {
         let content = NodeContent::Citation {
             key: key.to_string(),
@@ -306,7 +309,10 @@ impl DocumentStructureBuilder {
     ///
     /// Subsequent body nodes will be parented under this admonition until
     /// [`exit_container`](Self::exit_container) is called.
-    #[expect(dead_code, reason = "called from docbook/rst extractors behind the office and xml feature gates")]
+    #[expect(
+        dead_code,
+        reason = "called from docbook/rst extractors behind the office and xml feature gates"
+    )]
     pub(crate) fn push_admonition(&mut self, kind: &str, title: Option<&str>, page: Option<u32>) -> NodeIndex {
         let content = NodeContent::Admonition {
             kind: kind.to_string(),

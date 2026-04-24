@@ -113,7 +113,6 @@ impl PdfTextExtractor<'_> {
         let (content, _, _) = extract_text_from_pdf_document(&document, None, None)?;
         Ok(content)
     }
-
 }
 
 pub fn extract_text_from_pdf(pdf_bytes: &[u8]) -> Result<String> {

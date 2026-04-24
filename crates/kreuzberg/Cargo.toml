@@ -187,13 +187,20 @@ wasm-target = [
 # WASM only: enables wasm-bindgen-rayon for multi-threaded WASM builds.
 # No #[cfg] gates — activates the wasm-bindgen-rayon dependency.
 wasm-threads = ["dep:wasm-bindgen-rayon"]
-
 # --- Aggregate features ---
 
 # Document format extractors only — no infrastructure or text analysis.
 formats = [
-    "pdf", "excel", "office", "hwp", "iwork",
-    "email", "html", "xml", "archives", "mdx",
+    "pdf",
+    "excel",
+    "office",
+    "hwp",
+    "iwork",
+    "email",
+    "html",
+    "xml",
+    "archives",
+    "mdx",
 ]
 # Text processing and analysis capabilities.
 analysis = ["language-detection", "chunking", "quality", "keywords"]
@@ -201,15 +208,20 @@ analysis = ["language-detection", "chunking", "quality", "keywords"]
 services = ["api", "mcp", "otel"]
 # Everything — all formats, analysis, services, OCR, ML, and code intelligence.
 full = [
-    "formats", "analysis", "services",
-    "ocr", "paddle-ocr", "layout-detection", "embeddings",
-    "chunking-tokenizers", "tree-sitter", "liter-llm", "tokio-runtime",
+    "formats",
+    "analysis",
+    "services",
+    "ocr",
+    "paddle-ocr",
+    "layout-detection",
+    "embeddings",
+    "chunking-tokenizers",
+    "tree-sitter",
+    "liter-llm",
+    "tokio-runtime",
 ]
 # Server deployment preset — formats + analysis + services + OCR.
-server = [
-    "formats", "analysis", "services",
-    "ocr", "paddle-ocr", "layout-detection",
-]
+server = ["formats", "analysis", "services", "ocr", "paddle-ocr", "layout-detection"]
 # CLI-only features (thin gate for kreuzberg-cli).
 cli = ["services", "chunking"]
 

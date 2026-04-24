@@ -107,6 +107,7 @@ impl Default for KeywordConfig {
     }
 }
 
+#[cfg(test)]
 impl KeywordConfig {
     /// Create a new configuration with YAKE algorithm.
     #[cfg(feature = "keywords-yake")]

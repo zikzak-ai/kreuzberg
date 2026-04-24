@@ -68,5 +68,4 @@ impl<T: Send> ModelCache<T> {
             *guard = Some(model);
         }
     }
-
 }
