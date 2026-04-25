@@ -1392,54 +1392,65 @@ extra_paths = [
 # ---------------------------------------------------------------------------
 
 [test.python]
+precondition = "command -v uv >/dev/null 2>&1"
 before = "cd packages/python && maturin develop --release"
 command = "cd packages/python && uv run pytest tests/ -v"
 e2e = "cd e2e/python && python3 -m pytest tests/ -q"
 
 [test.node]
+precondition = "command -v npx >/dev/null 2>&1"
 before = "cd crates/kreuzberg-node && napi build --output-dir . --release"
 command = "npx vitest run --config packages/typescript/vitest.config.ts"
 e2e = "cd e2e/typescript && npx vitest run"
 
 [test.go]
+precondition = "command -v go >/dev/null 2>&1"
 before = "cargo build --release -p kreuzberg-ffi"
 command = "cd packages/go && go test ./..."
 e2e = "cd e2e/go && go test ./... -count=1"
 
 [test.ruby]
+precondition = "command -v bundle >/dev/null 2>&1"
 before = "cd e2e/ruby && bundle install"
 command = "cd e2e/ruby && bundle exec rspec"
 e2e = "cd e2e/ruby && bundle exec rspec"
 
 [test.php]
+precondition = "command -v composer >/dev/null 2>&1"
 before = "cd e2e/php && composer install"
 command = "cd e2e/php && composer test"
 e2e = "cd e2e/php && composer test"
 
 [test.java]
+precondition = "command -v mvn >/dev/null 2>&1"
 before = "cargo build --release -p kreuzberg-ffi"
 command = "cd e2e/java && mvn test -q"
 e2e = "cd e2e/java && mvn test -q"
 
 [test.csharp]
+precondition = "command -v dotnet >/dev/null 2>&1"
 before = "cargo build --release -p kreuzberg-ffi"
 command = "dotnet test e2e/csharp"
 e2e = "dotnet test e2e/csharp"
 
 [test.elixir]
+precondition = "command -v mix >/dev/null 2>&1"
 before = "cd packages/elixir && mix deps.get && mix compile"
 command = "cd e2e/elixir && mix test"
 e2e = "cd e2e/elixir && mix test"
 
 [test.r]
+precondition = "command -v Rscript >/dev/null 2>&1"
 command = "cd e2e/r && Rscript -e \"devtools::load_all('../../packages/r'); testthat::set_max_fails(Inf); testthat::test_dir('tests')\""
 e2e = "cd e2e/r && Rscript -e \"devtools::load_all('../../packages/r'); testthat::set_max_fails(Inf); testthat::test_dir('tests')\""
 
 [test.wasm]
+precondition = "command -v wasm-pack >/dev/null 2>&1"
 before = "wasm-pack build crates/kreuzberg-wasm --release --target bundler && cd e2e/wasm && npm install"
 e2e = "cd e2e/wasm && npm test"
 
 [test.rust]
+precondition = "command -v cargo >/dev/null 2>&1"
 e2e = "cd e2e/rust && cargo test"
 
 # ---------------------------------------------------------------------------
@@ -1447,39 +1458,47 @@ e2e = "cd e2e/rust && cargo test"
 # ---------------------------------------------------------------------------
 
 [lint.python]
+precondition = "command -v ruff >/dev/null 2>&1"
 before = "cd packages/python && uv sync"
 format = "ruff format packages/python/"
 check = "ruff check --fix packages/python/"
 typecheck = "cd packages/python && uv run mypy ."
 
 [lint.node]
+precondition = "command -v npx >/dev/null 2>&1"
 format = "npx oxfmt packages/typescript/"
 check = "npx oxlint packages/typescript/"
 
 [lint.ruby]
+precondition = "command -v bundle >/dev/null 2>&1"
 before = "cd packages/ruby && bundle install"
 format = "cd packages/ruby && bundle exec rubocop -a ."
 check = "cd packages/ruby && bundle exec rubocop ."
 
 [lint.php]
+precondition = "command -v composer >/dev/null 2>&1"
 before = "cd packages/php && composer install"
 format = "cd packages/php && vendor/bin/php-cs-fixer fix ."
 check = "cd packages/php && vendor/bin/phpstan --configuration=phpstan.neon --memory-limit=512M"
 
 [lint.go]
+precondition = "command -v golangci-lint >/dev/null 2>&1"
 before = "cargo build --release -p kreuzberg-ffi"
 check = "cd packages/go && golangci-lint run ./..."
 
 [lint.elixir]
+precondition = "command -v mix >/dev/null 2>&1"
 before = "cd packages/elixir && mix deps.get"
 format = "cd packages/elixir && mix format"
 check = "cd packages/elixir && mix credo"
 
 [lint.java]
+precondition = "command -v mvn >/dev/null 2>&1"
 format = "mvn -f packages/java/pom.xml spotless:apply -q"
 check = "mvn -f packages/java/pom.xml spotless:check -q"
 
 [lint.csharp]
+precondition = "command -v dotnet >/dev/null 2>&1"
 format = "dotnet format packages/csharp"
 check = "dotnet format packages/csharp --verify-no-changes"
 
