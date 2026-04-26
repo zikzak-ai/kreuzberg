@@ -2480,10 +2480,12 @@ class ByteBufferPool: ...
 class TracingLayer: ...
 class ApiDoc: ...
 class ExtractResponse: ...
+
 class TessdataManager:
     def cache_dir(self) -> str: ...
     def is_language_cached(self, lang: str) -> bool: ...
     def ensure_all_languages(self) -> int: ...
+
 class PdfUnifiedExtractionResult: ...
 
 class ExecutionProviderType:
@@ -2552,10 +2554,10 @@ class EmbeddingModelTypePluginVariant(TypedDict):
     name: str
 
 EmbeddingModelType = (
-    EmbeddingModelTypePresetVariant |
-    EmbeddingModelTypeCustomVariant |
-    EmbeddingModelTypeLlmVariant |
-    EmbeddingModelTypePluginVariant
+    EmbeddingModelTypePresetVariant
+    | EmbeddingModelTypeCustomVariant
+    | EmbeddingModelTypeLlmVariant
+    | EmbeddingModelTypePluginVariant
 )
 
 class CodeContentMode:
@@ -2746,26 +2748,26 @@ class NodeContentMetadataBlockVariant(TypedDict):
     entries: list[str]
 
 NodeContent = (
-    NodeContentTitleVariant |
-    NodeContentHeadingVariant |
-    NodeContentParagraphVariant |
-    NodeContentListVariant |
-    NodeContentListItemVariant |
-    NodeContentTableVariant |
-    NodeContentImageVariant |
-    NodeContentCodeVariant |
-    NodeContentQuoteVariant |
-    NodeContentFormulaVariant |
-    NodeContentFootnoteVariant |
-    NodeContentGroupVariant |
-    NodeContentPageBreakVariant |
-    NodeContentSlideVariant |
-    NodeContentDefinitionListVariant |
-    NodeContentDefinitionItemVariant |
-    NodeContentCitationVariant |
-    NodeContentAdmonitionVariant |
-    NodeContentRawBlockVariant |
-    NodeContentMetadataBlockVariant
+    NodeContentTitleVariant
+    | NodeContentHeadingVariant
+    | NodeContentParagraphVariant
+    | NodeContentListVariant
+    | NodeContentListItemVariant
+    | NodeContentTableVariant
+    | NodeContentImageVariant
+    | NodeContentCodeVariant
+    | NodeContentQuoteVariant
+    | NodeContentFormulaVariant
+    | NodeContentFootnoteVariant
+    | NodeContentGroupVariant
+    | NodeContentPageBreakVariant
+    | NodeContentSlideVariant
+    | NodeContentDefinitionListVariant
+    | NodeContentDefinitionItemVariant
+    | NodeContentCitationVariant
+    | NodeContentAdmonitionVariant
+    | NodeContentRawBlockVariant
+    | NodeContentMetadataBlockVariant
 )
 
 class AnnotationKindBoldVariant(TypedDict):
@@ -2811,18 +2813,18 @@ class AnnotationKindCustomVariant(TypedDict):
     value: str | None
 
 AnnotationKind = (
-    AnnotationKindBoldVariant |
-    AnnotationKindItalicVariant |
-    AnnotationKindUnderlineVariant |
-    AnnotationKindStrikethroughVariant |
-    AnnotationKindCodeVariant |
-    AnnotationKindSubscriptVariant |
-    AnnotationKindSuperscriptVariant |
-    AnnotationKindLinkVariant |
-    AnnotationKindHighlightVariant |
-    AnnotationKindColorVariant |
-    AnnotationKindFontSizeVariant |
-    AnnotationKindCustomVariant
+    AnnotationKindBoldVariant
+    | AnnotationKindItalicVariant
+    | AnnotationKindUnderlineVariant
+    | AnnotationKindStrikethroughVariant
+    | AnnotationKindCodeVariant
+    | AnnotationKindSubscriptVariant
+    | AnnotationKindSuperscriptVariant
+    | AnnotationKindLinkVariant
+    | AnnotationKindHighlightVariant
+    | AnnotationKindColorVariant
+    | AnnotationKindFontSizeVariant
+    | AnnotationKindCustomVariant
 )
 
 class ChunkType:
@@ -2936,26 +2938,26 @@ class FormatMetadataCodeVariant(TypedDict):
     _0: str
 
 FormatMetadata = (
-    FormatMetadataPdfVariant |
-    FormatMetadataDocxVariant |
-    FormatMetadataExcelVariant |
-    FormatMetadataEmailVariant |
-    FormatMetadataPptxVariant |
-    FormatMetadataArchiveVariant |
-    FormatMetadataImageVariant |
-    FormatMetadataXmlVariant |
-    FormatMetadataTextVariant |
-    FormatMetadataHtmlVariant |
-    FormatMetadataOcrVariant |
-    FormatMetadataCsvVariant |
-    FormatMetadataBibtexVariant |
-    FormatMetadataCitationVariant |
-    FormatMetadataFictionBookVariant |
-    FormatMetadataDbfVariant |
-    FormatMetadataJatsVariant |
-    FormatMetadataEpubVariant |
-    FormatMetadataPstVariant |
-    FormatMetadataCodeVariant
+    FormatMetadataPdfVariant
+    | FormatMetadataDocxVariant
+    | FormatMetadataExcelVariant
+    | FormatMetadataEmailVariant
+    | FormatMetadataPptxVariant
+    | FormatMetadataArchiveVariant
+    | FormatMetadataImageVariant
+    | FormatMetadataXmlVariant
+    | FormatMetadataTextVariant
+    | FormatMetadataHtmlVariant
+    | FormatMetadataOcrVariant
+    | FormatMetadataCsvVariant
+    | FormatMetadataBibtexVariant
+    | FormatMetadataCitationVariant
+    | FormatMetadataFictionBookVariant
+    | FormatMetadataDbfVariant
+    | FormatMetadataJatsVariant
+    | FormatMetadataEpubVariant
+    | FormatMetadataPstVariant
+    | FormatMetadataCodeVariant
 )
 
 class TextDirection:
