@@ -68,13 +68,7 @@
 /// let docx_cap = estimate_content_capacity(1_000_000, "docx");
 /// assert_eq!(docx_cap, 450_000);
 /// ```
-#[cfg_attr(
-    not(feature = "office"),
-    allow(
-        dead_code,
-        reason = "called from docx extractor which is behind the office feature gate"
-    )
-)]
+#[allow(dead_code, reason = "utility kept for use by capacity-aware extractors and tests")]
 #[inline]
 pub(crate) fn estimate_content_capacity(file_size: u64, format: &str) -> usize {
     let ratio = match format.to_lowercase().as_str() {
