@@ -1,9 +1,30 @@
 name: CI GPU
 
-# NOTE: The `gpu_acceleration` integration test was removed in 245539484
-# during the alef-migration cleanup. This workflow is dormant until the test
-# is restored — keep `workflow_dispatch` so we can re-enable it on demand.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "crates/kreuzberg/src/**"
+      - "crates/kreuzberg/tests/gpu_acceleration.rs"
+      - "crates/kreuzberg-paddle-ocr/**"
+      - "test_documents/**"
+      - ".github/workflows/ci-gpu.yaml"
+      - ".github/actions/setup-paddle-ocr-models/**"
+      - ".github/actions/install-system-deps/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  pull_request:
+    branches: [main]
+    paths:
+      - "crates/kreuzberg/src/**"
+      - "crates/kreuzberg/tests/gpu_acceleration.rs"
+      - "crates/kreuzberg-paddle-ocr/**"
+      - "test_documents/**"
+      - ".github/workflows/ci-gpu.yaml"
+      - ".github/actions/setup-paddle-ocr-models/**"
+      - ".github/actions/install-system-deps/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   workflow_dispatch:
 
 concurrency:

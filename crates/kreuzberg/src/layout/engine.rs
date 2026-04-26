@@ -90,7 +90,7 @@ pub struct LayoutEngine {
 
 impl LayoutEngine {
     /// Create a layout engine from a full config.
-    pub(crate) fn from_config(config: LayoutEngineConfig) -> Result<Self, LayoutError> {
+    pub fn from_config(config: LayoutEngineConfig) -> Result<Self, LayoutError> {
         crate::ort_discovery::ensure_ort_available();
 
         let model: Box<dyn LayoutModel> = match &config.backend {
@@ -150,7 +150,7 @@ impl LayoutEngine {
     ///
     /// Returns a [`DetectionResult`] with bounding boxes, classes, and confidence scores.
     /// If `apply_heuristics` is enabled in config, postprocessing is applied automatically.
-    pub(crate) fn detect(&mut self, img: &RgbImage) -> Result<DetectionResult, LayoutError> {
+    pub fn detect(&mut self, img: &RgbImage) -> Result<DetectionResult, LayoutError> {
         let (result, _timings) = self.detect_timed(img)?;
         for detection in &result.detections {
             tracing::trace!(class = ?detection.class_name, confidence = detection.confidence, "Layout detection result");

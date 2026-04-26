@@ -9862,6 +9862,168 @@ float kreuzberg_paddle_ocr_config_drop_score(const KREUZBERGPaddleOcrConfig *ptr
 char *kreuzberg_paddle_ocr_config_model_tier(const KREUZBERGPaddleOcrConfig *ptr);
 
 /**
+ * Sets a custom cache directory for model files.
+ *
+ * # Arguments
+ *
+ * * `path` - Path to cache directory
+ *
+ * # Examples
+ *
+ * ```no_run
+ * use kreuzberg::PaddleOcrConfig;
+ * use std::path::PathBuf;
+ *
+ * let config = PaddleOcrConfig::new("en")
+ *     .with_cache_dir(PathBuf::from("/tmp/paddle-cache"));
+ * ```
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_cache_dir(KREUZBERGPaddleOcrConfig *this_,
+                                                                     const char *path);
+
+/**
+ * Enables or disables table structure detection.
+ *
+ * # Arguments
+ *
+ * * `enable` - Whether to enable table detection
+ *
+ * # Examples
+ *
+ * ```no_run
+ * use kreuzberg::PaddleOcrConfig;
+ *
+ * let config = PaddleOcrConfig::new("en")
+ *     .with_table_detection(true);
+ * ```
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_table_detection(KREUZBERGPaddleOcrConfig *this_,
+                                                                           int32_t enable);
+
+/**
+ * Enables or disables angle classification for rotated text.
+ *
+ * # Arguments
+ *
+ * * `enable` - Whether to enable angle classification
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_angle_cls(KREUZBERGPaddleOcrConfig *this_,
+                                                                     int32_t enable);
+
+/**
+ * Sets the database threshold for text detection.
+ *
+ * # Arguments
+ *
+ * * `threshold` - Detection threshold (0.0-1.0)
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_db_thresh(KREUZBERGPaddleOcrConfig *this_,
+                                                                         float threshold);
+
+/**
+ * Sets the box threshold for text bounding box refinement.
+ *
+ * # Arguments
+ *
+ * * `threshold` - Box threshold (0.0-1.0)
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_db_box_thresh(KREUZBERGPaddleOcrConfig *this_,
+                                                                             float threshold);
+
+/**
+ * Sets the unclip ratio for expanding text bounding boxes.
+ *
+ * # Arguments
+ *
+ * * `ratio` - Unclip ratio (typically 1.5-2.0)
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_db_unclip_ratio(KREUZBERGPaddleOcrConfig *this_,
+                                                                               float ratio);
+
+/**
+ * Sets the maximum side length for detection images.
+ *
+ * # Arguments
+ *
+ * * `length` - Maximum side length in pixels
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_limit_side_len(KREUZBERGPaddleOcrConfig *this_,
+                                                                              uint32_t length);
+
+/**
+ * Sets the batch size for recognition inference.
+ *
+ * # Arguments
+ *
+ * * `batch_size` - Number of text regions to process simultaneously
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_rec_batch_num(KREUZBERGPaddleOcrConfig *this_,
+                                                                         uint32_t batch_size);
+
+/**
+ * Sets the minimum recognition confidence threshold.
+ *
+ * # Arguments
+ *
+ * * `score` - Minimum confidence (0.0-1.0), text below this is dropped
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_drop_score(KREUZBERGPaddleOcrConfig *this_,
+                                                                      float score);
+
+/**
+ * Sets padding in pixels added around images before detection.
+ *
+ * # Arguments
+ *
+ * * `padding` - Padding in pixels (0-100)
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_padding(KREUZBERGPaddleOcrConfig *this_,
+                                                                   uint32_t padding);
+
+/**
+ * Sets the model tier controlling detection/recognition model size.
+ *
+ * # Arguments
+ *
+ * * `tier` - `"mobile"` (default, lightweight, faster) or `"server"` (high accuracy, GPU/complex documents)
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_model_tier(KREUZBERGPaddleOcrConfig *this_,
+                                                                      const char *tier);
+
+/**
  * Creates a default configuration with English language support.
  * # Safety
  * Caller must ensure all pointer arguments are valid or null.
