@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.10.0-rc.2] - 2026-04-28
+
+Cycle 2 of the alef-backed publish-pipeline iteration. RC1 surfaced two failures: the `actions/check-registry@v1` and `actions/prepare-release-metadata@v1` shims now require alef ≥ 0.11.0 for the `check-registry` and `release-metadata` subcommands, but `alef.toml`'s top-level `version` field still pinned 0.10.4 (which `install-alef@v1` resolves "latest" against). Bump the alef pin to 0.11.0 so all kreuzberg jobs install an alef binary that has the new subcommands. Also fix the `release-metadata.json` artifact upload that was being wiped by the `prepare` job's re-checkout step (stash to /tmp before re-checkout, restore after).
+
 ## [4.10.0-rc.1] - 2026-04-28
 
 First release candidate of v4.10.0. The release pipeline itself is the headline feature: this RC kicks off the iteration loop that proves out the alef-backed publish workflow against real registry endpoints. Substantive functional changes from v4.9.5 are listed below.

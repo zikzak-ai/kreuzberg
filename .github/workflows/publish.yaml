@@ -129,12 +129,18 @@ jobs:
           EVENT_DISPATCH_TARGETS: ${{ github.event.client_payload.targets }}
         run: scripts/publish/prepare-release-metadata.sh
 
+      - name: Stash release metadata before re-checkout
+        run: cp release-metadata.json /tmp/release-metadata.json
+
       - name: Re-checkout at target ref
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.meta.outputs.checkout_ref }}
           fetch-depth: 0
           submodules: recursive
+
+      - name: Restore release metadata after re-checkout
+        run: cp /tmp/release-metadata.json release-metadata.json
 
       - name: Upload release metadata
         uses: actions/upload-artifact@v7
