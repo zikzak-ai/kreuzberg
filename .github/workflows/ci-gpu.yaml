@@ -146,6 +146,11 @@ jobs:
       - name: Setup PaddleOCR models
         uses: ./.github/actions/setup-paddle-ocr-models
 
+      - name: Clear stale layout model cache (self-hosted runner persistence)
+        run: |
+          rm -rf "$HOME/.cache/kreuzberg/layout"
+          echo "Cleared layout model cache"
+
       - name: Run GPU tests
         run: |
           chmod +x gpu-acceleration-test
