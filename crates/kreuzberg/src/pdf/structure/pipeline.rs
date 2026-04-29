@@ -2736,6 +2736,9 @@ fn extract_image_from_pdfium_obj(
                                 ocr_result: None,
                                 bounding_box: None,
                                 source_path: None,
+                                image_kind: None,
+                                kind_confidence: None,
+                                cluster_id: None,
                             },
                         );
                     }
@@ -2888,6 +2891,9 @@ fn empty_image_placeholder(idx: usize, page_num: usize) -> crate::types::Extract
         ocr_result: None,
         bounding_box: None,
         source_path: None,
+        image_kind: None,
+        kind_confidence: None,
+        cluster_id: None,
     }
 }
 

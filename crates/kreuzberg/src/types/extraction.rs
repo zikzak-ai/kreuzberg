@@ -441,6 +441,35 @@ pub struct ChunkMetadata {
     pub heading_context: Option<HeadingContext>,
 }
 
+/// Heuristic classification of what an image likely depicts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "api", derive(utoipa::ToSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum ImageKind {
+    /// Photographic image (natural scene, photograph)
+    Photograph,
+    /// Technical or schematic diagram
+    Diagram,
+    /// Chart, graph, or plot
+    Chart,
+    /// Freehand or technical drawing
+    Drawing,
+    /// Text-heavy image (scanned text, document)
+    TextBlock,
+    /// Decorative element or border
+    Decoration,
+    /// Logo or brand mark
+    Logo,
+    /// Small icon
+    Icon,
+    /// Fragment of a larger tiled image (tile of a technical drawing)
+    TileFragment,
+    /// Mask or transparency map
+    Mask,
+    /// Could not classify with reasonable confidence
+    Unknown,
+}
+
 /// Extracted image from a document.
 ///
 /// Contains raw image data, metadata, and optional nested OCR results.
@@ -509,6 +538,20 @@ pub struct ExtractedImage {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub source_path: Option<String>,
+
+    /// Heuristic classification of what this image likely depicts.
+    /// `None` if classification was disabled or inconclusive.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image_kind: Option<ImageKind>,
+
+    /// Confidence score for `image_kind`, in [0.0, 1.0].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kind_confidence: Option<f32>,
+
+    /// Identifier shared across images that form a single logical figure
+    /// (e.g. all raster tiles of one technical drawing). `None` for singletons.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cluster_id: Option<u32>,
 }
 
 // ============================================================================

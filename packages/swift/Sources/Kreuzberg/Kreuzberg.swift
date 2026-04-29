@@ -1391,6 +1391,9 @@ public typealias ExtractionMethod = RustBridge.ExtractionMethod
 /// Designed to be extended in future versions without breaking changes.
 public typealias ChunkType = RustBridge.ChunkType
 
+/// Heuristic classification of what an image likely depicts.
+public typealias ImageKind = RustBridge.ImageKind
+
 /// Semantic element type classification.
 ///
 /// Categorizes text content into semantic units for downstream processing.
@@ -1476,20 +1479,20 @@ public typealias LayoutClass = RustBridge.LayoutClass
 /// - `UnsupportedFormat` - Unsupported MIME type or file format
 /// - `Other` - Catch-all for uncommon errors
 public enum KreuzbergError: Error {
-    case io(message: String, field0: String)
-    case parsing(message: String, source: String)
-    case ocr(message: String, source: String)
-    case validation(message: String, source: String)
-    case cache(message: String, source: String)
-    case imageProcessing(message: String, source: String)
-    case serialization(message: String, source: String)
-    case missingDependency(message: String, field0: String)
-    case plugin(message: String, pluginName: String)
-    case lockPoisoned(message: String, field0: String)
-    case unsupportedFormat(message: String, field0: String)
-    case embedding(message: String, source: String)
-    case timeout(message: String, elapsedMs: UInt64, limitMs: UInt64)
-    case cancelled(message: String)
-    case security(message: String, source: String)
-    case other(message: String, field0: String)
+  case io(message: String, field0: String)
+  case parsing(message: String, source: String)
+  case ocr(message: String, source: String)
+  case validation(message: String, source: String)
+  case cache(message: String, source: String)
+  case imageProcessing(message: String, source: String)
+  case serialization(message: String, source: String)
+  case missingDependency(message: String, field0: String)
+  case plugin(message: String, pluginName: String)
+  case lockPoisoned(message: String, field0: String)
+  case unsupportedFormat(message: String, field0: String)
+  case embedding(message: String, source: String)
+  case timeout(message: String, elapsedMs: UInt64, limitMs: UInt64)
+  case cancelled(message: String)
+  case security(message: String, source: String)
+  case other(message: String, field0: String)
 }

@@ -1,5 +1,6 @@
 #[cfg(feature = "tokio-runtime")]
 use super::error::{PdfError, Result};
+use crate::types::ImageKind;
 use bytes::Bytes;
 #[cfg(feature = "tokio-runtime")]
 use lopdf::Document;
@@ -19,6 +20,15 @@ pub struct PdfImage {
     pub data: Bytes,
     /// The format of `data` after decoding: `"jpeg"`, `"png"`, `"jpeg2000"`, `"ccitt"`, or `"raw"`.
     pub decoded_format: String,
+    /// Heuristic classification of what this image likely depicts.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_kind: Option<ImageKind>,
+    /// Confidence score for `image_kind`, in [0.0, 1.0].
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind_confidence: Option<f32>,
+    /// Identifier shared across images that form a single logical figure.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cluster_id: Option<u32>,
 }
 
 #[cfg(feature = "tokio-runtime")]
@@ -571,6 +581,18 @@ impl PdfImageExtractor {
 
                 state.page_image_count += 1;
                 state.img_index += 1;
+
+                // Classify image based on metadata and visual properties
+                let (image_kind, kind_confidence) = crate::extraction::image_kind::classify(
+                    &data,
+                    &decoded_format,
+                    (width > 0).then_some(width as u32),
+                    (height > 0).then_some(height as u32),
+                    color_space.as_deref(),
+                    bits_per_component.map(|b| b as u32),
+                    false,
+                );
+
                 state.out.push(PdfImage {
                     page_number,
                     image_index: state.img_index,
@@ -581,6 +603,9 @@ impl PdfImageExtractor {
                     filters,
                     data,
                     decoded_format,
+                    image_kind: Some(image_kind),
+                    kind_confidence: Some(kind_confidence),
+                    cluster_id: None,
                 });
             } else if subtype == b"Form" {
                 // Recurse into the Form XObject's own resource dictionary.
@@ -705,6 +730,20 @@ fn collect_image_from_pdfium_obj(
                         img.decoded_format = "png".to_string();
                         img.width = w as i64;
                         img.height = h as i64;
+
+                        // Re-classify image after successful pdfium re-extraction
+                        let (image_kind, kind_confidence) = crate::extraction::image_kind::classify(
+                            img.data.as_ref(),
+                            &img.decoded_format,
+                            (img.width > 0).then_some(img.width as u32),
+                            (img.height > 0).then_some(img.height as u32),
+                            img.color_space.as_deref(),
+                            img.bits_per_component.map(|b| b as u32),
+                            false,
+                        );
+                        img.image_kind = Some(image_kind);
+                        img.kind_confidence = Some(kind_confidence);
+
                         *reextracted += 1;
                     }
                 }

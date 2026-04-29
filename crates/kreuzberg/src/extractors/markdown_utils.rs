@@ -152,6 +152,10 @@ pub(crate) fn decode_data_uri_image(uri: &str, index: usize) -> Option<Extracted
     let cleaned = data.replace(['\n', '\r'], "");
     let decoded = base64::engine::general_purpose::STANDARD.decode(&cleaned).ok()?;
 
+    // Classify image based on metadata and visual properties
+    let (image_kind, kind_confidence) =
+        crate::extraction::image_kind::classify(&decoded, format, None, None, None, None, false);
+
     Some(ExtractedImage {
         data: Bytes::from(decoded),
         format: Cow::Borrowed(format),
@@ -166,5 +170,8 @@ pub(crate) fn decode_data_uri_image(uri: &str, index: usize) -> Option<Extracted
         ocr_result: None,
         bounding_box: None,
         source_path: None,
+        image_kind: Some(image_kind),
+        kind_confidence: Some(kind_confidence),
+        cluster_id: None,
     })
 }

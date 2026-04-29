@@ -54,6 +54,7 @@
 #![deny(unsafe_code)]
 
 mod commands;
+mod logging;
 mod style;
 
 use anyhow::{Context, Result};
@@ -74,7 +75,6 @@ use commands::{
 use kreuzberg::{OutputFormat as ContentOutputFormat, detect_mime_type};
 use serde_json::json;
 use std::path::{Path, PathBuf};
-use tracing_subscriber::EnvFilter;
 
 /// Kreuzberg document intelligence CLI
 #[derive(Parser)]
@@ -641,11 +641,7 @@ fn merge_json_into_config(
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let env_filter = if let Some(ref level) = cli.log_level {
-        EnvFilter::new(level)
-    } else {
-        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"))
-    };
+    let env_filter = logging::build_env_filter(cli.log_level.as_deref());
 
     let _ = tracing_subscriber::fmt()
         .with_env_filter(env_filter)

@@ -1,5 +1,6 @@
 pub mod blank_detection;
 pub mod derive;
+pub mod image_kind;
 pub mod structured;
 pub mod text;
 pub mod transform;

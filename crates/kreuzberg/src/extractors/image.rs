@@ -420,6 +420,17 @@ impl DocumentExtractor for ImageExtractor {
             exif: extraction_metadata.exif_data,
         };
 
+        // Classify image based on metadata and visual properties
+        let (image_kind, kind_confidence) = crate::extraction::image_kind::classify(
+            content,
+            &format_str,
+            Some(extraction_metadata.width),
+            Some(extraction_metadata.height),
+            None,
+            None,
+            false,
+        );
+
         // Build an ExtractedImage from the raw content so it is stored in doc.images
         let extracted_image = crate::types::ExtractedImage {
             data: bytes::Bytes::copy_from_slice(content),
@@ -435,6 +446,9 @@ impl DocumentExtractor for ImageExtractor {
             ocr_result: None,
             bounding_box: None,
             source_path: None,
+            image_kind: Some(image_kind),
+            kind_confidence: Some(kind_confidence),
+            cluster_id: None,
         };
 
         // When disable_ocr is set (or ocr.enabled = false), skip OCR and return metadata only

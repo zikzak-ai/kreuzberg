@@ -101,6 +101,7 @@ pub struct ImageExtractionConfig {
     pub min_dpi: i64,
     pub max_dpi: i64,
     pub max_images_per_page: Option<i64>,
+    pub classify: bool,
 }
 
 #[frb(mirror(TokenReductionOptions))]
@@ -693,6 +694,9 @@ pub struct ExtractedImage {
     pub ocr_result: Option<ExtractionResult>,
     pub bounding_box: Option<String>,
     pub source_path: Option<String>,
+    pub image_kind: Option<ImageKind>,
+    pub kind_confidence: Option<f64>,
+    pub cluster_id: Option<i64>,
 }
 
 #[frb(mirror(ElementMetadata))]
@@ -1545,6 +1549,9 @@ pub struct PdfImage {
     pub filters: Vec<String>,
     pub data: Vec<u8>,
     pub decoded_format: String,
+    pub image_kind: Option<ImageKind>,
+    pub kind_confidence: Option<f64>,
+    pub cluster_id: Option<i64>,
 }
 
 #[frb(mirror(PageLayoutResult))]
@@ -1853,6 +1860,21 @@ pub enum ChunkType {
     Image,
     OrgChart,
     Diagram,
+    Unknown,
+}
+
+#[frb(mirror(ImageKind))]
+pub enum ImageKind {
+    Photograph,
+    Diagram,
+    Chart,
+    Drawing,
+    TextBlock,
+    Decoration,
+    Logo,
+    Icon,
+    TileFragment,
+    Mask,
     Unknown,
 }
 

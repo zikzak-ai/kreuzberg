@@ -14,7 +14,7 @@ use tower_http::{
     limit::RequestBodyLimitLayer,
     request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
     sensitive_headers::SetSensitiveHeadersLayer,
-    trace::TraceLayer,
+    trace::{DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer},
 };
 
 use crate::{ExtractionConfig, core::ServerConfig, service::ExtractionServiceBuilder};
@@ -195,7 +195,17 @@ pub(crate) fn create_router_with_limits_and_server_config(
         .layer(CompressionLayer::new())
         .layer(CatchPanicLayer::new())
         .layer(SetSensitiveHeadersLayer::new([axum::http::header::AUTHORIZATION]))
-        .layer(TraceLayer::new_for_http())
+        // Per-request and per-response events are demoted to DEBUG so the default
+        // `tower_http=info` filter keeps them out of normal logs. Failures stay at
+        // WARN so they surface without needing RUST_LOG overrides. Full transport
+        // tracing is restored with RUST_LOG=tower_http=debug.
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(tracing::Level::DEBUG))
+                .on_request(DefaultOnRequest::new().level(tracing::Level::DEBUG))
+                .on_response(DefaultOnResponse::new().level(tracing::Level::DEBUG))
+                .on_failure(DefaultOnFailure::new().level(tracing::Level::WARN)),
+        )
         .with_state(state)
 }
 

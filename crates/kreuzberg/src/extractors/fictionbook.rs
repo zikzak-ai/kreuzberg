@@ -599,6 +599,11 @@ impl FictionBookExtractor {
 
                             let description = if id.is_empty() { None } else { Some(id) };
 
+                            // Classify image based on metadata and visual properties
+                            let (image_kind, kind_confidence) = crate::extraction::image_kind::classify(
+                                &decoded, &format, None, None, None, None, false,
+                            );
+
                             images.push(ExtractedImage {
                                 data: Bytes::from(decoded),
                                 format,
@@ -613,6 +618,9 @@ impl FictionBookExtractor {
                                 ocr_result: None,
                                 bounding_box: None,
                                 source_path: None,
+                                image_kind: Some(image_kind),
+                                kind_confidence: Some(kind_confidence),
+                                cluster_id: None,
                             });
                             image_index += 1;
                         }

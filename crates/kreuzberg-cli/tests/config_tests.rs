@@ -266,15 +266,25 @@ fn test_config_complete_json_structure() {
 }
 
 #[test]
-fn test_invalid_output_format_rejected() {
-    // Test that invalid output format values are rejected
+fn test_unknown_output_format_accepted_as_custom() {
+    // OutputFormat has a Custom(String) catch-all variant with #[serde(untagged)],
+    // so unknown strings are accepted as custom renderer names rather than rejected.
     let json = serde_json::json!({
-        "output_format": "invalid_format",
+        "output_format": "my_custom_renderer",
     });
 
     let result: Result<kreuzberg::core::config::ExtractionConfig, _> = serde_json::from_value(json);
 
-    assert!(result.is_err(), "Invalid output_format should be rejected by serde");
+    assert!(
+        result.is_ok(),
+        "Unknown output_format should be accepted as Custom variant; got: {:?}",
+        result.err()
+    );
+    assert_eq!(
+        result.unwrap().output_format,
+        kreuzberg::core::config::OutputFormat::Custom("my_custom_renderer".to_string()),
+        "Unknown format string must deserialize as OutputFormat::Custom"
+    );
 }
 
 #[test]

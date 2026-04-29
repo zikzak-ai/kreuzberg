@@ -311,6 +311,7 @@ fn test_extraction_config_needs_image_processing() {
         min_dpi: 72,
         max_dpi: 600,
         max_images_per_page: None,
+        classify: true,
     });
     assert!(
         config.needs_image_processing(),

@@ -158,7 +158,13 @@ RUN set -eux; \
     done; \
     echo "✓ Tessdata permissions configured"
 
-# Environment configuration
+# Environment configuration.
+# RUST_LOG=info is the right default here. Third-party transport crates
+# (ureq, rustls, hyper_util, tower_http, hf_hub) are pre-suppressed by the
+# kreuzberg-cli subscriber defaults in logging.rs, so they won't emit DEBUG
+# even at the "info" root level. HuggingFace model downloads happen once at
+# image build time via `cache warm`; runtime /extract requests hit the HF
+# disk cache under HF_HOME and generate no network traffic.
 ENV KREUZBERG_CACHE_DIR=/app/.kreuzberg \
     HF_HOME=/app/.kreuzberg/huggingface \
     RUST_LOG=info \

@@ -1265,6 +1265,10 @@ impl DocumentExtractor for DocxExtractor {
                 }
             };
 
+            // Classify image based on metadata and visual properties
+            let (image_kind, kind_confidence) =
+                crate::extraction::image_kind::classify(&data, format.as_ref(), width, height, None, None, false);
+
             extracted_images.push(ExtractedImage {
                 data,
                 format,
@@ -1279,6 +1283,9 @@ impl DocumentExtractor for DocxExtractor {
                 ocr_result: None,
                 bounding_box: None,
                 source_path,
+                image_kind: Some(image_kind),
+                kind_confidence: Some(kind_confidence),
+                cluster_id: None,
             });
         }
 

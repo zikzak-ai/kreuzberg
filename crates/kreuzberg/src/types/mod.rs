@@ -200,6 +200,9 @@ mod tests {
             ocr_result: None,
             bounding_box: None,
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         });
 
         let image2 = Arc::new(ExtractedImage {
@@ -216,6 +219,9 @@ mod tests {
             ocr_result: None,
             bounding_box: None,
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         });
 
         let page = PageContent {
@@ -340,6 +346,9 @@ mod tests {
                 y1: 600.0,
             }),
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         };
 
         let json = serde_json::to_string(&image).unwrap();
@@ -376,6 +385,9 @@ mod tests {
             ocr_result: None,
             bounding_box: None,
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         };
 
         let json = serde_json::to_string(&image).unwrap();
@@ -426,6 +438,9 @@ mod tests {
                 y1: 950.0,
             }),
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         };
 
         let json_value = serde_json::to_value(&image).unwrap();
@@ -467,6 +482,9 @@ mod tests {
                 y1: 200.0,
             }),
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         };
 
         let cloned = image.clone();

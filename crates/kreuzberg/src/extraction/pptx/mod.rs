@@ -227,6 +227,10 @@ fn extract_pptx_from_container<R: std::io::Read + std::io::Seek>(
                         (None, None, None, None)
                     };
 
+                // Classify image based on metadata and visual properties
+                let (image_kind, kind_confidence) =
+                    crate::extraction::image_kind::classify(data, format.as_ref(), width, height, None, None, false);
+
                 extracted_images.push(ExtractedImage {
                     data: Bytes::from(data.clone()),
                     format,
@@ -241,6 +245,9 @@ fn extract_pptx_from_container<R: std::io::Read + std::io::Seek>(
                     ocr_result: None,
                     bounding_box: bbox,
                     source_path: None,
+                    image_kind: Some(image_kind),
+                    kind_confidence: Some(kind_confidence),
+                    cluster_id: None,
                 });
             }
         }

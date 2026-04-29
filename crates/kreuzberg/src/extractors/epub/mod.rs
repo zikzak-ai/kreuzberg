@@ -228,6 +228,11 @@ impl EpubExtractor {
                         _ => "png",
                     })
                     .unwrap_or("png");
+
+                // Classify image based on metadata and visual properties
+                let (image_kind, kind_confidence) =
+                    crate::extraction::image_kind::classify(&buf, fmt, None, None, None, None, false);
+
                 let image = crate::types::ExtractedImage {
                     data: bytes::Bytes::from(buf),
                     format: Cow::Owned(fmt.to_string()),
@@ -242,6 +247,9 @@ impl EpubExtractor {
                     ocr_result: None,
                     bounding_box: None,
                     source_path: None,
+                    image_kind: Some(image_kind),
+                    kind_confidence: Some(kind_confidence),
+                    cluster_id: None,
                 };
                 builder.push_image(Some("Cover"), image, None, None);
             }
@@ -390,6 +398,11 @@ impl EpubExtractor {
                             });
 
                             if let Some((data, format)) = image_data {
+                                // Classify image based on metadata and visual properties
+                                let (image_kind, kind_confidence) = crate::extraction::image_kind::classify(
+                                    &data, &format, None, None, None, None, false,
+                                );
+
                                 let image = crate::types::ExtractedImage {
                                     data: bytes::Bytes::from(data),
                                     format: Cow::Owned(format),
@@ -404,6 +417,9 @@ impl EpubExtractor {
                                     ocr_result: None,
                                     bounding_box: None,
                                     source_path: None,
+                                    image_kind: Some(image_kind),
+                                    kind_confidence: Some(kind_confidence),
+                                    cluster_id: None,
                                 };
                                 builder.push_image(description.as_deref(), image, None, None);
                             } else {

@@ -52,6 +52,11 @@ pub struct ImageExtractionConfig {
     /// `None` (default) means no limit — all images are extracted.
     #[serde(default)]
     pub max_images_per_page: Option<u32>,
+
+    /// When `true` (default), extracted images are classified by kind and grouped
+    /// into clusters where they appear to belong to one figure.
+    #[serde(default = "default_true")]
+    pub classify: bool,
 }
 
 /// Token reduction configuration.
@@ -93,6 +98,7 @@ impl Default for ImageExtractionConfig {
             min_dpi: 72,
             max_dpi: 600,
             max_images_per_page: None,
+            classify: true,
         }
     }
 }
@@ -136,6 +142,7 @@ mod tests {
         assert!(cfg.extract_images, "extract_images must default to true");
         assert!(cfg.inject_placeholders, "inject_placeholders must default to true");
         assert!(cfg.auto_adjust_dpi, "auto_adjust_dpi must default to true");
+        assert!(cfg.classify, "classify must default to true");
         assert_eq!(cfg.target_dpi, 300);
         assert_eq!(cfg.max_image_dimension, 4096);
         assert_eq!(cfg.min_dpi, 72);
@@ -149,6 +156,16 @@ mod tests {
             ..ImageExtractionConfig::default()
         };
         assert!(!cfg.inject_placeholders);
+        assert!(cfg.extract_images);
+    }
+
+    #[test]
+    fn test_image_extraction_config_explicit_false_disables_classify() {
+        let cfg = ImageExtractionConfig {
+            classify: false,
+            ..ImageExtractionConfig::default()
+        };
+        assert!(!cfg.classify);
         assert!(cfg.extract_images);
     }
 

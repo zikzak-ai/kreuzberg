@@ -298,6 +298,11 @@ impl JupyterExtractor {
                             "image/webp" => "webp",
                             _ => "unknown",
                         };
+
+                        // Classify image based on metadata and visual properties
+                        let (image_kind, kind_confidence) =
+                            crate::extraction::image_kind::classify(&decoded, format, None, None, None, None, false);
+
                         images.push(ExtractedImage {
                             data: Bytes::from(decoded),
                             format: Cow::Borrowed(format),
@@ -312,6 +317,9 @@ impl JupyterExtractor {
                             ocr_result: None,
                             bounding_box: None,
                             source_path: None,
+                            image_kind: Some(image_kind),
+                            kind_confidence: Some(kind_confidence),
+                            cluster_id: None,
                         });
                         content.push_str(&format!("[Image: {}]\n", mime_type));
                     }

@@ -504,6 +504,11 @@ fn build_internal_elements(
                                     });
 
                                     if let Some((data, format)) = extracted {
+                                        // Classify image based on metadata and visual properties
+                                        let (image_kind, kind_confidence) = crate::extraction::image_kind::classify(
+                                            &data, &format, None, None, None, None, false,
+                                        );
+
                                         let image = ExtractedImage {
                                             data: Bytes::from(data),
                                             format: Cow::Owned(format),
@@ -518,6 +523,9 @@ fn build_internal_elements(
                                             ocr_result: None,
                                             bounding_box: None,
                                             source_path: None,
+                                            image_kind: Some(image_kind),
+                                            kind_confidence: Some(kind_confidence),
+                                            cluster_id: None,
                                         };
                                         let idx = builder.push_image(description.as_deref(), image, None, None);
                                         if let Some(h) = href {

@@ -47,6 +47,9 @@ fn make_image(description: Option<String>, source_path: Option<String>, data: By
         ocr_result: None,
         bounding_box: None,
         source_path,
+        image_kind: None,
+        kind_confidence: None,
+        cluster_id: None,
     }
 }
 

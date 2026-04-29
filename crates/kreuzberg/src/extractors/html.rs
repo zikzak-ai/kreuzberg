@@ -530,6 +530,17 @@ impl SyncExtractor for HtmlExtractor {
                     InlineImageFormat::Other(ref s) => Cow::Owned(s.clone()),
                 };
 
+                // Classify image based on metadata and visual properties
+                let (image_kind, kind_confidence) = crate::extraction::image_kind::classify(
+                    &img.data,
+                    format.as_ref(),
+                    width,
+                    height,
+                    None,
+                    None,
+                    false,
+                );
+
                 let extracted = ExtractedImage {
                     data: Bytes::from(img.data),
                     format,
@@ -544,6 +555,9 @@ impl SyncExtractor for HtmlExtractor {
                     ocr_result: None,
                     bounding_box: None,
                     source_path: None,
+                    image_kind: Some(image_kind),
+                    kind_confidence: Some(kind_confidence),
+                    cluster_id: None,
                 };
                 doc.push_image(extracted);
             }

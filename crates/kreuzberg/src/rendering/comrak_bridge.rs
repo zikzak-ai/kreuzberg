@@ -1264,6 +1264,9 @@ mod tests {
             ocr_result: None,
             bounding_box: None,
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         });
         let out = render(&doc);
         assert!(out.contains("image_0.png"), "image link must appear; got: {}", out);
@@ -1298,6 +1301,9 @@ mod tests {
             ocr_result: None,
             bounding_box: None,
             source_path: None,
+            image_kind: None,
+            kind_confidence: None,
+            cluster_id: None,
         });
         let out = render(&doc);
         assert!(

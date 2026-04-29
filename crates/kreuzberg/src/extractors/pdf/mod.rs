@@ -827,11 +827,18 @@ impl PdfExtractor {
                         None
                     };
 
-                    let extracted = pdf_images
+                    let should_classify = config.images.as_ref().map(|c| c.classify).unwrap_or(true);
+
+                    let mut extracted: Vec<_> = pdf_images
                         .into_iter()
                         .enumerate()
                         .map(|(idx, img)| {
                             let format = std::borrow::Cow::Owned(img.decoded_format.clone());
+                            let (image_kind, kind_confidence, cluster_id) = if should_classify {
+                                (img.image_kind, img.kind_confidence, img.cluster_id)
+                            } else {
+                                (None, None, None)
+                            };
                             crate::types::ExtractedImage {
                                 data: img.data,
                                 format,
@@ -846,9 +853,18 @@ impl PdfExtractor {
                                 ocr_result: None,
                                 bounding_box: None,
                                 source_path: None,
+                                image_kind,
+                                kind_confidence,
+                                cluster_id,
                             }
                         })
                         .collect();
+
+                    // Apply clustering if enabled
+                    if should_classify && !extracted.is_empty() {
+                        crate::extraction::image_kind::cluster_tiles(&mut extracted);
+                    }
+
                     (Some(extracted), warning)
                 }
                 Err(e) => {
@@ -1327,11 +1343,18 @@ impl PdfExtractor {
 
             match result {
                 Ok(pdf_images) => {
-                    let extracted: Vec<crate::types::ExtractedImage> = pdf_images
+                    let should_classify = config.images.as_ref().map(|c| c.classify).unwrap_or(true);
+
+                    let mut extracted: Vec<crate::types::ExtractedImage> = pdf_images
                         .into_iter()
                         .enumerate()
                         .map(|(idx, img)| {
                             let format = std::borrow::Cow::Owned(img.decoded_format.clone());
+                            let (image_kind, kind_confidence, cluster_id) = if should_classify {
+                                (img.image_kind, img.kind_confidence, img.cluster_id)
+                            } else {
+                                (None, None, None)
+                            };
                             crate::types::ExtractedImage {
                                 data: img.data,
                                 format,
@@ -1346,9 +1369,18 @@ impl PdfExtractor {
                                 ocr_result: None,
                                 bounding_box: None,
                                 source_path: None,
+                                image_kind,
+                                kind_confidence,
+                                cluster_id,
                             }
                         })
                         .collect();
+
+                    // Apply clustering if enabled
+                    if should_classify && !extracted.is_empty() {
+                        crate::extraction::image_kind::cluster_tiles(&mut extracted);
+                    }
+
                     (Some(extracted), None)
                 }
                 Err(e) => {

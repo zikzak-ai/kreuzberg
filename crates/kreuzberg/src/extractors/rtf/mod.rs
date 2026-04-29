@@ -235,6 +235,10 @@ impl RtfExtractor {
 
         // Push extracted images
         for (i, rtf_img) in rtf_images.into_iter().enumerate() {
+            // Classify image based on metadata and visual properties
+            let (image_kind, kind_confidence) =
+                crate::extraction::image_kind::classify(&rtf_img.data, rtf_img.format, None, None, None, None, false);
+
             let image = ExtractedImage {
                 data: Bytes::from(rtf_img.data),
                 format: Cow::Borrowed(rtf_img.format),
@@ -249,6 +253,9 @@ impl RtfExtractor {
                 ocr_result: None,
                 bounding_box: None,
                 source_path: None,
+                image_kind: Some(image_kind),
+                kind_confidence: Some(kind_confidence),
+                cluster_id: None,
             };
             builder.push_image(None, image, None, None);
         }

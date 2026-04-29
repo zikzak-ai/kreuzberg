@@ -1,4 +1,4 @@
-version = "0.11.18"
+version = "0.11.20"
 languages = [
     "python",
     "node",
@@ -445,6 +445,11 @@ functions = [
     "derive_document_structure",
     "derive_extraction_result",
     "parse_drawing",
+
+    # extraction::image_kind — internal classifier helpers; consumers see results via
+    # the ExtractedImage.{image_kind, kind_confidence, cluster_id} fields populated automatically.
+    "classify",
+    "cluster_tiles",
     "parse_table_properties",
     "parse_table_grid",
     "tsv_row_to_element",
