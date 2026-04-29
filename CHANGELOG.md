@@ -11,7 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `ExtractionResult.extraction_method` / `extractionMethod` — new field exposing how text was extracted (`native`, `ocr`, `mixed`). Populated by PDF (native vs OCR vs force_ocr_pages mixed) and image (always `ocr`) extractors; surfaced through Python, Node, and PHP bindings. (#761)
+- **#761**: `ExtractionResult.extraction_method` — new field exposing how text was extracted (`native`, `ocr`, `mixed`). Populated by PDF (native vs OCR vs `force_ocr_pages` mixed) and image (always `ocr`) extractors. Surfaced across every binding (Python, Node, PHP, Ruby, Java, C#, Go, R, Dart, Swift, Elixir, Gleam, Zig, WASM, C FFI).
+
+### Fixed
+
+- **#799**: Extract images nested inside PDF Form XObjects across XObject references — recursive Form XObject descent (depth-limited to 8) now follows indirect references through the resource chain, with cycle detection via a visited-set so self-referential XObject DAGs no longer hang. Both the lopdf and pdfium image-decoding paths benefit.
+- **#824**: Robust PDF image extraction across XObject references — fixes silent image drops when documents reference XObjects through indirect chains. Combined with the depth limit and cycle guard from #799 to harden the recursive walker against malformed structures.
+- **#826**: WASM loading on Next.js / Turbopack — `@kreuzberg/wasm` now bundles cleanly under webpack 5, Turbopack, and Next.js's app router. Dynamic imports of Node built-ins and the pdfium-js subsystem carry `/* webpackIgnore: true */` markers so bundlers stop trying to inline platform-specific binaries.
+- **#834**: DOCX `inject_placeholders` flag honored end-to-end — image placeholders now appear in markdown/plain/djot output when `ImageExtractionConfig.inject_placeholders = true`, and the DOCX OCR pipeline runs before rendering so OCR text reaches the final document. Adds extractor-level security regression tests for LaTeX, EPUB, ODT, Jupyter, RST, and RTF inputs (deeply nested envs, unclosed math, oversized control words, entity bombs, depth bombs, large item lists).
+- **#836**: Prevent base64 image data leaking into structured PDF output when image extraction is disabled. The structure pipeline now suppresses `populate_images_from_pdfium` and `inject_placeholders` whenever neither `ImageExtractionConfig.extract_images` nor `pdf_options.extract_images` is enabled, so disabled-by-default users no longer see embedded raster blobs in their results.
+- **#838**: OCR `elements` are now propagated through the extraction pipeline — image and PDF OCR backends populate `ExtractionResult.ocr_elements` consistently, fixing downstream consumers that relied on per-token bounding boxes.
+- **#839**: `extraction_timeout_secs` now applies to the single-file `extract_file` / `extract_bytes` paths. Previously the timeout only fired in batch and async wrappers, so a hostile single document could hang past the configured limit. The timeout is gated on `tokio-runtime`; non-tokio builds remain timeout-less by design.
+- **`force_ocr_pages` now reliably yields `ExtractionMethod::Mixed`** even when `pages` config is not explicitly set. The PDF text path now synthesizes a default `PageConfig` when force-ocr-pages is non-empty so byte boundaries are always available for splicing OCR text into the right ranges.
+- **PDF page extraction strategy enum renamed `ExtractionMethod` → `PageExtractionMethod`** in `kreuzberg-pdfium-render` to disambiguate from `kreuzberg::ExtractionMethod` (the new native/ocr/mixed strategy enum from #761). The pdfium variant remains exported via `pdfium_render::prelude` under the new name.
+
+### Changed
+
+- **Dependabot bumps**: `swift-actions/setup-swift` 2 → 3 (#841), `gradle/actions` 4 → 6 (#840), `docker/setup-qemu-action` 3 → 4 (#833), `mlugg/setup-zig` 1 → 2 (#832).
 
 ## [4.10.0-rc.4] - 2026-04-28
 

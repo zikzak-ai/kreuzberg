@@ -13625,7 +13625,7 @@ impl From<ChunkSizing> for kreuzberg::ChunkSizing {
     fn from(val: ChunkSizing) -> Self {
         match val.type_tag.as_str() {
             "characters" => kreuzberg::ChunkSizing::Characters,
-            "tokenizer" => kreuzberg::ChunkSizing::Tokenizer{ model: val.model.map(Into::into).unwrap_or_default(),, cache_dir: val.cache_dir.map(Into::into), },
+            "tokenizer" => kreuzberg::ChunkSizing::Tokenizer{ model: val.model.map(Into::into).unwrap_or_default(), cache_dir: val.cache_dir.map(Into::into), },
             _ => kreuzberg::ChunkSizing::Characters,
         }
     }
@@ -13647,7 +13647,7 @@ impl From<EmbeddingModelType> for kreuzberg::EmbeddingModelType {
     fn from(val: EmbeddingModelType) -> Self {
         match val.type_tag.as_str() {
             "preset" => kreuzberg::EmbeddingModelType::Preset{ name: val.name.map(Into::into).unwrap_or_default(), },
-            "custom" => kreuzberg::EmbeddingModelType::Custom{ model_id: val.model_id.map(Into::into).unwrap_or_default(),, dimensions: val.dimensions.map(Into::into).unwrap_or_default(), },
+            "custom" => kreuzberg::EmbeddingModelType::Custom{ model_id: val.model_id.map(Into::into).unwrap_or_default(), dimensions: val.dimensions.map(Into::into).unwrap_or_default(), },
             "llm" => kreuzberg::EmbeddingModelType::Llm{ llm: val.llm.map(Into::into).unwrap_or_default(), },
             "plugin" => kreuzberg::EmbeddingModelType::Plugin{ name: val.name.map(Into::into).unwrap_or_default(), },
             _ => kreuzberg::EmbeddingModelType::Preset{ name: Default::default(), },
@@ -13687,24 +13687,24 @@ impl From<NodeContent> for kreuzberg::NodeContent {
     fn from(val: NodeContent) -> Self {
         match val.node_type_tag.as_str() {
             "title" => kreuzberg::NodeContent::Title{ text: val.text.map(Into::into).unwrap_or_default(), },
-            "heading" => kreuzberg::NodeContent::Heading{ level: val.level.map(Into::into).unwrap_or_default(),, text: val.text.map(Into::into).unwrap_or_default(), },
+            "heading" => kreuzberg::NodeContent::Heading{ level: val.level.map(Into::into).unwrap_or_default(), text: val.text.map(Into::into).unwrap_or_default(), },
             "paragraph" => kreuzberg::NodeContent::Paragraph{ text: val.text.map(Into::into).unwrap_or_default(), },
             "list" => kreuzberg::NodeContent::List{ ordered: val.ordered.map(Into::into).unwrap_or_default(), },
             "list_item" => kreuzberg::NodeContent::ListItem{ text: val.text.map(Into::into).unwrap_or_default(), },
             "table" => kreuzberg::NodeContent::Table{ grid: val.grid.map(Into::into).unwrap_or_default(), },
-            "image" => kreuzberg::NodeContent::Image{ description: val.description.map(Into::into),, image_index: val.image_index.map(Into::into),, src: val.src.map(Into::into), },
-            "code" => kreuzberg::NodeContent::Code{ text: val.text.map(Into::into).unwrap_or_default(),, language: val.language.map(Into::into), },
+            "image" => kreuzberg::NodeContent::Image{ description: val.description.map(Into::into), image_index: val.image_index.map(Into::into), src: val.src.map(Into::into), },
+            "code" => kreuzberg::NodeContent::Code{ text: val.text.map(Into::into).unwrap_or_default(), language: val.language.map(Into::into), },
             "quote" => kreuzberg::NodeContent::Quote,
             "formula" => kreuzberg::NodeContent::Formula{ text: val.text.map(Into::into).unwrap_or_default(), },
             "footnote" => kreuzberg::NodeContent::Footnote{ text: val.text.map(Into::into).unwrap_or_default(), },
-            "group" => kreuzberg::NodeContent::Group{ label: val.label.map(Into::into),, heading_level: val.heading_level.map(Into::into),, heading_text: val.heading_text.map(Into::into), },
+            "group" => kreuzberg::NodeContent::Group{ label: val.label.map(Into::into), heading_level: val.heading_level.map(Into::into), heading_text: val.heading_text.map(Into::into), },
             "page_break" => kreuzberg::NodeContent::PageBreak,
-            "slide" => kreuzberg::NodeContent::Slide{ number: val.number.map(Into::into).unwrap_or_default(),, title: val.title.map(Into::into), },
+            "slide" => kreuzberg::NodeContent::Slide{ number: val.number.map(Into::into).unwrap_or_default(), title: val.title.map(Into::into), },
             "definition_list" => kreuzberg::NodeContent::DefinitionList,
-            "definition_item" => kreuzberg::NodeContent::DefinitionItem{ term: val.term.map(Into::into).unwrap_or_default(),, definition: val.definition.map(Into::into).unwrap_or_default(), },
-            "citation" => kreuzberg::NodeContent::Citation{ key: val.key.map(Into::into).unwrap_or_default(),, text: val.text.map(Into::into).unwrap_or_default(), },
-            "admonition" => kreuzberg::NodeContent::Admonition{ kind: val.kind.map(Into::into).unwrap_or_default(),, title: val.title.map(Into::into), },
-            "raw_block" => kreuzberg::NodeContent::RawBlock{ format: val.format.map(Into::into).unwrap_or_default(),, content: val.content.map(Into::into).unwrap_or_default(), },
+            "definition_item" => kreuzberg::NodeContent::DefinitionItem{ term: val.term.map(Into::into).unwrap_or_default(), definition: val.definition.map(Into::into).unwrap_or_default(), },
+            "citation" => kreuzberg::NodeContent::Citation{ key: val.key.map(Into::into).unwrap_or_default(), text: val.text.map(Into::into).unwrap_or_default(), },
+            "admonition" => kreuzberg::NodeContent::Admonition{ kind: val.kind.map(Into::into).unwrap_or_default(), title: val.title.map(Into::into), },
+            "raw_block" => kreuzberg::NodeContent::RawBlock{ format: val.format.map(Into::into).unwrap_or_default(), content: val.content.map(Into::into).unwrap_or_default(), },
             "metadata_block" => kreuzberg::NodeContent::MetadataBlock{ entries: val.entries.map(Into::into).unwrap_or_default(), },
             _ => kreuzberg::NodeContent::Title{ text: Default::default(), },
         }
@@ -13741,11 +13741,11 @@ impl From<AnnotationKind> for kreuzberg::AnnotationKind {
             "code" => kreuzberg::AnnotationKind::Code,
             "subscript" => kreuzberg::AnnotationKind::Subscript,
             "superscript" => kreuzberg::AnnotationKind::Superscript,
-            "link" => kreuzberg::AnnotationKind::Link{ url: val.url.map(Into::into).unwrap_or_default(),, title: val.title.map(Into::into), },
+            "link" => kreuzberg::AnnotationKind::Link{ url: val.url.map(Into::into).unwrap_or_default(), title: val.title.map(Into::into), },
             "highlight" => kreuzberg::AnnotationKind::Highlight,
             "color" => kreuzberg::AnnotationKind::Color{ value: val.value.map(Into::into).unwrap_or_default(), },
             "font_size" => kreuzberg::AnnotationKind::FontSize{ value: val.value.map(Into::into).unwrap_or_default(), },
-            "custom" => kreuzberg::AnnotationKind::Custom{ name: val.name.map(Into::into).unwrap_or_default(),, value: val.value.map(Into::into), },
+            "custom" => kreuzberg::AnnotationKind::Custom{ name: val.name.map(Into::into).unwrap_or_default(), value: val.value.map(Into::into), },
             _ => kreuzberg::AnnotationKind::Bold,
         }
     }
@@ -13820,7 +13820,7 @@ impl From<kreuzberg::OcrBoundingGeometry> for OcrBoundingGeometry {
 impl From<OcrBoundingGeometry> for kreuzberg::OcrBoundingGeometry {
     fn from(val: OcrBoundingGeometry) -> Self {
         match val.type_tag.as_str() {
-            "rectangle" => kreuzberg::OcrBoundingGeometry::Rectangle{ left: val.left.map(Into::into).unwrap_or_default(),, top: val.top.map(Into::into).unwrap_or_default(),, width: val.width.map(Into::into).unwrap_or_default(),, height: val.height.map(Into::into).unwrap_or_default(), },
+            "rectangle" => kreuzberg::OcrBoundingGeometry::Rectangle{ left: val.left.map(Into::into).unwrap_or_default(), top: val.top.map(Into::into).unwrap_or_default(), width: val.width.map(Into::into).unwrap_or_default(), height: val.height.map(Into::into).unwrap_or_default(), },
             "quadrilateral" => kreuzberg::OcrBoundingGeometry::Quadrilateral{ points: val.points.map(Into::into).unwrap_or_default(), },
             _ => kreuzberg::OcrBoundingGeometry::Rectangle{ left: Default::default(), top: Default::default(), width: Default::default(), height: Default::default(), },
         }

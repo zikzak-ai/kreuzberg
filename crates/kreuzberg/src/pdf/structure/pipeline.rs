@@ -47,7 +47,9 @@ fn extract_structure_tree_pages(
 
         let page_t = crate::utils::timing::Instant::now();
         match extract_page_content(&page) {
-            Ok(extraction) if extraction.method == ExtractionMethod::StructureTree && !extraction.blocks.is_empty() => {
+            Ok(extraction)
+                if extraction.method == PageExtractionMethod::StructureTree && !extraction.blocks.is_empty() =>
+            {
                 tracing::trace!(
                     page = i,
                     method = ?extraction.method,
@@ -2705,8 +2707,8 @@ fn extract_image_from_pdfium_obj(
     match obj {
         PdfPageObject::Image(image_obj) => {
             let global_idx = first_idx_on_page + *current_image;
-            if indices_set.contains(&global_idx) {
-                if let Ok(dynamic_image) = image_obj.get_processed_image(document) {
+            if indices_set.contains(&global_idx)
+                && let Ok(dynamic_image) = image_obj.get_processed_image(document) {
                     let w = dynamic_image.width();
                     let h = dynamic_image.height();
                     if w >= 32 || h >= 32 {
@@ -2738,7 +2740,6 @@ fn extract_image_from_pdfium_obj(
                         }
                     }
                 }
-            }
             *current_image += 1;
         }
         PdfPageObject::XObjectForm(form_obj) => {

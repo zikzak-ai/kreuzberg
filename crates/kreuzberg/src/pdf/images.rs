@@ -496,7 +496,7 @@ impl PdfImageExtractor {
             let stream = match self
                 .document
                 .get_object(id)
-                .and_then(|o| o.as_stream().map(|s| s.clone()))
+                .and_then(|o| o.as_stream().cloned())
             {
                 Ok(s) => s,
                 Err(_) => continue,
