@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ExtractionResult.extraction_method` / `extractionMethod` — new field exposing how text was extracted (`native`, `ocr`, `mixed`). Populated by PDF (native vs OCR vs force_ocr_pages mixed) and image (always `ocr`) extractors; surfaced through Python, Node, and PHP bindings. (#761)
+
 ## [4.10.0-rc.4] - 2026-04-28
 
 Cycle 4 of the alef-backed publish-pipeline iteration. Cycle 3 surfaced fourteen build-stage publish failures across Elixir, Ruby, Python, PHP, Node, and C#; this RC bundles the targeted fixes for each.
