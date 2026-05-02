@@ -17,16 +17,16 @@
 		},
 		{
 			"type": "not_empty",
-			"field": "document_structure"
+			"field": "document"
 		},
 		{
 			"type": "count_min",
-			"field": "document_structure.nodes",
+			"field": "document.nodes",
 			"value": 1
 		},
 		{
 			"type": "contains_all",
-			"field": "document_structure.node_types",
+			"field": "document.node_types",
 			"values": ["paragraph"]
 		}
 	]

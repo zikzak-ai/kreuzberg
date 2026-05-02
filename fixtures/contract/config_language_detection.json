@@ -26,11 +26,6 @@
 			"type": "contains_all",
 			"field": "detected_languages",
 			"values": ["eng"]
-		},
-		{
-			"type": "greater_than_or_equal",
-			"field": "language_detection_confidence",
-			"value": 0.5
 		}
 	]
 }

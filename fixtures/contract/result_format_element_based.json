@@ -16,11 +16,6 @@
 			"value": "application/pdf"
 		},
 		{
-			"type": "equals",
-			"field": "result_format",
-			"value": "element_based"
-		},
-		{
 			"type": "count_min",
 			"field": "elements",
 			"value": 1

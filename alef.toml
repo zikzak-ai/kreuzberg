@@ -2026,10 +2026,7 @@ function = "extract_pptx_from_bytes"
 module = "kreuzberg"
 async = false
 returns_result = true
-args = [
-    { name = "bytes", field = "input.data", type = "bytes" },
-    { name = "options", field = "input.options", type = "json_object", optional = true },
-]
+args = [{ name = "bytes", field = "input.data", type = "bytes" }]
 
 # --- Rendering standalone ---
 
@@ -2157,7 +2154,6 @@ args = [{ name = "html", field = "input.html", type = "string" }]
 
 [e2e.calls.convert_html_to_markdown.overrides.rust]
 result_is_simple = true
-extra_args = ["None", "None"]
 
 [e2e.calls.convert_html_to_markdown.overrides.node]
 result_is_simple = true
@@ -2298,7 +2294,7 @@ module = "kreuzberg"
 async = false
 returns_result = true
 args = [
-    { name = "path", field = "input.path", type = "string" },
+    { name = "path", field = "input.path", type = "string", owned = true },
     { name = "check_exists", field = "input.check_exists", type = "bool" },
 ]
 
@@ -2314,7 +2310,7 @@ function = "detect_image_format"
 module = "kreuzberg"
 async = false
 skip_languages = ["wasm"]
-args = [{ name = "data", field = "input.data", type = "bytes" }]
+args = [{ name = "data", field = "input.data", type = "bytes", owned = true }]
 
 # --- Hashing ---
 
@@ -2731,7 +2727,7 @@ args = [{ name = "cells", field = "input.cells", type = "json_object" }]
 function = "generate_cache_key"
 module = "kreuzberg"
 async = false
-args = [{ name = "parts", field = "input.parts", type = "json_object", element_type = "(String, String)" }]
+args = [{ name = "parts", field = "input.parts", type = "json_object", element_type = "Vec<String>", owned = true }]
 
 [e2e.calls.generate_cache_key.overrides.rust]
 result_is_simple = true
@@ -3092,8 +3088,8 @@ options_type = "ExtractionConfig"
 # --- Registry operations ---
 
 [e2e.calls.list_document_extractors]
-function = "list_extractors"
-module = "kreuzberg::plugins"
+function = "list_document_extractors"
+module = "kreuzberg"
 async = false
 args = []
 

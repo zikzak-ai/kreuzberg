@@ -16,7 +16,7 @@
 		},
 		{
 			"type": "not_empty",
-			"field": "document_structure"
+			"field": "document"
 		}
 	]
 }

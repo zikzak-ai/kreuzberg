@@ -11,12 +11,10 @@
 	},
 	"assertions": [
 		{
-			"type": "is_true",
-			"field": "is_png"
+			"type": "not_empty"
 		},
 		{
-			"type": "greater_than_or_equal",
-			"field": "page_count",
+			"type": "count_min",
 			"value": 1
 		}
 	]

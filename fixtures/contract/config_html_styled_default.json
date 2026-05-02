@@ -1,33 +1,42 @@
 {
-	"id": "config_html_styled_default",
-	"description": "HTML output with default theme emits kb-* class hooks and an embedded style block",
-	"tags": ["contract", "output_format", "html_styled"],
-	"call": "extract_file_sync",
-	"input": {
-		"path": "pdf/fake_memo.pdf",
-		"config": {
-			"output_format": "html",
-			"html_output": {
-				"theme": "default",
-				"embed_css": true
-			}
-		}
-	},
-	"assertions": [
-		{
-			"type": "equals",
-			"field": "mime_type",
-			"value": "application/pdf"
-		},
-		{
-			"type": "equals",
-			"field": "output_format",
-			"value": "html"
-		},
-		{
-			"type": "contains_all",
-			"field": "content",
-			"values": ["kb-doc", "kb-content", "kb-p", "<style>"]
-		}
-	]
+  "id": "config_html_styled_default",
+  "description": "HTML output with default theme emits kb-* class hooks and an embedded style block",
+  "tags": [
+    "contract",
+    "output_format",
+    "html_styled"
+  ],
+  "call": "extract_file_sync",
+  "input": {
+    "path": "pdf/fake_memo.pdf",
+    "config": {
+      "output_format": "html",
+      "html_output": {
+        "theme": "default",
+        "embed_css": true
+      }
+    }
+  },
+  "assertions": [
+    {
+      "type": "equals",
+      "field": "mime_type",
+      "value": "application/pdf"
+    },
+    {
+      "type": "equals",
+      "field": "metadata.output_format",
+      "value": "html"
+    },
+    {
+      "type": "contains_all",
+      "field": "content",
+      "values": [
+        "kb-doc",
+        "kb-content",
+        "kb-p",
+        "<style>"
+      ]
+    }
+  ]
 }

@@ -1,28 +1,36 @@
 {
-	"id": "render_output_markdown",
-	"category": "render",
-	"description": "Extract PDF with Markdown output format",
-	"tags": ["render", "output_format", "markdown"],
-	"call": "extract_file_sync",
-	"input": {
-		"path": "pdf/fake_memo.pdf",
-		"config": {
-			"output_format": "markdown"
-		}
-	},
-	"assertions": [
-		{
-			"type": "not_error"
-		},
-		{
-			"type": "equals",
-			"field": "output_format",
-			"value": "markdown"
-		},
-		{
-			"type": "contains_any",
-			"field": "content",
-			"values": ["#", "**", "*"]
-		}
-	]
+  "id": "render_output_markdown",
+  "category": "render",
+  "description": "Extract PDF with Markdown output format",
+  "tags": [
+    "render",
+    "output_format",
+    "markdown"
+  ],
+  "call": "extract_file_sync",
+  "input": {
+    "path": "pdf/fake_memo.pdf",
+    "config": {
+      "output_format": "markdown"
+    }
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    },
+    {
+      "type": "equals",
+      "field": "metadata.output_format",
+      "value": "markdown"
+    },
+    {
+      "type": "contains_any",
+      "field": "content",
+      "values": [
+        "#",
+        "**",
+        "*"
+      ]
+    }
+  ]
 }

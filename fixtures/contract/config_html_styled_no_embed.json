@@ -1,33 +1,42 @@
 {
-	"id": "config_html_styled_no_embed",
-	"description": "HTML output with embed_css false emits class hooks but no style block",
-	"tags": ["contract", "output_format", "html_styled"],
-	"call": "extract_file_sync",
-	"input": {
-		"path": "pdf/fake_memo.pdf",
-		"config": {
-			"output_format": "html",
-			"html_output": {
-				"theme": "default",
-				"embed_css": false
-			}
-		}
-	},
-	"assertions": [
-		{
-			"type": "equals",
-			"field": "output_format",
-			"value": "html"
-		},
-		{
-			"type": "contains_all",
-			"field": "content",
-			"values": ["kb-doc", "kb-content"]
-		},
-		{
-			"type": "not_contains",
-			"field": "content",
-			"values": ["<style>"]
-		}
-	]
+  "id": "config_html_styled_no_embed",
+  "description": "HTML output with embed_css false emits class hooks but no style block",
+  "tags": [
+    "contract",
+    "output_format",
+    "html_styled"
+  ],
+  "call": "extract_file_sync",
+  "input": {
+    "path": "pdf/fake_memo.pdf",
+    "config": {
+      "output_format": "html",
+      "html_output": {
+        "theme": "default",
+        "embed_css": false
+      }
+    }
+  },
+  "assertions": [
+    {
+      "type": "equals",
+      "field": "metadata.output_format",
+      "value": "html"
+    },
+    {
+      "type": "contains_all",
+      "field": "content",
+      "values": [
+        "kb-doc",
+        "kb-content"
+      ]
+    },
+    {
+      "type": "not_contains",
+      "field": "content",
+      "values": [
+        "<style>"
+      ]
+    }
+  ]
 }

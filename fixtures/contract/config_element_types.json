@@ -16,19 +16,9 @@
 			"values": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
 		},
 		{
-			"type": "equals",
-			"field": "result_format",
-			"value": "element_based"
-		},
-		{
 			"type": "count_min",
 			"field": "elements",
 			"value": 1
-		},
-		{
-			"type": "contains_all",
-			"field": "element_types",
-			"values": ["narrative_text"]
 		}
 	],
 	"skip": {

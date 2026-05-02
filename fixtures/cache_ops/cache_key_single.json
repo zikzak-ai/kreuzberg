@@ -5,15 +5,11 @@
 	"tags": ["cache", "key", "single"],
 	"call": "generate_cache_key",
 	"input": {
-		"parts": "[\"test\"]"
+		"parts": [["test"]]
 	},
 	"assertions": [
 		{
 			"type": "not_error"
 		}
-	],
-	"skip": {
-		"languages": ["csharp"],
-		"reason": "parts passed as JSON string; C# GenerateCacheKey requires List<List<string>>"
-	}
+	]
 }

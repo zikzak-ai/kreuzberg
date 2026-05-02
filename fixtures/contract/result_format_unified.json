@@ -21,9 +21,8 @@
 			"value": 10
 		},
 		{
-			"type": "equals",
-			"field": "result_format",
-			"value": "unified"
+			"type": "is_empty",
+			"field": "elements"
 		}
 	]
 }

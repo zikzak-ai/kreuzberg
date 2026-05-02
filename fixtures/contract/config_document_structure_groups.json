@@ -17,11 +17,12 @@
 		},
 		{
 			"type": "not_empty",
-			"field": "document_structure"
+			"field": "document"
 		},
 		{
-			"type": "is_true",
-			"field": "document_structure_has_groups"
+			"type": "contains_any",
+			"field": "document.node_types",
+			"values": ["group"]
 		}
 	],
 	"skip": {

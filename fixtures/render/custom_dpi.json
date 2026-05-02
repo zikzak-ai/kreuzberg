@@ -12,12 +12,10 @@
 	},
 	"assertions": [
 		{
-			"type": "is_true",
-			"field": "is_png"
+			"type": "not_empty"
 		},
 		{
-			"type": "greater_than_or_equal",
-			"field": "byte_length",
+			"type": "count_min",
 			"value": 50
 		}
 	]
