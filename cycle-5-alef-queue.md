@@ -1,8 +1,8 @@
-# Cycle 5 Alef Queue — Python E2E Test Failures
+# Cycle 5 Alef Queue — Python E2E Test Failures + Go E2E Investigation
 
 Date: 2026-05-03
 Regenerated with: alef v0.14.3
-Target: Drive Python e2e test suite to 100% green
+Target: Drive Python e2e test suite to 100% green; investigate Go e2e failures
 
 ## Final Status
 
@@ -17,9 +17,39 @@ Target: Drive Python e2e test suite to 100% green
   - test_embeddings.py: missing embed_texts_async export (P7)
   - test_plugin_api.py: missing unregister_* exports (P8)
 
+**Go E2E Tests: 5/68 green (7%), 3 red (4%), 60 skipped (88%)**
+
+- Passed: 5 tests (PDF, DOCX, JSON, TXT with simple configs)
+- Skipped: 60 tests (feature gates and non-HTTP fixtures)
+- Failed: 3 tests (2 config parsing, 1 result unmarshaling)
+  - All failures are bucket-A alef codegen bugs
+  - Library path resolution fixed in main_test.go
+
 ## Bucket A — Alef Codegen Bugs (alef-side fixes)
 
 Note: original go-agent triage misattributed these to "missing fixtures". Verified against `fixtures/batch/batch_bytes_invalid_mime.json` — fixtures are present and correctly structured. Real cause: alef-backend-go's e2e codegen.
+
+### Go Binding Bugs (Cycle 5)
+
+11. **alef-backend-go: OutputFormat enum rendered as empty struct**
+    `OutputFormat` is Rust enum with variants Plain, Markdown, Djot, Html, Json, Structured, Custom(String).
+    Go codegen produces `type OutputFormat struct {}` (empty struct with no const variants).
+    Test fixtures with `{"output_format":"markdown"}` fail to unmarshal because Go expects a struct, not a string.
+    Root cause: Rust enum-to-Go translation doesn't handle tagged/untagged unions; should generate string type with const variants or custom MarshalJSON.
+    Affects: Test_ApiBatchBytesWithConfigsAsync, Test_ApiBatchFileWithConfigsAsync (config parsing fails)
+
+12. **alef-backend-go: JSON unmarshal errors not returned, silently return nil**
+    When C FFI returns valid JSON response but Go JSON unmarshaling fails (e.g., due to OutputFormat issue), the binding code catches the error and returns nil without returning an error value.
+    Code pattern: `if err := json.Unmarshal(...); err != nil { return nil }` (should return error).
+    Consequence: Tests see nil result with no error, crash when accessing result.MimeType.
+    Affects: Test_SmokeHtmlBasic, Test_SmokeXlsxBasic (return nil, panic on field access)
+
+13. **alef-backend-go e2e: fixture/library path resolution**
+    Go tests assume `html/simple_table.html` paths are relative to cwd, but tests run from e2e/go/.
+    Rust tests workaround: symlink `e2e/test_documents`.
+    Go tests workaround: TestMain changes cwd to `../../test_documents` before running tests.
+    Also requires DYLD_LIBRARY_PATH set to find libpdfium.dylib and libkreuzberg_ffi.dylib at runtime.
+    Note: This is NOT an alef bug per se, but affects test execution. Workaround in place: main_test.go.
 
 ### Python Binding Bugs (Cycle 5)
 
