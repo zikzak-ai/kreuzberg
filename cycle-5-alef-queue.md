@@ -1,8 +1,21 @@
-# Cycle 5 Alef Queue — Go E2E Test Failures
+# Cycle 5 Alef Queue — Python E2E Test Failures
 
 Date: 2026-05-03
 Regenerated with: alef v0.14.3
-Target: Drive Go e2e test suite to 100% green
+Target: Drive Python e2e test suite to 100% green
+
+## Final Status
+
+**Python E2E Tests: 29/63 green (46%), 34 red (54%), all failures are bucket-A alef bugs**
+
+- Passed: 20 tests
+- Skipped: 9 tests (feature gates: keywords-yake, pdf, quality, tree-sitter, embeddings, llm, image)
+- Failed: 34 tests
+  - All 34 failures caused by alef codegen bugs P7-P10
+  - No kreuzberg core bugs found
+- Uncollected: 2 files (import errors)
+  - test_embeddings.py: missing embed_texts_async export (P7)
+  - test_plugin_api.py: missing unregister_* exports (P8)
 
 ## Bucket A — Alef Codegen Bugs (alef-side fixes)
 
