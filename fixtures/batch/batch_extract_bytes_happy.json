@@ -1,0 +1,28 @@
+{
+  "id": "batch_extract_bytes_happy",
+  "category": "batch",
+  "description": "batch_extract_bytes: happy path with mixed inputs",
+  "call": "batch_extract_bytes",
+  "input": {
+    "items": [
+      {
+        "content": "Hello, world!",
+        "mime_type": "text/plain"
+      },
+      {
+        "content": "<html><body>Test</body></html>",
+        "mime_type": "text/html"
+      }
+    ]
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    },
+    {
+      "type": "count_min",
+      "field": "results",
+      "value": 1
+    }
+  ]
+}

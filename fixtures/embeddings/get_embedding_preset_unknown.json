@@ -1,0 +1,14 @@
+{
+  "id": "get_embedding_preset_unknown",
+  "category": "embeddings",
+  "description": "get_embedding_preset: unknown preset fails",
+  "call": "get_embedding_preset",
+  "input": {
+    "preset_name": "nonexistent-xyz"
+  },
+  "assertions": [
+    {
+      "type": "error"
+    }
+  ]
+}

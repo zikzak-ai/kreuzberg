@@ -1,0 +1,14 @@
+{
+  "id": "unregister_validator_after_register",
+  "category": "plugin_api",
+  "description": "unregister_validator",
+  "call": "unregister_validator",
+  "input": {
+    "validator_name": "test-validator"
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    }
+  ]
+}

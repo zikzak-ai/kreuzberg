@@ -1,0 +1,19 @@
+{
+  "id": "batch_extract_bytes_sync_empty_list",
+  "category": "batch",
+  "description": "batch_extract_bytes_sync: empty batch",
+  "call": "batch_extract_bytes_sync",
+  "input": {
+    "items": []
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    },
+    {
+      "type": "count_equals",
+      "field": "results",
+      "value": 0
+    }
+  ]
+}

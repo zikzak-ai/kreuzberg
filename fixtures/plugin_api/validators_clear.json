@@ -2,7 +2,11 @@
   "id": "validators_clear",
   "category": "validator_management",
   "description": "Clear all validators and verify list is empty",
-  "tags": ["validators", "plugin_management", "clear"],
+  "tags": [
+    "validators",
+    "plugin_management",
+    "clear"
+  ],
   "call": "clear_validators",
   "assertions": [
     {

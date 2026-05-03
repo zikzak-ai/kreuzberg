@@ -1,0 +1,14 @@
+{
+  "id": "get_embedding_preset_nominal",
+  "category": "embeddings",
+  "description": "get_embedding_preset: nominal case",
+  "call": "get_embedding_preset",
+  "input": {
+    "preset_name": "default"
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    }
+  ]
+}

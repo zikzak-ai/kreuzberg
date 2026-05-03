@@ -1,0 +1,14 @@
+{
+  "id": "unregister_post_processor_after_register",
+  "category": "plugin_api",
+  "description": "unregister_post_processor",
+  "call": "unregister_post_processor",
+  "input": {
+    "processor_name": "test-processor"
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    }
+  ]
+}

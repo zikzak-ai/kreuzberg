@@ -1,0 +1,41 @@
+{
+  "id": "register_validator_trait_bridge",
+  "category": "plugin_api",
+  "description": "register_validator: trait bridge",
+  "tags": [
+    "trait-bridge"
+  ],
+  "call": "register_validator",
+  "skip": {
+    "languages": [
+      "python",
+      "node",
+      "go",
+      "ruby",
+      "php",
+      "java",
+      "csharp",
+      "kotlin",
+      "swift",
+      "dart",
+      "gleam",
+      "wasm",
+      "r",
+      "elixir",
+      "zig",
+      "ffi"
+    ],
+    "reason": "Trait-bridge fixture support deferred to v0.14.4+"
+  },
+  "input": {
+    "validator": {
+      "type": "test",
+      "name": "test-validator"
+    }
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    }
+  ]
+}

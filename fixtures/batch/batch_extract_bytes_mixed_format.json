@@ -1,0 +1,19 @@
+{
+  "id": "batch_extract_bytes_mixed_format",
+  "category": "batch",
+  "description": "batch_extract_bytes: handles unsupported MIME gracefully",
+  "call": "batch_extract_bytes",
+  "input": {
+    "items": [
+      {
+        "content": "PDF placeholder",
+        "mime_type": "application/x-unknown"
+      }
+    ]
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    }
+  ]
+}

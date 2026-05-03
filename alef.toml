@@ -1284,44 +1284,6 @@ json_object_types = { chunking = "ChunkingConfig", ocr = "OcrConfig", images = "
 arg_name_map = { data = "content" }
 options_type = "ExtractionConfig"
 
-[crates.e2e.calls.embed]
-result_is_simple = true
-function = "embed_texts"
-module = "kreuzberg"
-async = false
-returns_result = true
-skip_languages = ["wasm"]
-args = [
-  { name = "texts", field = "input.texts", type = "json_object", element_type = "String" },
-  { name = "config", field = "input.config", type = "json_object", optional = true },
-]
-
-[crates.e2e.calls.embed.overrides.java]
-result_is_simple = true
-options_type = "EmbeddingConfig"
-
-[crates.e2e.calls.render_page]
-result_is_bytes = true
-result_is_simple = true
-function = "render_pdf_page_to_png"
-module = "kreuzberg"
-async = false
-returns_result = true
-args = [
-  { name = "pdf_bytes", field = "input.path", type = "bytes" },
-  { name = "page_index", field = "input.page_index", type = "int" },
-]
-
-[crates.e2e.calls.render_page.overrides.rust]
-result_is_bytes = true
-result_is_simple = true
-extra_args = ["None", "None"]
-
-[crates.e2e.calls.render_page.overrides.csharp]
-result_is_bytes = true
-result_is_simple = true
-extra_args = ["null", "null"]
-
 [crates.e2e.calls.render_html.overrides.python]
 result_is_simple = true
 arg_name_map = { doc = "html" }
@@ -1399,16 +1361,6 @@ options_type = "LanguageDetectionConfig"
 [crates.e2e.calls.detect_languages.overrides.java]
 options_type = "LanguageDetectionConfig"
 
-[crates.e2e.calls.detect_mime_type_standalone]
-function = "detect_mime_type"
-module = "kreuzberg"
-async = false
-returns_result = true
-args = [
-  { name = "path", field = "input.path", type = "string", owned = true },
-  { name = "check_exists", field = "input.check_exists", type = "bool" },
-]
-
 [crates.e2e.calls.detect_mime_type_from_bytes]
 function = "detect_mime_type_from_bytes"
 module = "kreuzberg"
@@ -1427,17 +1379,6 @@ arg_name_map = { text = "s" }
 result_is_array = true
 result_is_simple = true
 returns_result = true
-
-[crates.e2e.calls.embed_text]
-function = "embed_texts"
-module = "kreuzberg"
-async = false
-returns_result = true
-skip_languages = ["wasm"]
-args = [
-  { name = "texts", field = "input.texts", type = "json_object" },
-  { name = "config", field = "input.config", type = "json_object", optional = true },
-]
 
 [crates.e2e.calls.get_extensions_for_mime]
 result_is_array = true
@@ -1636,6 +1577,161 @@ args = []
 [crates.e2e.calls.list_validators.overrides.go]
 result_is_simple = true
 returns_result = true
+
+[crates.e2e.calls.embed_texts_async]
+result_is_simple = true
+function = "embed_texts_async"
+module = "kreuzberg"
+async = true
+returns_result = true
+skip_languages = ["wasm"]
+args = [
+  { name = "texts", field = "input.texts", type = "json_object" },
+  { name = "config", field = "input.config", type = "json_object", optional = true },
+]
+
+[crates.e2e.calls.embed_texts_async.overrides.csharp]
+result_is_simple = true
+options_type = "EmbeddingConfig"
+
+[crates.e2e.calls.embed_texts_async.overrides.java]
+result_is_simple = true
+options_type = "EmbeddingConfig"
+
+[crates.e2e.calls.get_embedding_preset]
+result_is_simple = true
+function = "get_embedding_preset"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "preset_name", field = "input.preset_name", type = "string" },
+]
+
+[crates.e2e.calls.list_embedding_presets]
+result_is_simple = true
+function = "list_embedding_presets"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = []
+
+[crates.e2e.calls.detect_mime_type]
+result_is_simple = true
+function = "detect_mime_type"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "path", field = "input.path", type = "string" },
+  { name = "check_exists", field = "input.check_exists", type = "bool", optional = true },
+]
+
+[crates.e2e.calls.render_pdf_page_to_png]
+result_is_bytes = true
+result_is_simple = true
+function = "render_pdf_page_to_png"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "pdf_path", field = "input.pdf_path", type = "string" },
+  { name = "page_number", field = "input.page_number", type = "int" },
+]
+
+[crates.e2e.calls.render_pdf_page_to_png.overrides.rust]
+result_is_bytes = true
+result_is_simple = true
+extra_args = ["None", "None"]
+
+[crates.e2e.calls.render_pdf_page_to_png.overrides.csharp]
+result_is_bytes = true
+result_is_simple = true
+extra_args = ["null", "null"]
+
+[crates.e2e.calls.register_post_processor]
+result_is_simple = true
+function = "register_post_processor"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "processor", field = "input.processor", type = "json_object" },
+]
+
+[crates.e2e.calls.register_validator]
+result_is_simple = true
+function = "register_validator"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "validator", field = "input.validator", type = "json_object" },
+]
+
+[crates.e2e.calls.register_ocr_backend]
+result_is_simple = true
+function = "register_ocr_backend"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "backend", field = "input.backend", type = "json_object" },
+]
+
+[crates.e2e.calls.unregister_post_processor]
+result_is_simple = true
+function = "unregister_post_processor"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "processor_name", field = "input.processor_name", type = "string" },
+]
+
+[crates.e2e.calls.unregister_validator]
+result_is_simple = true
+function = "unregister_validator"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "validator_name", field = "input.validator_name", type = "string" },
+]
+
+[crates.e2e.calls.unregister_ocr_backend]
+result_is_simple = true
+function = "unregister_ocr_backend"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = [
+  { name = "backend_name", field = "input.backend_name", type = "string" },
+]
+
+[crates.e2e.calls.clear_post_processors]
+result_is_simple = true
+function = "clear_post_processors"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = []
+
+[crates.e2e.calls.clear_validators]
+result_is_simple = true
+function = "clear_validators"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = []
+
+[crates.e2e.calls.clear_ocr_backends]
+result_is_simple = true
+function = "clear_ocr_backends"
+module = "kreuzberg"
+async = false
+returns_result = true
+args = []
 
 # ── Rust-skip stubs: functions that exist in other languages but not in the Rust
 # public API. Adding python-only overrides here causes alef to recognize the call

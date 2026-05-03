@@ -1,0 +1,25 @@
+{
+  "id": "embed_texts_different_preset",
+  "category": "embeddings",
+  "description": "embed_texts: multilingual preset",
+  "call": "embed_texts",
+  "input": {
+    "texts": [
+      "Hello world",
+      "Test"
+    ],
+    "config": {
+      "embedding_model": "multilingual"
+    }
+  },
+  "assertions": [
+    {
+      "type": "not_error"
+    },
+    {
+      "type": "count_min",
+      "field": "embeddings",
+      "value": 2
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "render_pdf_page_missing_file",
+  "category": "pdf",
+  "description": "render_pdf_page_to_png: missing file",
+  "call": "render_pdf_page_to_png",
+  "input": {
+    "pdf_path": "nonexistent/file.pdf",
+    "page_number": 0
+  },
+  "assertions": [
+    {
+      "type": "error"
+    }
+  ]
+}

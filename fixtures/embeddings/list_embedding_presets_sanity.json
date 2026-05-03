@@ -1,0 +1,17 @@
+{
+  "id": "list_embedding_presets_sanity",
+  "category": "embeddings",
+  "description": "list_embedding_presets: returns at least one",
+  "call": "list_embedding_presets",
+  "input": {},
+  "assertions": [
+    {
+      "type": "not_error"
+    },
+    {
+      "type": "count_min",
+      "field": "presets",
+      "value": 1
+    }
+  ]
+}
