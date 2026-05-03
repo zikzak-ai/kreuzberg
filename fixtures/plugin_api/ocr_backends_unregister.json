@@ -5,7 +5,7 @@
   "tags": ["ocr", "plugin_management", "unregister", "trait-bridge"],
   "call": "unregister_ocr_backend",
   "input": {
-    "args": ["nonexistent-backend-xyz"]
+    "name": "nonexistent-backend-xyz"
   },
   "assertions": [
     {

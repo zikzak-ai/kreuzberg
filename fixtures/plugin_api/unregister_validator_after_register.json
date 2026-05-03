@@ -4,7 +4,7 @@
   "description": "unregister_validator",
   "call": "unregister_validator",
   "input": {
-    "validator_name": "test-validator"
+    "name": "test-validator"
   },
   "assertions": [
     {

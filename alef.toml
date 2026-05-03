@@ -60,6 +60,12 @@ public_api = true
 [workspace.generate_overrides.wasm]
 async_wrappers = false
 
+# Disable the default format_generated pass for node (pnpm dlx oxfmt .) which runs
+# from the repo root and chokes on vendored HTML fixtures and Helm chart YAML.
+# Post-generation formatting is handled by [crates.lint.node] format command instead.
+[workspace.format_overrides.node]
+enabled = false
+
 # ---------------------------------------------------------------------------
 # Version synchronization
 # ---------------------------------------------------------------------------
@@ -129,6 +135,12 @@ sources = [
   "crates/kreuzberg/src/paddle_ocr/mod.rs",
   # Plugin registry operations (list_document_extractors etc.)
   "crates/kreuzberg/src/plugins/extractor/mod.rs",
+  # OCR backend registry operations (register/unregister/list/clear)
+  "crates/kreuzberg/src/plugins/ocr.rs",
+  # Validator registry operations
+  "crates/kreuzberg/src/plugins/validator/mod.rs",
+  # Post-processor registry operations
+  "crates/kreuzberg/src/plugins/processor/mod.rs",
 ]
 features = [
   "full",
@@ -413,6 +425,9 @@ exclude_functions = [
 
 [crates.csharp]
 namespace = "Kreuzberg"
+# project_file directs `dotnet format` to the .csproj inside packages/csharp/Kreuzberg/
+# rather than the parent directory (which has no .sln or .csproj at its root).
+project_file = "packages/csharp/Kreuzberg/Kreuzberg.csproj"
 exclude_functions = [
   # Returns *mut u8 (raw byte buffer); no kreuzberg_free_bytes function exists in the C FFI.
   "render_pdf_page_to_png",
@@ -1225,6 +1240,17 @@ options_type = "ExtractionConfig"
 function = "extract_file"
 options_type = "ExtractionConfig"
 
+[crates.e2e.calls.extract_file]
+function = "extract_file"
+module = "kreuzberg"
+async = true
+returns_result = true
+args = [
+  { name = "path", field = "input.path", type = "file_path" },
+  { name = "mime_type", field = "input.mime_type", type = "string", optional = true },
+  { name = "config", field = "input.config", type = "json_object", optional = true },
+]
+
 [crates.e2e.calls.extract_bytes]
 function = "extract_bytes"
 module = "kreuzberg"
@@ -1578,6 +1604,85 @@ args = []
 result_is_simple = true
 returns_result = true
 
+[crates.e2e.calls.clear_ocr_backends]
+result_is_simple = true
+function = "clear_ocr_backends"
+module = "kreuzberg"
+async = false
+returns_result = false
+args = []
+
+[crates.e2e.calls.clear_post_processors]
+result_is_simple = true
+function = "clear_post_processors"
+module = "kreuzberg"
+async = false
+returns_result = false
+args = []
+
+[crates.e2e.calls.clear_validators]
+result_is_simple = true
+function = "clear_validators"
+module = "kreuzberg"
+async = false
+returns_result = false
+args = []
+
+[crates.e2e.calls.unregister_ocr_backend]
+# Trait-bridge function — excluded from gen_function surface; fixtures skip all languages.
+# function/module left empty so alef skips API surface validation.
+result_is_simple = true
+function = ""
+module = ""
+async = false
+returns_result = false
+args = [{ name = "name", field = "input.name", type = "string" }]
+
+[crates.e2e.calls.unregister_post_processor]
+# Trait-bridge function — excluded from gen_function surface; fixtures skip all languages.
+result_is_simple = true
+function = ""
+module = ""
+async = false
+returns_result = false
+args = [{ name = "name", field = "input.name", type = "string" }]
+
+[crates.e2e.calls.unregister_validator]
+# Trait-bridge function — excluded from gen_function surface; fixtures skip all languages.
+result_is_simple = true
+function = ""
+module = ""
+async = false
+returns_result = false
+args = [{ name = "name", field = "input.name", type = "string" }]
+
+[crates.e2e.calls.register_ocr_backend]
+# Trait-bridge function — excluded from gen_function surface; fixtures skip all languages.
+result_is_simple = true
+function = ""
+module = ""
+async = false
+returns_result = false
+args = []
+
+[crates.e2e.calls.register_post_processor]
+# Trait-bridge function — excluded from gen_function surface; fixtures skip all languages.
+result_is_simple = true
+function = ""
+module = ""
+async = false
+returns_result = false
+args = []
+
+[crates.e2e.calls.register_validator]
+# Trait-bridge function — excluded from gen_function surface; fixtures skip all languages.
+result_is_simple = true
+function = ""
+module = ""
+async = false
+returns_result = false
+args = []
+
 [crates.e2e.calls.embed_texts_async]
 result_is_simple = true
 function = "embed_texts_async"
@@ -1839,7 +1944,7 @@ package_name = "@kreuzberg/node"
 badge_url = "https://img.shields.io/npm/v/@kreuzberg/node?label=TypeScript&color=007ec6"
 docs_url = "https://kreuzberg.dev/"
 description = "Extract text, tables, images, and metadata from 91+ file formats and 248 programming languages including PDF, Office documents, and images. Native NAPI-RS bindings for Node.js with superior performance, async/await support, and TypeScript type definitions."
-package_manager = ["npm", "pnpm", "yarn"]
+package_manager = ["pnpm"]
 features = { ocr = true, async = true, plugin_system = true, embeddings = true, worker_pools = true, config_discovery = true, code_intelligence = true }
 ocr_backends = ["tesseract", "paddleocr"]
 optional_sections = [
@@ -1937,7 +2042,7 @@ package_name = "@kreuzberg/wasm"
 badge_url = "https://img.shields.io/npm/v/@kreuzberg/wasm?label=WASM&color=007ec6"
 docs_url = "https://kreuzberg.dev/"
 description = "Extract text, tables, images, and metadata from 91+ file formats and 248 programming languages including PDF, Office documents, and images. WebAssembly bindings for browsers, Deno, and Cloudflare Workers with portable deployment and multi-threading support."
-package_manager = ["npm", "pnpm", "yarn"]
+package_manager = ["pnpm"]
 features = { ocr = true, async = true, plugin_system = true, embeddings = false, code_intelligence = true }
 ocr_backends = ["tesseract-wasm"]
 optional_sections = [
