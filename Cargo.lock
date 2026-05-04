@@ -3738,6 +3738,7 @@ dependencies = [
 name = "kreuzberg-php"
 version = "4.10.0-rc.15"
 dependencies = [
+ "async-trait",
  "ext-php-rs",
  "kreuzberg",
  "serde",
@@ -3749,6 +3750,7 @@ dependencies = [
 name = "kreuzberg-py"
 version = "4.10.0-rc.15"
 dependencies = [
+ "async-trait",
  "kreuzberg",
  "pyo3",
  "pyo3-async-runtimes",
