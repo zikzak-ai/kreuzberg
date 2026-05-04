@@ -282,6 +282,23 @@ tasks:
     cmds:
       - alef test --e2e --lang r
 
+  e2e:build:all:
+    desc: "Build all language bindings for e2e testing"
+    cmds:
+      - alef build
+
+  e2e:run:all:
+    desc: "Run all e2e test suites in parallel"
+    cmds:
+      - alef test --e2e
+
+  e2e:all:
+    desc: "Generate e2e fixtures, build all bindings, and run all e2e tests"
+    cmds:
+      - alef e2e generate
+      - alef build
+      - alef test --e2e
+
   # === Publish ===
   publish:validate:
     desc: "Validate publish manifests are consistent"
