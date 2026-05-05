@@ -74,9 +74,14 @@ enabled = false
 extra_paths = [
   "packages/python/kreuzberg/__init__.py",
   "packages/ruby/lib/kreuzberg/version.rb",
+  "packages/ruby/ext/kreuzberg_rb/native/Cargo.toml",
   "crates/kreuzberg-node/package.json",
   "crates/kreuzberg-node/npm/*/package.json",
-  "packages/go/v4/go.mod",
+  "packages/node/package.json",
+  "packages/gleam/gleam.toml",
+  "packages/go/v5/go.mod",
+  "e2e/java/pom.xml",
+  "Cargo.toml",
 ]
 
 [[crates]]
@@ -401,7 +406,7 @@ app_name = "kreuzberg"
 nif_module = "Elixir.Kreuzberg.Native"
 
 [crates.go]
-module = "github.com/kreuzberg-dev/kreuzberg/v4"
+module = "github.com/kreuzberg-dev/kreuzberg/v5"
 package_name = "kreuzberg"
 
 [crates.java]
@@ -450,7 +455,7 @@ node = "crates/kreuzberg-node/src/"
 ruby = "packages/ruby/ext/kreuzberg_rb/src/"
 php = "crates/kreuzberg-php/src/"
 ffi = "crates/kreuzberg-ffi/src/"
-go = "packages/go/v4/"
+go = "packages/go/v5/"
 elixir = "packages/elixir/native/kreuzberg_nif/src/"
 wasm = "crates/kreuzberg-wasm/src/"
 java = "packages/java/src/main/java/"
@@ -1203,7 +1208,7 @@ options_type = "JsExtractionConfig"
 arg_order = ["path", "config", "mime_type"]
 
 [crates.e2e.call.overrides.go]
-module = "github.com/kreuzberg-dev/kreuzberg/v4"
+module = "github.com/kreuzberg-dev/kreuzberg/v5"
 function = "ExtractFile"
 alias = "kreuzberg"
 options_type = "ExtractionConfig"
@@ -1894,8 +1899,8 @@ name = "kreuzberg"
 path = "../../crates/kreuzberg-node"
 
 [crates.e2e.packages.go]
-module = "github.com/kreuzberg-dev/kreuzberg/v4"
-path = "../../packages/go/v4"
+module = "github.com/kreuzberg-dev/kreuzberg/v5"
+path = "../../packages/go/v5"
 
 [crates.e2e.packages.csharp]
 name = "Kreuzberg"
@@ -1987,9 +1992,9 @@ snippets = { basic_extraction = "getting-started/basic_usage.md", async_extracti
 
 [crates.readme.languages.go]
 template = "go.md"
-output_path = "packages/go/v4/README.md"
+output_path = "packages/go/v5/README.md"
 name = "Go"
-package_name = "github.com/kreuzberg-dev/kreuzberg/v4"
+package_name = "github.com/kreuzberg-dev/kreuzberg/v5"
 badge_url = "https://img.shields.io/github/v/tag/kreuzberg-dev/kreuzberg?label=Go&color=007ec6"
 docs_url = "https://kreuzberg.dev/"
 description = "Extract text, tables, images, and metadata from 91+ file formats and 248 programming languages including PDF, Office documents, and images. Go bindings with context-aware async support, idiomatic Go API, and CGO-based native performance."
