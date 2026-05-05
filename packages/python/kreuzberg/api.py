@@ -46,12 +46,17 @@ _E = TypeVar("_E")
 
 
 def _coerce_enum(enum_cls: type[_E], value: object) -> _E:
-    """Coerce a string/alias value into the matching pyclass enum instance."""
+    """Coerce a string/alias value into the matching pyclass enum instance.
+
+    For serde untagged enums (like OutputFormat), constructs a dict with
+    the variant name as key. For regular enums with attributes, uses attribute lookup.
+    """
     if isinstance(value, enum_cls):
         return value
     if value is None:
         msg = f"unknown {getattr(enum_cls, '__name__', enum_cls)!s} value: {value!r}"
         raise ValueError(msg)
+
     s = str(value).replace("-", "_").replace(" ", "_")
     candidates = (
         s,
@@ -59,10 +64,21 @@ def _coerce_enum(enum_cls: type[_E], value: object) -> _E:
         s.lower(),
         "".join(part.capitalize() for part in s.split("_")),
     )
+
+    # Try attribute lookup first (for regular enums like ExecutionProviderType, etc.)
     for candidate in candidates:
         attr = getattr(enum_cls, candidate, None)
         if isinstance(attr, enum_cls):
             return attr
+
+    # For serde untagged enums (like OutputFormat), construct dict with variant name
+    # Try lowercase variant name as dict key
+    for candidate in candidates:
+        try:
+            return enum_cls({candidate: None})
+        except (ValueError, TypeError):
+            continue
+
     msg = f"unknown {getattr(enum_cls, '__name__', enum_cls)!s} value: {value!r}"
     raise ValueError(msg)
 
@@ -522,9 +538,16 @@ def _to_rust_tree_sitter_config(value: TreeSitterConfig | None) -> _rust.TreeSit
 
 def _to_rust_extraction_config(value: ExtractionConfig | None) -> _rust.ExtractionConfig | None:
     """Convert Python ExtractionConfig to Rust binding type."""
+    import json
+
     if isinstance(value, dict):
         if "result_format" in value and value["result_format"] is not None:
             value["result_format"] = _coerce_enum(_rust.ResultFormat, value["result_format"])
+        if "output_format" in value and value["output_format"] is not None:
+            value["output_format"] = _coerce_enum(_rust.OutputFormat, value["output_format"])
+        # Convert security_limits dict to JSON string if needed
+        if "security_limits" in value and isinstance(value["security_limits"], dict):
+            value["security_limits"] = json.dumps(value["security_limits"])
         value = ExtractionConfig(**value)
     if value is None:
         return None
@@ -550,9 +573,9 @@ def _to_rust_extraction_config(value: ExtractionConfig | None) -> _rust.Extracti
         max_concurrent_extractions=value.max_concurrent_extractions,
         result_format=_coerce_enum(_rust.ResultFormat, value.result_format),
         security_limits=value.security_limits,
-        output_format=value.output_format
-        if isinstance(value.output_format, _rust.OutputFormat)
-        else _rust.OutputFormat(value.output_format),
+        output_format=_coerce_enum(_rust.OutputFormat, value.output_format)
+        if value.output_format is not None
+        else None,
         layout=_to_rust_layout_detection_config(value.layout),
         include_document_structure=value.include_document_structure,
         acceleration=_to_rust_acceleration_config(value.acceleration),
@@ -581,20 +604,38 @@ async def extract_bytes(
 
 async def extract_file(
     path: str,
-    mime_type: str | None = None,
+    mime_type: str | ExtractionConfig | dict | None = None,
     config: ExtractionConfig | None = None,
 ) -> ExtractionResult:
-    """Extract content from a file."""
+    """Extract content from a file.
+
+    Supports both calling conventions:
+    - extract_file(path, mime_type, config)
+    - extract_file(path, config=config)
+    """
+    # If mime_type is an ExtractionConfig or dict, treat it as config
+    if isinstance(mime_type, (dict, ExtractionConfig)):
+        config = mime_type
+        mime_type = None
     _rust_config = _to_rust_extraction_config(config) if config is not None else _rust.ExtractionConfig()
     return await _rust.extract_file(path=path, mime_type=mime_type, config=_rust_config)
 
 
 def extract_file_sync(
     path: str,
-    mime_type: str | None = None,
+    mime_type: str | ExtractionConfig | dict | None = None,
     config: ExtractionConfig | None = None,
 ) -> ExtractionResult:
-    """Synchronous wrapper for `extract_file`."""
+    """Synchronous wrapper for `extract_file`.
+
+    Supports both calling conventions:
+    - extract_file_sync(path, mime_type, config)
+    - extract_file_sync(path, config=config)
+    """
+    # If mime_type is an ExtractionConfig or dict, treat it as config
+    if isinstance(mime_type, (dict, ExtractionConfig)):
+        config = mime_type
+        mime_type = None
     _rust_config = _to_rust_extraction_config(config) if config is not None else _rust.ExtractionConfig()
     return _rust.extract_file_sync(path=path, mime_type=mime_type, config=_rust_config)
 
