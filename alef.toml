@@ -540,7 +540,6 @@ types = [
   "JsonNode",
   "PaddleOcrBackend", # runtime backend with engine pool — cannot serialize
   "ModelManager", # holds Path/HashMap engines — cannot serialize
-  "SecurityLimits",
   "PluginHealthStatus",
   "Run",
   "Paragraph",
@@ -1058,8 +1057,8 @@ e2e = "dotnet test e2e/csharp"
 
 [crates.test.elixir]
 precondition = "command -v mix >/dev/null 2>&1"
-before = "cd packages/elixir && mix deps.get && mix compile"
-e2e = "cd e2e/elixir && mix test"
+before = "cd packages/elixir && KREUZBERG_BUILD=1 mix deps.get && KREUZBERG_BUILD=1 mix compile && cd ../../e2e/elixir && KREUZBERG_BUILD=1 mix deps.get"
+e2e = "cd e2e/elixir && KREUZBERG_BUILD=1 mix test"
 
 [crates.test.r]
 precondition = "command -v Rscript >/dev/null 2>&1"
@@ -1068,7 +1067,7 @@ e2e = "cd e2e/r && Rscript -e \"devtools::load_all('../../packages/r'); testthat
 
 [crates.test.wasm]
 precondition = "command -v wasm-pack >/dev/null 2>&1"
-before = "wasm-pack build crates/kreuzberg-wasm --release --target web && cd e2e/wasm && pnpm install"
+before = "wasm-pack build crates/kreuzberg-wasm --release --target web && cd e2e/wasm && pnpm install --ignore-workspace"
 e2e = "cd e2e/wasm && pnpm test"
 
 [crates.test.rust]
@@ -1394,6 +1393,7 @@ function = "detect_mime_type_from_bytes"
 module = "kreuzberg"
 async = false
 returns_result = true
+result_is_simple = true
 args = [{ name = "content", field = "input.data", type = "bytes" }]
 
 [crates.e2e.calls.validate_chunking_params.overrides.python]

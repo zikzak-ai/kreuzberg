@@ -224,9 +224,9 @@ tasks:
       - alef e2e generate
 
   e2e:build:
-    desc: "Build all language bindings (release)"
+    desc: "Build all language bindings used by e2e suites (release)"
     cmds:
-      - alef build --release
+      - alef build --release --lang python,node,ruby,php,ffi,go,java,csharp,elixir,wasm,r
 
   e2e:run:
     desc: "Run all e2e test suites across all languages"
@@ -236,7 +236,7 @@ tasks:
       DYLD_LIBRARY_PATH: "{{.ROOT_DIR}}/target/release"
       LD_LIBRARY_PATH: "{{.ROOT_DIR}}/target/release"
     cmds:
-      - alef test --e2e
+      - alef test --e2e --lang rust,python,node,ruby,php,go,java,csharp,elixir,wasm,r
 
   e2e:all:
     desc: "Build all bindings + run all e2e tests (single command)"
@@ -246,8 +246,8 @@ tasks:
       DYLD_LIBRARY_PATH: "{{.ROOT_DIR}}/target/release"
       LD_LIBRARY_PATH: "{{.ROOT_DIR}}/target/release"
     cmds:
-      - alef build --release
-      - alef test --e2e
+      - alef build --release --lang python,node,ruby,php,ffi,go,java,csharp,elixir,wasm,r
+      - alef test --e2e --lang rust,python,node,ruby,php,go,java,csharp,elixir,wasm,r
 
   e2e:test:
     desc: "Run E2E tests for all languages (alias for e2e:run)"
