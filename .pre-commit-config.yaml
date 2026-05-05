@@ -37,7 +37,7 @@ repos:
 
   # TOML formatting
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.21.1"
+    rev: "v2.21.2"
     hooks:
       - id: pyproject-fmt
 
@@ -93,7 +93,7 @@ repos:
 
   # Markdown: linting
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: "v0.1.87"
+    rev: "v0.1.88"
     hooks:
       - id: rumdl-fmt
         exclude: '^(tools/benchmark-harness/vendored/|docs/reference/(api-|configuration\.md|errors\.md|types\.md)|templates/readme/|charts/)'
@@ -239,7 +239,7 @@ repos:
 
   # Alef: verify bindings and sync versions
   - repo: https://github.com/kreuzberg-dev/alef
-    rev: v0.14.14
+    rev: v0.14.22
     hooks:
       - id: alef-verify
       - id: alef-sync-versions
