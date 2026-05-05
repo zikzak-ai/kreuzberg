@@ -53,7 +53,7 @@ final class Kreuzberg
      * @return ExtractionResult
      * @throws \Kreuzberg\KreuzbergException
      */
-    public static function extractBytesAsync(string $content, string $mime_type, ?ExtractionConfig $config = null): ExtractionResult
+    public static function extractBytes(string $content, string $mime_type, ?ExtractionConfig $config = null): ExtractionResult
     {
         return \Kreuzberg\KreuzbergApi::extractBytesAsync($content, $mime_type, $config); // delegate to native extension class
     }
@@ -101,7 +101,7 @@ final class Kreuzberg
      * @return ExtractionResult
      * @throws \Kreuzberg\KreuzbergException
      */
-    public static function extractFileAsync(string $path, ?string $mime_type = null, ?ExtractionConfig $config = null): ExtractionResult
+    public static function extractFile(string $path, ?string $mime_type = null, ?ExtractionConfig $config = null): ExtractionResult
     {
         return \Kreuzberg\KreuzbergApi::extractFileAsync($path, $mime_type, $config); // delegate to native extension class
     }
@@ -310,7 +310,7 @@ final class Kreuzberg
      * @return array<ExtractionResult>
      * @throws \Kreuzberg\KreuzbergException
      */
-    public static function batchExtractFilesAsync(array $items, ?ExtractionConfig $config = null): array
+    public static function batchExtractFiles(array $items, ?ExtractionConfig $config = null): array
     {
         return \Kreuzberg\KreuzbergApi::batchExtractFilesAsync($items, $config); // delegate to native extension class
     }
@@ -377,7 +377,7 @@ final class Kreuzberg
      * @return array<ExtractionResult>
      * @throws \Kreuzberg\KreuzbergException
      */
-    public static function batchExtractBytesAsync(array $items, ?ExtractionConfig $config = null): array
+    public static function batchExtractBytes(array $items, ?ExtractionConfig $config = null): array
     {
         return \Kreuzberg\KreuzbergApi::batchExtractBytesAsync($items, $config); // delegate to native extension class
     }
@@ -610,7 +610,7 @@ final class Kreuzberg
      * @return array<array<float>>
      * @throws \Kreuzberg\KreuzbergException
      */
-    public static function embedTextsAsyncAsync(array $texts, ?EmbeddingConfig $config = null): array
+    public static function embedTextsAsync(array $texts, ?EmbeddingConfig $config = null): array
     {
         return \Kreuzberg\KreuzbergApi::embedTextsAsyncAsync($texts, $config); // delegate to native extension class
     }
