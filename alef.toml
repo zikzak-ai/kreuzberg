@@ -1036,7 +1036,7 @@ e2e = "cd e2e/go && go test ./... -count=1"
 
 [crates.test.ruby]
 precondition = "command -v bundle >/dev/null 2>&1"
-before = "cd e2e/ruby && bundle install"
+before = "cd packages/ruby && bundle install && bundle exec rake compile && cd ../../e2e/ruby && bundle install"
 e2e = "cd e2e/ruby && bundle exec rspec"
 
 [crates.test.php]
