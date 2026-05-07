@@ -482,7 +482,21 @@ impl EpubExtractor {
         // If markdown format was requested and all chapters converted successfully,
         // store the pre-rendered content and mark output format
         if all_converted_successfully && !pre_rendered_fragments.is_empty() {
-            let combined = pre_rendered_fragments.join("\n\n");
+            let mut combined = pre_rendered_fragments.join("\n\n");
+
+            // Normalize the combined markdown: trim trailing whitespace from each line
+            // and ensure a single trailing newline (matching markdown renderer behavior)
+            combined = combined
+                .lines()
+                .map(|line| line.trim_end())
+                .collect::<Vec<_>>()
+                .join("\n");
+            let trimmed_len = combined.trim_end().len();
+            if trimmed_len > 0 {
+                combined.truncate(trimmed_len);
+                combined.push('\n');
+            }
+
             doc.pre_rendered_content = Some(combined);
             let format_name = match config.output_format {
                 OutputFormat::Markdown => "markdown",
