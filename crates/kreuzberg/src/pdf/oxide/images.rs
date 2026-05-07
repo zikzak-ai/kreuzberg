@@ -69,7 +69,7 @@ pub(crate) fn extract_image_positions(doc: &mut OxideDocument) -> Result<Vec<(us
 /// A `Vec<ExtractedImage>` containing all extracted images with their data.
 pub(crate) fn extract_images_with_data(
     doc: &mut OxideDocument,
-    max_images_per_page: Option<usize>,
+    max_images_per_page: Option<u32>,
 ) -> Result<Vec<crate::types::ExtractedImage>> {
     let page_count = doc
         .doc
@@ -83,16 +83,13 @@ pub(crate) fn extract_images_with_data(
         let oxide_images = match doc.doc.extract_images(page_idx) {
             Ok(images) => images,
             Err(e) => {
-                tracing::debug!(
-                    page = page_idx,
-                    "pdf_oxide: failed to extract images: {e}"
-                );
+                tracing::debug!(page = page_idx, "pdf_oxide: failed to extract images: {e}");
                 continue;
             }
         };
 
         let page_number = page_idx + 1; // Kreuzberg uses 1-indexed page numbers
-        let limit = max_images_per_page.unwrap_or(usize::MAX);
+        let limit = max_images_per_page.unwrap_or(u32::MAX) as usize;
         let count = oxide_images.len().min(limit);
 
         for oxide_img in oxide_images.iter().take(count) {

@@ -328,12 +328,29 @@ impl PdfExtractor {
         }
 
         // --- Image extraction ---
-        // Full image extraction (bytes + metadata) is not yet implemented for the oxide backend.
-        // The oxide images module currently only extracts positions for placeholder injection.
         let (images, image_fallback_warning): (
             Option<Vec<crate::types::ExtractedImage>>,
             Option<crate::types::ProcessingWarning>,
-        ) = (None, None);
+        ) = if config.images.as_ref().map(|c| c.extract_images).unwrap_or(false) {
+            let max_images_per_page = config.images.as_ref().and_then(|i| i.max_images_per_page);
+            match crate::pdf::oxide::OxideDocument::open_bytes(content) {
+                Ok(mut oxide_doc) => {
+                    match crate::pdf::oxide::images::extract_images_with_data(&mut oxide_doc, max_images_per_page) {
+                        Ok(extracted_images) => (Some(extracted_images), None),
+                        Err(e) => {
+                            tracing::warn!(error = %e, "oxide path: image extraction failed");
+                            (None, None)
+                        }
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "oxide path: could not open PDF for image extraction");
+                    (None, None)
+                }
+            }
+        } else {
+            (None, None)
+        };
 
         // --- Page assembly ---
         let final_pages = assign_tables_and_images_to_pages(page_contents, &tables, images.as_deref().unwrap_or(&[]));

@@ -21,9 +21,14 @@ fn test_documents_dir() -> PathBuf {
 }
 
 fn extract_markdown(relative_path: &str) -> kreuzberg::types::ExtractionResult {
+    use kreuzberg::core::config::ImageExtractionConfig;
     let path = test_documents_dir().join(relative_path);
     let config = ExtractionConfig {
         output_format: OutputFormat::Markdown,
+        images: Some(ImageExtractionConfig {
+            extract_images: true,
+            ..Default::default()
+        }),
         ..Default::default()
     };
     let rt = tokio::runtime::Runtime::new().unwrap();
