@@ -4475,6 +4475,14 @@ char *kreuzberg_document_structure_relationships(const KREUZBERGDocumentStructur
 char *kreuzberg_document_structure_node_types(const KREUZBERGDocumentStructure *ptr);
 
 /**
+ * Returns `true` if the document has no nodes.
+ * # Safety
+ * Caller must ensure all pointer arguments are valid or null.
+ * Returned pointers must be freed with the appropriate free function.
+ */
+int32_t kreuzberg_document_structure_is_empty(const KREUZBERGDocumentStructure *this_);
+
+/**
  * Compute and populate the `node_types` field from the current `nodes`.
  *
  * Call this after all nodes have been added to the structure. Internal

@@ -21,6 +21,7 @@ languages = [
 # ---------------------------------------------------------------------------
 # Tool selection
 # ---------------------------------------------------------------------------
+# Force regen: Java bytes marshalling + FormatMetadata JsonUnwrapped fix
 
 [workspace.tools]
 python_package_manager = "uv"
@@ -1047,8 +1048,8 @@ e2e = "cd e2e/ruby && bundle exec rspec"
 
 [crates.test.php]
 precondition = "command -v composer >/dev/null 2>&1"
-before = "cargo build --release -p kreuzberg-php && cd e2e/php && composer install"
-e2e = "cd e2e/php && composer test"
+before = "cargo build --release -p kreuzberg-php && cd e2e/php && composer install && bash ../../scripts/setup-php-ext-ini.sh"
+e2e = "cd e2e/php && php -c php.ini vendor/bin/phpunit"
 
 [crates.test.java]
 precondition = "command -v mvn >/dev/null 2>&1"

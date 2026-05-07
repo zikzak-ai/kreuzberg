@@ -138,11 +138,6 @@ pub struct DocumentStructure {
 }
 
 impl DocumentStructure {
-    /// Returns `true` if the document has no nodes.
-    pub fn is_empty(&self) -> bool {
-        self.nodes.is_empty()
-    }
-
     /// Compute and populate the `node_types` field from the current `nodes`.
     ///
     /// Call this after all nodes have been added to the structure. Internal
@@ -750,8 +745,7 @@ impl DocumentStructure {
     }
 
     /// Check if the document structure is empty.
-    #[cfg(any(feature = "office", feature = "email", feature = "xml", test))]
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.nodes.is_empty()
     }
 }

@@ -7,6 +7,44 @@
 
 declare(strict_types=1);
 
+// Load the kreuzberg PHP extension from the build target directory.
+// The extension must be loaded before importing KreuzbergApi and config classes.
+$ext_src = realpath(__DIR__ . '/../../target/release');
+if (!is_dir($ext_src)) {
+    $ext_src = realpath(__DIR__ . '/../../target/debug');
+}
+
+if ($ext_src) {
+    // Determine platform-specific extension filename
+    $os = strtolower(php_uname('s'));
+    if (strpos($os, 'darwin') !== false || strpos($os, 'macos') !== false) {
+        $ext_file = 'libkreuzberg_php.dylib';
+    } elseif (strpos($os, 'windows') !== false) {
+        $ext_file = 'kreuzberg_php.dll';
+    } else {
+        $ext_file = 'libkreuzberg_php.so';
+    }
+
+    $ext_path = $ext_src . '/' . $ext_file;
+
+    // Try to load the extension via require (if allow_url_include) or copy to extension_dir
+    if (file_exists($ext_path)) {
+        // Attempt 1: Copy to extension directory if writable
+        $ext_dir = ini_get('extension_dir');
+        if (is_writable($ext_dir)) {
+            $target = $ext_dir . '/' . $ext_file;
+            if (!file_exists($target) || filesize($target) !== filesize($ext_path)) {
+                @copy($ext_path, $target);
+            }
+            if (file_exists($target) && function_exists('extension_loaded')) {
+                if (!extension_loaded('kreuzberg')) {
+                    @dl($ext_file);  // May fail if dl() disabled, but try anyway
+                }
+            }
+        }
+    }
+}
+
 // Load the e2e project autoloader (PHPUnit, test helpers).
 require_once __DIR__ . '/vendor/autoload.php';
 
