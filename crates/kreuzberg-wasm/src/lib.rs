@@ -11966,11 +11966,15 @@ impl Default for WasmPoolError {
 pub async fn extract_bytes(
     content: Vec<u8>,
     mime_type: String,
-    config: JsValue,
+    config: Option<JsValue>,
 ) -> Result<WasmExtractionResult, JsValue> {
-    let config_core: kreuzberg::ExtractionConfig =
-        serde_wasm_bindgen::from_value::<kreuzberg::ExtractionConfig>(config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let config_core: kreuzberg::ExtractionConfig = match config {
+        Some(config_val) => {
+            serde_wasm_bindgen::from_value::<kreuzberg::ExtractionConfig>(config_val)
+                .map_err(|e| JsValue::from_str(&e.to_string()))?
+        }
+        None => kreuzberg::ExtractionConfig::default(),
+    };
     let result = kreuzberg::extract_bytes(&content, &mime_type, &config_core)
         .await
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
@@ -12017,11 +12021,15 @@ pub async fn extract_bytes(
 pub async fn extract_file(
     path: String,
     mime_type: Option<String>,
-    config: JsValue,
+    config: Option<JsValue>,
 ) -> Result<WasmExtractionResult, JsValue> {
-    let config_core: kreuzberg::ExtractionConfig =
-        serde_wasm_bindgen::from_value::<kreuzberg::ExtractionConfig>(config)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let config_core: kreuzberg::ExtractionConfig = match config {
+        Some(config_val) => {
+            serde_wasm_bindgen::from_value::<kreuzberg::ExtractionConfig>(config_val)
+                .map_err(|e| JsValue::from_str(&e.to_string()))?
+        }
+        None => kreuzberg::ExtractionConfig::default(),
+    };
     let result = kreuzberg::extract_file(std::path::PathBuf::from(path), mime_type.as_deref(), &config_core)
         .await
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
