@@ -1089,7 +1089,10 @@ e2e = "cd e2e/kotlin && gradle test --no-daemon"
 
 [crates.test.swift]
 precondition = "command -v swift >/dev/null 2>&1"
-before = "cargo build --release -p kreuzberg-swift"
+before = [
+  "cargo build --release -p kreuzberg-swift",
+  "bash scripts/setup-swift-bridge.sh",
+]
 command = "cd packages/swift && swift test"
 e2e = "cd e2e/swift && swift test"
 
@@ -1294,9 +1297,6 @@ args = [
 
 [crates.e2e.calls.extract_file_sync.overrides.node]
 options_type = "JsExtractionConfig"
-arg_order = ["path", "config", "mime_type"]
-
-[crates.e2e.calls.extract_file_sync.overrides.ruby]
 arg_order = ["path", "config", "mime_type"]
 
 [crates.e2e.calls.extract_file_sync.overrides.csharp]
