@@ -620,17 +620,29 @@ async fn test_rtf_word_sample_matches_docx_metadata_and_content() {
 
     // Compare typed metadata fields (DOCX uses typed fields, RTF uses additional map)
     assert_eq!(
-        rtf_result.metadata.additional.get("created_by").and_then(|v| v.as_str()),
+        rtf_result
+            .metadata
+            .additional
+            .get("created_by")
+            .and_then(|v| v.as_str()),
         docx_result.metadata.created_by.as_deref(),
         "Metadata field created_by should align with DOCX"
     );
     assert_eq!(
-        rtf_result.metadata.additional.get("modified_by").and_then(|v| v.as_str()),
+        rtf_result
+            .metadata
+            .additional
+            .get("modified_by")
+            .and_then(|v| v.as_str()),
         docx_result.metadata.modified_by.as_deref(),
         "Metadata field modified_by should align with DOCX"
     );
     assert_eq!(
-        rtf_result.metadata.additional.get("created_at").and_then(|v| v.as_str()),
+        rtf_result
+            .metadata
+            .additional
+            .get("created_at")
+            .and_then(|v| v.as_str()),
         docx_result.metadata.created_at.as_deref(),
         "Metadata field created_at should align with DOCX"
     );

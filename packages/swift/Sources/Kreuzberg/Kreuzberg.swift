@@ -596,7 +596,7 @@ public struct OcrBackend {
 ///         let word_count = result.content.split_whitespace().count();
 ///
 ///         // Add to metadata
-///         result.metadata.custom.insert("word_count".to_string().into(), serde_json::json!(word_count));
+///         result.metadata.additional.insert("word_count".to_string().into(), serde_json::json!(word_count));
 ///
 ///         Ok(())
 ///     }

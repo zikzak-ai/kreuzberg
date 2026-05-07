@@ -2725,7 +2725,7 @@ via a discriminated union, and additional custom fields from postprocessors.
 | `abstract_text` | `str | None` | `None` | Abstract or summary text (from frontmatter). |
 | `output_format` | `str | None` | `None` | Output format identifier (e.g., "markdown", "html", "text"). Set by the output format pipeline stage when format conversion is applied. |
 | `extraction_method` | `str | None` | `None` | Method used to extract text (e.g., "native", "ocr", "mixed", "native_ole"). |
-| `custom` | `dict[str, dict[str, Any]]` | `{}` | Custom fields for plugin-injected and format-specific dynamic data (e.g., OCR backend metadata, org-mode directives). Uses `Cow<'static, str>` keys so static string keys avoid allocation. |
+| `additional` | `dict[str, dict[str, Any]]` | `{}` | Custom fields for plugin-injected and format-specific dynamic data (e.g., OCR backend metadata, org-mode directives). Uses `Cow<'static, str>` keys so static string keys avoid allocation. |
 
 ##### Methods
 
@@ -4774,7 +4774,7 @@ async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)
     -> Result<()> {
     // Check if quality_score exists in metadata
     let score = result.metadata
-        .custom
+        .additional
         .get("quality_score")
         .and_then(|v| v.as_f64())
         .unwrap_or(0.0);

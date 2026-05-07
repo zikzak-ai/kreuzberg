@@ -1344,7 +1344,7 @@ mod ffi {
             abstract_text: Option<String>,
             output_format: Option<String>,
             extraction_method: Option<String>,
-            custom: String,
+            additional: String,
         ) -> Metadata;
         fn title(&self) -> Option<String>;
         fn subject(&self) -> Option<String>;
@@ -1367,7 +1367,7 @@ mod ffi {
         fn abstract_text(&self) -> Option<String>;
         fn output_format(&self) -> Option<String>;
         fn extraction_method(&self) -> Option<String>;
-        fn custom(&self) -> String;
+        fn additional(&self) -> String;
     }
 
     extern "Rust" {
@@ -6863,7 +6863,7 @@ impl Metadata {
         abstract_text: Option<String>,
         output_format: Option<String>,
         extraction_method: Option<String>,
-        custom: String,
+        additional: String,
     ) -> Metadata {
         let mut __target: kreuzberg::Metadata = ::std::default::Default::default();
         if let Some(s) = title {
@@ -6983,9 +6983,9 @@ impl Metadata {
                 }
             }
         }
-        if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&custom) {
+        if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&additional) {
             if let Ok(t) = ::serde_json::from_value(v) {
-                __target.custom = t;
+                __target.additional = t;
             }
         }
         Metadata(__target)
@@ -7081,8 +7081,8 @@ impl Metadata {
             .as_ref()
             .and_then(|v| serde_json::to_string(v).ok())
     }
-    pub fn custom(&self) -> String {
-        serde_json::to_string(&self.0.custom).expect("serializable custom")
+    pub fn additional(&self) -> String {
+        serde_json::to_string(&self.0.additional).expect("serializable additional")
     }
 }
 

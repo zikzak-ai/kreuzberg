@@ -2090,7 +2090,7 @@ class OcrBackend {}
 ///         let word_count = result.content.split_whitespace().count();
 ///
 ///         // Add to metadata
-///         result.metadata.custom.insert("word_count".to_string().into(), serde_json::json!(word_count));
+///         result.metadata.additional.insert("word_count".to_string().into(), serde_json::json!(word_count));
 ///
 ///         Ok(())
 ///     }
@@ -3686,7 +3686,7 @@ class Metadata {
   /// (e.g., OCR backend metadata, org-mode directives).
   ///
   /// Uses `Cow<'static, str>` keys so static string keys avoid allocation.
-  final Map<String, String> custom;
+  final Map<String, String> additional;
   Metadata({
     required this.title,
     required this.subject,
@@ -3709,7 +3709,7 @@ class Metadata {
     required this.abstractText,
     required this.outputFormat,
     required this.extractionMethod,
-    required this.custom,
+    required this.additional,
   });
 }
 

@@ -1411,7 +1411,7 @@ pub type Metadata {
     abstract_text: Option(String),
     output_format: Option(String),
     extraction_method: Option(String),
-    custom: Dict(String, String),
+    additional: Dict(String, String),
   )
 }
 
@@ -3422,7 +3422,7 @@ pub fn fail_trait_call(reply_id: Int, error_message: String) -> Nil
 ///         let word_count = result.content.split_whitespace().count();
 ///
 ///         // Add to metadata
-///         result.metadata.custom.insert("word_count".to_string().into(), serde_json::json!(word_count));
+///         result.metadata.additional.insert("word_count".to_string().into(), serde_json::json!(word_count));
 ///
 ///         Ok(())
 ///     }

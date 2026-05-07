@@ -2712,7 +2712,7 @@ via a discriminated union, and additional custom fields from postprocessors.
 | `abstractText` | `[:0]const u8?` | `null` | Abstract or summary text (from frontmatter). |
 | `outputFormat` | `[:0]const u8?` | `null` | Output format identifier (e.g., "markdown", "html", "text"). Set by the output format pipeline stage when format conversion is applied. |
 | `extractionMethod` | `[:0]const u8?` | `null` | Method used to extract text (e.g., "native", "ocr", "mixed", "native_ole"). |
-| `custom` | `std.StringHashMap([:0]const u8)` | `{}` | Custom fields for plugin-injected and format-specific dynamic data (e.g., OCR backend metadata, org-mode directives). Uses `Cow<'static, str>` keys so static string keys avoid allocation. |
+| `additional` | `std.StringHashMap([:0]const u8)` | `{}` | Custom fields for plugin-injected and format-specific dynamic data (e.g., OCR backend metadata, org-mode directives). Uses `Cow<'static, str>` keys so static string keys avoid allocation. |
 
 ##### Methods
 
@@ -4747,7 +4747,7 @@ async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)
     -> Result<()> {
     // Check if quality_score exists in metadata
     let score = result.metadata
-        .custom
+        .additional
         .get("quality_score")
         .and_then(|v| v.as_f64())
         .unwrap_or(0.0);

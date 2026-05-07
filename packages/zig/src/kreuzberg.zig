@@ -1346,7 +1346,7 @@ pub const Metadata = struct {
     abstract_text: ?[:0]const u8,
     output_format: ?[:0]const u8,
     extraction_method: ?[:0]const u8,
-    custom: std.StringHashMap([:0]const u8),
+    additional: std.StringHashMap([:0]const u8),
 };
 
 /// Excel/spreadsheet format metadata.
@@ -3369,7 +3369,7 @@ pub const IPostProcessor = extern struct {
     ///     let language = "en"; // Placeholder detection
     ///
     ///     // Add to metadata
-    ///     result.metadata.custom.insert("detected_language".to_string().into(), serde_json::json!(language));
+    ///     result.metadata.additional.insert("detected_language".to_string().into(), serde_json::json!(language));
     ///
     ///     Ok(())
     /// }
@@ -3644,7 +3644,7 @@ pub const IValidator = extern struct {
     ///     -> Result<()> {
     ///     // Check if quality_score exists in metadata
     ///     let score = result.metadata
-    ///         .custom
+    ///         .additional
     ///         .get("quality_score")
     ///         .and_then(|v| v.as_f64())
     ///         .unwrap_or(0.0);

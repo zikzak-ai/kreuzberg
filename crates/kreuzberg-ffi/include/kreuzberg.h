@@ -470,7 +470,7 @@ typedef struct KREUZBERGKreuzbergPostProcessorVTable {
    * let language = "en"; // Placeholder detection
    *
    * // Add to metadata
-   * result.metadata.custom.insert("detected_language".to_string().into(), serde_json::json!(language));
+   * result.metadata.additional.insert("detected_language".to_string().into(), serde_json::json!(language));
    *
    * Ok(())
    * }
@@ -654,7 +654,7 @@ typedef struct KREUZBERGKreuzbergValidatorVTable {
    * -> Result<()> {
    * // Check if quality_score exists in metadata
    * let score = result.metadata
-   * .custom
+   * .additional
    * .get("quality_score")
    * .and_then(|v| v.as_f64())
    * .unwrap_or(0.0);
@@ -6622,11 +6622,11 @@ char *kreuzberg_metadata_output_format(const KREUZBERGMetadata *ptr);
 char *kreuzberg_metadata_extraction_method(const KREUZBERGMetadata *ptr);
 
 /**
- * Get the `custom` field from a `Metadata`.
+ * Get the `additional` field from a `Metadata`.
  * # Safety
  * Pointer must be a valid handle returned by this library.
  */
-char *kreuzberg_metadata_custom(const KREUZBERGMetadata *ptr);
+char *kreuzberg_metadata_additional(const KREUZBERGMetadata *ptr);
 
 /**
  * Returns `true` when no metadata fields, format-specific metadata, or

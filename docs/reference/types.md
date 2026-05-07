@@ -1314,7 +1314,7 @@ via a discriminated union, and additional custom fields from postprocessors.
 | `abstract_text` | `Option<String>` | `Default::default()` | Abstract or summary text (from frontmatter). |
 | `output_format` | `Option<String>` | `Default::default()` | Output format identifier (e.g., "markdown", "html", "text"). Set by the output format pipeline stage when format conversion is applied. |
 | `extraction_method` | `Option<String>` | `Default::default()` | Method used to extract text (e.g., "native", "ocr", "mixed", "native_ole"). |
-| `custom` | `HashMap<String, serde_json::Value>` | `HashMap::new()` | Custom fields for plugin-injected and format-specific dynamic data (e.g., OCR backend metadata, org-mode directives). Uses `Cow<'static, str>` keys so static string keys avoid allocation. |
+| `additional` | `HashMap<String, serde_json::Value>` | `HashMap::new()` | Custom fields for plugin-injected and format-specific dynamic data (e.g., OCR backend metadata, org-mode directives). Uses `Cow<'static, str>` keys so static string keys avoid allocation. |
 
 ---
 

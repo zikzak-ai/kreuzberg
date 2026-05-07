@@ -218,7 +218,7 @@ abstract class PostProcessor {
   ///     let language = "en"; // Placeholder detection
   ///
   ///     // Add to metadata
-  ///     result.metadata.custom.insert("detected_language".to_string().into(), serde_json::json!(language));
+  ///     result.metadata.additional.insert("detected_language".to_string().into(), serde_json::json!(language));
   ///
   ///     Ok(())
   /// }
@@ -376,7 +376,7 @@ abstract class Validator {
   ///     -> Result<()> {
   ///     // Check if quality_score exists in metadata
   ///     let score = result.metadata
-  ///         .custom
+  ///         .additional
   ///         .get("quality_score")
   ///         .and_then(|v| v.as_f64())
   ///         .unwrap_or(0.0);

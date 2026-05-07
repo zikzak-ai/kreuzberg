@@ -915,7 +915,7 @@ pub struct Metadata {
     pub abstract_text: Option<String>,
     pub output_format: Option<String>,
     pub extraction_method: Option<String>,
-    pub custom: std::collections::HashMap<String, String>,
+    pub additional: std::collections::HashMap<String, String>,
 }
 
 #[frb(mirror(ExcelMetadata))]

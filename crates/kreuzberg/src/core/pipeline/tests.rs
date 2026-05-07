@@ -164,7 +164,10 @@ async fn test_pipeline_preserves_metadata() {
         processed.metadata.additional.get("source").unwrap(),
         &serde_json::json!("test")
     );
-    assert_eq!(processed.metadata.additional.get("page").unwrap(), &serde_json::json!(1));
+    assert_eq!(
+        processed.metadata.additional.get("page").unwrap(),
+        &serde_json::json!(1)
+    );
 }
 
 #[tokio::test]
