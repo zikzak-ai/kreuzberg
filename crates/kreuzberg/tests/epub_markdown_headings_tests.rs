@@ -100,7 +100,7 @@ async fn test_epub_markdown_output_keeps_headings() {
         .extract_bytes(&bytes, "application/epub+zip", &config)
         .await
         .expect("EPUB extraction should succeed");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
+    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Markdown);
 
     assert!(
         result.processing_warnings.is_empty(),
@@ -134,7 +134,7 @@ async fn test_epub_djot_output_keeps_headings() {
         .extract_bytes(&bytes, "application/epub+zip", &config)
         .await
         .expect("EPUB extraction should succeed");
-    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Plain);
+    let result = derive_extraction_result(doc, false, kreuzberg::OutputFormat::Djot);
 
     assert!(
         result.processing_warnings.is_empty(),
