@@ -30,13 +30,6 @@ pub(crate) fn render_plain(doc: &InternalDocument) -> String {
                     let indent = "  ".repeat(elem.depth as usize);
                     out.push_str(&indent);
 
-                    // For headings, include level markers (e.g., "= ", "== ", etc.)
-                    if let ElementKind::Heading { level } = elem.kind {
-                        let markers = "=".repeat(level as usize);
-                        out.push_str(&markers);
-                        out.push(' ');
-                    }
-
                     // Format heading with attributes if present
                     if matches!(elem.kind, ElementKind::Heading { .. }) && elem.attributes.is_some() {
                         out.push_str(&elem.text);
