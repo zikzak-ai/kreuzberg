@@ -106,10 +106,10 @@ fn build_metadata_map(
     if let Some(ref subject) = metadata.subject {
         map.insert(std::borrow::Cow::Borrowed("subject"), serde_json::json!(subject));
     }
-    if let Some(ref authors) = metadata.authors {
-        if let Some(first) = authors.first() {
-            map.insert(std::borrow::Cow::Borrowed("author"), serde_json::json!(first));
-        }
+    if let Some(ref authors) = metadata.authors
+        && let Some(first) = authors.first()
+    {
+        map.insert(std::borrow::Cow::Borrowed("author"), serde_json::json!(first));
     }
     if let Some(ref keywords) = metadata.keywords {
         map.insert(std::borrow::Cow::Borrowed("keywords"), serde_json::json!(keywords));
