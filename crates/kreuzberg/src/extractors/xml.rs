@@ -89,7 +89,11 @@ fn build_internal_document(content: &[u8], mime_type: &str, budget: &mut Securit
                 let trimmed = text.trim();
                 if !trimmed.is_empty() {
                     budget.account_text(trimmed.len())?;
-                    let elem = InternalElement::text(ElementKind::Paragraph, trimmed, depth).with_index(index);
+                    // Text content should be indented at the same level as its immediate parent,
+                    // not one level deeper. Since we incremented depth after the opening tag,
+                    // the parent heading is at (current depth - 1).
+                    let text_depth = if depth > 0 { depth - 1 } else { 0 };
+                    let elem = InternalElement::text(ElementKind::Paragraph, trimmed, text_depth).with_index(index);
                     doc.push_element(elem);
                     index += 1;
                 }
