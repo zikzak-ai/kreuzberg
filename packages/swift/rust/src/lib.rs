@@ -2172,10 +2172,6 @@ mod ffi {
     }
 
     extern "Rust" {
-        type TesseractWasmBackend;
-    }
-
-    extern "Rust" {
         type PaddleOcrConfig;
         #[swift_bridge(init)]
         fn new(
@@ -9502,8 +9498,6 @@ impl RecognizedTable {
 }
 
 pub struct TessdataManager(pub kreuzberg::ocr::TessdataManager);
-
-pub struct TesseractWasmBackend(pub kreuzberg::ocr::TesseractWasmBackend);
 
 pub struct PaddleOcrConfig(pub kreuzberg::PaddleOcrConfig);
 impl PaddleOcrConfig {

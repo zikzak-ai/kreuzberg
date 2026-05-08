@@ -1516,9 +1516,6 @@ pub struct RecognizedTable {
 #[frb(mirror(TessdataManager))]
 pub struct TessdataManager {}
 
-#[frb(mirror(TesseractWasmBackend))]
-pub struct TesseractWasmBackend {}
-
 #[frb(mirror(PaddleOcrConfig))]
 pub struct PaddleOcrConfig {
     pub language: String,

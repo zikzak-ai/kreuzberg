@@ -2312,14 +2312,6 @@ pub type TessdataManager {
   TessdataManager
 }
 
-/// WASM-compatible Tesseract OCR backend.
-///
-/// This backend uses direct FFI calls to Tesseract for WASM compatibility.
-/// It does not depend on the OcrProcessor which requires full Tokio runtime.
-pub type TesseractWasmBackend {
-  TesseractWasmBackend
-}
-
 /// Configuration for PaddleOCR backend.
 ///
 /// Configures PaddleOCR text detection and recognition with multi-language support.

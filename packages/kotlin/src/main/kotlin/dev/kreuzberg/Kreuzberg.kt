@@ -172,7 +172,6 @@ typealias Keyword = dev.kreuzberg.Keyword
 typealias OcrCacheStats = dev.kreuzberg.OcrCacheStats
 typealias RecognizedTable = dev.kreuzberg.RecognizedTable
 typealias TessdataManager = dev.kreuzberg.TessdataManager
-typealias TesseractWasmBackend = dev.kreuzberg.TesseractWasmBackend
 typealias PaddleOcrConfig = dev.kreuzberg.PaddleOcrConfig
 typealias ModelPaths = dev.kreuzberg.ModelPaths
 typealias OrientationResult = dev.kreuzberg.OrientationResult

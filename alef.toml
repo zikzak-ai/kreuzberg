@@ -646,6 +646,7 @@ types = [
   "KMeansResult",
   "HocrWord",
   "TesseractBackend",
+  "TesseractWasmBackend",
   "PanicContext",
   "Instant",
 
@@ -1310,6 +1311,12 @@ json_object_types = { chunking = "ChunkingConfig", ocr = "OcrConfig", images = "
 function = "extract_file_sync"
 async = false
 result_is_json_struct = true
+
+[crates.e2e.calls.extract_file_sync.overrides.dart]
+# Dart cannot pass file paths through the FFI bridge; use extractBytesSync instead.
+# Missing mime_type will be inferred from the file extension by the e2e generator.
+function = "extract_bytes_sync"
+async = false
 
 [crates.e2e.calls.extract_bytes_sync]
 function = "extract_bytes_sync"
