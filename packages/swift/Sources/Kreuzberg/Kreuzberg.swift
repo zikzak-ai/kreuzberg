@@ -1745,42 +1745,46 @@ public func extractBytes(
     return try extractBytesSync(makeByteVec(data.map { $0 }), mimeType, config)
 }
 
-/// E2e wrapper: deserialises `configJson` -> ExtractionConfig, then calls extractFileSync.
+/// E2e wrapper: resolves fixture path, deserialises `configJson` -> ExtractionConfig, then calls extractFileSync.
 public func extractFileSync(
     _ path: String,
     _ mimeType: String?,
     _ configJson: String
 ) throws -> ExtractionResult {
+    let resolvedPath = resolveFixturePath(path).path
     let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(path, mimeType, config)
+    return try extractFileSync(resolvedPath, mimeType, config)
 }
 
-/// E2e wrapper: deserialises `configJson` -> ExtractionConfig, nil mimeType.
+/// E2e wrapper: resolves fixture path, deserialises `configJson` -> ExtractionConfig, nil mimeType.
 public func extractFileSync(
     _ path: String,
     _ configJson: String
 ) throws -> ExtractionResult {
+    let resolvedPath = resolveFixturePath(path).path
     let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(path, nil, config)
+    return try extractFileSync(resolvedPath, nil, config)
 }
 
-/// E2e wrapper (async): deserialises `configJson` -> ExtractionConfig, then calls extractFileSync.
+/// E2e wrapper (async): resolves fixture path, deserialises `configJson` -> ExtractionConfig, then calls extractFileSync.
 public func extractFile(
     _ path: String,
     _ mimeType: String?,
     _ configJson: String
 ) async throws -> ExtractionResult {
+    let resolvedPath = resolveFixturePath(path).path
     let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(path, mimeType, config)
+    return try extractFileSync(resolvedPath, mimeType, config)
 }
 
-/// E2e wrapper (async): deserialises `configJson` -> ExtractionConfig, nil mimeType.
+/// E2e wrapper (async): resolves fixture path, deserialises `configJson` -> ExtractionConfig, nil mimeType.
 public func extractFile(
     _ path: String,
     _ configJson: String
 ) async throws -> ExtractionResult {
+    let resolvedPath = resolveFixturePath(path).path
     let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(path, nil, config)
+    return try extractFileSync(resolvedPath, nil, config)
 }
 
 /// E2e wrapper: deserialises each JSON string in `jsonItems` -> BatchBytesItem.

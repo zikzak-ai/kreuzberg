@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 export 'kreuzberg_bridge_generated/lib.dart';
 import 'kreuzberg_bridge_generated/lib.dart' as rust_bridge;
+// ignore: duplicate_import
+import 'kreuzberg_bridge_generated/lib.dart';
 
 class KreuzbergBridge {
   /// Extract content from a byte array.
@@ -108,8 +110,8 @@ class KreuzbergBridge {
   /// println!("Content: {}", result.content);
   /// ```
   /// throws anyhow::Error on failure
-  static ExtractionResult extractFileSync(String path, String? mimeType, [ExtractionConfig? config]) {
-    return rust_bridge.extractFileSync(path: path, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+  static Future<ExtractionResult> extractFileSync(String path, String? mimeType, [ExtractionConfig? config]) async {
+    return await rust_bridge.extractFileSync(path: path, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Synchronous wrapper for `extract_bytes`.
@@ -132,8 +134,8 @@ class KreuzbergBridge {
   /// println!("Content: {}", result.content);
   /// ```
   /// throws anyhow::Error on failure
-  static ExtractionResult extractBytesSync(Uint8List content, String mimeType, [ExtractionConfig? config]) {
-    return rust_bridge.extractBytesSync(content: content, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+  static Future<ExtractionResult> extractBytesSync(Uint8List content, String mimeType, [ExtractionConfig? config]) async {
+    return await rust_bridge.extractBytesSync(content: content, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Synchronous wrapper for `batch_extract_files`.
@@ -158,8 +160,8 @@ class KreuzbergBridge {
   /// let results = batch_extract_files_sync(items, &config)?;
   /// ```
   /// throws anyhow::Error on failure
-  static List<ExtractionResult> batchExtractFilesSync(List<BatchFileItem> items, [ExtractionConfig? config]) {
-    return rust_bridge.batchExtractFilesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+  static Future<List<ExtractionResult>> batchExtractFilesSync(List<BatchFileItem> items, [ExtractionConfig? config]) async {
+    return await rust_bridge.batchExtractFilesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Synchronous wrapper for `batch_extract_bytes`.
@@ -187,8 +189,8 @@ class KreuzbergBridge {
   /// let results = batch_extract_bytes_sync(items, &config)?;
   /// ```
   /// throws anyhow::Error on failure
-  static List<ExtractionResult> batchExtractBytesSync(List<BatchBytesItem> items, [ExtractionConfig? config]) {
-    return rust_bridge.batchExtractBytesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+  static Future<List<ExtractionResult>> batchExtractBytesSync(List<BatchBytesItem> items, [ExtractionConfig? config]) async {
+    return await rust_bridge.batchExtractBytesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Extract content from multiple files concurrently.
@@ -338,8 +340,8 @@ class KreuzbergBridge {
   ///
   /// Returns `KreuzbergError::UnsupportedFormat` if MIME type cannot be determined.
   /// throws anyhow::Error on failure
-  static String detectMimeTypeFromBytes(Uint8List content) {
-    return rust_bridge.detectMimeTypeFromBytes(content: content);
+  static Future<String> detectMimeTypeFromBytes(Uint8List content) async {
+    return await rust_bridge.detectMimeTypeFromBytes(content: content);
   }
 
   /// Get file extensions for a given MIME type.
@@ -366,14 +368,14 @@ class KreuzbergBridge {
   /// assert!(doc_extensions.contains(&"docx".to_string()));
   /// ```
   /// throws anyhow::Error on failure
-  static List<String> getExtensionsForMime(String mimeType) {
-    return rust_bridge.getExtensionsForMime(mimeType: mimeType);
+  static Future<List<String>> getExtensionsForMime(String mimeType) async {
+    return await rust_bridge.getExtensionsForMime(mimeType: mimeType);
   }
 
   /// List names of all registered document extractors.
   /// throws anyhow::Error on failure
-  static List<String> listDocumentExtractors() {
-    return rust_bridge.listDocumentExtractors();
+  static Future<List<String>> listDocumentExtractors() async {
+    return await rust_bridge.listDocumentExtractors();
   }
 
   /// List all registered OCR backends.
@@ -395,8 +397,8 @@ class KreuzbergBridge {
   /// }
   /// ```
   /// throws anyhow::Error on failure
-  static List<String> listOcrBackends() {
-    return rust_bridge.listOcrBackends();
+  static Future<List<String>> listOcrBackends() async {
+    return await rust_bridge.listOcrBackends();
   }
 
   /// Clear all OCR backends from the global registry.
@@ -416,8 +418,8 @@ class KreuzbergBridge {
   /// clear_ocr_backends()?;
   /// ```
   /// throws anyhow::Error on failure
-  static void clearOcrBackends() {
-    return rust_bridge.clearOcrBackends();
+  static Future<void> clearOcrBackends() async {
+    return await rust_bridge.clearOcrBackends();
   }
 
   /// List all registered post-processor names.
@@ -441,26 +443,26 @@ class KreuzbergBridge {
   /// }
   /// ```
   /// throws anyhow::Error on failure
-  static List<String> listPostProcessors() {
-    return rust_bridge.listPostProcessors();
+  static Future<List<String>> listPostProcessors() async {
+    return await rust_bridge.listPostProcessors();
   }
 
   /// Remove all registered post-processors.
   /// throws anyhow::Error on failure
-  static void clearPostProcessors() {
-    return rust_bridge.clearPostProcessors();
+  static Future<void> clearPostProcessors() async {
+    return await rust_bridge.clearPostProcessors();
   }
 
   /// List names of all registered validators.
   /// throws anyhow::Error on failure
-  static List<String> listValidators() {
-    return rust_bridge.listValidators();
+  static Future<List<String>> listValidators() async {
+    return await rust_bridge.listValidators();
   }
 
   /// Remove all registered validators.
   /// throws anyhow::Error on failure
-  static void clearValidators() {
-    return rust_bridge.clearValidators();
+  static Future<void> clearValidators() async {
+    return await rust_bridge.clearValidators();
   }
 
   /// Generate embeddings asynchronously for a list of text strings.
@@ -514,8 +516,8 @@ class KreuzbergBridge {
   /// Returns `KreuzbergError::Parsing` if the PDF cannot be opened, authenticated,
   /// or rendered, or if `page_index` is out of range.
   /// throws anyhow::Error on failure
-  static Uint8List renderPdfPageToPng(Uint8List pdfBytes, int pageIndex, int? dpi, String? password) {
-    return rust_bridge.renderPdfPageToPng(pdfBytes: pdfBytes, pageIndex: pageIndex, dpi: dpi, password: password);
+  static Future<Uint8List> renderPdfPageToPng(Uint8List pdfBytes, int pageIndex, int? dpi, String? password) async {
+    return await rust_bridge.renderPdfPageToPng(pdfBytes: pdfBytes, pageIndex: pageIndex, dpi: dpi, password: password);
   }
 
   /// Detect the MIME type of a file at the given path.
@@ -523,31 +525,31 @@ class KreuzbergBridge {
   /// Uses the file extension and optionally the file content to determine the MIME type.
   /// Set `check_exists` to `true` to verify the file exists before detection.
   /// throws anyhow::Error on failure
-  static String detectMimeType(String path, bool checkExists) {
-    return rust_bridge.detectMimeType(path: path, checkExists: checkExists);
+  static Future<String> detectMimeType(String path, bool checkExists) async {
+    return await rust_bridge.detectMimeType(path: path, checkExists: checkExists);
   }
 
   /// Embed a list of texts using the configured embedding model.
   ///
   /// Returns a 2D vector where each inner vector is the embedding for the corresponding text.
   /// throws anyhow::Error on failure
-  static List<List<double>> embedTexts(List<String> texts, EmbeddingConfig config) {
-    return rust_bridge.embedTexts(texts: texts, config: config);
+  static Future<List<List<double>>> embedTexts(List<String> texts, EmbeddingConfig config) async {
+    return await rust_bridge.embedTexts(texts: texts, config: config);
   }
 
   /// Get an embedding preset by name.
   ///
   /// Returns `None` if no preset with the given name exists. Returns an owned
   /// clone so the value is safe to pass across FFI boundaries.
-  static EmbeddingPreset? getEmbeddingPreset(String name) {
-    return rust_bridge.getEmbeddingPreset(name: name);
+  static Future<EmbeddingPreset?> getEmbeddingPreset(String name) async {
+    return await rust_bridge.getEmbeddingPreset(name: name);
   }
 
   /// List the names of all available embedding presets.
   ///
   /// Returns owned `String`s so the values are safe to pass across FFI boundaries.
-  static List<String> listEmbeddingPresets() {
-    return rust_bridge.listEmbeddingPresets();
+  static Future<List<String>> listEmbeddingPresets() async {
+    return await rust_bridge.listEmbeddingPresets();
   }
 
 }
