@@ -16,13 +16,13 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>dev.kreuzberg</groupId>
-            <artifactId>kreuzberg</artifactId>
-            <version>5.0.0-rc.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../packages/java/target/kreuzberg-5.0.0-rc.1.jar</systemPath>
-        </dependency>
+        &lt;dependency&gt;
+            &lt;groupId&gt;dev.kreuzberg&lt;&#x2f;groupId&gt;
+            &lt;artifactId&gt;kreuzberg&lt;&#x2f;artifactId&gt;
+            &lt;version&gt;5.0.0-rc.1&lt;&#x2f;version&gt;
+            &lt;scope&gt;system&lt;&#x2f;scope&gt;
+            &lt;systemPath&gt;${project.basedir}&#x2f;..&#x2f;..&#x2f;packages&#x2f;java&#x2f;target&#x2f;kreuzberg-5.0.0-rc.1.jar&lt;&#x2f;systemPath&gt;
+        &lt;&#x2f;dependency&gt;
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
