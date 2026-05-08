@@ -407,9 +407,9 @@ features = ["dynamic-loading", "download", "serde"]
 optional = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-# Override getrandom to enable js feature for WASM targets
-# This is needed because ring/rustls (via ureq) depend on getrandom without js feature
-getrandom = { workspace = true }
+# Override getrandom to enable wasm_js feature for WASM targets
+# This is needed because ring/rustls (via ureq) depend on getrandom without wasm_js feature
+getrandom = { version = "0.4", features = ["wasm_js"] }
 liter-llm = { workspace = true, optional = true, features = ["wasm-http"] }
 tree-sitter-language-pack = { workspace = true, default-features = false, features = [
     "serde",
