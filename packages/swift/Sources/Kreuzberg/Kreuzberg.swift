@@ -1650,96 +1650,59 @@ public enum KreuzbergError: Error {
 }
 
 // MARK: - Extraction Wrapper Functions
-// These wrappers bridge String/JSON inputs to RustBridge's
-// RustVec<UInt8> and ExtractionConfig requirements.
+// These wrappers bridge String / [UInt8] inputs to RustBridge's
+// RustVec<UInt8> requirement. The `config` parameter must be a fully
+// constructed ExtractionConfig (built via the generated initializer);
+// JSON-config decoding is not available because ExtractionConfig is a
+// swift-bridge opaque proxy class, not a Codable Swift struct.
 
-/// Extract text from byte content with optional JSON config.
+/// Builds a `RustVec<UInt8>` from a Swift byte array by pushing each byte.
+/// `RustVec<T>` only exposes `init()` + `push(value:)` in swift-bridge's
+/// runtime; there is no array-init shorthand.
+private func makeByteVec(_ bytes: [UInt8]) -> RustVec<UInt8> {
+    let vec = RustVec<UInt8>()
+    for b in bytes { vec.push(value: b) }
+    return vec
+}
+
+/// Extract text from UTF-8 string content using the supplied configuration.
 /// - Parameters:
-///   - content: Document bytes as String (UTF-8) or array of bytes
-///   - mimeType: MIME type (e.g., "application/pdf")
-///   - configJson: Optional JSON config string; defaults to `{}`
-/// - Returns: ExtractionResult with extracted text
+///   - content: Document bytes as a UTF-8 encoded `String`
+///   - mimeType: MIME type (for example, `"application/pdf"`)
+///   - config: An `ExtractionConfig` constructed via the generated initializer
+/// - Returns: `ExtractionResult` with extracted text
 public func extractBytes(
     content: String,
     mimeType: String,
-    configJson: String? = nil
+    config: ExtractionConfig
 ) throws -> ExtractionResult {
-    let contentBytes = Array(content.utf8)
-    let contentVec = RustVec<UInt8>(contentBytes)
-    let config = try parseExtractionConfig(configJson)
-    return try extractBytesSync(contentVec, mimeType, config)
+    return try extractBytesSync(makeByteVec(Array(content.utf8)), mimeType, config)
 }
 
-/// Extract text from a file at the given path with optional JSON config.
+/// Extract text from raw byte content using the supplied configuration.
+/// - Parameters:
+///   - content: Document bytes as `[UInt8]`
+///   - mimeType: MIME type
+///   - config: An `ExtractionConfig` constructed via the generated initializer
+/// - Returns: `ExtractionResult` with extracted text
+public func extractBytes(
+    content: [UInt8],
+    mimeType: String,
+    config: ExtractionConfig
+) throws -> ExtractionResult {
+    return try extractBytesSync(makeByteVec(content), mimeType, config)
+}
+
+/// Extract text from a file at the given path using the supplied configuration.
 /// - Parameters:
 ///   - path: File path
-///   - mimeType: Optional MIME type; auto-detected if nil
-///   - configJson: Optional JSON config string; defaults to `{}`
-/// - Returns: ExtractionResult with extracted text
+///   - mimeType: Optional MIME type; auto-detected when `nil`
+///   - config: An `ExtractionConfig` constructed via the generated initializer
+/// - Returns: `ExtractionResult` with extracted text
 public func extractFile(
     path: String,
     mimeType: String? = nil,
-    configJson: String? = nil
+    config: ExtractionConfig
 ) throws -> ExtractionResult {
-    let config = try parseExtractionConfig(configJson)
     return try extractFileSync(path, mimeType, config)
-}
-
-/// Batch extract from multiple byte inputs with optional JSON config.
-/// - Parameters:
-///   - items: Array of (content: String, mimeType: String) tuples
-///   - configJson: Optional JSON config string; defaults to `{}`
-/// - Returns: Array of ExtractionResult
-public func batchExtractBytes(
-    items: [(content: String, mimeType: String)],
-    configJson: String? = nil
-) throws -> [ExtractionResult] {
-    let config = try parseExtractionConfig(configJson)
-    let batchItems = items.map { item -> BatchBytesItem in
-        let contentBytes = Array(item.content.utf8)
-        let contentVec = RustVec<UInt8>(contentBytes)
-        return BatchBytesItem(content: contentVec, mime_type: item.mimeType)
-    }
-    let itemsVec = RustVec<BatchBytesItem>(batchItems)
-    let results = try RustBridge.batchExtractBytesSync(itemsVec, config)
-    return results.allElements
-}
-
-/// Batch extract from multiple files with optional JSON config.
-/// - Parameters:
-///   - items: Array of (path: String, mimeType: String?) tuples
-///   - configJson: Optional JSON config string; defaults to `{}`
-/// - Returns: Array of ExtractionResult
-public func batchExtractFiles(
-    items: [(path: String, mimeType: String?)],
-    configJson: String? = nil
-) throws -> [ExtractionResult] {
-    let config = try parseExtractionConfig(configJson)
-    let batchItems = items.map { item -> BatchFileItem in
-        return BatchFileItem(path: item.path, mime_type: item.mimeType)
-    }
-    let itemsVec = RustVec<BatchFileItem>(batchItems)
-    let results = try RustBridge.batchExtractFilesSync(itemsVec, config)
-    return results.allElements
-}
-
-// MARK: - Config Parsing Helper
-
-/// Parse JSON string to ExtractionConfig, defaulting to ExtractionConfig() on empty/nil.
-private func parseExtractionConfig(_ jsonString: String?) throws -> ExtractionConfig {
-    let json = jsonString ?? "{}"
-    if json.trimmingCharacters(in: .whitespaces).isEmpty {
-        return ExtractionConfig()
-    }
-    guard let data = json.data(using: .utf8) else {
-        throw NSError(domain: "parseExtractionConfig", code: -1,
-                      userInfo: [NSLocalizedDescriptionKey: "Invalid UTF-8 in config JSON"])
-    }
-    do {
-        let decoder = JSONDecoder()
-        return try decoder.decode(ExtractionConfig.self, from: data)
-    } catch {
-        throw NSError(domain: "parseExtractionConfig", code: -2,
-                      userInfo: [NSLocalizedDescriptionKey: "Failed to decode config JSON: \(error.localizedDescription)"])
-    }
 }
