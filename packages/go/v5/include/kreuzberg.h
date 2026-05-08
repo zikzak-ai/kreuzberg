@@ -254,38 +254,144 @@ typedef struct KREUZBERGKreuzbergOcrBackendVTable {
   int32_t (*shutdown_fn)(const void *user_data,
                          char **out_error);
   /**
-   * Process an image and extract text via OCR.    ///
-   * # Arguments    ///
-   * * `image_bytes` - Raw image data (JPEG, PNG, TIFF, etc.)    /// * `config` - OCR configuration (language, PSM mode, etc.)    ///
-   * # Returns    ///
-   * An `ExtractionResult` containing the extracted text and metadata.    ///
-   * # Errors    ///
-   * - `KreuzbergError::Ocr` - OCR processing failed    /// - `KreuzbergError::Validation` - Invalid image format or configuration    /// - `KreuzbergError::Io` - I/O errors (these always bubble up)    ///
-   * # Example    ///
-   * ```rust    /// async fn process_image(&self, image_bytes: &[u8], config: &OcrConfig) -> Result<ExtractionResult> {    /// // Validate image format    /// if image_bytes.is_empty() {    /// return Err(kreuzberg::KreuzbergError::Validation {    /// message: "Empty image data".to_string(),    /// source: None,    /// });    /// }    ///
-   * // Perform OCR processing    /// let text = format!("Extracted text in language: {}", config.language);    ///
-   * Ok(ExtractionResult {    /// content: text,    /// mime_type: Cow::Borrowed("text/plain"),    /// ..Default::default()    /// })    /// }    /// ```    pub process_image: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, image_bytes: *const u8, config: *const std::ffi::c_char, out_result: *mut *mut std::ffi::c_char, out_error: *mut *mut std::ffi::c_char) -> i32>,    /// Process a file and extract text via OCR.    ///
-   * Default implementation reads the file and calls `process_image`.    /// Override for custom file handling or optimizations.    ///
-   * # Arguments    ///
-   * * `path` - Path to the image file    /// * `config` - OCR configuration    ///
-   * # Errors    ///
-   * Same as `process_image`, plus file I/O errors.    pub process_image_file: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, path: *const std::ffi::c_char, config: *const std::ffi::c_char, out_result: *mut *mut std::ffi::c_char, out_error: *mut *mut std::ffi::c_char) -> i32>,    /// Check if this backend supports a given language code.    ///
-   * # Arguments    ///
-   * * `lang` - ISO 639-2/3 language code (e.g., "eng", "deu", "fra")    ///
-   * # Returns    ///
-   * `true` if the language is supported, `false` otherwise.    ///
-   * # Example    ///
-   * ```rust    /// fn supports_language(&self, lang: &str) -> bool {    /// self.languages.contains(&lang.to_string())    /// }    /// ```    pub supports_language: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, lang: *const std::ffi::c_char) -> i32>,    /// Get the backend type identifier.    ///
-   * # Returns    ///
-   * The backend type enum value.    ///
-   * # Example    ///
-   * ```rust    /// fn backend_type(&self) -> OcrBackendType {    /// OcrBackendType::Tesseract    /// }    /// ```    pub backend_type: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, out_result: *mut *mut std::ffi::c_char) -> i32>,    /// Optional: Get a list of all supported languages.    ///
-   * Defaults to empty list. Override to provide comprehensive language support info.    pub supported_languages: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, out_result: *mut *mut std::ffi::c_char) -> i32>,    /// Optional: Check if the backend supports table detection.    ///
-   * Defaults to `false`. Override if your backend can detect and extract tables.    pub supports_table_detection: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void) -> i32>,    /// Check if the backend supports direct document-level processing (e.g. for PDFs).    ///
-   * Defaults to `false`. Override if the backend has optimized document processing.    pub supports_document_processing: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void) -> i32>,    /// Process a document file directly via OCR.    ///
-   * Only called if `supports_document_processing` returns `true`.    ///
-   * # Arguments    ///
-   * * `path` - Path to the document file (e.g. .pdf)    /// * `config` - OCR configuration    pub process_document: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, _path: *const std::ffi::c_char, _config: *const std::ffi::c_char, out_result: *mut *mut std::ffi::c_char, out_error: *mut *mut std::ffi::c_char) -> i32>,}
+   * Process an image and extract text via OCR.
+   *
+   * # Arguments
+   *
+   * * `image_bytes` - Raw image data (JPEG, PNG, TIFF, etc.)
+   * * `config` - OCR configuration (language, PSM mode, etc.)
+   *
+   * # Returns
+   *
+   * An `ExtractionResult` containing the extracted text and metadata.
+   *
+   * # Errors
+   *
+   * - `KreuzbergError::Ocr` - OCR processing failed
+   * - `KreuzbergError::Validation` - Invalid image format or configuration
+   * - `KreuzbergError::Io` - I/O errors (these always bubble up)
+   *
+   * # Example
+   *
+   * ```rust
+   * async fn process_image(&self, image_bytes: &[u8], config: &OcrConfig) -> Result<ExtractionResult> {
+   * // Validate image format
+   * if image_bytes.is_empty() {
+   * return Err(kreuzberg::KreuzbergError::Validation {
+   * message: "Empty image data".to_string(),
+   * source: None,
+   * });
+   * }
+   *
+   * // Perform OCR processing
+   * let text = format!("Extracted text in language: {}", config.language);
+   *
+   * Ok(ExtractionResult {
+   * content: text,
+   * mime_type: Cow::Borrowed("text/plain"),
+   * ..Default::default()
+   * })
+   * }
+   * ```
+   */
+  int32_t (*process_image)(const void *user_data,
+                           const uint8_t *image_bytes,
+                           const char *config,
+                           char **out_result,
+                           char **out_error);
+  /**
+   * Process a file and extract text via OCR.
+   *
+   * Default implementation reads the file and calls `process_image`.
+   * Override for custom file handling or optimizations.
+   *
+   * # Arguments
+   *
+   * * `path` - Path to the image file
+   * * `config` - OCR configuration
+   *
+   * # Errors
+   *
+   * Same as `process_image`, plus file I/O errors.
+   */
+  int32_t (*process_image_file)(const void *user_data,
+                                const char *path,
+                                const char *config,
+                                char **out_result,
+                                char **out_error);
+  /**
+   * Check if this backend supports a given language code.
+   *
+   * # Arguments
+   *
+   * * `lang` - ISO 639-2/3 language code (e.g., "eng", "deu", "fra")
+   *
+   * # Returns
+   *
+   * `true` if the language is supported, `false` otherwise.
+   *
+   * # Example
+   *
+   * ```rust
+   * fn supports_language(&self, lang: &str) -> bool {
+   * self.languages.contains(&lang.to_string())
+   * }
+   * ```
+   */
+  int32_t (*supports_language)(const void *user_data,
+                               const char *lang);
+  /**
+   * Get the backend type identifier.
+   *
+   * # Returns
+   *
+   * The backend type enum value.
+   *
+   * # Example
+   *
+   * ```rust
+   * fn backend_type(&self) -> OcrBackendType {
+   * OcrBackendType::Tesseract
+   * }
+   * ```
+   */
+  int32_t (*backend_type)(const void *user_data,
+                          char **out_result);
+  /**
+   * Optional: Get a list of all supported languages.
+   *
+   * Defaults to empty list. Override to provide comprehensive language support info.
+   */
+  int32_t (*supported_languages)(const void *user_data,
+                                 char **out_result);
+  /**
+   * Optional: Check if the backend supports table detection.
+   *
+   * Defaults to `false`. Override if your backend can detect and extract tables.
+   */
+  int32_t (*supports_table_detection)(const void *user_data);
+  /**
+   * Check if the backend supports direct document-level processing (e.g. for PDFs).
+   *
+   * Defaults to `false`. Override if the backend has optimized document processing.
+   */
+  int32_t (*supports_document_processing)(const void *user_data);
+  /**
+   * Process a document file directly via OCR.
+   *
+   * Only called if `supports_document_processing` returns `true`.
+   *
+   * # Arguments
+   *
+   * * `path` - Path to the document file (e.g. .pdf)
+   * * `config` - OCR configuration
+   */
+  int32_t (*process_document)(const void *user_data,
+                              const char *_path,
+                              const char *_config,
+                              char **out_result,
+                              char **out_error);
+  /**
    * Optional destructor: called once with `user_data` when the bridge is dropped.
    */
   void (*free_user_data)(void*);
@@ -322,41 +428,138 @@ typedef struct KREUZBERGKreuzbergPostProcessorVTable {
   int32_t (*shutdown_fn)(const void *user_data,
                          char **out_error);
   /**
-   * Process an extraction result.    ///
-   * Transform or enrich the extraction result. Can modify:    /// - `content` - The extracted text    /// - `metadata` - Add or update metadata fields    /// - `tables` - Modify or enhance table data    ///
-   * # Arguments    ///
-   * * `result` - Mutable reference to the extraction result to process    /// * `config` - Extraction configuration    ///
-   * # Returns    ///
-   * `Ok(())` if processing succeeded, `Err(...)` for fatal failures.    ///
-   * # Errors    ///
-   * Return errors for fatal processing failures. Non-fatal errors should be    /// captured in metadata directly on the result.    ///
-   * # Performance    ///
-   * This signature avoids unnecessary cloning of large extraction results by    /// taking a mutable reference instead of ownership. Processors modify the    /// result in place.    ///
-   * # Example - Language Detection    ///
-   * ```rust    /// async fn process(&self, result: &mut ExtractionResult, config: &ExtractionConfig)    /// -> Result<()> {    /// // Detect language (simplified - use real detection library in practice)    /// let language = "en"; // Placeholder detection    ///
-   * // Add to metadata    /// result.metadata.additional.insert("detected_language".to_string().into(), serde_json::json!(language));    ///
-   * Ok(())    /// }    /// ```    ///
-   * # Example - Text Cleaning    ///
-   * ```rust    /// async fn process(&self, result: &mut ExtractionResult, config: &ExtractionConfig)    /// -> Result<()> {    /// // Remove excessive whitespace    /// result.content = result    /// .content    /// .split_whitespace()    /// .collect::<Vec<_>>()    /// .join(" ");    ///
-   * Ok(())    /// }    /// ```    pub process: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, result: *const std::ffi::c_char, config: *const std::ffi::c_char, out_error: *mut *mut std::ffi::c_char) -> i32>,    /// Get the processing stage for this post-processor.    ///
-   * Determines when this processor runs in the pipeline.    ///
-   * # Returns    ///
-   * The `ProcessingStage` (Early, Middle, or Late).    ///
-   * # Example    ///
-   * ```rust    /// fn processing_stage(&self) -> ProcessingStage {    /// ProcessingStage::Early  // Run before other processors    /// }    /// ```    pub processing_stage: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, out_result: *mut *mut std::ffi::c_char) -> i32>,    /// Optional: Check if this processor should run for a given result.    ///
-   * Allows conditional processing based on MIME type, metadata, or content.    /// Defaults to `true` (always run).    ///
-   * # Arguments    ///
-   * * `result` - The extraction result to check    /// * `config` - Extraction configuration    ///
-   * # Returns    ///
-   * `true` if the processor should run, `false` to skip.    ///
-   * # Example    ///
-   * ```rust    /// Only process PDF documents    /// fn should_process(&self, result: &ExtractionResult, config: &ExtractionConfig) -> bool {    /// result.mime_type == "application/pdf"    /// }    /// ```    pub should_process: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, _result: *const std::ffi::c_char, _config: *const std::ffi::c_char) -> i32>,    /// Optional: Estimate processing time in milliseconds.    ///
-   * Used for logging and debugging. Defaults to 0 (unknown).    ///
-   * # Arguments    ///
-   * * `result` - The extraction result to estimate for    ///
-   * # Returns    ///
-   * Estimated processing time in milliseconds.    pub estimated_duration_ms: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, _result: *const std::ffi::c_char) -> u64>,    /// Execution priority within the processing stage.    ///
-   * Higher values run first within the same `ProcessingStage`. Defaults to 50.    /// Use 0-49 for fallback processors, 50 for normal processors, and 51-255    /// for high-priority processors that should run early in their stage.    pub priority: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void) -> i32>,}
+   * Process an extraction result.
+   *
+   * Transform or enrich the extraction result. Can modify:
+   * - `content` - The extracted text
+   * - `metadata` - Add or update metadata fields
+   * - `tables` - Modify or enhance table data
+   *
+   * # Arguments
+   *
+   * * `result` - Mutable reference to the extraction result to process
+   * * `config` - Extraction configuration
+   *
+   * # Returns
+   *
+   * `Ok(())` if processing succeeded, `Err(...)` for fatal failures.
+   *
+   * # Errors
+   *
+   * Return errors for fatal processing failures. Non-fatal errors should be
+   * captured in metadata directly on the result.
+   *
+   * # Performance
+   *
+   * This signature avoids unnecessary cloning of large extraction results by
+   * taking a mutable reference instead of ownership. Processors modify the
+   * result in place.
+   *
+   * # Example - Language Detection
+   *
+   * ```rust
+   * async fn process(&self, result: &mut ExtractionResult, config: &ExtractionConfig)
+   * -> Result<()> {
+   * // Detect language (simplified - use real detection library in practice)
+   * let language = "en"; // Placeholder detection
+   *
+   * // Add to metadata
+   * result.metadata.additional.insert("detected_language".to_string().into(), serde_json::json!(language));
+   *
+   * Ok(())
+   * }
+   * ```
+   *
+   * # Example - Text Cleaning
+   *
+   * ```rust
+   * async fn process(&self, result: &mut ExtractionResult, config: &ExtractionConfig)
+   * -> Result<()> {
+   * // Remove excessive whitespace
+   * result.content = result
+   * .content
+   * .split_whitespace()
+   * .collect::<Vec<_>>()
+   * .join(" ");
+   *
+   * Ok(())
+   * }
+   * ```
+   */
+  int32_t (*process)(const void *user_data,
+                     const char *result,
+                     const char *config,
+                     char **out_error);
+  /**
+   * Get the processing stage for this post-processor.
+   *
+   * Determines when this processor runs in the pipeline.
+   *
+   * # Returns
+   *
+   * The `ProcessingStage` (Early, Middle, or Late).
+   *
+   * # Example
+   *
+   * ```rust
+   * fn processing_stage(&self) -> ProcessingStage {
+   * ProcessingStage::Early  // Run before other processors
+   * }
+   * ```
+   */
+  int32_t (*processing_stage)(const void *user_data,
+                              char **out_result);
+  /**
+   * Optional: Check if this processor should run for a given result.
+   *
+   * Allows conditional processing based on MIME type, metadata, or content.
+   * Defaults to `true` (always run).
+   *
+   * # Arguments
+   *
+   * * `result` - The extraction result to check
+   * * `config` - Extraction configuration
+   *
+   * # Returns
+   *
+   * `true` if the processor should run, `false` to skip.
+   *
+   * # Example
+   *
+   * ```rust
+   * Only process PDF documents
+   * fn should_process(&self, result: &ExtractionResult, config: &ExtractionConfig) -> bool {
+   * result.mime_type == "application/pdf"
+   * }
+   * ```
+   */
+  int32_t (*should_process)(const void *user_data,
+                            const char *_result,
+                            const char *_config);
+  /**
+   * Optional: Estimate processing time in milliseconds.
+   *
+   * Used for logging and debugging. Defaults to 0 (unknown).
+   *
+   * # Arguments
+   *
+   * * `result` - The extraction result to estimate for
+   *
+   * # Returns
+   *
+   * Estimated processing time in milliseconds.
+   */
+  uint64_t (*estimated_duration_ms)(const void *user_data,
+                                    const char *_result);
+  /**
+   * Execution priority within the processing stage.
+   *
+   * Higher values run first within the same `ProcessingStage`. Defaults to 50.
+   * Use 0-49 for fallback processors, 50 for normal processors, and 51-255
+   * for high-priority processors that should run early in their stage.
+   */
+  int32_t (*priority)(const void *user_data);
+  /**
    * Optional destructor: called once with `user_data` when the bridge is dropped.
    */
   void (*free_user_data)(void*);
@@ -393,39 +596,147 @@ typedef struct KREUZBERGKreuzbergValidatorVTable {
   int32_t (*shutdown_fn)(const void *user_data,
                          char **out_error);
   /**
-   * Validate an extraction result.    ///
-   * Check the extraction result and return `Ok(())` if valid, or an error    /// if validation fails.    ///
-   * # Arguments    ///
-   * * `result` - The extraction result to validate    /// * `config` - Extraction configuration    ///
-   * # Returns    ///
-   * - `Ok(())` if validation passes    /// - `Err(...)` if validation fails (extraction will fail)    ///
-   * # Errors    ///
-   * - `KreuzbergError::Validation` - Validation failed    /// - Any other error type appropriate for the failure    ///
-   * # Example - Content Length Validation    ///
-   * ```rust    /// async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)    /// -> Result<()> {    /// let length = result.content.len();    ///
-   * if length < self.min {    /// return Err(KreuzbergError::validation(format!(    /// "Content too short: {} < {} characters",    /// length, self.min    /// )));    /// }    ///
-   * if length > self.max {    /// return Err(KreuzbergError::validation(format!(    /// "Content too long: {} > {} characters",    /// length, self.max    /// )));    /// }    ///
-   * Ok(())    /// }    /// ```    ///
-   * # Example - Quality Score Validation    ///
-   * ```rust    /// async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)    /// -> Result<()> {    /// // Check if quality_score exists in metadata    /// let score = result.metadata    /// .additional    /// .get("quality_score")    /// .and_then(|v| v.as_f64())    /// .unwrap_or(0.0);    ///
-   * if score < self.min_score {    /// return Err(KreuzbergError::validation(format!(    /// "Quality score too low: {} < {}",    /// score, self.min_score    /// )));    /// }    ///
-   * Ok(())    /// }    /// ```    ///
-   * # Example - Security Validation    ///
-   * ```rust    /// async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)    /// -> Result<()> {    /// // Check for blocked patterns    /// for pattern in &self.blocked_patterns {    /// if result.content.contains(pattern) {    /// return Err(KreuzbergError::validation(format!(    /// "Content contains blocked pattern: {}",    /// pattern    /// )));    /// }    /// }    ///
-   * Ok(())    /// }    /// ```    pub validate: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, result: *const std::ffi::c_char, config: *const std::ffi::c_char, out_error: *mut *mut std::ffi::c_char) -> i32>,    /// Optional: Check if this validator should run for a given result.    ///
-   * Allows conditional validation based on MIME type, metadata, or content.    /// Defaults to `true` (always run).    ///
-   * # Arguments    ///
-   * * `result` - The extraction result to check    /// * `config` - Extraction configuration    ///
-   * # Returns    ///
-   * `true` if the validator should run, `false` to skip.    ///
-   * # Example    ///
-   * ```rust    /// Only validate PDF documents    /// fn should_validate(&self, result: &ExtractionResult, config: &ExtractionConfig) -> bool {    /// result.mime_type == "application/pdf"    /// }    /// ```    pub should_validate: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, _result: *const std::ffi::c_char, _config: *const std::ffi::c_char) -> i32>,    /// Optional: Get the validation priority.    ///
-   * Higher priority validators run first. Useful for ordering validation checks    /// (e.g., run cheap validations before expensive ones).    ///
-   * Default priority is 50.    ///
-   * # Returns    ///
-   * Priority value (higher = runs earlier).    ///
-   * # Example    ///
-   * ```rust    /// Run this validator first (it's fast)    /// fn priority(&self) -> i32 {    /// 100    /// }    /// ```    pub priority: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void) -> i32>,}
+   * Validate an extraction result.
+   *
+   * Check the extraction result and return `Ok(())` if valid, or an error
+   * if validation fails.
+   *
+   * # Arguments
+   *
+   * * `result` - The extraction result to validate
+   * * `config` - Extraction configuration
+   *
+   * # Returns
+   *
+   * - `Ok(())` if validation passes
+   * - `Err(...)` if validation fails (extraction will fail)
+   *
+   * # Errors
+   *
+   * - `KreuzbergError::Validation` - Validation failed
+   * - Any other error type appropriate for the failure
+   *
+   * # Example - Content Length Validation
+   *
+   * ```rust
+   * async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)
+   * -> Result<()> {
+   * let length = result.content.len();
+   *
+   * if length < self.min {
+   * return Err(KreuzbergError::validation(format!(
+   * "Content too short: {} < {} characters",
+   * length, self.min
+   * )));
+   * }
+   *
+   * if length > self.max {
+   * return Err(KreuzbergError::validation(format!(
+   * "Content too long: {} > {} characters",
+   * length, self.max
+   * )));
+   * }
+   *
+   * Ok(())
+   * }
+   * ```
+   *
+   * # Example - Quality Score Validation
+   *
+   * ```rust
+   * async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)
+   * -> Result<()> {
+   * // Check if quality_score exists in metadata
+   * let score = result.metadata
+   * .additional
+   * .get("quality_score")
+   * .and_then(|v| v.as_f64())
+   * .unwrap_or(0.0);
+   *
+   * if score < self.min_score {
+   * return Err(KreuzbergError::validation(format!(
+   * "Quality score too low: {} < {}",
+   * score, self.min_score
+   * )));
+   * }
+   *
+   * Ok(())
+   * }
+   * ```
+   *
+   * # Example - Security Validation
+   *
+   * ```rust
+   * async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)
+   * -> Result<()> {
+   * // Check for blocked patterns
+   * for pattern in &self.blocked_patterns {
+   * if result.content.contains(pattern) {
+   * return Err(KreuzbergError::validation(format!(
+   * "Content contains blocked pattern: {}",
+   * pattern
+   * )));
+   * }
+   * }
+   *
+   * Ok(())
+   * }
+   * ```
+   */
+  int32_t (*validate)(const void *user_data,
+                      const char *result,
+                      const char *config,
+                      char **out_error);
+  /**
+   * Optional: Check if this validator should run for a given result.
+   *
+   * Allows conditional validation based on MIME type, metadata, or content.
+   * Defaults to `true` (always run).
+   *
+   * # Arguments
+   *
+   * * `result` - The extraction result to check
+   * * `config` - Extraction configuration
+   *
+   * # Returns
+   *
+   * `true` if the validator should run, `false` to skip.
+   *
+   * # Example
+   *
+   * ```rust
+   * Only validate PDF documents
+   * fn should_validate(&self, result: &ExtractionResult, config: &ExtractionConfig) -> bool {
+   * result.mime_type == "application/pdf"
+   * }
+   * ```
+   */
+  int32_t (*should_validate)(const void *user_data,
+                             const char *_result,
+                             const char *_config);
+  /**
+   * Optional: Get the validation priority.
+   *
+   * Higher priority validators run first. Useful for ordering validation checks
+   * (e.g., run cheap validations before expensive ones).
+   *
+   * Default priority is 50.
+   *
+   * # Returns
+   *
+   * Priority value (higher = runs earlier).
+   *
+   * # Example
+   *
+   * ```rust
+   * Run this validator first (it's fast)
+   * fn priority(&self) -> i32 {
+   * 100
+   * }
+   * ```
+   */
+  int32_t (*priority)(const void *user_data);
+  /**
    * Optional destructor: called once with `user_data` when the bridge is dropped.
    */
   void (*free_user_data)(void*);
@@ -462,9 +773,24 @@ typedef struct KREUZBERGKreuzbergEmbeddingBackendVTable {
   int32_t (*shutdown_fn)(const void *user_data,
                          char **out_error);
   /**
-   * Embedding vector dimension. Must be `> 0` and must match the length of    /// every vector returned by `embed`.    pub dimensions: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void) -> usize>,    /// Embed a batch of texts, returning one vector per input in order.    ///
-   * # Errors    ///
-   * Implementations should return `Plugin` for    /// backend-specific failures. The dispatcher layers its own validation    /// (length, per-vector dimension) on top.    pub embed: Option<unsafe extern "C" fn(user_data: *const std::ffi::c_void, texts: *const std::ffi::c_char, out_result: *mut *mut std::ffi::c_char, out_error: *mut *mut std::ffi::c_char) -> i32>,}
+   * Embedding vector dimension. Must be `> 0` and must match the length of
+   * every vector returned by `embed`.
+   */
+  uintptr_t (*dimensions)(const void *user_data);
+  /**
+   * Embed a batch of texts, returning one vector per input in order.
+   *
+   * # Errors
+   *
+   * Implementations should return `Plugin` for
+   * backend-specific failures. The dispatcher layers its own validation
+   * (length, per-vector dimension) on top.
+   */
+  int32_t (*embed)(const void *user_data,
+                   const char *texts,
+                   char **out_result,
+                   char **out_error);
+  /**
    * Optional destructor: called once with `user_data` when the bridge is dropped.
    */
   void (*free_user_data)(void*);

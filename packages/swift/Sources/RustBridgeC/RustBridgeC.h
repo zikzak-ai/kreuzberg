@@ -3604,6 +3604,7 @@ void* __swift_bridge__$clear_post_processors(void);
 struct __private__ResultPtrAndPtr __swift_bridge__$list_validators(void);
 void* __swift_bridge__$clear_validators(void);
 struct __private__ResultPtrAndPtr __swift_bridge__$embed_texts_async(void* texts, void* config);
+struct __private__ResultPtrAndPtr __swift_bridge__$render_pdf_page_to_png(void* pdf_bytes, uintptr_t page_index, struct __private__OptionI32 dpi, void* password);
 struct __private__ResultPtrAndPtr __swift_bridge__$detect_mime_type(void* path, bool check_exists);
 struct __private__ResultPtrAndPtr __swift_bridge__$embed_texts(void* texts, void* config);
 void* __swift_bridge__$get_embedding_preset(void* name);
