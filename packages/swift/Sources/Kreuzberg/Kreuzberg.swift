@@ -308,6 +308,11 @@ public typealias ResolvedStyle = RustBridge.ResolvedStyle
 /// Table-level properties from `<w:tblPr>`.
 public typealias TableProperties = RustBridge.TableProperties
 
+/// Application properties from docProps/app.xml for DOCX
+///
+/// Contains Word-specific document statistics and metadata.
+public typealias DocxAppProperties = RustBridge.DocxAppProperties
+
 /// Application properties from docProps/app.xml for XLSX
 ///
 /// Contains Excel-specific document metadata.
@@ -317,6 +322,12 @@ public typealias XlsxAppProperties = RustBridge.XlsxAppProperties
 ///
 /// Contains PowerPoint-specific document metadata.
 public typealias PptxAppProperties = RustBridge.PptxAppProperties
+
+/// Dublin Core metadata from docProps/core.xml
+///
+/// Contains standard metadata fields defined by the Dublin Core standard
+/// and Office-specific extensions.
+public typealias CoreProperties = RustBridge.CoreProperties
 
 /// Custom properties from docProps/custom.xml
 ///
@@ -1606,22 +1617,22 @@ public enum LayoutClass {
 /// - `UnsupportedFormat` - Unsupported MIME type or file format
 /// - `Other` - Catch-all for uncommon errors
 public enum KreuzbergError: Error {
-    case io()
-    case parsing()
-    case ocr()
-    case validation()
-    case cache()
-    case imageProcessing()
-    case serialization()
-    case missingDependency()
-    case plugin()
-    case lockPoisoned()
-    case unsupportedFormat()
-    case embedding()
-    case timeout()
-    case cancelled(message: String)
-    case security()
-    case other()
+    case io(message: String, field0: String)
+    case parsing(message: String, source: String)
+    case ocr(message: String, source: String)
+    case validation(message: String, source: String)
+    case cache(message: String, source: String)
+    case imageProcessing(message: String, source: String)
+    case serialization(message: String, source: String)
+    case missingDependency(message: String, field0: String)
+    case plugin(message: String, pluginName: String)
+    case lockPoisoned(message: String, field0: String)
+    case unsupportedFormat(message: String, field0: String)
+    case embedding(message: String, source: String)
+    case timeout(message: String, elapsedMs: UInt64, limitMs: UInt64)
+    case cancelled
+    case security(message: String, source: String)
+    case other(message: String, field0: String)
 }
 
 // MARK: - Convenience Wrapper Functions
@@ -1662,14 +1673,14 @@ public func extractBytes(
 public func detectMimeTypeFromBytes(
     content: String
 ) throws -> String {
-    return try detectMimeTypeFromBytes(makeByteVec(Array(content.utf8)))
+    return try detectMimeTypeFromBytes(makeByteVec(Array(content.utf8))).toString()
 }
 
 /// Convenience overload: accepts a `[UInt8]` byte array.
 public func detectMimeTypeFromBytes(
     content: [UInt8]
 ) throws -> String {
-    return try detectMimeTypeFromBytes(makeByteVec(content))
+    return try detectMimeTypeFromBytes(makeByteVec(content)).toString()
 }
 
 /// Convenience overload: accepts a UTF-8 `String` and converts it to bytes.
@@ -1679,7 +1690,7 @@ public func renderPdfPageToPng(
     dpi: Int32?,
     password: String?
 ) throws -> [UInt8] {
-    return try renderPdfPageToPng(makeByteVec(Array(content.utf8)), pageIndex, dpi, password)
+    return try renderPdfPageToPng(makeByteVec(Array(content.utf8)), pageIndex, dpi, password).map { $0 }
 }
 
 /// Convenience overload: accepts a `[UInt8]` byte array.
@@ -1689,7 +1700,7 @@ public func renderPdfPageToPng(
     dpi: Int32?,
     password: String?
 ) throws -> [UInt8] {
-    return try renderPdfPageToPng(makeByteVec(content), pageIndex, dpi, password)
+    return try renderPdfPageToPng(makeByteVec(content), pageIndex, dpi, password).map { $0 }
 }
 
 /// Convenience overload: accepts a file path as a `String`.

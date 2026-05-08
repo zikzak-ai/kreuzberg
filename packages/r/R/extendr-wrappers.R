@@ -442,6 +442,16 @@ TableProperties <- new.env(parent = emptyenv())
 }
 #' @export
 `[[.TableProperties` <- `$.TableProperties`
+DocxAppProperties <- new.env(parent = emptyenv())
+DocxAppProperties$from_json <- function(json) .Call("wrap__DocxAppProperties__from_json", json, PACKAGE = "kreuzberg")
+#' @export
+`$.DocxAppProperties` <- function(self, name) {
+  func <- DocxAppProperties[[name]]
+  environment(func) <- environment()
+  func
+}
+#' @export
+`[[.DocxAppProperties` <- `$.DocxAppProperties`
 XlsxAppProperties <- new.env(parent = emptyenv())
 #' @export
 `$.XlsxAppProperties` <- function(self, name) {
@@ -460,6 +470,16 @@ PptxAppProperties <- new.env(parent = emptyenv())
 }
 #' @export
 `[[.PptxAppProperties` <- `$.PptxAppProperties`
+CoreProperties <- new.env(parent = emptyenv())
+CoreProperties$from_json <- function(json) .Call("wrap__CoreProperties__from_json", json, PACKAGE = "kreuzberg")
+#' @export
+`$.CoreProperties` <- function(self, name) {
+  func <- CoreProperties[[name]]
+  environment(func) <- environment()
+  func
+}
+#' @export
+`[[.CoreProperties` <- `$.CoreProperties`
 CustomProperties <- new.env(parent = emptyenv())
 #' @export
 `$.CustomProperties` <- function(self, name) {

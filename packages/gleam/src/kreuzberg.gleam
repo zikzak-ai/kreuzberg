@@ -603,6 +603,30 @@ pub type TableProperties {
   )
 }
 
+/// Application properties from docProps/app.xml for DOCX
+///
+/// Contains Word-specific document statistics and metadata.
+pub type DocxAppProperties {
+  DocxAppProperties(
+    application: Option(String),
+    app_version: Option(String),
+    template: Option(String),
+    total_time: Option(Int),
+    pages: Option(Int),
+    words: Option(Int),
+    characters: Option(Int),
+    characters_with_spaces: Option(Int),
+    lines: Option(Int),
+    paragraphs: Option(Int),
+    company: Option(String),
+    doc_security: Option(Int),
+    scale_crop: Option(Bool),
+    links_up_to_date: Option(Bool),
+    shared_doc: Option(Bool),
+    hyperlinks_changed: Option(Bool)
+  )
+}
+
 /// Application properties from docProps/app.xml for XLSX
 ///
 /// Contains Excel-specific document metadata.
@@ -640,6 +664,30 @@ pub type PptxAppProperties {
     multimedia_clips: Option(Int),
     presentation_format: Option(String),
     slide_titles: List(String)
+  )
+}
+
+/// Dublin Core metadata from docProps/core.xml
+///
+/// Contains standard metadata fields defined by the Dublin Core standard
+/// and Office-specific extensions.
+pub type CoreProperties {
+  CoreProperties(
+    title: Option(String),
+    subject: Option(String),
+    creator: Option(String),
+    keywords: Option(String),
+    description: Option(String),
+    last_modified_by: Option(String),
+    revision: Option(String),
+    created: Option(String),
+    modified: Option(String),
+    category: Option(String),
+    content_status: Option(String),
+    language: Option(String),
+    identifier: Option(String),
+    version: Option(String),
+    last_printed: Option(String)
   )
 }
 
@@ -1652,8 +1700,8 @@ pub type PptxMetadata {
 /// Integrates with `office_metadata` module for core/app/custom properties.
 pub type DocxMetadata {
   DocxMetadata(
-    core_properties: Option(String),
-    app_properties: Option(String),
+    core_properties: Option(CoreProperties),
+    app_properties: Option(DocxAppProperties),
     custom_properties: Option(Dict(String, String))
   )
 }

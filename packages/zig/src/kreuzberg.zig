@@ -587,6 +587,28 @@ pub const TableProperties = struct {
     caption: ?[:0]const u8,
 };
 
+/// Application properties from docProps/app.xml for DOCX
+///
+/// Contains Word-specific document statistics and metadata.
+pub const DocxAppProperties = struct {
+    application: ?[:0]const u8,
+    app_version: ?[:0]const u8,
+    template: ?[:0]const u8,
+    total_time: ?i32,
+    pages: ?i32,
+    words: ?i32,
+    characters: ?i32,
+    characters_with_spaces: ?i32,
+    lines: ?i32,
+    paragraphs: ?i32,
+    company: ?[:0]const u8,
+    doc_security: ?i32,
+    scale_crop: ?bool,
+    links_up_to_date: ?bool,
+    shared_doc: ?bool,
+    hyperlinks_changed: ?bool,
+};
+
 /// Application properties from docProps/app.xml for XLSX
 ///
 /// Contains Excel-specific document metadata.
@@ -621,6 +643,28 @@ pub const PptxAppProperties = struct {
     multimedia_clips: ?i32,
     presentation_format: ?[:0]const u8,
     slide_titles: []const [:0]const u8,
+};
+
+/// Dublin Core metadata from docProps/core.xml
+///
+/// Contains standard metadata fields defined by the Dublin Core standard
+/// and Office-specific extensions.
+pub const CoreProperties = struct {
+    title: ?[:0]const u8,
+    subject: ?[:0]const u8,
+    creator: ?[:0]const u8,
+    keywords: ?[:0]const u8,
+    description: ?[:0]const u8,
+    last_modified_by: ?[:0]const u8,
+    revision: ?[:0]const u8,
+    created: ?[:0]const u8,
+    modified: ?[:0]const u8,
+    category: ?[:0]const u8,
+    content_status: ?[:0]const u8,
+    language: ?[:0]const u8,
+    identifier: ?[:0]const u8,
+    version: ?[:0]const u8,
+    last_printed: ?[:0]const u8,
 };
 
 /// Custom properties from docProps/custom.xml
@@ -1514,8 +1558,8 @@ pub const PptxMetadata = struct {
 /// Extracted from DOCX files using shared Office Open XML metadata extraction.
 /// Integrates with `office_metadata` module for core/app/custom properties.
 pub const DocxMetadata = struct {
-    core_properties: ?[:0]const u8,
-    app_properties: ?[:0]const u8,
+    core_properties: ?CoreProperties,
+    app_properties: ?DocxAppProperties,
     custom_properties: ?std.StringHashMap([:0]const u8),
 };
 

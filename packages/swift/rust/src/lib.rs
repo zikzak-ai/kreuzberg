@@ -703,6 +703,45 @@ mod ffi {
     }
 
     extern "Rust" {
+        type DocxAppProperties;
+        #[swift_bridge(init)]
+        fn new(
+            application: Option<String>,
+            app_version: Option<String>,
+            template: Option<String>,
+            total_time: Option<i32>,
+            pages: Option<i32>,
+            words: Option<i32>,
+            characters: Option<i32>,
+            characters_with_spaces: Option<i32>,
+            lines: Option<i32>,
+            paragraphs: Option<i32>,
+            company: Option<String>,
+            doc_security: Option<i32>,
+            scale_crop: Option<bool>,
+            links_up_to_date: Option<bool>,
+            shared_doc: Option<bool>,
+            hyperlinks_changed: Option<bool>,
+        ) -> DocxAppProperties;
+        fn application(&self) -> Option<String>;
+        fn app_version(&self) -> Option<String>;
+        fn template(&self) -> Option<String>;
+        fn total_time(&self) -> Option<i32>;
+        fn pages(&self) -> Option<i32>;
+        fn words(&self) -> Option<i32>;
+        fn characters(&self) -> Option<i32>;
+        fn characters_with_spaces(&self) -> Option<i32>;
+        fn lines(&self) -> Option<i32>;
+        fn paragraphs(&self) -> Option<i32>;
+        fn company(&self) -> Option<String>;
+        fn doc_security(&self) -> Option<i32>;
+        fn scale_crop(&self) -> Option<bool>;
+        fn links_up_to_date(&self) -> Option<bool>;
+        fn shared_doc(&self) -> Option<bool>;
+        fn hyperlinks_changed(&self) -> Option<bool>;
+    }
+
+    extern "Rust" {
         type XlsxAppProperties;
         #[swift_bridge(init)]
         fn new(
@@ -762,6 +801,43 @@ mod ffi {
         fn multimedia_clips(&self) -> Option<i32>;
         fn presentation_format(&self) -> Option<String>;
         fn slide_titles(&self) -> Vec<String>;
+    }
+
+    extern "Rust" {
+        type CoreProperties;
+        #[swift_bridge(init)]
+        fn new(
+            title: Option<String>,
+            subject: Option<String>,
+            creator: Option<String>,
+            keywords: Option<String>,
+            description: Option<String>,
+            last_modified_by: Option<String>,
+            revision: Option<String>,
+            created: Option<String>,
+            modified: Option<String>,
+            category: Option<String>,
+            content_status: Option<String>,
+            language: Option<String>,
+            identifier: Option<String>,
+            version: Option<String>,
+            last_printed: Option<String>,
+        ) -> CoreProperties;
+        fn title(&self) -> Option<String>;
+        fn subject(&self) -> Option<String>;
+        fn creator(&self) -> Option<String>;
+        fn keywords(&self) -> Option<String>;
+        fn description(&self) -> Option<String>;
+        fn last_modified_by(&self) -> Option<String>;
+        fn revision(&self) -> Option<String>;
+        fn created(&self) -> Option<String>;
+        fn modified(&self) -> Option<String>;
+        fn category(&self) -> Option<String>;
+        fn content_status(&self) -> Option<String>;
+        fn language(&self) -> Option<String>;
+        fn identifier(&self) -> Option<String>;
+        fn version(&self) -> Option<String>;
+        fn last_printed(&self) -> Option<String>;
     }
 
     extern "Rust" {
@@ -1573,12 +1649,12 @@ mod ffi {
         type DocxMetadata;
         #[swift_bridge(init)]
         fn new(
-            core_properties: Option<String>,
-            app_properties: Option<String>,
+            core_properties: Option<CoreProperties>,
+            app_properties: Option<DocxAppProperties>,
             custom_properties: String,
         ) -> DocxMetadata;
-        fn core_properties(&self) -> Option<String>;
-        fn app_properties(&self) -> Option<String>;
+        fn core_properties(&self) -> Option<CoreProperties>;
+        fn app_properties(&self) -> Option<DocxAppProperties>;
         fn custom_properties(&self) -> String;
     }
 
@@ -4635,6 +4711,168 @@ impl TableProperties {
     }
 }
 
+pub struct DocxAppProperties(pub kreuzberg::extraction::office_metadata::DocxAppProperties);
+impl DocxAppProperties {
+    pub fn new(
+        application: Option<String>,
+        app_version: Option<String>,
+        template: Option<String>,
+        total_time: Option<i32>,
+        pages: Option<i32>,
+        words: Option<i32>,
+        characters: Option<i32>,
+        characters_with_spaces: Option<i32>,
+        lines: Option<i32>,
+        paragraphs: Option<i32>,
+        company: Option<String>,
+        doc_security: Option<i32>,
+        scale_crop: Option<bool>,
+        links_up_to_date: Option<bool>,
+        shared_doc: Option<bool>,
+        hyperlinks_changed: Option<bool>,
+    ) -> DocxAppProperties {
+        let mut __target: kreuzberg::extraction::office_metadata::DocxAppProperties =
+            ::std::default::Default::default();
+        if let Some(s) = application {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.application = Some(t);
+                }
+            }
+        }
+        if let Some(s) = app_version {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.app_version = Some(t);
+                }
+            }
+        }
+        if let Some(s) = template {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.template = Some(t);
+                }
+            }
+        }
+        __target.total_time = total_time;
+        __target.pages = pages;
+        __target.words = words;
+        __target.characters = characters;
+        __target.characters_with_spaces = characters_with_spaces;
+        __target.lines = lines;
+        __target.paragraphs = paragraphs;
+        if let Some(s) = company {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.company = Some(t);
+                }
+            }
+        }
+        __target.doc_security = doc_security;
+        __target.scale_crop = scale_crop;
+        __target.links_up_to_date = links_up_to_date;
+        __target.shared_doc = shared_doc;
+        __target.hyperlinks_changed = hyperlinks_changed;
+        DocxAppProperties(__target)
+    }
+    pub fn application(&self) -> Option<String> {
+        self.0.application.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn app_version(&self) -> Option<String> {
+        self.0.app_version.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn template(&self) -> Option<String> {
+        self.0.template.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn total_time(&self) -> Option<i32> {
+        self.0.total_time.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn pages(&self) -> Option<i32> {
+        self.0.pages.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn words(&self) -> Option<i32> {
+        self.0.words.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn characters(&self) -> Option<i32> {
+        self.0.characters.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn characters_with_spaces(&self) -> Option<i32> {
+        self.0.characters_with_spaces.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn lines(&self) -> Option<i32> {
+        self.0.lines.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn paragraphs(&self) -> Option<i32> {
+        self.0.paragraphs.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn company(&self) -> Option<String> {
+        self.0.company.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn doc_security(&self) -> Option<i32> {
+        self.0.doc_security.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn scale_crop(&self) -> Option<bool> {
+        self.0.scale_crop.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn links_up_to_date(&self) -> Option<bool> {
+        self.0.links_up_to_date.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn shared_doc(&self) -> Option<bool> {
+        self.0.shared_doc.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+    pub fn hyperlinks_changed(&self) -> Option<bool> {
+        self.0.hyperlinks_changed.as_ref().and_then(|v| {
+            ::serde_json::to_value(v)
+                .ok()
+                .and_then(|j| ::serde_json::from_value(j).ok())
+        })
+    }
+}
+
 pub struct XlsxAppProperties(pub kreuzberg::extraction::office_metadata::app_properties::XlsxAppProperties);
 impl XlsxAppProperties {
     pub fn new(
@@ -4891,6 +5129,186 @@ impl PptxAppProperties {
             .ok()
             .and_then(|j| ::serde_json::from_value(j).ok())
             .unwrap_or_default()
+    }
+}
+
+pub struct CoreProperties(pub kreuzberg::extraction::office_metadata::CoreProperties);
+impl CoreProperties {
+    pub fn new(
+        title: Option<String>,
+        subject: Option<String>,
+        creator: Option<String>,
+        keywords: Option<String>,
+        description: Option<String>,
+        last_modified_by: Option<String>,
+        revision: Option<String>,
+        created: Option<String>,
+        modified: Option<String>,
+        category: Option<String>,
+        content_status: Option<String>,
+        language: Option<String>,
+        identifier: Option<String>,
+        version: Option<String>,
+        last_printed: Option<String>,
+    ) -> CoreProperties {
+        let mut __target: kreuzberg::extraction::office_metadata::CoreProperties = ::std::default::Default::default();
+        if let Some(s) = title {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.title = Some(t);
+                }
+            }
+        }
+        if let Some(s) = subject {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.subject = Some(t);
+                }
+            }
+        }
+        if let Some(s) = creator {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.creator = Some(t);
+                }
+            }
+        }
+        if let Some(s) = keywords {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.keywords = Some(t);
+                }
+            }
+        }
+        if let Some(s) = description {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.description = Some(t);
+                }
+            }
+        }
+        if let Some(s) = last_modified_by {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.last_modified_by = Some(t);
+                }
+            }
+        }
+        if let Some(s) = revision {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.revision = Some(t);
+                }
+            }
+        }
+        if let Some(s) = created {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.created = Some(t);
+                }
+            }
+        }
+        if let Some(s) = modified {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.modified = Some(t);
+                }
+            }
+        }
+        if let Some(s) = category {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.category = Some(t);
+                }
+            }
+        }
+        if let Some(s) = content_status {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.content_status = Some(t);
+                }
+            }
+        }
+        if let Some(s) = language {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.language = Some(t);
+                }
+            }
+        }
+        if let Some(s) = identifier {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.identifier = Some(t);
+                }
+            }
+        }
+        if let Some(s) = version {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.version = Some(t);
+                }
+            }
+        }
+        if let Some(s) = last_printed {
+            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
+                if let Ok(t) = ::serde_json::from_value(v) {
+                    __target.last_printed = Some(t);
+                }
+            }
+        }
+        CoreProperties(__target)
+    }
+    pub fn title(&self) -> Option<String> {
+        self.0.title.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn subject(&self) -> Option<String> {
+        self.0.subject.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn creator(&self) -> Option<String> {
+        self.0.creator.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn keywords(&self) -> Option<String> {
+        self.0.keywords.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn description(&self) -> Option<String> {
+        self.0.description.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn last_modified_by(&self) -> Option<String> {
+        self.0
+            .last_modified_by
+            .as_ref()
+            .and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn revision(&self) -> Option<String> {
+        self.0.revision.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn created(&self) -> Option<String> {
+        self.0.created.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn modified(&self) -> Option<String> {
+        self.0.modified.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn category(&self) -> Option<String> {
+        self.0.category.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn content_status(&self) -> Option<String> {
+        self.0
+            .content_status
+            .as_ref()
+            .and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn language(&self) -> Option<String> {
+        self.0.language.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn identifier(&self) -> Option<String> {
+        self.0.identifier.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn version(&self) -> Option<String> {
+        self.0.version.as_ref().and_then(|v| serde_json::to_string(v).ok())
+    }
+    pub fn last_printed(&self) -> Option<String> {
+        self.0.last_printed.as_ref().and_then(|v| serde_json::to_string(v).ok())
     }
 }
 
@@ -7584,24 +8002,16 @@ impl PptxMetadata {
 pub struct DocxMetadata(pub kreuzberg::DocxMetadata);
 impl DocxMetadata {
     pub fn new(
-        core_properties: Option<String>,
-        app_properties: Option<String>,
+        core_properties: Option<CoreProperties>,
+        app_properties: Option<DocxAppProperties>,
         custom_properties: String,
     ) -> DocxMetadata {
         let mut __target: kreuzberg::DocxMetadata = ::std::default::Default::default();
-        if let Some(s) = core_properties {
-            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
-                if let Ok(t) = ::serde_json::from_value(v) {
-                    __target.core_properties = Some(t);
-                }
-            }
+        if let Some(w) = core_properties {
+            __target.core_properties = Some(w.0);
         }
-        if let Some(s) = app_properties {
-            if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&s) {
-                if let Ok(t) = ::serde_json::from_value(v) {
-                    __target.app_properties = Some(t);
-                }
-            }
+        if let Some(w) = app_properties {
+            __target.app_properties = Some(w.0);
         }
         if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&custom_properties) {
             if let Ok(t) = ::serde_json::from_value(v) {
@@ -7610,17 +8020,11 @@ impl DocxMetadata {
         }
         DocxMetadata(__target)
     }
-    pub fn core_properties(&self) -> Option<String> {
-        self.0
-            .core_properties
-            .as_ref()
-            .and_then(|v| serde_json::to_string(v).ok())
+    pub fn core_properties(&self) -> Option<CoreProperties> {
+        self.0.core_properties.clone().map(CoreProperties)
     }
-    pub fn app_properties(&self) -> Option<String> {
-        self.0
-            .app_properties
-            .as_ref()
-            .and_then(|v| serde_json::to_string(v).ok())
+    pub fn app_properties(&self) -> Option<DocxAppProperties> {
+        self.0.app_properties.clone().map(DocxAppProperties)
     }
     pub fn custom_properties(&self) -> String {
         serde_json::to_string(&self.0.custom_properties).expect("serializable custom_properties")

@@ -39,6 +39,7 @@ typedef struct KREUZBERGCodeContentMode KREUZBERGCodeContentMode;
 typedef struct KREUZBERGContentFilterConfig KREUZBERGContentFilterConfig;
 typedef struct KREUZBERGContentLayer KREUZBERGContentLayer;
 typedef struct KREUZBERGContributorRole KREUZBERGContributorRole;
+typedef struct KREUZBERGCoreProperties KREUZBERGCoreProperties;
 typedef struct KREUZBERGCsvMetadata KREUZBERGCsvMetadata;
 typedef struct KREUZBERGCustomProperties KREUZBERGCustomProperties;
 typedef struct KREUZBERGDbfFieldInfo KREUZBERGDbfFieldInfo;
@@ -55,6 +56,7 @@ typedef struct KREUZBERGDocumentExtractor KREUZBERGDocumentExtractor;
 typedef struct KREUZBERGDocumentNode KREUZBERGDocumentNode;
 typedef struct KREUZBERGDocumentRelationship KREUZBERGDocumentRelationship;
 typedef struct KREUZBERGDocumentStructure KREUZBERGDocumentStructure;
+typedef struct KREUZBERGDocxAppProperties KREUZBERGDocxAppProperties;
 typedef struct KREUZBERGDocxMetadata KREUZBERGDocxMetadata;
 typedef struct KREUZBERGDrawing KREUZBERGDrawing;
 typedef struct KREUZBERGElement KREUZBERGElement;
@@ -3525,6 +3527,141 @@ char *kreuzberg_table_properties_layout(const KREUZBERGTableProperties *ptr);
 char *kreuzberg_table_properties_caption(const KREUZBERGTableProperties *ptr);
 
 /**
+ * Create a `DocxAppProperties` from a JSON string. Returns null on failure.
+ * # Safety
+ * JSON string must be valid UTF-8 and null-terminated.
+ * Returned handle must be freed with `kreuzberg_docx_app_properties_free`.
+ */
+KREUZBERGDocxAppProperties *kreuzberg_docx_app_properties_from_json(const char *json);
+
+/**
+ * Serialize a `DocxAppProperties` to a JSON string. Returns null on failure.
+ * # Safety
+ * `ptr` must be a valid, non-null pointer returned by a `kreuzberg` function.
+ * The returned string must be freed with `kreuzberg_free_string`.
+ */
+char *kreuzberg_docx_app_properties_to_json(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Free a `DocxAppProperties` handle.
+ * # Safety
+ * Pointer must have been returned by this library, or be null.
+ */
+void kreuzberg_docx_app_properties_free(KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `application` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_docx_app_properties_application(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `app_version` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_docx_app_properties_app_version(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `template` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_docx_app_properties_template(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `total_time` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_total_time(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `pages` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_pages(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `words` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_words(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `characters` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_characters(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `characters_with_spaces` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_characters_with_spaces(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `lines` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_lines(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `paragraphs` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_paragraphs(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `company` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_docx_app_properties_company(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `doc_security` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_doc_security(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `scale_crop` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_scale_crop(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `links_up_to_date` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_links_up_to_date(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `shared_doc` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_shared_doc(const KREUZBERGDocxAppProperties *ptr);
+
+/**
+ * Get the `hyperlinks_changed` field from a `DocxAppProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_docx_app_properties_hyperlinks_changed(const KREUZBERGDocxAppProperties *ptr);
+
+/**
  * Create a `XlsxAppProperties` from a JSON string. Returns null on failure.
  * # Safety
  * JSON string must be valid UTF-8 and null-terminated.
@@ -3737,6 +3874,134 @@ char *kreuzberg_pptx_app_properties_presentation_format(const KREUZBERGPptxAppPr
  * Pointer must be a valid handle returned by this library.
  */
 char *kreuzberg_pptx_app_properties_slide_titles(const KREUZBERGPptxAppProperties *ptr);
+
+/**
+ * Create a `CoreProperties` from a JSON string. Returns null on failure.
+ * # Safety
+ * JSON string must be valid UTF-8 and null-terminated.
+ * Returned handle must be freed with `kreuzberg_core_properties_free`.
+ */
+KREUZBERGCoreProperties *kreuzberg_core_properties_from_json(const char *json);
+
+/**
+ * Serialize a `CoreProperties` to a JSON string. Returns null on failure.
+ * # Safety
+ * `ptr` must be a valid, non-null pointer returned by a `kreuzberg` function.
+ * The returned string must be freed with `kreuzberg_free_string`.
+ */
+char *kreuzberg_core_properties_to_json(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Free a `CoreProperties` handle.
+ * # Safety
+ * Pointer must have been returned by this library, or be null.
+ */
+void kreuzberg_core_properties_free(KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `title` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_title(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `subject` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_subject(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `creator` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_creator(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `keywords` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_keywords(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `description` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_description(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `last_modified_by` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_last_modified_by(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `revision` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_revision(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `created` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_created(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `modified` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_modified(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `category` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_category(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `content_status` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_content_status(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `language` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_language(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `identifier` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_identifier(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `version` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_version(const KREUZBERGCoreProperties *ptr);
+
+/**
+ * Get the `last_printed` field from a `CoreProperties`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_core_properties_last_printed(const KREUZBERGCoreProperties *ptr);
 
 /**
  * Free a `CustomProperties` handle.
@@ -7456,6 +7721,20 @@ char *kreuzberg_docx_metadata_to_json(const KREUZBERGDocxMetadata *ptr);
  * Pointer must have been returned by this library, or be null.
  */
 void kreuzberg_docx_metadata_free(KREUZBERGDocxMetadata *ptr);
+
+/**
+ * Get the `core_properties` field from a `DocxMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+KREUZBERGCoreProperties *kreuzberg_docx_metadata_core_properties(const KREUZBERGDocxMetadata *ptr);
+
+/**
+ * Get the `app_properties` field from a `DocxMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+KREUZBERGDocxAppProperties *kreuzberg_docx_metadata_app_properties(const KREUZBERGDocxMetadata *ptr);
 
 /**
  * Get the `custom_properties` field from a `DocxMetadata`.

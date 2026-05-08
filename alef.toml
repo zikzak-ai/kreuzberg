@@ -537,8 +537,6 @@ types = [
   "PluginHealthStatus",
   "Run",
   "Paragraph",
-  "DocxAppProperties",
-  "CoreProperties",
   "CellBorders",
   "CellMargins",
   "CellProperties",

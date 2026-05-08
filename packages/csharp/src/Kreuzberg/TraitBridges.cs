@@ -386,11 +386,16 @@ public static class OcrBackendRegistry {
     private static readonly ConcurrentDictionary<string, OcrBackendBridge> _bridges =
         new ConcurrentDictionary<string, OcrBackendBridge>();
 
-    /// <summary>Register a OcrBackend implementation</summary>    public static void Register(IOcrBackend impl) {
+    /// <summary>Register a OcrBackend implementation</summary>
+
+    public static void Register(IOcrBackend impl) {
         if (impl == null)
             throw new ArgumentNullException(nameof(impl));
 
-        var name = impl.Name;        var bridge = new OcrBackendBridge(impl);
+        var name = impl.Name;
+
+
+        var bridge = new OcrBackendBridge(impl);
 
         try {
             var userDataHandle = GCHandle.Alloc(bridge, GCHandleType.Normal);
@@ -728,11 +733,16 @@ public static class PostProcessorRegistry {
     private static readonly ConcurrentDictionary<string, PostProcessorBridge> _bridges =
         new ConcurrentDictionary<string, PostProcessorBridge>();
 
-    /// <summary>Register a PostProcessor implementation</summary>    public static void Register(IPostProcessor impl) {
+    /// <summary>Register a PostProcessor implementation</summary>
+
+    public static void Register(IPostProcessor impl) {
         if (impl == null)
             throw new ArgumentNullException(nameof(impl));
 
-        var name = impl.Name;        var bridge = new PostProcessorBridge(impl);
+        var name = impl.Name;
+
+
+        var bridge = new PostProcessorBridge(impl);
 
         try {
             var userDataHandle = GCHandle.Alloc(bridge, GCHandleType.Normal);
@@ -1020,11 +1030,16 @@ public static class ValidatorRegistry {
     private static readonly ConcurrentDictionary<string, ValidatorBridge> _bridges =
         new ConcurrentDictionary<string, ValidatorBridge>();
 
-    /// <summary>Register a Validator implementation</summary>    public static void Register(IValidator impl) {
+    /// <summary>Register a Validator implementation</summary>
+
+    public static void Register(IValidator impl) {
         if (impl == null)
             throw new ArgumentNullException(nameof(impl));
 
-        var name = impl.Name;        var bridge = new ValidatorBridge(impl);
+        var name = impl.Name;
+
+
+        var bridge = new ValidatorBridge(impl);
 
         try {
             var userDataHandle = GCHandle.Alloc(bridge, GCHandleType.Normal);
@@ -1282,11 +1297,16 @@ public static class EmbeddingBackendRegistry {
     private static readonly ConcurrentDictionary<string, EmbeddingBackendBridge> _bridges =
         new ConcurrentDictionary<string, EmbeddingBackendBridge>();
 
-    /// <summary>Register a EmbeddingBackend implementation</summary>    public static void Register(IEmbeddingBackend impl) {
+    /// <summary>Register a EmbeddingBackend implementation</summary>
+
+    public static void Register(IEmbeddingBackend impl) {
         if (impl == null)
             throw new ArgumentNullException(nameof(impl));
 
-        var name = impl.Name;        var bridge = new EmbeddingBackendBridge(impl);
+        var name = impl.Name;
+
+
+        var bridge = new EmbeddingBackendBridge(impl);
 
         try {
             var userDataHandle = GCHandle.Alloc(bridge, GCHandleType.Normal);
