@@ -1260,6 +1260,12 @@ args = [
   { name = "config", field = "input.config", type = "json_object", optional = true },
 ]
 
+[crates.e2e.calls.extract_file.overrides.dart]
+# Dart cannot pass file paths through the FFI bridge; use extractBytes instead.
+# Missing mime_type will be inferred from the file extension by the e2e generator.
+function = "extract_bytes"
+async = true
+
 [crates.e2e.calls.extract_bytes]
 function = "extract_bytes"
 module = "kreuzberg"
