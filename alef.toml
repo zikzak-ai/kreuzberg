@@ -1285,7 +1285,7 @@ module = "kreuzberg"
 async = true
 returns_result = true
 args = [
-  { name = "data", field = "input.data", type = "bytes" },
+  { name = "content", field = "input.data", type = "bytes" },
   { name = "mime_type", field = "input.mime_type", type = "string" },
   { name = "config", field = "input.config", type = "json_object", optional = true },
 ]
@@ -1347,7 +1347,7 @@ async = false
 returns_result = true
 skip_languages = ["wasm"]
 args = [
-  { name = "data", field = "input.data", type = "bytes" },
+  { name = "content", field = "input.data", type = "bytes" },
   { name = "mime_type", field = "input.mime_type", type = "string" },
   { name = "config", field = "input.config", type = "json_object", optional = true },
 ]
