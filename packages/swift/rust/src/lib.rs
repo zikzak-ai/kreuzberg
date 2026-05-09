@@ -2573,16 +2573,6 @@ mod ffi {
         fn embedding_backend_call_dimensions(this: &EmbeddingBackendBox) -> usize;
         fn embedding_backend_call_embed(this: &EmbeddingBackendBox, texts: Vec<String>) -> Result<String, String>;
     }
-
-    extern "Rust" {
-
-        #[swift_bridge(swift_name = "extractionConfigFromJson")]
-        fn extraction_config_from_json(json: String) -> Result<ExtractionConfig, String>;
-        #[swift_bridge(swift_name = "batchBytesItemFromJson")]
-        fn batch_bytes_item_from_json(json: String) -> Result<BatchBytesItem, String>;
-        #[swift_bridge(swift_name = "batchFileItemFromJson")]
-        fn batch_file_item_from_json(json: String) -> Result<BatchFileItem, String>;
-    }
 }
 
 pub struct AccelerationConfig(pub kreuzberg::AccelerationConfig);
@@ -11004,25 +10994,4 @@ pub fn embedding_backend_call_embed(this: &EmbeddingBackendBox, texts: Vec<Strin
                 .map(|v| serde_json::to_string(&v).expect("serializable return"))
                 .map_err(|e| e.to_string())
         })
-}
-
-// JSON factory shims for e2e test layer.
-// These let generated tests deserialise fixture JSON into opaque swift-bridge types.
-
-pub fn extraction_config_from_json(json: String) -> Result<ExtractionConfig, String> {
-    serde_json::from_str::<kreuzberg::ExtractionConfig>(&json)
-        .map_err(|e| e.to_string())
-        .map(ExtractionConfig)
-}
-
-pub fn batch_bytes_item_from_json(json: String) -> Result<BatchBytesItem, String> {
-    serde_json::from_str::<kreuzberg::BatchBytesItem>(&json)
-        .map_err(|e| e.to_string())
-        .map(BatchBytesItem)
-}
-
-pub fn batch_file_item_from_json(json: String) -> Result<BatchFileItem, String> {
-    serde_json::from_str::<kreuzberg::BatchFileItem>(&json)
-        .map_err(|e| e.to_string())
-        .map(BatchFileItem)
 }
