@@ -2169,6 +2169,30 @@ void* __swift_bridge__$Vec_EmbeddedFile$get_mut(void* vec_ptr, uintptr_t index);
 uintptr_t __swift_bridge__$Vec_EmbeddedFile$len(void* vec_ptr);
 void* __swift_bridge__$Vec_EmbeddedFile$as_ptr(void* vec_ptr);
 
+typedef struct PdfMetadata PdfMetadata;
+void __swift_bridge__$PdfMetadata$_free(void* self);
+
+void* __swift_bridge__$Vec_PdfMetadata$new(void);
+void __swift_bridge__$Vec_PdfMetadata$drop(void* vec_ptr);
+void __swift_bridge__$Vec_PdfMetadata$push(void* vec_ptr, void* item_ptr);
+void* __swift_bridge__$Vec_PdfMetadata$pop(void* vec_ptr);
+void* __swift_bridge__$Vec_PdfMetadata$get(void* vec_ptr, uintptr_t index);
+void* __swift_bridge__$Vec_PdfMetadata$get_mut(void* vec_ptr, uintptr_t index);
+uintptr_t __swift_bridge__$Vec_PdfMetadata$len(void* vec_ptr);
+void* __swift_bridge__$Vec_PdfMetadata$as_ptr(void* vec_ptr);
+
+typedef struct CommonPdfMetadata CommonPdfMetadata;
+void __swift_bridge__$CommonPdfMetadata$_free(void* self);
+
+void* __swift_bridge__$Vec_CommonPdfMetadata$new(void);
+void __swift_bridge__$Vec_CommonPdfMetadata$drop(void* vec_ptr);
+void __swift_bridge__$Vec_CommonPdfMetadata$push(void* vec_ptr, void* item_ptr);
+void* __swift_bridge__$Vec_CommonPdfMetadata$pop(void* vec_ptr);
+void* __swift_bridge__$Vec_CommonPdfMetadata$get(void* vec_ptr, uintptr_t index);
+void* __swift_bridge__$Vec_CommonPdfMetadata$get_mut(void* vec_ptr, uintptr_t index);
+uintptr_t __swift_bridge__$Vec_CommonPdfMetadata$len(void* vec_ptr);
+void* __swift_bridge__$Vec_CommonPdfMetadata$as_ptr(void* vec_ptr);
+
 typedef struct ExecutionProviderType ExecutionProviderType;
 void __swift_bridge__$ExecutionProviderType$_free(void* self);
 
@@ -3643,6 +3667,19 @@ void* __swift_bridge__$DetectionResult$detections(void* self);
 void* __swift_bridge__$EmbeddedFile$name(void* self);
 void* __swift_bridge__$EmbeddedFile$data(void* self);
 void* __swift_bridge__$EmbeddedFile$mime_type(void* self);
+void* __swift_bridge__$PdfMetadata$new(void* pdf_version, void* producer, struct __private__OptionBool is_encrypted, struct __private__OptionI64 width, struct __private__OptionI64 height, struct __private__OptionUsize page_count);
+void* __swift_bridge__$PdfMetadata$pdf_version(void* self);
+void* __swift_bridge__$PdfMetadata$producer(void* self);
+struct __private__OptionBool __swift_bridge__$PdfMetadata$is_encrypted(void* self);
+struct __private__OptionI64 __swift_bridge__$PdfMetadata$width(void* self);
+struct __private__OptionI64 __swift_bridge__$PdfMetadata$height(void* self);
+struct __private__OptionUsize __swift_bridge__$PdfMetadata$page_count(void* self);
+void* __swift_bridge__$CommonPdfMetadata$new(void* title, void* subject, void* authors, void* keywords, void* created_at, void* modified_at, void* created_by);
+void* __swift_bridge__$CommonPdfMetadata$title(void* self);
+void* __swift_bridge__$CommonPdfMetadata$subject(void* self);
+void* __swift_bridge__$CommonPdfMetadata$created_at(void* self);
+void* __swift_bridge__$CommonPdfMetadata$modified_at(void* self);
+void* __swift_bridge__$CommonPdfMetadata$created_by(void* self);
 struct __private__ResultPtrAndPtr __swift_bridge__$extract_bytes(void* content, void* mime_type, void* config);
 struct __private__ResultPtrAndPtr __swift_bridge__$extract_file(void* path, void* mime_type, void* config);
 struct __private__ResultPtrAndPtr __swift_bridge__$extract_file_sync(void* path, void* mime_type, void* config);

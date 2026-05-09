@@ -36,6 +36,7 @@ typedef struct KREUZBERGChunkingConfig KREUZBERGChunkingConfig;
 typedef struct KREUZBERGChunkingResult KREUZBERGChunkingResult;
 typedef struct KREUZBERGCitationMetadata KREUZBERGCitationMetadata;
 typedef struct KREUZBERGCodeContentMode KREUZBERGCodeContentMode;
+typedef struct KREUZBERGCommonPdfMetadata KREUZBERGCommonPdfMetadata;
 typedef struct KREUZBERGContentFilterConfig KREUZBERGContentFilterConfig;
 typedef struct KREUZBERGContentLayer KREUZBERGContentLayer;
 typedef struct KREUZBERGContributorRole KREUZBERGContributorRole;
@@ -168,6 +169,7 @@ typedef struct KREUZBERGPageUnitType KREUZBERGPageUnitType;
 typedef struct KREUZBERGPdfAnnotation KREUZBERGPdfAnnotation;
 typedef struct KREUZBERGPdfAnnotationType KREUZBERGPdfAnnotationType;
 typedef struct KREUZBERGPdfConfig KREUZBERGPdfConfig;
+typedef struct KREUZBERGPdfMetadata KREUZBERGPdfMetadata;
 typedef struct KREUZBERGPlugin KREUZBERGPlugin;
 typedef struct KREUZBERGPoolError KREUZBERGPoolError;
 typedef struct KREUZBERGPostProcessor KREUZBERGPostProcessor;
@@ -10805,6 +10807,127 @@ uint8_t *kreuzberg_embedded_file_data(const KREUZBERGEmbeddedFile *ptr,
  * Pointer must be a valid handle returned by this library.
  */
 char *kreuzberg_embedded_file_mime_type(const KREUZBERGEmbeddedFile *ptr);
+
+/**
+ * Create a `PdfMetadata` from a JSON string. Returns null on failure.
+ * # Safety
+ * JSON string must be valid UTF-8 and null-terminated.
+ * Returned handle must be freed with `kreuzberg_pdf_metadata_free`.
+ */
+KREUZBERGPdfMetadata *kreuzberg_pdf_metadata_from_json(const char *json);
+
+/**
+ * Serialize a `PdfMetadata` to a JSON string. Returns null on failure.
+ * # Safety
+ * `ptr` must be a valid, non-null pointer returned by a `kreuzberg` function.
+ * The returned string must be freed with `kreuzberg_free_string`.
+ */
+char *kreuzberg_pdf_metadata_to_json(const KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Free a `PdfMetadata` handle.
+ * # Safety
+ * Pointer must have been returned by this library, or be null.
+ */
+void kreuzberg_pdf_metadata_free(KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Get the `pdf_version` field from a `PdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_pdf_metadata_pdf_version(const KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Get the `producer` field from a `PdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_pdf_metadata_producer(const KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Get the `is_encrypted` field from a `PdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int32_t kreuzberg_pdf_metadata_is_encrypted(const KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Get the `width` field from a `PdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int64_t kreuzberg_pdf_metadata_width(const KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Get the `height` field from a `PdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+int64_t kreuzberg_pdf_metadata_height(const KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Get the `page_count` field from a `PdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+uintptr_t kreuzberg_pdf_metadata_page_count(const KREUZBERGPdfMetadata *ptr);
+
+/**
+ * Free a `CommonPdfMetadata` handle.
+ * # Safety
+ * Pointer must have been returned by this library, or be null.
+ */
+void kreuzberg_common_pdf_metadata_free(KREUZBERGCommonPdfMetadata *ptr);
+
+/**
+ * Get the `title` field from a `CommonPdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_common_pdf_metadata_title(const KREUZBERGCommonPdfMetadata *ptr);
+
+/**
+ * Get the `subject` field from a `CommonPdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_common_pdf_metadata_subject(const KREUZBERGCommonPdfMetadata *ptr);
+
+/**
+ * Get the `authors` field from a `CommonPdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_common_pdf_metadata_authors(const KREUZBERGCommonPdfMetadata *ptr);
+
+/**
+ * Get the `keywords` field from a `CommonPdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_common_pdf_metadata_keywords(const KREUZBERGCommonPdfMetadata *ptr);
+
+/**
+ * Get the `created_at` field from a `CommonPdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_common_pdf_metadata_created_at(const KREUZBERGCommonPdfMetadata *ptr);
+
+/**
+ * Get the `modified_at` field from a `CommonPdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_common_pdf_metadata_modified_at(const KREUZBERGCommonPdfMetadata *ptr);
+
+/**
+ * Get the `created_by` field from a `CommonPdfMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_common_pdf_metadata_created_by(const KREUZBERGCommonPdfMetadata *ptr);
 
 /**
  * Convert an integer to a `ExecutionProviderType` variant. Returns -1 on invalid input.

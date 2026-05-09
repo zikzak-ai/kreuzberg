@@ -16778,6 +16778,212 @@ extension EmbeddedFile: Vectorizable {
 }
 
 
+public class PdfMetadata: PdfMetadataRefMut {
+    var isOwned: Bool = true
+
+    public override init(ptr: UnsafeMutableRawPointer) {
+        super.init(ptr: ptr)
+    }
+
+    deinit {
+        if isOwned {
+            __swift_bridge__$PdfMetadata$_free(ptr)
+        }
+    }
+}
+extension PdfMetadata {
+    public convenience init<GenericIntoRustString: IntoRustString>(_ pdf_version: Optional<GenericIntoRustString>, _ producer: Optional<GenericIntoRustString>, _ is_encrypted: Optional<Bool>, _ width: Optional<Int64>, _ height: Optional<Int64>, _ page_count: Optional<UInt>) {
+        self.init(ptr: __swift_bridge__$PdfMetadata$new({ if let rustString = optionalStringIntoRustString(pdf_version) { rustString.isOwned = false; return rustString.ptr } else { return nil } }(), { if let rustString = optionalStringIntoRustString(producer) { rustString.isOwned = false; return rustString.ptr } else { return nil } }(), is_encrypted.intoFfiRepr(), width.intoFfiRepr(), height.intoFfiRepr(), page_count.intoFfiRepr()))
+    }
+}
+public class PdfMetadataRefMut: PdfMetadataRef {
+    public override init(ptr: UnsafeMutableRawPointer) {
+        super.init(ptr: ptr)
+    }
+}
+public class PdfMetadataRef {
+    var ptr: UnsafeMutableRawPointer
+
+    public init(ptr: UnsafeMutableRawPointer) {
+        self.ptr = ptr
+    }
+}
+extension PdfMetadataRef {
+    public func pdf_version() -> Optional<RustString> {
+        { let val = __swift_bridge__$PdfMetadata$pdf_version(ptr); if val != nil { return RustString(ptr: val!) } else { return nil } }()
+    }
+
+    public func producer() -> Optional<RustString> {
+        { let val = __swift_bridge__$PdfMetadata$producer(ptr); if val != nil { return RustString(ptr: val!) } else { return nil } }()
+    }
+
+    public func is_encrypted() -> Optional<Bool> {
+        __swift_bridge__$PdfMetadata$is_encrypted(ptr).intoSwiftRepr()
+    }
+
+    public func width() -> Optional<Int64> {
+        __swift_bridge__$PdfMetadata$width(ptr).intoSwiftRepr()
+    }
+
+    public func height() -> Optional<Int64> {
+        __swift_bridge__$PdfMetadata$height(ptr).intoSwiftRepr()
+    }
+
+    public func page_count() -> Optional<UInt> {
+        __swift_bridge__$PdfMetadata$page_count(ptr).intoSwiftRepr()
+    }
+}
+extension PdfMetadata: Vectorizable {
+    public static func vecOfSelfNew() -> UnsafeMutableRawPointer {
+        __swift_bridge__$Vec_PdfMetadata$new()
+    }
+
+    public static func vecOfSelfFree(vecPtr: UnsafeMutableRawPointer) {
+        __swift_bridge__$Vec_PdfMetadata$drop(vecPtr)
+    }
+
+    public static func vecOfSelfPush(vecPtr: UnsafeMutableRawPointer, value: PdfMetadata) {
+        __swift_bridge__$Vec_PdfMetadata$push(vecPtr, {value.isOwned = false; return value.ptr;}())
+    }
+
+    public static func vecOfSelfPop(vecPtr: UnsafeMutableRawPointer) -> Optional<Self> {
+        let pointer = __swift_bridge__$Vec_PdfMetadata$pop(vecPtr)
+        if pointer == nil {
+            return nil
+        } else {
+            return (PdfMetadata(ptr: pointer!) as! Self)
+        }
+    }
+
+    public static func vecOfSelfGet(vecPtr: UnsafeMutableRawPointer, index: UInt) -> Optional<PdfMetadataRef> {
+        let pointer = __swift_bridge__$Vec_PdfMetadata$get(vecPtr, index)
+        if pointer == nil {
+            return nil
+        } else {
+            return PdfMetadataRef(ptr: pointer!)
+        }
+    }
+
+    public static func vecOfSelfGetMut(vecPtr: UnsafeMutableRawPointer, index: UInt) -> Optional<PdfMetadataRefMut> {
+        let pointer = __swift_bridge__$Vec_PdfMetadata$get_mut(vecPtr, index)
+        if pointer == nil {
+            return nil
+        } else {
+            return PdfMetadataRefMut(ptr: pointer!)
+        }
+    }
+
+    public static func vecOfSelfAsPtr(vecPtr: UnsafeMutableRawPointer) -> UnsafePointer<PdfMetadataRef> {
+        UnsafePointer<PdfMetadataRef>(OpaquePointer(__swift_bridge__$Vec_PdfMetadata$as_ptr(vecPtr)))
+    }
+
+    public static func vecOfSelfLen(vecPtr: UnsafeMutableRawPointer) -> UInt {
+        __swift_bridge__$Vec_PdfMetadata$len(vecPtr)
+    }
+}
+
+
+public class CommonPdfMetadata: CommonPdfMetadataRefMut {
+    var isOwned: Bool = true
+
+    public override init(ptr: UnsafeMutableRawPointer) {
+        super.init(ptr: ptr)
+    }
+
+    deinit {
+        if isOwned {
+            __swift_bridge__$CommonPdfMetadata$_free(ptr)
+        }
+    }
+}
+extension CommonPdfMetadata {
+    public convenience init<GenericIntoRustString: IntoRustString>(_ title: Optional<GenericIntoRustString>, _ subject: Optional<GenericIntoRustString>, _ authors: Optional<RustVec<GenericIntoRustString>>, _ keywords: Optional<RustVec<GenericIntoRustString>>, _ created_at: Optional<GenericIntoRustString>, _ modified_at: Optional<GenericIntoRustString>, _ created_by: Optional<GenericIntoRustString>) {
+        self.init(ptr: __swift_bridge__$CommonPdfMetadata$new({ if let rustString = optionalStringIntoRustString(title) { rustString.isOwned = false; return rustString.ptr } else { return nil } }(), { if let rustString = optionalStringIntoRustString(subject) { rustString.isOwned = false; return rustString.ptr } else { return nil } }(), { if let val = authors { val.isOwned = false; return val.ptr } else { return nil } }(), { if let val = keywords { val.isOwned = false; return val.ptr } else { return nil } }(), { if let rustString = optionalStringIntoRustString(created_at) { rustString.isOwned = false; return rustString.ptr } else { return nil } }(), { if let rustString = optionalStringIntoRustString(modified_at) { rustString.isOwned = false; return rustString.ptr } else { return nil } }(), { if let rustString = optionalStringIntoRustString(created_by) { rustString.isOwned = false; return rustString.ptr } else { return nil } }()))
+    }
+}
+public class CommonPdfMetadataRefMut: CommonPdfMetadataRef {
+    public override init(ptr: UnsafeMutableRawPointer) {
+        super.init(ptr: ptr)
+    }
+}
+public class CommonPdfMetadataRef {
+    var ptr: UnsafeMutableRawPointer
+
+    public init(ptr: UnsafeMutableRawPointer) {
+        self.ptr = ptr
+    }
+}
+extension CommonPdfMetadataRef {
+    public func title() -> Optional<RustString> {
+        { let val = __swift_bridge__$CommonPdfMetadata$title(ptr); if val != nil { return RustString(ptr: val!) } else { return nil } }()
+    }
+
+    public func subject() -> Optional<RustString> {
+        { let val = __swift_bridge__$CommonPdfMetadata$subject(ptr); if val != nil { return RustString(ptr: val!) } else { return nil } }()
+    }
+
+    public func created_at() -> Optional<RustString> {
+        { let val = __swift_bridge__$CommonPdfMetadata$created_at(ptr); if val != nil { return RustString(ptr: val!) } else { return nil } }()
+    }
+
+    public func modified_at() -> Optional<RustString> {
+        { let val = __swift_bridge__$CommonPdfMetadata$modified_at(ptr); if val != nil { return RustString(ptr: val!) } else { return nil } }()
+    }
+
+    public func created_by() -> Optional<RustString> {
+        { let val = __swift_bridge__$CommonPdfMetadata$created_by(ptr); if val != nil { return RustString(ptr: val!) } else { return nil } }()
+    }
+}
+extension CommonPdfMetadata: Vectorizable {
+    public static func vecOfSelfNew() -> UnsafeMutableRawPointer {
+        __swift_bridge__$Vec_CommonPdfMetadata$new()
+    }
+
+    public static func vecOfSelfFree(vecPtr: UnsafeMutableRawPointer) {
+        __swift_bridge__$Vec_CommonPdfMetadata$drop(vecPtr)
+    }
+
+    public static func vecOfSelfPush(vecPtr: UnsafeMutableRawPointer, value: CommonPdfMetadata) {
+        __swift_bridge__$Vec_CommonPdfMetadata$push(vecPtr, {value.isOwned = false; return value.ptr;}())
+    }
+
+    public static func vecOfSelfPop(vecPtr: UnsafeMutableRawPointer) -> Optional<Self> {
+        let pointer = __swift_bridge__$Vec_CommonPdfMetadata$pop(vecPtr)
+        if pointer == nil {
+            return nil
+        } else {
+            return (CommonPdfMetadata(ptr: pointer!) as! Self)
+        }
+    }
+
+    public static func vecOfSelfGet(vecPtr: UnsafeMutableRawPointer, index: UInt) -> Optional<CommonPdfMetadataRef> {
+        let pointer = __swift_bridge__$Vec_CommonPdfMetadata$get(vecPtr, index)
+        if pointer == nil {
+            return nil
+        } else {
+            return CommonPdfMetadataRef(ptr: pointer!)
+        }
+    }
+
+    public static func vecOfSelfGetMut(vecPtr: UnsafeMutableRawPointer, index: UInt) -> Optional<CommonPdfMetadataRefMut> {
+        let pointer = __swift_bridge__$Vec_CommonPdfMetadata$get_mut(vecPtr, index)
+        if pointer == nil {
+            return nil
+        } else {
+            return CommonPdfMetadataRefMut(ptr: pointer!)
+        }
+    }
+
+    public static func vecOfSelfAsPtr(vecPtr: UnsafeMutableRawPointer) -> UnsafePointer<CommonPdfMetadataRef> {
+        UnsafePointer<CommonPdfMetadataRef>(OpaquePointer(__swift_bridge__$Vec_CommonPdfMetadata$as_ptr(vecPtr)))
+    }
+
+    public static func vecOfSelfLen(vecPtr: UnsafeMutableRawPointer) -> UInt {
+        __swift_bridge__$Vec_CommonPdfMetadata$len(vecPtr)
+    }
+}
+
+
 public class ExecutionProviderType: ExecutionProviderTypeRefMut {
     var isOwned: Bool = true
 
