@@ -8,8 +8,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'lib.freezed.dart';
 
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AnchorProperties`, `ApiDoc`, `BBox`, `ByteBufferPool`, `CacheWarmParams`, `CharShape`, `ChunkRequest`, `ChunkResponse`, `ChunkTextParams`, `ChunkingResult`, `CustomProperties`, `DetectMimeTypeParams`, `DetectResponse`, `DetectedBoundary`, `DetectionResult`, `DoclingCompatResponse`, `Drawing`, `EmailAttachment`, `EmailExtractionResult`, `EmbedRequest`, `EmbedResponse`, `EmbedTextParams`, `EmbeddedFile`, `ExcelSheet`, `ExcelWorkbook`, `ExtractResponse`, `ExtractStructuredParams`, `ExtractedInlineImage`, `FracType`, `HtmlExtractionResult`, `HwpImage`, `ImageOcrResult`, `InfoResponse`, `LayoutClass`, `LayoutDetection`, `ManifestEntryResponse`, `ManifestResponse`, `MergedChunk`, `ModelPaths`, `OcrBackendType`, `OcrCacheStats`, `OcrExtractionResult`, `OcrTableBoundingBox`, `OcrTable`, `OdtProperties`, `OpenWebDocumentResponse`, `OrientationResult`, `PSMMode`, `PaddleLanguage`, `PaddleOcrConfig`, `PageMarginsPoints`, `PoolError`, `PptxAppProperties`, `PptxExtractionResult`, `ProcessingStage`, `RecognizedTable`, `ReductionLevel`, `ResolvedStyle`, `ServerConfig`, `StreamReader`, `StringBufferPool`, `StructuredDataResult`, `StructuredExtractionResponse`, `StyleDefinition`, `SupportedFormat`, `TableCell`, `TableProperties`, `TessdataManager`, `TextExtractionResult`, `TokenReductionConfig`, `TracingLayer`, `WarmResponse`, `XlsxAppProperties`, `XmlExtractionResult`, `ZipBombValidator`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `backend_type`, `dimensions`, `embed`, `estimated_duration_ms`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `initialize`, `initialize`, `initialize`, `initialize`, `name`, `name`, `name`, `name`, `priority`, `priority`, `process_document`, `process_image_file`, `process_image`, `process`, `processing_stage`, `should_process`, `should_validate`, `shutdown`, `shutdown`, `shutdown`, `shutdown`, `supported_languages`, `supports_document_processing`, `supports_language`, `supports_table_detection`, `validate`, `version`, `version`, `version`, `version`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AnchorProperties`, `ApiDoc`, `BBox`, `ByteBufferPool`, `CacheWarmParams`, `CharShape`, `ChunkRequest`, `ChunkResponse`, `ChunkTextParams`, `ChunkingResult`, `CommonPdfMetadata`, `CustomProperties`, `DetectMimeTypeParams`, `DetectResponse`, `DetectedBoundary`, `DetectionResult`, `DoclingCompatResponse`, `Drawing`, `EmailAttachment`, `EmailExtractionResult`, `EmbedRequest`, `EmbedResponse`, `EmbedTextParams`, `EmbeddedFile`, `ExcelSheet`, `ExcelWorkbook`, `ExtractResponse`, `ExtractStructuredParams`, `ExtractedInlineImage`, `FracType`, `HtmlExtractionResult`, `HwpImage`, `ImageOcrResult`, `InfoResponse`, `LayoutClass`, `LayoutDetection`, `ManifestEntryResponse`, `ManifestResponse`, `MergedChunk`, `ModelPaths`, `OcrBackendType`, `OcrCacheStats`, `OcrExtractionResult`, `OcrTableBoundingBox`, `OcrTable`, `OdtProperties`, `OpenWebDocumentResponse`, `OrientationResult`, `PSMMode`, `PaddleLanguage`, `PaddleOcrConfig`, `PageMarginsPoints`, `PoolError`, `PptxAppProperties`, `PptxExtractionResult`, `ProcessingStage`, `RecognizedTable`, `ReductionLevel`, `ResolvedStyle`, `ServerConfig`, `StreamReader`, `StringBufferPool`, `StructuredDataResult`, `StructuredExtractionResponse`, `StyleDefinition`, `SupportedFormat`, `TableCell`, `TableProperties`, `TessdataManager`, `TextExtractionResult`, `TokenReductionConfig`, `TracingLayer`, `WarmResponse`, `XlsxAppProperties`, `XmlExtractionResult`, `ZipBombValidator`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `backend_type`, `dimensions`, `embed`, `estimated_duration_ms`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `initialize`, `initialize`, `initialize`, `initialize`, `name`, `name`, `name`, `name`, `priority`, `priority`, `process_document`, `process_image_file`, `process_image`, `process`, `processing_stage`, `should_process`, `should_validate`, `shutdown`, `shutdown`, `shutdown`, `shutdown`, `supported_languages`, `supports_document_processing`, `supports_language`, `supports_table_detection`, `validate`, `version`, `version`, `version`, `version`
 
 /// Extract content from a byte array.
 ///
@@ -2235,7 +2235,7 @@ sealed class FormatMetadata with _$FormatMetadata {
   const FormatMetadata._();
 
   const factory FormatMetadata.pdf({
-    required String field0,
+    required PdfMetadata field0,
   }) = FormatMetadata_Pdf;
   const factory FormatMetadata.docx({
     required DocxMetadata field0,
@@ -4095,6 +4095,45 @@ class PdfConfig {
           topMarginFraction == other.topMarginFraction &&
           bottomMarginFraction == other.bottomMarginFraction &&
           allowSingleColumnTables == other.allowSingleColumnTables;
+}
+
+class PdfMetadata {
+  final String? pdfVersion;
+  final String? producer;
+  final bool? isEncrypted;
+  final PlatformInt64? width;
+  final PlatformInt64? height;
+  final PlatformInt64? pageCount;
+
+  const PdfMetadata({
+    this.pdfVersion,
+    this.producer,
+    this.isEncrypted,
+    this.width,
+    this.height,
+    this.pageCount,
+  });
+
+  @override
+  int get hashCode =>
+      pdfVersion.hashCode ^
+      producer.hashCode ^
+      isEncrypted.hashCode ^
+      width.hashCode ^
+      height.hashCode ^
+      pageCount.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PdfMetadata &&
+          runtimeType == other.runtimeType &&
+          pdfVersion == other.pdfVersion &&
+          producer == other.producer &&
+          isEncrypted == other.isEncrypted &&
+          width == other.width &&
+          height == other.height &&
+          pageCount == other.pageCount;
 }
 
 class PostProcessorConfig {

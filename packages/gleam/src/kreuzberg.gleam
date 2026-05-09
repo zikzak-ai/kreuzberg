@@ -2388,6 +2388,37 @@ pub type EmbeddedFile {
   )
 }
 
+/// PDF-specific metadata.
+///
+/// Contains metadata fields specific to PDF documents that are not in the common
+/// `Metadata` structure. Common fields like title, authors, keywords, and dates
+/// are at the `Metadata` level.
+pub type PdfMetadata {
+  PdfMetadata(
+    pdf_version: Option(String),
+    producer: Option(String),
+    is_encrypted: Option(Bool),
+    width: Option(Int),
+    height: Option(Int),
+    page_count: Option(Int)
+  )
+}
+
+/// Common PDF metadata fields extracted from the document info dictionary.
+///
+/// Used as an intermediate type during extraction before building `PdfExtractionMetadata`.
+pub type CommonPdfMetadata {
+  CommonPdfMetadata(
+    title: Option(String),
+    subject: Option(String),
+    authors: Option(List(String)),
+    keywords: Option(List(String)),
+    created_at: Option(String),
+    modified_at: Option(String),
+    created_by: Option(String)
+  )
+}
+
 /// ONNX Runtime execution provider type.
 ///
 /// Determines which hardware backend is used for model inference.
@@ -2785,7 +2816,7 @@ pub type ElementType {
 /// type-safe, clean metadata without nested optionals.
 pub type FormatMetadata {
   Pdf(
-    String
+    PdfMetadata
   )
   Docx(
     DocxMetadata

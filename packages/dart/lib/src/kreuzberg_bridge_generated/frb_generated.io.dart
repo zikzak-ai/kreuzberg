@@ -445,6 +445,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PdfConfig dco_decode_box_autoadd_pdf_config(dynamic raw);
 
   @protected
+  PdfMetadata dco_decode_box_autoadd_pdf_metadata(dynamic raw);
+
+  @protected
   PostProcessorConfig dco_decode_box_autoadd_post_processor_config(dynamic raw);
 
   @protected
@@ -1149,6 +1152,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PdfConfig dco_decode_pdf_config(dynamic raw);
 
   @protected
+  PdfMetadata dco_decode_pdf_metadata(dynamic raw);
+
+  @protected
   PostProcessorConfig dco_decode_post_processor_config(dynamic raw);
 
   @protected
@@ -1639,6 +1645,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PdfConfig sse_decode_box_autoadd_pdf_config(SseDeserializer deserializer);
+
+  @protected
+  PdfMetadata sse_decode_box_autoadd_pdf_metadata(SseDeserializer deserializer);
 
   @protected
   PostProcessorConfig sse_decode_box_autoadd_post_processor_config(
@@ -2442,6 +2451,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PdfConfig sse_decode_pdf_config(SseDeserializer deserializer);
 
   @protected
+  PdfMetadata sse_decode_pdf_metadata(SseDeserializer deserializer);
+
+  @protected
   PostProcessorConfig sse_decode_post_processor_config(
       SseDeserializer deserializer);
 
@@ -2961,6 +2973,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_pdf_config(
       PdfConfig self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_pdf_metadata(
+      PdfMetadata self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_post_processor_config(
@@ -3801,6 +3817,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_pdf_config(PdfConfig self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_pdf_metadata(PdfMetadata self, SseSerializer serializer);
 
   @protected
   void sse_encode_post_processor_config(

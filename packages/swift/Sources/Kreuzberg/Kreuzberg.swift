@@ -903,6 +903,18 @@ public typealias DetectionResult = RustBridge.DetectionResult
 /// Embedded file descriptor extracted from the PDF name tree.
 public typealias EmbeddedFile = RustBridge.EmbeddedFile
 
+/// PDF-specific metadata.
+///
+/// Contains metadata fields specific to PDF documents that are not in the common
+/// `Metadata` structure. Common fields like title, authors, keywords, and dates
+/// are at the `Metadata` level.
+public typealias PdfMetadata = RustBridge.PdfMetadata
+
+/// Common PDF metadata fields extracted from the document info dictionary.
+///
+/// Used as an intermediate type during extraction before building `PdfExtractionMetadata`.
+public typealias CommonPdfMetadata = RustBridge.CommonPdfMetadata
+
 /// ONNX Runtime execution provider type.
 ///
 /// Determines which hardware backend is used for model inference.
@@ -1381,7 +1393,7 @@ public enum ElementType {
 /// Only one format type can exist per extraction result. This provides
 /// type-safe, clean metadata without nested optionals.
 public enum FormatMetadata {
-    case pdf(field0: String)
+    case pdf(field0: PdfMetadata)
     case docx(field0: DocxMetadata)
     case excel(field0: ExcelMetadata)
     case email(field0: EmailMetadata)

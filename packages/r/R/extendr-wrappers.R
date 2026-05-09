@@ -1347,6 +1347,25 @@ EmbeddedFile <- new.env(parent = emptyenv())
 }
 #' @export
 `[[.EmbeddedFile` <- `$.EmbeddedFile`
+PdfMetadata <- new.env(parent = emptyenv())
+PdfMetadata$from_json <- function(json) .Call("wrap__PdfMetadata__from_json", json, PACKAGE = "kreuzberg")
+#' @export
+`$.PdfMetadata` <- function(self, name) {
+  func <- PdfMetadata[[name]]
+  environment(func) <- environment()
+  func
+}
+#' @export
+`[[.PdfMetadata` <- `$.PdfMetadata`
+CommonPdfMetadata <- new.env(parent = emptyenv())
+#' @export
+`$.CommonPdfMetadata` <- function(self, name) {
+  func <- CommonPdfMetadata[[name]]
+  environment(func) <- environment()
+  func
+}
+#' @export
+`[[.CommonPdfMetadata` <- `$.CommonPdfMetadata`
 OutputFormat <- new.env(parent = emptyenv())
 #' @export
 `$.OutputFormat` <- function(self, name) {

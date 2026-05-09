@@ -252,6 +252,8 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ValidatorDartImplP
 
 @protected PdfConfig dco_decode_box_autoadd_pdf_config(dynamic raw);
 
+@protected PdfMetadata dco_decode_box_autoadd_pdf_metadata(dynamic raw);
+
 @protected PostProcessorConfig dco_decode_box_autoadd_post_processor_config(dynamic raw);
 
 @protected PptxMetadata dco_decode_box_autoadd_pptx_metadata(dynamic raw);
@@ -710,6 +712,8 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ValidatorDartImplP
 
 @protected PdfConfig dco_decode_pdf_config(dynamic raw);
 
+@protected PdfMetadata dco_decode_pdf_metadata(dynamic raw);
+
 @protected PostProcessorConfig dco_decode_post_processor_config(dynamic raw);
 
 @protected PptxMetadata dco_decode_pptx_metadata(dynamic raw);
@@ -965,6 +969,8 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ValidatorDartImplP
 @protected PageStructure sse_decode_box_autoadd_page_structure(SseDeserializer deserializer);
 
 @protected PdfConfig sse_decode_box_autoadd_pdf_config(SseDeserializer deserializer);
+
+@protected PdfMetadata sse_decode_box_autoadd_pdf_metadata(SseDeserializer deserializer);
 
 @protected PostProcessorConfig sse_decode_box_autoadd_post_processor_config(SseDeserializer deserializer);
 
@@ -1424,6 +1430,8 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ValidatorDartImplP
 
 @protected PdfConfig sse_decode_pdf_config(SseDeserializer deserializer);
 
+@protected PdfMetadata sse_decode_pdf_metadata(SseDeserializer deserializer);
+
 @protected PostProcessorConfig sse_decode_post_processor_config(SseDeserializer deserializer);
 
 @protected PptxMetadata sse_decode_pptx_metadata(SseDeserializer deserializer);
@@ -1679,6 +1687,8 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ValidatorDartImplP
 @protected void sse_encode_box_autoadd_page_structure(PageStructure self, SseSerializer serializer);
 
 @protected void sse_encode_box_autoadd_pdf_config(PdfConfig self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_pdf_metadata(PdfMetadata self, SseSerializer serializer);
 
 @protected void sse_encode_box_autoadd_post_processor_config(PostProcessorConfig self, SseSerializer serializer);
 
@@ -2137,6 +2147,8 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ValidatorDartImplP
 @protected void sse_encode_pdf_annotation_type(PdfAnnotationType self, SseSerializer serializer);
 
 @protected void sse_encode_pdf_config(PdfConfig self, SseSerializer serializer);
+
+@protected void sse_encode_pdf_metadata(PdfMetadata self, SseSerializer serializer);
 
 @protected void sse_encode_post_processor_config(PostProcessorConfig self, SseSerializer serializer);
 

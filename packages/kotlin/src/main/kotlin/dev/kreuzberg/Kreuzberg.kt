@@ -179,6 +179,8 @@ typealias BBox = dev.kreuzberg.BBox
 typealias LayoutDetection = dev.kreuzberg.LayoutDetection
 typealias DetectionResult = dev.kreuzberg.DetectionResult
 typealias EmbeddedFile = dev.kreuzberg.EmbeddedFile
+typealias PdfMetadata = dev.kreuzberg.PdfMetadata
+typealias CommonPdfMetadata = dev.kreuzberg.CommonPdfMetadata
 
 typealias ExecutionProviderType = dev.kreuzberg.ExecutionProviderType
 typealias OutputFormat = dev.kreuzberg.OutputFormat

@@ -2120,6 +2120,33 @@ pub const EmbeddedFile = struct {
     mime_type: ?[:0]const u8,
 };
 
+/// PDF-specific metadata.
+///
+/// Contains metadata fields specific to PDF documents that are not in the common
+/// `Metadata` structure. Common fields like title, authors, keywords, and dates
+/// are at the `Metadata` level.
+pub const PdfMetadata = struct {
+    pdf_version: ?[:0]const u8,
+    producer: ?[:0]const u8,
+    is_encrypted: ?bool,
+    width: ?i64,
+    height: ?i64,
+    page_count: ?u64,
+};
+
+/// Common PDF metadata fields extracted from the document info dictionary.
+///
+/// Used as an intermediate type during extraction before building `PdfExtractionMetadata`.
+pub const CommonPdfMetadata = struct {
+    title: ?[:0]const u8,
+    subject: ?[:0]const u8,
+    authors: ?[]const [:0]const u8,
+    keywords: ?[]const [:0]const u8,
+    created_at: ?[:0]const u8,
+    modified_at: ?[:0]const u8,
+    created_by: ?[:0]const u8,
+};
+
 /// ONNX Runtime execution provider type.
 ///
 /// Determines which hardware backend is used for model inference.
@@ -2488,7 +2515,7 @@ pub const ElementType = enum {
 /// Only one format type can exist per extraction result. This provides
 /// type-safe, clean metadata without nested optionals.
 pub const FormatMetadata = union(enum) {
-    pdf: [:0]const u8,
+    pdf: PdfMetadata,
     docx: DocxMetadata,
     excel: ExcelMetadata,
     email: EmailMetadata,

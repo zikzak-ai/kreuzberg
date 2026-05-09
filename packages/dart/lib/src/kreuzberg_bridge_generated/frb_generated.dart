@@ -2040,6 +2040,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PdfMetadata dco_decode_box_autoadd_pdf_metadata(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_pdf_metadata(raw);
+  }
+
+  @protected
   PostProcessorConfig dco_decode_box_autoadd_post_processor_config(
       dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -2822,7 +2828,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     switch (raw[0]) {
       case 0:
         return FormatMetadata_Pdf(
-          field0: dco_decode_String(raw[1]),
+          field0: dco_decode_box_autoadd_pdf_metadata(raw[1]),
         );
       case 1:
         return FormatMetadata_Docx(
@@ -4504,6 +4510,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PdfMetadata dco_decode_pdf_metadata(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return PdfMetadata(
+      pdfVersion: dco_decode_opt_String(arr[0]),
+      producer: dco_decode_opt_String(arr[1]),
+      isEncrypted: dco_decode_opt_box_autoadd_bool(arr[2]),
+      width: dco_decode_opt_box_autoadd_i_64(arr[3]),
+      height: dco_decode_opt_box_autoadd_i_64(arr[4]),
+      pageCount: dco_decode_opt_box_autoadd_i_64(arr[5]),
+    );
+  }
+
+  @protected
   PostProcessorConfig dco_decode_post_processor_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -5689,6 +5711,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PdfMetadata sse_decode_box_autoadd_pdf_metadata(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_pdf_metadata(deserializer));
+  }
+
+  @protected
   PostProcessorConfig sse_decode_box_autoadd_post_processor_config(
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -6636,7 +6665,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var tag_ = sse_decode_i_32(deserializer);
     switch (tag_) {
       case 0:
-        var var_field0 = sse_decode_String(deserializer);
+        var var_field0 = sse_decode_box_autoadd_pdf_metadata(deserializer);
         return FormatMetadata_Pdf(field0: var_field0);
       case 1:
         var var_field0 = sse_decode_box_autoadd_docx_metadata(deserializer);
@@ -9047,6 +9076,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PdfMetadata sse_decode_pdf_metadata(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_pdfVersion = sse_decode_opt_String(deserializer);
+    var var_producer = sse_decode_opt_String(deserializer);
+    var var_isEncrypted = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_width = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_height = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_pageCount = sse_decode_opt_box_autoadd_i_64(deserializer);
+    return PdfMetadata(
+        pdfVersion: var_pdfVersion,
+        producer: var_producer,
+        isEncrypted: var_isEncrypted,
+        width: var_width,
+        height: var_height,
+        pageCount: var_pageCount);
+  }
+
+  @protected
   PostProcessorConfig sse_decode_post_processor_config(
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -10266,6 +10313,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_pdf_metadata(
+      PdfMetadata self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_pdf_metadata(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_post_processor_config(
       PostProcessorConfig self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -10919,7 +10973,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     switch (self) {
       case FormatMetadata_Pdf(field0: final field0):
         sse_encode_i_32(0, serializer);
-        sse_encode_String(field0, serializer);
+        sse_encode_box_autoadd_pdf_metadata(field0, serializer);
       case FormatMetadata_Docx(field0: final field0):
         sse_encode_i_32(1, serializer);
         sse_encode_box_autoadd_docx_metadata(field0, serializer);
@@ -12848,6 +12902,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_box_autoadd_f_64(self.topMarginFraction, serializer);
     sse_encode_opt_box_autoadd_f_64(self.bottomMarginFraction, serializer);
     sse_encode_bool(self.allowSingleColumnTables, serializer);
+  }
+
+  @protected
+  void sse_encode_pdf_metadata(PdfMetadata self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.pdfVersion, serializer);
+    sse_encode_opt_String(self.producer, serializer);
+    sse_encode_opt_box_autoadd_bool(self.isEncrypted, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.width, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.height, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.pageCount, serializer);
   }
 
   @protected

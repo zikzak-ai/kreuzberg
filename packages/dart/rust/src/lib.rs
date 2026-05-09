@@ -1575,6 +1575,27 @@ pub struct EmbeddedFile {
     pub mime_type: Option<String>,
 }
 
+#[frb(mirror(PdfMetadata))]
+pub struct PdfMetadata {
+    pub pdf_version: Option<String>,
+    pub producer: Option<String>,
+    pub is_encrypted: Option<bool>,
+    pub width: Option<i64>,
+    pub height: Option<i64>,
+    pub page_count: Option<i64>,
+}
+
+#[frb(mirror(CommonPdfMetadata))]
+pub struct CommonPdfMetadata {
+    pub title: Option<String>,
+    pub subject: Option<String>,
+    pub authors: Option<Vec<String>>,
+    pub keywords: Option<Vec<String>>,
+    pub created_at: Option<String>,
+    pub modified_at: Option<String>,
+    pub created_by: Option<String>,
+}
+
 #[frb(mirror(ExecutionProviderType))]
 pub enum ExecutionProviderType {
     Auto,
@@ -1892,7 +1913,7 @@ pub enum ElementType {
 
 #[frb(mirror(FormatMetadata))]
 pub enum FormatMetadata {
-    Pdf { field0: String },
+    Pdf { field0: PdfMetadata },
     Docx { field0: DocxMetadata },
     Excel { field0: ExcelMetadata },
     Email { field0: EmailMetadata },
@@ -4128,6 +4149,33 @@ impl From<kreuzberg::pdf::embedded_files::EmbeddedFile> for EmbeddedFile {
     }
 }
 
+impl From<kreuzberg::pdf::metadata::PdfMetadata> for PdfMetadata {
+    fn from(v: kreuzberg::pdf::metadata::PdfMetadata) -> Self {
+        PdfMetadata {
+            pdf_version: v.pdf_version.map(|s| s.into()),
+            producer: v.producer.map(|s| s.into()),
+            is_encrypted: v.is_encrypted.map(|x| x as _),
+            width: v.width.map(|x| x as _),
+            height: v.height.map(|x| x as _),
+            page_count: v.page_count.map(|x| x as _),
+        }
+    }
+}
+
+impl From<kreuzberg::pdf::metadata::CommonPdfMetadata> for CommonPdfMetadata {
+    fn from(v: kreuzberg::pdf::metadata::CommonPdfMetadata) -> Self {
+        CommonPdfMetadata {
+            title: v.title.map(|s| s.into()),
+            subject: v.subject.map(|s| s.into()),
+            authors: v.authors.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            keywords: v.keywords.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            created_at: v.created_at.map(|s| s.into()),
+            modified_at: v.modified_at.map(|s| s.into()),
+            created_by: v.created_by.map(|s| s.into()),
+        }
+    }
+}
+
 impl From<kreuzberg::ExecutionProviderType> for ExecutionProviderType {
     fn from(v: kreuzberg::ExecutionProviderType) -> Self {
         match v {
@@ -4532,7 +4580,7 @@ impl From<kreuzberg::FormatMetadata> for FormatMetadata {
     fn from(v: kreuzberg::FormatMetadata) -> Self {
         match v {
             kreuzberg::FormatMetadata::Pdf(f0) => FormatMetadata::Pdf {
-                field0: serde_json::to_string(&f0).unwrap_or_default(),
+                field0: PdfMetadata::from(f0),
             },
             kreuzberg::FormatMetadata::Docx(f0) => FormatMetadata::Docx {
                 field0: DocxMetadata::from(*f0),

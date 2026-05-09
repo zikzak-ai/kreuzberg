@@ -3377,7 +3377,7 @@ mixin _$FormatMetadata {
   Object get field0 => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -3401,7 +3401,7 @@ mixin _$FormatMetadata {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -3425,7 +3425,7 @@ mixin _$FormatMetadata {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -3550,7 +3550,7 @@ abstract class _$$FormatMetadata_PdfImplCopyWith<$Res> {
           $Res Function(_$FormatMetadata_PdfImpl) then) =
       __$$FormatMetadata_PdfImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String field0});
+  $Res call({PdfMetadata field0});
 }
 
 /// @nodoc
@@ -3572,7 +3572,7 @@ class __$$FormatMetadata_PdfImplCopyWithImpl<$Res>
       field0: null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
-              as String,
+              as PdfMetadata,
     ));
   }
 }
@@ -3583,7 +3583,7 @@ class _$FormatMetadata_PdfImpl extends FormatMetadata_Pdf {
   const _$FormatMetadata_PdfImpl({required this.field0}) : super._();
 
   @override
-  final String field0;
+  final PdfMetadata field0;
 
   @override
   String toString() {
@@ -3613,7 +3613,7 @@ class _$FormatMetadata_PdfImpl extends FormatMetadata_Pdf {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -3640,7 +3640,7 @@ class _$FormatMetadata_PdfImpl extends FormatMetadata_Pdf {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -3667,7 +3667,7 @@ class _$FormatMetadata_PdfImpl extends FormatMetadata_Pdf {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -3782,12 +3782,12 @@ class _$FormatMetadata_PdfImpl extends FormatMetadata_Pdf {
 }
 
 abstract class FormatMetadata_Pdf extends FormatMetadata {
-  const factory FormatMetadata_Pdf({required final String field0}) =
+  const factory FormatMetadata_Pdf({required final PdfMetadata field0}) =
       _$FormatMetadata_PdfImpl;
   const FormatMetadata_Pdf._() : super._();
 
   @override
-  String get field0;
+  PdfMetadata get field0;
 
   /// Create a copy of FormatMetadata
   /// with the given fields replaced by the non-null parameter values.
@@ -3865,7 +3865,7 @@ class _$FormatMetadata_DocxImpl extends FormatMetadata_Docx {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -3892,7 +3892,7 @@ class _$FormatMetadata_DocxImpl extends FormatMetadata_Docx {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -3919,7 +3919,7 @@ class _$FormatMetadata_DocxImpl extends FormatMetadata_Docx {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -4118,7 +4118,7 @@ class _$FormatMetadata_ExcelImpl extends FormatMetadata_Excel {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -4145,7 +4145,7 @@ class _$FormatMetadata_ExcelImpl extends FormatMetadata_Excel {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -4172,7 +4172,7 @@ class _$FormatMetadata_ExcelImpl extends FormatMetadata_Excel {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -4371,7 +4371,7 @@ class _$FormatMetadata_EmailImpl extends FormatMetadata_Email {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -4398,7 +4398,7 @@ class _$FormatMetadata_EmailImpl extends FormatMetadata_Email {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -4425,7 +4425,7 @@ class _$FormatMetadata_EmailImpl extends FormatMetadata_Email {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -4623,7 +4623,7 @@ class _$FormatMetadata_PptxImpl extends FormatMetadata_Pptx {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -4650,7 +4650,7 @@ class _$FormatMetadata_PptxImpl extends FormatMetadata_Pptx {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -4677,7 +4677,7 @@ class _$FormatMetadata_PptxImpl extends FormatMetadata_Pptx {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -4877,7 +4877,7 @@ class _$FormatMetadata_ArchiveImpl extends FormatMetadata_Archive {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -4904,7 +4904,7 @@ class _$FormatMetadata_ArchiveImpl extends FormatMetadata_Archive {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -4931,7 +4931,7 @@ class _$FormatMetadata_ArchiveImpl extends FormatMetadata_Archive {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -5130,7 +5130,7 @@ class _$FormatMetadata_ImageImpl extends FormatMetadata_Image {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -5157,7 +5157,7 @@ class _$FormatMetadata_ImageImpl extends FormatMetadata_Image {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -5184,7 +5184,7 @@ class _$FormatMetadata_ImageImpl extends FormatMetadata_Image {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -5382,7 +5382,7 @@ class _$FormatMetadata_XmlImpl extends FormatMetadata_Xml {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -5409,7 +5409,7 @@ class _$FormatMetadata_XmlImpl extends FormatMetadata_Xml {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -5436,7 +5436,7 @@ class _$FormatMetadata_XmlImpl extends FormatMetadata_Xml {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -5634,7 +5634,7 @@ class _$FormatMetadata_TextImpl extends FormatMetadata_Text {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -5661,7 +5661,7 @@ class _$FormatMetadata_TextImpl extends FormatMetadata_Text {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -5688,7 +5688,7 @@ class _$FormatMetadata_TextImpl extends FormatMetadata_Text {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -5886,7 +5886,7 @@ class _$FormatMetadata_HtmlImpl extends FormatMetadata_Html {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -5913,7 +5913,7 @@ class _$FormatMetadata_HtmlImpl extends FormatMetadata_Html {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -5940,7 +5940,7 @@ class _$FormatMetadata_HtmlImpl extends FormatMetadata_Html {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -6138,7 +6138,7 @@ class _$FormatMetadata_OcrImpl extends FormatMetadata_Ocr {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -6165,7 +6165,7 @@ class _$FormatMetadata_OcrImpl extends FormatMetadata_Ocr {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -6192,7 +6192,7 @@ class _$FormatMetadata_OcrImpl extends FormatMetadata_Ocr {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -6390,7 +6390,7 @@ class _$FormatMetadata_CsvImpl extends FormatMetadata_Csv {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -6417,7 +6417,7 @@ class _$FormatMetadata_CsvImpl extends FormatMetadata_Csv {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -6444,7 +6444,7 @@ class _$FormatMetadata_CsvImpl extends FormatMetadata_Csv {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -6643,7 +6643,7 @@ class _$FormatMetadata_BibtexImpl extends FormatMetadata_Bibtex {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -6670,7 +6670,7 @@ class _$FormatMetadata_BibtexImpl extends FormatMetadata_Bibtex {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -6697,7 +6697,7 @@ class _$FormatMetadata_BibtexImpl extends FormatMetadata_Bibtex {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -6897,7 +6897,7 @@ class _$FormatMetadata_CitationImpl extends FormatMetadata_Citation {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -6924,7 +6924,7 @@ class _$FormatMetadata_CitationImpl extends FormatMetadata_Citation {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -6951,7 +6951,7 @@ class _$FormatMetadata_CitationImpl extends FormatMetadata_Citation {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -7151,7 +7151,7 @@ class _$FormatMetadata_FictionBookImpl extends FormatMetadata_FictionBook {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -7178,7 +7178,7 @@ class _$FormatMetadata_FictionBookImpl extends FormatMetadata_FictionBook {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -7205,7 +7205,7 @@ class _$FormatMetadata_FictionBookImpl extends FormatMetadata_FictionBook {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -7404,7 +7404,7 @@ class _$FormatMetadata_DbfImpl extends FormatMetadata_Dbf {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -7431,7 +7431,7 @@ class _$FormatMetadata_DbfImpl extends FormatMetadata_Dbf {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -7458,7 +7458,7 @@ class _$FormatMetadata_DbfImpl extends FormatMetadata_Dbf {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -7656,7 +7656,7 @@ class _$FormatMetadata_JatsImpl extends FormatMetadata_Jats {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -7683,7 +7683,7 @@ class _$FormatMetadata_JatsImpl extends FormatMetadata_Jats {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -7710,7 +7710,7 @@ class _$FormatMetadata_JatsImpl extends FormatMetadata_Jats {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -7908,7 +7908,7 @@ class _$FormatMetadata_EpubImpl extends FormatMetadata_Epub {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -7935,7 +7935,7 @@ class _$FormatMetadata_EpubImpl extends FormatMetadata_Epub {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -7962,7 +7962,7 @@ class _$FormatMetadata_EpubImpl extends FormatMetadata_Epub {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -8160,7 +8160,7 @@ class _$FormatMetadata_PstImpl extends FormatMetadata_Pst {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -8187,7 +8187,7 @@ class _$FormatMetadata_PstImpl extends FormatMetadata_Pst {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -8214,7 +8214,7 @@ class _$FormatMetadata_PstImpl extends FormatMetadata_Pst {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,
@@ -8412,7 +8412,7 @@ class _$FormatMetadata_CodeImpl extends FormatMetadata_Code {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) pdf,
+    required TResult Function(PdfMetadata field0) pdf,
     required TResult Function(DocxMetadata field0) docx,
     required TResult Function(ExcelMetadata field0) excel,
     required TResult Function(EmailMetadata field0) email,
@@ -8439,7 +8439,7 @@ class _$FormatMetadata_CodeImpl extends FormatMetadata_Code {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? pdf,
+    TResult? Function(PdfMetadata field0)? pdf,
     TResult? Function(DocxMetadata field0)? docx,
     TResult? Function(ExcelMetadata field0)? excel,
     TResult? Function(EmailMetadata field0)? email,
@@ -8466,7 +8466,7 @@ class _$FormatMetadata_CodeImpl extends FormatMetadata_Code {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? pdf,
+    TResult Function(PdfMetadata field0)? pdf,
     TResult Function(DocxMetadata field0)? docx,
     TResult Function(ExcelMetadata field0)? excel,
     TResult Function(EmailMetadata field0)? email,

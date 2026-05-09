@@ -1350,7 +1350,7 @@ const _: fn() = || {
     }
     match None::<crate::FormatMetadata>.unwrap() {
         crate::FormatMetadata::Pdf { field0 } => {
-            let _: String = field0;
+            let _: crate::PdfMetadata = field0;
         }
         crate::FormatMetadata::Docx { field0 } => {
             let _: crate::DocxMetadata = field0;
@@ -1887,6 +1887,15 @@ const _: fn() = || {
         let _: Option<f64> = PdfConfig.top_margin_fraction;
         let _: Option<f64> = PdfConfig.bottom_margin_fraction;
         let _: bool = PdfConfig.allow_single_column_tables;
+    }
+    {
+        let PdfMetadata = None::<crate::PdfMetadata>.unwrap();
+        let _: Option<String> = PdfMetadata.pdf_version;
+        let _: Option<String> = PdfMetadata.producer;
+        let _: Option<bool> = PdfMetadata.is_encrypted;
+        let _: Option<i64> = PdfMetadata.width;
+        let _: Option<i64> = PdfMetadata.height;
+        let _: Option<i64> = PdfMetadata.page_count;
     }
     {
         let PostProcessorConfig = None::<crate::PostProcessorConfig>.unwrap();
@@ -3647,7 +3656,7 @@ impl SseDecode for crate::FormatMetadata {
         let mut tag_ = <i32>::sse_decode(deserializer);
         match tag_ {
             0 => {
-                let mut var_field0 = <String>::sse_decode(deserializer);
+                let mut var_field0 = <crate::PdfMetadata>::sse_decode(deserializer);
                 return crate::FormatMetadata::Pdf { field0: var_field0 };
             }
             1 => {
@@ -6201,6 +6210,26 @@ impl SseDecode for crate::PdfConfig {
             top_margin_fraction: var_topMarginFraction,
             bottom_margin_fraction: var_bottomMarginFraction,
             allow_single_column_tables: var_allowSingleColumnTables,
+        };
+    }
+}
+
+impl SseDecode for crate::PdfMetadata {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_pdfVersion = <Option<String>>::sse_decode(deserializer);
+        let mut var_producer = <Option<String>>::sse_decode(deserializer);
+        let mut var_isEncrypted = <Option<bool>>::sse_decode(deserializer);
+        let mut var_width = <Option<i64>>::sse_decode(deserializer);
+        let mut var_height = <Option<i64>>::sse_decode(deserializer);
+        let mut var_pageCount = <Option<i64>>::sse_decode(deserializer);
+        return crate::PdfMetadata {
+            pdf_version: var_pdfVersion,
+            producer: var_producer,
+            is_encrypted: var_isEncrypted,
+            width: var_width,
+            height: var_height,
+            page_count: var_pageCount,
         };
     }
 }
@@ -9327,6 +9356,26 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::PdfConfig>> for crate::
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::PdfMetadata> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.pdf_version.into_into_dart().into_dart(),
+            self.0.producer.into_into_dart().into_dart(),
+            self.0.is_encrypted.into_into_dart().into_dart(),
+            self.0.width.into_into_dart().into_dart(),
+            self.0.height.into_into_dart().into_dart(),
+            self.0.page_count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<crate::PdfMetadata> {}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::PdfMetadata>> for crate::PdfMetadata {
+    fn into_into_dart(self) -> FrbWrapper<crate::PdfMetadata> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::PostProcessorConfig> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -11043,7 +11092,7 @@ impl SseEncode for crate::FormatMetadata {
         match self {
             crate::FormatMetadata::Pdf { field0 } => {
                 <i32>::sse_encode(0, serializer);
-                <String>::sse_encode(field0, serializer);
+                <crate::PdfMetadata>::sse_encode(field0, serializer);
             }
             crate::FormatMetadata::Docx { field0 } => {
                 <i32>::sse_encode(1, serializer);
@@ -13119,6 +13168,18 @@ impl SseEncode for crate::PdfConfig {
         <Option<f64>>::sse_encode(self.top_margin_fraction, serializer);
         <Option<f64>>::sse_encode(self.bottom_margin_fraction, serializer);
         <bool>::sse_encode(self.allow_single_column_tables, serializer);
+    }
+}
+
+impl SseEncode for crate::PdfMetadata {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<String>>::sse_encode(self.pdf_version, serializer);
+        <Option<String>>::sse_encode(self.producer, serializer);
+        <Option<bool>>::sse_encode(self.is_encrypted, serializer);
+        <Option<i64>>::sse_encode(self.width, serializer);
+        <Option<i64>>::sse_encode(self.height, serializer);
+        <Option<i64>>::sse_encode(self.page_count, serializer);
     }
 }
 
