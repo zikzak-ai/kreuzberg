@@ -1,0 +1,84 @@
+name: Release Dart Native Library
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build"
+        required: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            ext: dylib
+          - runner: macos-latest
+            target: aarch64-apple-darwin
+            ext: dylib
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            ext: so
+          - runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            ext: dll
+    defaults:
+      run:
+        working-directory: packages/dart/rust
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/dart/rust
+
+      - name: Install Tesseract (macOS)
+        if: runner.os == 'macOS'
+        run: brew install tesseract leptonica
+
+      - name: Install Tesseract (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr libleptonica-dev
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libkreuzberg_dart-${{ matrix.target }}
+          path: |
+            packages/dart/rust/target/release/libkreuzberg_dart.${{ matrix.ext }}
+            packages/dart/rust/target/release/kreuzberg_dart.dll
+
+  release:
+    name: Attach to release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: libkreuzberg_dart-*
+          merge-multiple: true
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for f in libkreuzberg_dart-*; do
+            gh release upload "${{ github.event.release.tag_name }}" "$f"
+          done
