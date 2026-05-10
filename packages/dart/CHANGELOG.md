@@ -1,4 +1,4 @@
-## 5.0.0-rc.1
+## 1.0.0
 
 - Initial release candidate
 - Document extraction (text, metadata, tables) from 97+ formats
