@@ -13,7 +13,6 @@ pub(crate) mod text;
 
 use crate::Result;
 use crate::error::KreuzbergError;
-use std::path::Path;
 
 /// Wraps a [`pdf_oxide::PdfDocument`] with convenient constructors that map
 /// pdf_oxide errors into [`KreuzbergError::Parsing`].
@@ -22,18 +21,6 @@ pub(crate) struct OxideDocument {
 }
 
 impl OxideDocument {
-    /// Open a PDF from a file path.
-    ///
-    /// Only available on non-WASM targets — WASM has no filesystem access.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) fn open_file(path: &Path) -> Result<Self> {
-        let doc = pdf_oxide::PdfDocument::open(path).map_err(|e| KreuzbergError::Parsing {
-            message: format!("pdf_oxide: failed to open file: {e}"),
-            source: None,
-        })?;
-        Ok(Self { doc })
-    }
-
     /// Open a PDF from in-memory bytes.
     pub(crate) fn open_bytes(bytes: &[u8]) -> Result<Self> {
         let doc = pdf_oxide::PdfDocument::from_bytes(bytes.to_vec()).map_err(|e| KreuzbergError::Parsing {

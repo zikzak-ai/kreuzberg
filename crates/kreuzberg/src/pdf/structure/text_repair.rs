@@ -14,39 +14,6 @@
 use std::borrow::Cow;
 
 use super::types::PdfParagraph;
-pub(super) fn apply_ligature_repairs<'a>(text: &'a str, repair_map: &[(char, &str)]) -> Cow<'a, str> {
-    // Fast path: if no characters in the text match the repair map, return borrowed.
-    if repair_map.is_empty() || !text.chars().any(|c| repair_map.iter().any(|(rc, _)| *rc == c)) {
-        return Cow::Borrowed(text);
-    }
-
-    let mut result = String::with_capacity(text.len() + 16);
-    for ch in text.chars() {
-        if let Some((_, replacement)) = repair_map.iter().find(|(c, _)| *c == ch) {
-            result.push_str(replacement);
-        } else {
-            result.push(ch);
-        }
-    }
-
-    // Post-processing: collapse "fi rst" → "first" patterns.
-    // After a ligature expansion (fi, fl, ff, ffi, ffl), if the next char is a
-    // space followed by a lowercase letter, remove the space.
-    let ligature_endings: &[&str] = &["fi", "fl", "ff", "ffi", "ffl"];
-    let mut collapsed = String::with_capacity(result.len());
-    let mut chars = result.chars().peekable();
-    while let Some(ch) = chars.next() {
-        if ch == ' ' && !collapsed.is_empty() && chars.peek().is_some_and(|&nc| nc.is_lowercase()) {
-            let should_collapse = ligature_endings.iter().any(|lig| collapsed.ends_with(lig));
-            if should_collapse {
-                continue;
-            }
-        }
-        collapsed.push(ch);
-    }
-
-    Cow::Owned(collapsed)
-}
 
 /// Repair ligature corruption using contextual heuristics.
 ///
@@ -732,51 +699,6 @@ pub(super) fn apply_to_all_segments(paragraphs: &mut [PdfParagraph], repair_fn: 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_apply_ligature_repairs_fi() {
-        let map = vec![('\x0C', "fi")];
-        assert_eq!(apply_ligature_repairs("classi\x0Ccation", &map), "classification");
-    }
-
-    #[test]
-    fn test_apply_ligature_repairs_ff() {
-        let map = vec![('\x0B', "ff")];
-        assert_eq!(apply_ligature_repairs("e\x0Bective", &map), "effective");
-    }
-
-    #[test]
-    fn test_apply_ligature_repairs_fl() {
-        let map = vec![('\x0D', "fl")];
-        assert_eq!(apply_ligature_repairs("re\x0Dection", &map), "reflection");
-    }
-
-    #[test]
-    fn test_apply_ligature_repairs_ffi() {
-        let map = vec![('\x0E', "ffi")];
-        assert_eq!(apply_ligature_repairs("e\x0Ecient", &map), "efficient");
-    }
-
-    #[test]
-    fn test_apply_ligature_repairs_ffl() {
-        let map = vec![('\x0F', "ffl")];
-        assert_eq!(apply_ligature_repairs("ba\x0Fe", &map), "baffle");
-    }
-
-    #[test]
-    fn test_apply_ligature_repairs_no_map() {
-        let map: Vec<(char, &str)> = Vec::new();
-        assert_eq!(apply_ligature_repairs("hello world!", &map), "hello world!");
-    }
-
-    #[test]
-    fn test_apply_ligature_repairs_multiple() {
-        let map = vec![('\x0C', "fi"), ('\x0E', "ffi")];
-        assert_eq!(
-            apply_ligature_repairs("e\x0Ecient and classi\x0Ccation", &map),
-            "efficient and classification"
-        );
-    }
 
     #[test]
     fn test_repair_contextual_ligatures_empty() {

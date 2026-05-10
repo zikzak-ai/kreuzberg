@@ -193,16 +193,6 @@ pub(crate) fn is_slanet_available() -> bool {
         || SLANET_PLUS_TRIED.get().copied().unwrap_or(false)
 }
 
-/// Return a SLANeXT model to the global cache for reuse.
-pub(crate) fn return_slanet(variant: &str, model: models::slanet::SlanetModel) {
-    match variant {
-        "slanet_wired" => CACHED_SLANET_WIRED.put(model),
-        "slanet_wireless" => CACHED_SLANET_WIRELESS.put(model),
-        "slanet_plus" => CACHED_SLANET_PLUS.put(model),
-        _ => {}
-    }
-}
-
 /// Take a cached table classifier, or create a new one.
 pub(crate) fn take_or_create_table_classifier(
     accel: Option<&crate::core::config::acceleration::AccelerationConfig>,
@@ -234,7 +224,3 @@ pub(crate) fn take_or_create_table_classifier(
     }
 }
 
-/// Return a table classifier to the global cache for reuse.
-pub(crate) fn return_table_classifier(model: models::table_classifier::TableClassifier) {
-    CACHED_TABLE_CLASSIFIER.put(model);
-}

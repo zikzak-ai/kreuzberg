@@ -213,10 +213,8 @@ impl LayoutEngine {
     /// Timing note: `preprocess_ms` and `onnx_ms` in each `DetectTimings` are the
     /// amortized per-image share of the batch operation (total / N), not independent
     /// per-image measurements.
-    #[expect(
-        dead_code,
-        reason = "called from vendored kreuzberg in packages/ruby/ and packages/r/"
-    )]
+    // consumed via vendored kreuzberg in packages/ruby/, packages/r/
+    #[allow(dead_code)]
     pub(crate) fn detect_batch(
         &mut self,
         images: &[&RgbImage],
@@ -274,11 +272,4 @@ impl LayoutEngine {
         Ok(results)
     }
 
-    /// Return a reference to the engine's configuration.
-    ///
-    /// Used by callers (e.g. parallel layout runners) that need to create
-    /// additional engines with identical settings.
-    pub(crate) fn config(&self) -> &LayoutEngineConfig {
-        &self.config
-    }
 }

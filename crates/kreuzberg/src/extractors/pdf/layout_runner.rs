@@ -17,7 +17,7 @@ use image::DynamicImage;
 use crate::{
     KreuzbergError, Result,
     core::config::{ExtractionConfig, layout::LayoutDetectionConfig},
-    pdf::structure::types::{PageLayoutRegion, PageLayoutResult, PdfLayoutBBox},
+    pdf::structure::types::PageLayoutResult,
 };
 
 /// Render every page of `content` to `DynamicImage` at the pdf_oxide default
@@ -97,7 +97,9 @@ pub(super) fn run_layout_for_pdf_pages(
         }
         Err(e) => {
             crate::layout::return_engine(engine);
-            return Err(KreuzbergError::Other(format!("layout runner: batch detection failed: {e}")));
+            return Err(KreuzbergError::Other(format!(
+                "layout runner: batch detection failed: {e}"
+            )));
         }
     };
 
@@ -105,56 +107,19 @@ pub(super) fn run_layout_for_pdf_pages(
     let mut images: Vec<DynamicImage> = Vec::with_capacity(page_count);
     let mut layout_results: Vec<PageLayoutResult> = Vec::with_capacity(page_count);
 
-    for (page_idx, ((page_width_pts, page_height_pts, img), (detection, _timings))) in
-        page_data.into_iter().zip(batch_results.into_iter()).enumerate()
+    for ((page_width_pts, page_height_pts, img), (detection, _timings)) in
+        page_data.into_iter().zip(batch_results)
     {
-        let render_width_px = img.width();
-        let render_height_px = img.height();
-
-        // Scale from render pixels → PDF points.
-        let sx = page_width_pts / render_width_px as f32;
-        let sy = page_height_pts / render_height_px as f32;
-
-        let regions: Vec<PageLayoutRegion> = detection
-            .detections
-            .iter()
-            .map(|det| {
-                // det.bbox.{x1,y1,x2,y2} are pixel coords with y=0 at top.
-                // PDF space has y=0 at bottom, so flip y.
-                let left = det.bbox.x1 * sx;
-                let right = det.bbox.x2 * sx;
-                let top = page_height_pts - det.bbox.y1 * sy;
-                let bottom = page_height_pts - det.bbox.y2 * sy;
-                PageLayoutRegion {
-                    class_name: det.class_name,
-                    confidence: det.confidence,
-                    bbox: PdfLayoutBBox {
-                        left: left.max(0.0),
-                        bottom: bottom.max(0.0),
-                        right: right.min(page_width_pts),
-                        top: top.min(page_height_pts),
-                    },
-                }
-            })
-            .collect();
-
         tracing::debug!(
-            page = page_idx + 1,
-            detections = regions.len(),
-            render_width_px,
-            render_height_px,
+            detections = detection.detections.len(),
             page_width_pts,
             page_height_pts,
-            "layout runner: page detections converted to PDF space"
+            "layout runner: page detections"
         );
 
         layout_results.push(PageLayoutResult {
-            page_index: page_idx,
-            regions,
             page_width_pts,
             page_height_pts,
-            render_width_px,
-            render_height_px,
         });
 
         images.push(img);
@@ -188,10 +153,7 @@ pub(super) fn maybe_run_layout_for_markdown(
     }
     match run_layout_for_pdf_pages(content, layout_config) {
         Ok((images, results)) => {
-            tracing::info!(
-                pages = images.len(),
-                "layout-for-markdown: detection succeeded"
-            );
+            tracing::info!(pages = images.len(), "layout-for-markdown: detection succeeded");
             (Some(images), Some(results))
         }
         Err(e) => {

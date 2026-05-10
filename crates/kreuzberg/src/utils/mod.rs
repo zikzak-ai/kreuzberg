@@ -16,7 +16,6 @@ pub mod markdown_utils;
 pub mod pool;
 pub mod pool_sizing;
 pub mod string_pool;
-pub mod timing;
 pub mod xml_utils;
 
 #[cfg(feature = "quality")]

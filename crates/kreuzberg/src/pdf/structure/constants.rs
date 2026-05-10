@@ -10,13 +10,6 @@ pub(super) const MIN_HEADING_FONT_RATIO: f32 = 1.15;
 /// Minimum absolute font-size difference (in points) between heading and body.
 /// 1.5pt captures academic sub-headings (11.5pt vs 10pt body).
 pub(super) const MIN_HEADING_FONT_GAP: f32 = 1.5;
-/// Fraction of page height to exclude from top (page headers).
-pub(super) const PAGE_TOP_MARGIN_FRACTION: f32 = 0.06;
-/// Fraction of page height to exclude from bottom (page footers/numbers).
-pub(super) const PAGE_BOTTOM_MARGIN_FRACTION: f32 = 0.05;
-/// Minimum font size (in points) for a segment to be included in analysis.
-/// Segments below this size are likely artifacts (embedded images, symbols, noise).
-pub(super) const MIN_FONT_SIZE: f32 = 4.0;
 /// Maximum word count for a bold paragraph to be promoted to a section heading.
 pub(super) const MAX_BOLD_HEADING_WORD_COUNT: usize = 15;
 /// Fraction of the maximum right edge that a line must reach to be considered "full"

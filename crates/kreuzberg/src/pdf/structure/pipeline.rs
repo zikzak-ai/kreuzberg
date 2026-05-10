@@ -1300,22 +1300,6 @@ fn filter_segments_by_table_bboxes(
         .collect()
 }
 
-/// Concatenate all segment texts from paragraphs into a single string for analysis.
-fn build_page_text(paragraphs: &[PdfParagraph]) -> String {
-    let mut all_text = String::new();
-    for p in paragraphs {
-        for l in &p.lines {
-            for s in &l.segments {
-                if !all_text.is_empty() {
-                    all_text.push(' ');
-                }
-                all_text.push_str(&s.text);
-            }
-        }
-    }
-    all_text
-}
-
 /// Apply all 5 text repair passes in a single traversal over a segment's text.
 ///
 /// Returns `Cow::Borrowed` if nothing changed, `Cow::Owned` otherwise.
@@ -1482,40 +1466,6 @@ fn paragraph_alphanum_len(para: &PdfParagraph) -> usize {
         .flat_map(|line| line.segments.iter())
         .map(|seg| seg.text.bytes().filter(|b| b.is_ascii_alphanumeric()).count())
         .sum()
-}
-
-/// Remove standalone page numbers from segments.
-///
-/// A standalone page number is a short numeric-only segment that has no other
-/// segment sharing its approximate baseline (i.e., it sits alone on its line).
-fn filter_standalone_page_numbers(segments: &mut Vec<SegmentData>) {
-    if segments.is_empty() {
-        return;
-    }
-
-    // Identify candidate page number indices
-    let tolerance = 3.0_f32; // baseline proximity tolerance in points
-    let candidates: Vec<usize> = segments
-        .iter()
-        .enumerate()
-        .filter(|(_, s)| {
-            let trimmed = s.text.trim();
-            !trimmed.is_empty() && trimmed.len() <= 4 && trimmed.chars().all(|c| c.is_ascii_digit())
-        })
-        .filter(|(idx, s)| {
-            // Check that no other segment shares this baseline
-            !segments
-                .iter()
-                .enumerate()
-                .any(|(j, other)| j != *idx && (other.baseline_y - s.baseline_y).abs() < tolerance)
-        })
-        .map(|(idx, _)| idx)
-        .collect();
-
-    // Remove in reverse order to preserve indices
-    for &idx in candidates.iter().rev() {
-        segments.remove(idx);
-    }
 }
 
 /// Dehyphenate paragraphs by rejoining words split across line boundaries.
