@@ -1,19 +1,49 @@
-<!-- snippet:skip -->
 ```swift title="Swift"
 import Kreuzberg
-import RustBridge
 
-// Note: implementing a `PostProcessor` (e.g. a word-count enrichment) is
-// a Rust-only capability. swift-bridge cannot bridge `async_trait` methods
-// or `&mut ExtractionResult` mutable callbacks back into Swift code.
-//
-// The closest Swift-side equivalent is to post-process `ExtractionResult`
-// after `extractFile` / `extractBytes` returns:
-//
-//     let result = try extractFile(path: "doc.pdf", config: config)
-//     let words = result.content().toString().split(separator: " ").count
-//     print("words: \(words)")
-//
-// For an in-pipeline post-processor, author it in Rust against
-// `kreuzberg::plugins::PostProcessor`.
+final class WordCountProcessor: PostProcessor {
+    func name() -> String {
+        "word_count"
+    }
+    
+    func version() -> String {
+        "1.0.0"
+    }
+    
+    func processingStage() -> String {
+        "early"
+    }
+    
+    func priority() -> Int32 {
+        50
+    }
+    
+    func process(result: ExtractionResult, config: ExtractionConfig) -> String {
+        let content = result.content()
+        let words = content.split(separator: " ").count
+        
+        // Metadata is not directly mutable via the FFI, so store in logs or use
+        // a side-channel approach. For now, just track that processing happened.
+        return "{\"ok\": null}"
+    }
+    
+    func shouldProcess(result: ExtractionResult, config: ExtractionConfig) -> Bool {
+        !result.content().isEmpty
+    }
+    
+    func estimatedDurationMs(result: ExtractionResult) -> UInt64 {
+        5
+    }
+    
+    func initialize() -> String {
+        "{\"ok\": null}"
+    }
+    
+    func shutdown() -> String {
+        "{\"ok\": null}"
+    }
+}
+
+let processor = WordCountProcessor()
+try Kreuzberg.registerPostProcessor(processor)
 ```

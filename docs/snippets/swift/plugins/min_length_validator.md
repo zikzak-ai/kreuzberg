@@ -1,24 +1,48 @@
-<!-- snippet:skip -->
 ```swift title="Swift"
 import Kreuzberg
-import RustBridge
 
-// Note: the Rust `Validator` trait cannot be implemented from Swift via
-// swift-bridge — `async_trait` methods returning `Result<()>` are not
-// expressible as Swift protocol conformances.
-//
-// To enforce a minimum-length policy from Swift, validate the result
-// after extraction returns:
-//
-//     let result = try extractFile(path: "doc.pdf", config: config)
-//     let text = result.content().toString()
-//     guard text.count >= 100 else {
-//         throw KreuzbergError.validation(
-//             message: "Content too short: \(text.count) < 100",
-//             source: "min-length-validator"
-//         )
-//     }
-//
-// For an in-pipeline validator that runs inside `extract_*`, implement
-// the `Validator` trait in Rust.
+final class MinLengthValidator: Validator {
+    let minLength: Int
+    
+    init(minLength: Int = 100) {
+        self.minLength = minLength
+    }
+    
+    func name() -> String {
+        "min_length_validator"
+    }
+    
+    func version() -> String {
+        "1.0.0"
+    }
+    
+    func priority() -> Int32 {
+        100
+    }
+    
+    func validate(result: ExtractionResult, config: ExtractionConfig) -> String {
+        // Returns JSON-encoded Result<(), String>
+        let contentLength = result.content().count
+        if contentLength < minLength {
+            let message = "Content too short: \(contentLength) < \(minLength)"
+            return "{\"err\": \"\(message)\"}"
+        }
+        return "{\"ok\": null}"
+    }
+    
+    func shouldValidate(result: ExtractionResult, config: ExtractionConfig) -> Bool {
+        true
+    }
+    
+    func initialize() -> String {
+        "{\"ok\": null}"
+    }
+    
+    func shutdown() -> String {
+        "{\"ok\": null}"
+    }
+}
+
+let validator = MinLengthValidator(minLength: 100)
+try Kreuzberg.registerValidator(validator)
 ```

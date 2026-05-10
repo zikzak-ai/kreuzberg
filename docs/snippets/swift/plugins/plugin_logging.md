@@ -1,20 +1,56 @@
-<!-- snippet:skip -->
 ```swift title="Swift"
 import Kreuzberg
-import RustBridge
+import os.log
 
-// Note: in-plugin logging via the Rust `log` crate is only meaningful
-// from inside a Rust plugin implementation. Because Swift cannot
-// implement the `Plugin` / `DocumentExtractor` / `PostProcessor` /
-// `Validator` traits through swift-bridge, there is no Swift-side
-// "plugin logging" pattern.
-//
-// To trace extraction from Swift, log around the public entry points:
-//
-//     print("extracting \(path)")
-//     let result = try extractFile(path: path, config: config)
-//     print("extracted \(result.content().toString().count) chars")
-//
-// Internal Rust-side `log` records emitted by built-in plugins are
-// routed through whatever `log` backend the embedding host installs.
+let logger = Logger(subsystem: "com.example.plugins", category: "MyPlugin")
+
+final class MyPlugin: PostProcessor {
+    func name() -> String {
+        "my-plugin"
+    }
+    
+    func version() -> String {
+        "1.0.0"
+    }
+    
+    func initialize() -> String {
+        logger.info("Initializing plugin: my-plugin")
+        return "{\"ok\": null}"
+    }
+    
+    func shutdown() -> String {
+        logger.info("Shutting down plugin: my-plugin")
+        return "{\"ok\": null}"
+    }
+    
+    func process(result: ExtractionResult, config: ExtractionConfig) -> String {
+        let contentLen = result.content().count
+        logger.info("Processing \(result.mimeType()) (\(contentLen) bytes)")
+        
+        if contentLen == 0 {
+            logger.warning("Processing resulted in empty content")
+        }
+        
+        return "{\"ok\": null}"
+    }
+    
+    func shouldProcess(result: ExtractionResult, config: ExtractionConfig) -> Bool {
+        true
+    }
+    
+    func processingStage() -> String {
+        "early"
+    }
+    
+    func priority() -> Int32 {
+        50
+    }
+    
+    func estimatedDurationMs(result: ExtractionResult) -> UInt64 {
+        10
+    }
+}
+
+let plugin = MyPlugin()
+try Kreuzberg.registerPostProcessor(plugin)
 ```
