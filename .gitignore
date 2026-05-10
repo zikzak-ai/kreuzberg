@@ -155,6 +155,15 @@ tests/benchmarks/results/
 profiling-results/
 profiling-results-*/
 
+# Local perf-iteration artifacts (flamegraphs/ is committed; intermediate outputs are not)
+profile.json.gz
+profile.pb.gz
+*.heap
+bench/pre-q-*.log
+bench/pre-m-*.log
+bench/post-q-*.log
+bench/post-m-*.log
+
 # Docs
 docs/_build/
 docs/build/
