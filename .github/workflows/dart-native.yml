@@ -1,8 +1,10 @@
-name: Release Dart Native Library
+name: Build Dart Native Library
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -13,13 +15,10 @@ jobs:
         include:
           - runner: macos-15-intel
             target: x86_64-apple-darwin
-            ext: dylib
           - runner: macos-latest
             target: aarch64-apple-darwin
-            ext: dylib
           - runner: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            ext: so
     runs-on: ${{ matrix.runner }}
     defaults:
       run:
@@ -47,21 +46,30 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: libkreuzberg_dart-${{ matrix.target }}
-          path: packages/dart/rust/target/release/libkreuzberg_dart.${{ matrix.ext }}
+          path: packages/dart/rust/target/release/libkreuzberg_dart.*
 
-  release:
-    if: github.event_name == 'release'
+  test:
     needs: build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/dart
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
         with:
-          pattern: libkreuzberg_dart-*
-          merge-multiple: true
-      - name: Upload to release
-        env:
-          GH_TOKEN: ${{ github.token }}
+          workspaces: packages/dart/rust
+      - name: Install deps
         run: |
-          for f in libkreuzberg_dart-*; do
-            gh release upload "${{ github.event.release.tag_name }}" "$f"
-          done
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr
+      - name: Build native lib
+        run: cargo build --release
+        working-directory: packages/dart/rust
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - run: dart analyze
+      - run: dart test
