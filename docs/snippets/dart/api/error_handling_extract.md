@@ -11,6 +11,7 @@ Future<void> main() async {
     outputFormat: OutputFormat.markdown(),
     includeDocumentStructure: false,
     maxArchiveDepth: 3,
+    useLayoutForMarkdown: false,
   );
 
   try {

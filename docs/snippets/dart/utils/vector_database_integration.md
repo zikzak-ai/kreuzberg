@@ -44,6 +44,7 @@ Future<List<VectorRecord>> extractAndVectorize(
     outputFormat: OutputFormat.plain(),
     includeDocumentStructure: false,
     maxArchiveDepth: 3,
+    useLayoutForMarkdown: false,
   );
 
   final result = await KreuzbergBridge.extractFile(documentPath, null, config);

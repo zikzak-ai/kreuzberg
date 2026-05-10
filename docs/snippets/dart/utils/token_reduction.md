@@ -15,6 +15,7 @@ Future<void> main() async {
     outputFormat: OutputFormat.plain(),
     includeDocumentStructure: false,
     maxArchiveDepth: 3,
+    useLayoutForMarkdown: false,
   );
 
   final result = await KreuzbergBridge.extractFile('document.pdf', null, config);

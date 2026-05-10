@@ -1,3 +1,4 @@
+<!-- snippet:skip -->
 ```kotlin title="Kotlin"
 import dev.kreuzberg.*
 import dev.kreuzberg.kt.Kreuzberg

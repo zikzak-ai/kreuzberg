@@ -39,6 +39,7 @@ Future<void> main() async {
     outputFormat: OutputFormat.markdown(),
     includeDocumentStructure: true,
     maxArchiveDepth: 3,
+    useLayoutForMarkdown: false,
   );
 
   final result = await KreuzbergBridge.extractFile('report.pdf', null, config);

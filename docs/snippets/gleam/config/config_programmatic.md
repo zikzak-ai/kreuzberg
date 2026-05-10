@@ -97,6 +97,7 @@ fn config() -> kreuzberg.ExtractionConfig {
     max_archive_depth: 10,
     tree_sitter: option.None,
     structured_extraction: option.None,
+    use_layout_for_markdown: False,
     cancel_token: option.None,
   )
 }

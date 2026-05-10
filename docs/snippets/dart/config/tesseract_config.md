@@ -39,6 +39,7 @@ Future<void> main() async {
     outputFormat: OutputFormat.plain(),
     includeDocumentStructure: false,
     maxArchiveDepth: 3,
+    useLayoutForMarkdown: false,
   );
 
   final result = await KreuzbergBridge.extractFile('scanned.pdf', null, config);

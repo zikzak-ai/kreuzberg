@@ -1,5 +1,5 @@
 ```dart title="Dart"
-import 'dart:typed_data';
+import 'package:flutter_rust_bridge/flutter_rust_bridge.dart' show Int64List;
 
 import 'package:kreuzberg/kreuzberg.dart';
 
@@ -49,6 +49,7 @@ Future<void> main() async {
     resultFormat: ResultFormat.unified,
     outputFormat: OutputFormat.plain(),
     includeDocumentStructure: false,
+    useLayoutForMarkdown: false,
     maxArchiveDepth: 3,
   );
 
