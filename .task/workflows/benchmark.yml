@@ -33,32 +33,29 @@ tasks:
           --max-concurrent "{{.MAX_CONCURRENT}}"
 
   profile:
-    desc: "Run benchmark with flamegraph profiling enabled"
-    requires:
-      vars:
-        - FRAMEWORK
-        - MODE
+    desc: "Run pipeline-benchmark with flamegraph profiling. Builds with --profile profiling so Rust symbols are resolved."
     vars:
-      ITERATIONS: '{{ .ITERATIONS | default "1" }}'
-      TIMEOUT: '{{ .TIMEOUT | default "900" }}'
-      MAX_CONCURRENT: '{{ if eq .MODE "single-file" }}1{{ else }}4{{ end }}'
+      PIPELINE: '{{ .PIPELINE | default "baseline" }}'
+      DOC_FILTER: '{{ .DOC_FILTER | default "pdf" }}'
+      SHA:
+        sh: git rev-parse --short HEAD
     env:
-      ENABLE_PROFILING: "true"
-      PROFILING_FIXTURES: "pdf_small,pdf_medium,docx_simple,html_simple,image_table,markdown_technical"
       RUST_BACKTRACE: short
     cmds:
-      - mkdir -p "{{.BENCHMARK_RESULTS_DIR}}/{{.FRAMEWORK}}-{{.MODE}}"
-      - mkdir -p "{{.FLAMEGRAPH_DIR}}"
+      # Build with the `profiling` profile (inherits release, retains debug
+      # info). A plain --release build strips Rust symbols, leaving the
+      # flamegraph full of __mh_execute_header / raw addresses and unable
+      # to surface kreuzberg::* hotspots. See docs/perf/profiling.md.
+      - cargo build --profile profiling -p kreuzberg-cli --features full
+      - cargo build --profile profiling -p benchmark-harness --features profiling
+      - mkdir -p "{{.FLAMEGRAPH_DIR}}/{{.SHA}}"
       - |
-        {{.HARNESS_PATH}} \
-          run \
+        target/profiling/benchmark-harness pipeline-benchmark \
           --fixtures "{{.FIXTURES_DIR}}" \
-          --frameworks "{{.FRAMEWORK}}" \
-          --output "{{.BENCHMARK_RESULTS_DIR}}/{{.FRAMEWORK}}-{{.MODE}}" \
-          --iterations "{{.ITERATIONS}}" \
-          --timeout "{{.TIMEOUT}}" \
-          --mode "{{.MODE}}" \
-          --max-concurrent "{{.MAX_CONCURRENT}}"
+          --paths "{{.PIPELINE}}" \
+          --doc "{{.DOC_FILTER}}" \
+          --profile-dir "{{.FLAMEGRAPH_DIR}}/{{.SHA}}"
+      - 'echo "Flamegraph SVGs in {{.FLAMEGRAPH_DIR}}/{{.SHA}}/. Run: python3 tools/perf/extract_top_symbols.py {{.FLAMEGRAPH_DIR}}/{{.SHA}}/{{.PIPELINE}}.svg"'
 
   compare:
     desc: "Framework comparison with quality guardrails (baseline vs layout)"
