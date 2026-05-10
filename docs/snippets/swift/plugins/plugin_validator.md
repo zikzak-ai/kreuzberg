@@ -1,13 +1,55 @@
-<!-- snippet:skip -->
 ```swift title="Swift"
 import Kreuzberg
-import RustBridge
 
-// Note: the kreuzberg `Validator` plugin trait is Rust-only. swift-bridge
-// does not bridge Rust traits to Swift protocols, and there is no
-// `register_validator` symbol exposed by `Kreuzberg.swift`.
-//
-// Author validators in Rust (`impl Plugin + Validator for MyValidator`)
-// and register them through a Rust shim crate before the Swift host
-// process loads the dynamic library.
+final class MinLengthValidator: Validator {
+    func name() -> String {
+        "min_length"
+    }
+    
+    func version() -> String {
+        "1.0.0"
+    }
+    
+    func priority() -> Int32 {
+        50
+    }
+    
+    func validate(result: ExtractionResult, config: ExtractionConfig) -> String {
+        let contentLength = result.content().count
+        if contentLength < 50 {
+            let message = "Content too short: \(contentLength)"
+            return "{\"err\": \"\(message)\"}"
+        }
+        return "{\"ok\": null}"
+    }
+    
+    func shouldValidate(result: ExtractionResult, config: ExtractionConfig) -> Bool {
+        true
+    }
+    
+    func initialize() -> String {
+        "{\"ok\": null}"
+    }
+    
+    func shutdown() -> String {
+        "{\"ok\": null}"
+    }
+}
+
+let validator = MinLengthValidator()
+try Kreuzberg.registerValidator(validator)
+
+// Extract a file; the validator runs in-pipeline during extraction
+let config = ExtractionConfig(
+    useCache: false,
+    enableQualityProcessing: false,
+    resultFormat: .unified,
+    outputFormat: .markdown
+)
+let result = try extractFileSync(
+    path: "document.pdf",
+    mimeType: nil,
+    config: config
+)
+print("Content length: \(result.content().count)")
 ```

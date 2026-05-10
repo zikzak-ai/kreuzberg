@@ -1,3 +1,7 @@
+<!-- Skipped because the kotlin.test multiplatform test framework is not on the
+     snippet-runner Kotlin classpath. The snippet documents the recommended unit-test
+     shape for a custom Validator implementation; in a real Gradle project, kotlin.test
+     resolves via testImplementation("org.jetbrains.kotlin:kotlin-test"). -->
 <!-- snippet:skip -->
 ```kotlin title="Kotlin"
 import dev.kreuzberg.*
