@@ -45,7 +45,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<ExtractionResult> extractBytes(Uint8List content, String mimeType, [ExtractionConfig? config]) async {
-    return await rust_bridge.extractBytes(content: content, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.extractBytes(content: content, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Extract content from a file.
@@ -85,7 +85,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<ExtractionResult> extractFile(String path, String? mimeType, [ExtractionConfig? config]) async {
-    return await rust_bridge.extractFile(path: path, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.extractFile(path: path, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Synchronous wrapper for `extract_file`.
@@ -111,7 +111,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<ExtractionResult> extractFileSync(String path, String? mimeType, [ExtractionConfig? config]) async {
-    return await rust_bridge.extractFileSync(path: path, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.extractFileSync(path: path, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Synchronous wrapper for `extract_bytes`.
@@ -135,7 +135,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<ExtractionResult> extractBytesSync(Uint8List content, String mimeType, [ExtractionConfig? config]) async {
-    return await rust_bridge.extractBytesSync(content: content, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.extractBytesSync(content: content, mimeType: mimeType, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Synchronous wrapper for `batch_extract_files`.
@@ -161,7 +161,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<List<ExtractionResult>> batchExtractFilesSync(List<BatchFileItem> items, [ExtractionConfig? config]) async {
-    return await rust_bridge.batchExtractFilesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.batchExtractFilesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Synchronous wrapper for `batch_extract_bytes`.
@@ -190,7 +190,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<List<ExtractionResult>> batchExtractBytesSync(List<BatchBytesItem> items, [ExtractionConfig? config]) async {
-    return await rust_bridge.batchExtractBytesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.batchExtractBytesSync(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Extract content from multiple files concurrently.
@@ -257,7 +257,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<List<ExtractionResult>> batchExtractFiles(List<BatchFileItem> items, [ExtractionConfig? config]) async {
-    return await rust_bridge.batchExtractFiles(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.batchExtractFiles(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Extract content from multiple byte arrays concurrently.
@@ -317,7 +317,7 @@ class KreuzbergBridge {
   /// ```
   /// throws anyhow::Error on failure
   static Future<List<ExtractionResult>> batchExtractBytes(List<BatchBytesItem> items, [ExtractionConfig? config]) async {
-    return await rust_bridge.batchExtractBytes(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), includeDocumentStructure: false, maxArchiveDepth: 3));
+    return await rust_bridge.batchExtractBytes(items: items, config: config ?? ExtractionConfig(useCache: true, enableQualityProcessing: true, forceOcr: false, disableOcr: false, resultFormat: ResultFormat.unified, outputFormat: OutputFormat.plain(), useLayoutForMarkdown: false, includeDocumentStructure: false, maxArchiveDepth: 3));
   }
 
   /// Detect MIME type from raw file bytes.
@@ -525,13 +525,8 @@ class KreuzbergBridge {
   }
 
   /// Register a Dart implementation of [OcrBackend] with the plugin registry.
-  static Future<void> registerOcrBackend(OcrBackendDartImpl impl_) async {
-    await rust_bridge.registerOcrBackend(impl_: impl_);
-  }
-
-  /// Unregister a previously-registered [OcrBackend] plugin by name.
-  static Future<void> unregisterOcrBackend(String name) async {
-    await rust_bridge.unregisterOcrBackend(name: name);
+  static Future<void> registerOcrBackend(OcrBackendDartImpl impl) async {
+    await rust_bridge.registerOcrBackend(impl: impl);
   }
 
   /// Clear all registered [OcrBackend] plugins from the registry.
@@ -540,13 +535,8 @@ class KreuzbergBridge {
   }
 
   /// Register a Dart implementation of [PostProcessor] with the plugin registry.
-  static Future<void> registerPostProcessor(PostProcessorDartImpl impl_) async {
-    await rust_bridge.registerPostProcessor(impl_: impl_);
-  }
-
-  /// Unregister a previously-registered [PostProcessor] plugin by name.
-  static Future<void> unregisterPostProcessor(String name) async {
-    await rust_bridge.unregisterPostProcessor(name: name);
+  static Future<void> registerPostProcessor(PostProcessorDartImpl impl) async {
+    await rust_bridge.registerPostProcessor(impl: impl);
   }
 
   /// Clear all registered [PostProcessor] plugins from the registry.
@@ -555,13 +545,8 @@ class KreuzbergBridge {
   }
 
   /// Register a Dart implementation of [Validator] with the plugin registry.
-  static Future<void> registerValidator(ValidatorDartImpl impl_) async {
-    await rust_bridge.registerValidator(impl_: impl_);
-  }
-
-  /// Unregister a previously-registered [Validator] plugin by name.
-  static Future<void> unregisterValidator(String name) async {
-    await rust_bridge.unregisterValidator(name: name);
+  static Future<void> registerValidator(ValidatorDartImpl impl) async {
+    await rust_bridge.registerValidator(impl: impl);
   }
 
   /// Clear all registered [Validator] plugins from the registry.
@@ -570,18 +555,8 @@ class KreuzbergBridge {
   }
 
   /// Register a Dart implementation of [EmbeddingBackend] with the plugin registry.
-  static Future<void> registerEmbeddingBackend(EmbeddingBackendDartImpl impl_) async {
-    await rust_bridge.registerEmbeddingBackend(impl_: impl_);
-  }
-
-  /// Unregister a previously-registered [EmbeddingBackend] plugin by name.
-  static Future<void> unregisterEmbeddingBackend(String name) async {
-    await rust_bridge.unregisterEmbeddingBackend(name: name);
-  }
-
-  /// Clear all registered [EmbeddingBackend] plugins from the registry.
-  static Future<void> clearEmbeddingBackends() async {
-    await rust_bridge.clearEmbeddingBackends();
+  static Future<void> registerEmbeddingBackend(EmbeddingBackendDartImpl impl) async {
+    await rust_bridge.registerEmbeddingBackend(impl: impl);
   }
 
 }
