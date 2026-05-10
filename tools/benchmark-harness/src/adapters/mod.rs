@@ -9,6 +9,7 @@ pub use external::{
     create_pdfminer_adapter, create_pdfplumber_adapter, create_pdftotext_adapter, create_playa_pdf_adapter,
     create_pymupdf4llm_adapter, create_pypdf_adapter, create_tika_adapter, create_unstructured_adapter,
 };
+pub use kreuzberg::create_kreuzberg_adapter;
 pub use subprocess::SubprocessAdapter;
 
 /// Returns the OCR flag string based on the provided boolean

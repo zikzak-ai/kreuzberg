@@ -11,20 +11,28 @@ use crate::{Error, Result};
 use async_trait::async_trait;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 /// Extract JSON content from raw stdout, stripping non-JSON prefix lines.
 ///
 /// Some runtimes (notably Elixir's BEAM VM) emit log messages to stdout
 /// during module initialization before the script can redirect them. This
-/// function finds the first `[` or `{` character and returns everything
-/// from that point, ignoring any preceding log lines.
+/// function finds the earliest `[` or `{` character and returns everything
+/// from that point, ignoring any preceding log lines. Whichever delimiter
+/// appears first wins — must not bias toward `[` because object outputs
+/// (e.g. kreuzberg-cli's envelope) contain nested arrays.
 fn extract_json_from_stdout(raw: &str) -> &str {
-    if let Some(pos) = raw.find('[').or_else(|| raw.find('{')) {
-        &raw[pos..]
-    } else {
-        raw
+    let bracket = raw.find('[');
+    let brace = raw.find('{');
+    let pos = match (bracket, brace) {
+        (Some(b), Some(c)) => Some(b.min(c)),
+        (Some(b), None) => Some(b),
+        (None, Some(c)) => Some(c),
+        (None, None) => None,
+    };
+    match pos {
+        Some(p) => &raw[p..],
+        None => raw,
     }
 }
 
@@ -37,7 +45,6 @@ fn error_to_error_kind(e: &Error) -> ErrorKind {
         _ => ErrorKind::HarnessError,
     }
 }
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
 use tokio::process::Command;
 
 /// Minimum duration in seconds for a valid throughput calculation.
@@ -50,24 +57,11 @@ fn is_debug_enabled() -> bool {
     std::env::var("BENCHMARK_DEBUG").is_ok()
 }
 
-/// State for a persistent subprocess that stays alive across multiple extractions
-struct PersistentProcess {
-    stdin: BufWriter<tokio::process::ChildStdin>,
-    stdout: BufReader<tokio::process::ChildStdout>,
-    child: tokio::process::Child,
-    /// PID of the child process, captured at spawn time for memory monitoring
-    child_pid: u32,
-}
-
 /// Base adapter for subprocess-based extraction
 ///
 /// This adapter spawns a subprocess to perform extraction and monitors
 /// its resource usage. Subclasses implement the specific command construction
 /// for each language binding.
-///
-/// When `persistent` is enabled, the subprocess is spawned once in `setup()`
-/// and reused for all extractions via stdin/stdout communication, eliminating
-/// per-file process startup overhead (e.g., JVM startup for Tika).
 pub struct SubprocessAdapter {
     name: String,
     command: PathBuf,
@@ -76,10 +70,8 @@ pub struct SubprocessAdapter {
     supports_batch: bool,
     working_dir: Option<PathBuf>,
     supported_formats: Vec<String>,
-    persistent: bool,
     max_timeout: Option<Duration>,
     skip_files: Vec<String>,
-    process: Arc<tokio::sync::Mutex<Option<PersistentProcess>>>,
 }
 
 impl SubprocessAdapter {
@@ -153,10 +145,8 @@ impl SubprocessAdapter {
             supports_batch: false,
             working_dir: None,
             supported_formats,
-            persistent: false,
             max_timeout: None,
             skip_files: vec![],
-            process: Arc::new(tokio::sync::Mutex::new(None)),
         }
     }
 
@@ -186,44 +176,8 @@ impl SubprocessAdapter {
             supports_batch: true,
             working_dir: None,
             supported_formats,
-            persistent: false,
             max_timeout: None,
             skip_files: vec![],
-            process: Arc::new(tokio::sync::Mutex::new(None)),
-        }
-    }
-
-    /// Create a new subprocess adapter with persistent mode
-    ///
-    /// In persistent mode, the subprocess is spawned once in `setup()` and kept
-    /// alive across all extractions. File paths are sent via stdin and JSON results
-    /// are read from stdout, eliminating per-file process startup overhead.
-    ///
-    /// # Arguments
-    /// * `name` - Framework name (e.g., "tika")
-    /// * `command` - Path to executable (e.g., "java")
-    /// * `args` - Base arguments (e.g., ["-cp", "tika.jar", "TikaExtract.java", "--ocr", "server"])
-    /// * `env` - Environment variables
-    /// * `supported_formats` - List of file extensions this framework can process
-    pub fn with_persistent_mode(
-        name: impl Into<String>,
-        command: impl Into<PathBuf>,
-        args: Vec<String>,
-        env: Vec<(String, String)>,
-        supported_formats: Vec<String>,
-    ) -> Self {
-        Self {
-            name: name.into(),
-            command: command.into(),
-            args,
-            env,
-            supports_batch: false,
-            working_dir: None,
-            supported_formats,
-            persistent: true,
-            max_timeout: None,
-            skip_files: vec![],
-            process: Arc::new(tokio::sync::Mutex::new(None)),
         }
     }
 
@@ -254,38 +208,6 @@ impl SubprocessAdapter {
     /// * `dir` - Directory path to change to before running the command
     pub fn set_working_dir(&mut self, dir: PathBuf) {
         self.working_dir = Some(dir);
-    }
-
-    /// Spawn a persistent subprocess and return its handles.
-    ///
-    /// Used by both `setup()` and the timeout-restart path in `execute_persistent()`.
-    async fn spawn_persistent(&self) -> Result<PersistentProcess> {
-        let mut cmd = Command::new(&self.command);
-        if let Some(dir) = &self.working_dir {
-            cmd.current_dir(dir);
-        }
-        cmd.args(&self.args);
-        for (key, value) in &self.env {
-            cmd.env(key, value);
-        }
-        cmd.stdin(Stdio::piped());
-        cmd.stdout(Stdio::piped());
-        cmd.stderr(Stdio::inherit());
-
-        let mut child = cmd
-            .spawn()
-            .map_err(|e| Error::Benchmark(format!("Failed to spawn persistent process: {}", e)))?;
-
-        let child_pid = child.id().unwrap_or(0);
-        let stdin = BufWriter::new(child.stdin.take().unwrap());
-        let stdout = BufReader::new(child.stdout.take().unwrap());
-
-        Ok(PersistentProcess {
-            stdin,
-            stdout,
-            child,
-            child_pid,
-        })
     }
 
     /// Execute the extraction subprocess
@@ -416,132 +338,6 @@ impl SubprocessAdapter {
     }
 
     /// Execute extraction via persistent subprocess (stdin/stdout protocol)
-    async fn execute_persistent(
-        &self,
-        file_path: &Path,
-        timeout: Duration,
-        force_ocr: bool,
-    ) -> Result<(String, Duration)> {
-        let absolute_path = if file_path.is_absolute() {
-            file_path.to_path_buf()
-        } else {
-            std::env::current_dir().map_err(Error::Io)?.join(file_path)
-        };
-
-        let mut guard = self.process.lock().await;
-        let proc = guard
-            .as_mut()
-            .ok_or_else(|| Error::Benchmark("Persistent process not started".into()))?;
-
-        let start = Instant::now();
-
-        // Send JSON request with path and force_ocr flag
-        let request = serde_json::json!({
-            "path": absolute_path.to_string_lossy(),
-            "force_ocr": force_ocr,
-        });
-        proc.stdin
-            .write_all(request.to_string().as_bytes())
-            .await
-            .map_err(|e| Error::Benchmark(format!("Failed to write to persistent process: {}", e)))?;
-        proc.stdin
-            .write_all(b"\n")
-            .await
-            .map_err(|e| Error::Benchmark(format!("Failed to write newline: {}", e)))?;
-        proc.stdin
-            .flush()
-            .await
-            .map_err(|e| Error::Benchmark(format!("Failed to flush stdin: {}", e)))?;
-
-        let write_elapsed = start.elapsed();
-
-        // Read lines until we get a JSON response (starts with '{').
-        // Non-JSON lines (C library warnings, Python info messages) are skipped.
-        let mut line = String::new();
-        let read_result = tokio::time::timeout(timeout, async {
-            loop {
-                line.clear();
-                let n = proc
-                    .stdout
-                    .read_line(&mut line)
-                    .await
-                    .map_err(|e| Error::Benchmark(format!("Failed to read from persistent process: {}", e)))?;
-                if n == 0 {
-                    return Err(Error::Benchmark(
-                        "Persistent process returned EOF (process may have crashed)".to_string(),
-                    ));
-                }
-                let trimmed = line.trim();
-                if trimmed.starts_with('{') {
-                    return Ok(n);
-                }
-                // Skip non-JSON noise (C library warnings, info messages)
-                if is_debug_enabled() {
-                    eprintln!("[persistent:{}] skipping non-JSON line: {}", self.name, trimmed);
-                }
-            }
-        })
-        .await;
-
-        let bytes_read = match read_result {
-            Ok(Ok(n)) => n,
-            Ok(Err(e)) => {
-                // Inner error (EOF / crash) — restart the process for the next call
-                eprintln!(
-                    "[persistent:{}] process error — killing and restarting: {}",
-                    self.name, e
-                );
-                if let Some(mut old_proc) = guard.take() {
-                    let _ = old_proc.child.kill().await;
-                    let _ = old_proc.child.wait().await;
-                }
-                match self.spawn_persistent().await {
-                    Ok(new_proc) => *guard = Some(new_proc),
-                    Err(re) => eprintln!("[persistent:{}] failed to restart after error: {}", self.name, re),
-                }
-                return Err(e);
-            }
-            Err(_elapsed) => {
-                // Timeout fired — kill the stuck process and restart it to prevent
-                // protocol desync (the old process may still emit a response later
-                // that would be mis-attributed to the next file).
-                eprintln!(
-                    "[persistent:{}] timeout after {:?} — killing and restarting process",
-                    self.name, timeout
-                );
-                if let Some(mut old_proc) = guard.take() {
-                    let _ = old_proc.child.kill().await;
-                    let _ = old_proc.child.wait().await;
-                }
-                // Restart so the next call finds a fresh process
-                match self.spawn_persistent().await {
-                    Ok(new_proc) => *guard = Some(new_proc),
-                    Err(e) => eprintln!("[persistent:{}] failed to restart after timeout: {}", self.name, e),
-                }
-                return Err(Error::Timeout(format!(
-                    "Persistent process response exceeded {:?}",
-                    timeout
-                )));
-            }
-        };
-
-        let duration = start.elapsed();
-
-        if is_debug_enabled() {
-            eprintln!(
-                "[persistent:{}] write={:.2}ms read={:.2}ms total={:.2}ms bytes={} path={}",
-                self.name,
-                write_elapsed.as_secs_f64() * 1000.0,
-                (duration - write_elapsed).as_secs_f64() * 1000.0,
-                duration.as_secs_f64() * 1000.0,
-                bytes_read,
-                absolute_path.display()
-            );
-        }
-
-        Ok((line, duration))
-    }
-
     /// Build a failure `BenchmarkResult` for error paths in `extract()`.
     ///
     /// Centralises the repeated pattern of constructing an error result with
@@ -631,15 +427,32 @@ impl SubprocessAdapter {
             );
         }
 
-        let parsed: serde_json::Value = serde_json::from_str(stdout)
+        let raw: serde_json::Value = serde_json::from_str(stdout)
             .map_err(|e| Error::Benchmark(format!("Failed to parse subprocess output as JSON: {}", e)))?;
 
         // Validate that output is a JSON object
-        if !parsed.is_object() {
+        if !raw.is_object() {
             return Err(Error::Benchmark(
                 "Subprocess output must be a JSON object with 'content' field".to_string(),
             ));
         }
+
+        // kreuzberg-cli envelope shape: {result: {content, metadata, ...}, extraction_time_ms: f64}.
+        // Unwrap to the flat shape competitors emit so downstream parsing is uniform.
+        let parsed = if let Some(inner) = raw.get("result").filter(|v| v.is_object()) {
+            let mut flat = inner.clone();
+            if let (Some(obj), Some(t)) = (flat.as_object_mut(), raw.get("extraction_time_ms")) {
+                obj.insert("_extraction_time_ms".to_string(), t.clone());
+            }
+            if let (Some(obj), Some(meta)) = (flat.as_object_mut(), inner.get("metadata"))
+                && let Some(ocr) = meta.get("ocr_used")
+            {
+                obj.insert("_ocr_used".to_string(), ocr.clone());
+            }
+            flat
+        } else {
+            raw
+        };
 
         // Check if the framework reported an error
         if let Some(error_val) = parsed.get("error") {
@@ -706,68 +519,33 @@ impl FrameworkAdapter for SubprocessAdapter {
         &self,
         file_path: &Path,
         timeout: Duration,
-        force_ocr: bool,
+        _force_ocr: bool,
         output_format: OutputFormat,
     ) -> Result<BenchmarkResult> {
         let timeout = self.effective_timeout(timeout);
         let file_size = std::fs::metadata(file_path).map_err(Error::Io)?.len();
 
         let start_time = std::time::Instant::now();
-        // For persistent mode, monitor the child process tree (extraction server) instead
-        // of the harness process. This captures actual extraction memory, not the lightweight
-        // harness overhead.
-        let monitor = if self.persistent {
-            let guard = self.process.lock().await;
-            let child_pid = guard.as_ref().map(|p| p.child_pid).unwrap_or(0);
-            drop(guard);
-            if child_pid > 0 {
-                ResourceMonitor::new_for_pid(child_pid)
-            } else {
-                ResourceMonitor::new()
-            }
-        } else {
-            ResourceMonitor::new()
-        };
+        let monitor = ResourceMonitor::new();
         let sampling_ms = crate::monitoring::adaptive_sampling_interval_ms(file_size);
         monitor.start(Duration::from_millis(sampling_ms)).await;
 
-        let (stdout, _stderr, duration) = if self.persistent {
-            match self.execute_persistent(file_path, timeout, force_ocr).await {
-                Ok((stdout, dur)) => (stdout, String::new(), dur),
-                Err(e) => {
-                    let samples = monitor.stop().await;
-                    let snapshots = monitor.get_snapshots().await;
-                    let baseline = monitor.baseline_memory().await;
-                    let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots, baseline);
-                    let actual_duration = start_time.elapsed();
-                    return Ok(self.build_failure_result(
-                        file_path,
-                        file_size,
-                        actual_duration,
-                        &resource_stats,
-                        &e,
-                        output_format,
-                    ));
-                }
-            }
-        } else {
-            match self.execute_subprocess(file_path, timeout).await {
-                Ok(result) => result,
-                Err(e) => {
-                    let samples = monitor.stop().await;
-                    let snapshots = monitor.get_snapshots().await;
-                    let baseline = monitor.baseline_memory().await;
-                    let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots, baseline);
-                    let actual_duration = start_time.elapsed();
-                    return Ok(self.build_failure_result(
-                        file_path,
-                        file_size,
-                        actual_duration,
-                        &resource_stats,
-                        &e,
-                        output_format,
-                    ));
-                }
+        let (stdout, _stderr, duration) = match self.execute_subprocess(file_path, timeout).await {
+            Ok(result) => result,
+            Err(e) => {
+                let samples = monitor.stop().await;
+                let snapshots = monitor.get_snapshots().await;
+                let baseline = monitor.baseline_memory().await;
+                let resource_stats = ResourceMonitor::calculate_stats(&samples, &snapshots, baseline);
+                let actual_duration = start_time.elapsed();
+                return Ok(self.build_failure_result(
+                    file_path,
+                    file_size,
+                    actual_duration,
+                    &resource_stats,
+                    &e,
+                    output_format,
+                ));
             }
         };
 
@@ -1213,76 +991,10 @@ impl FrameworkAdapter for SubprocessAdapter {
     async fn setup(&self) -> Result<()> {
         which::which(&self.command)
             .map_err(|e| Error::Benchmark(format!("Command '{}' not found: {}", self.command.display(), e)))?;
-
-        if !self.persistent {
-            return Ok(());
-        }
-
-        let mut proc = self.spawn_persistent().await?;
-
-        // Wait for the process to signal readiness.
-        // Scripts should print "READY" on stdout after initialization (runtime startup,
-        // FFI library loading, model loading, etc.) is complete.
-        // This ensures cold_start measures only framework extraction time, not
-        // JVM startup, `dotnet run` compilation, `go run` compilation, etc.
-        let ready_timeout_secs: u64 = std::env::var("READY_TIMEOUT")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(300);
-        let ready_timeout = std::time::Duration::from_secs(ready_timeout_secs);
-        let ready_result = tokio::time::timeout(ready_timeout, async {
-            let mut line = String::new();
-            loop {
-                line.clear();
-                let n = proc
-                    .stdout
-                    .read_line(&mut line)
-                    .await
-                    .map_err(|e| Error::Benchmark(format!("Failed to read READY from {}: {}", self.name, e)))?;
-                if n == 0 {
-                    return Err(Error::Benchmark(format!(
-                        "{}: process exited before sending READY signal",
-                        self.name
-                    )));
-                }
-                let trimmed = line.trim();
-                if trimmed == "READY" {
-                    return Ok(());
-                }
-                // Skip non-READY lines (runtime warnings, debug output)
-                if is_debug_enabled() {
-                    eprintln!("[setup:{}] pre-ready line: {}", self.name, trimmed);
-                }
-            }
-        })
-        .await;
-
-        match ready_result {
-            Ok(Ok(())) => {
-                eprintln!("[setup:{}] process ready", self.name);
-            }
-            Ok(Err(e)) => {
-                eprintln!("[setup:{}] process failed during startup: {}", self.name, e);
-                return Err(e);
-            }
-            Err(_) => {
-                eprintln!(
-                    "[setup:{}] warning: no READY signal after {}s — proceeding anyway",
-                    self.name,
-                    ready_timeout.as_secs()
-                );
-            }
-        }
-
-        *self.process.lock().await = Some(proc);
         Ok(())
     }
 
     async fn teardown(&self) -> Result<()> {
-        if let Some(mut proc) = self.process.lock().await.take() {
-            drop(proc.stdin); // Close stdin -> EOF -> process exits
-            let _ = proc.child.wait().await;
-        }
         Ok(())
     }
 }
@@ -1317,20 +1029,6 @@ mod tests {
     }
 
     #[test]
-    fn test_persistent_adapter_creation() {
-        let adapter = SubprocessAdapter::with_persistent_mode(
-            "test-persistent",
-            "echo",
-            vec!["server".to_string()],
-            vec![],
-            vec!["pdf".to_string()],
-        );
-        assert_eq!(adapter.name(), "test-persistent");
-        assert!(adapter.persistent);
-        assert!(!adapter.supports_batch);
-    }
-
-    #[test]
     fn test_supports_format() {
         let adapter = SubprocessAdapter::new(
             "test",
@@ -1342,120 +1040,6 @@ mod tests {
         assert!(adapter.supports_format("pdf"));
         assert!(adapter.supports_format("docx"));
         assert!(!adapter.supports_format("unknown"));
-    }
-
-    #[tokio::test]
-    async fn test_persistent_echo_server() {
-        // Create inline echo server script in temp dir
-        let tmp_dir = tempfile::TempDir::new().unwrap();
-        let script_path = tmp_dir.path().join("echo_server.py");
-        std::fs::write(
-            &script_path,
-            r#"
-import json, sys, time
-print("READY", flush=True)
-for line in sys.stdin:
-    fp = line.strip()
-    if not fp:
-        continue
-    start = time.perf_counter()
-    try:
-        with open(fp, 'r', errors='replace') as f:
-            content = f.read()
-    except Exception as e:
-        content = f"error: {e}"
-    ms = (time.perf_counter() - start) * 1000.0
-    print(json.dumps({"content": content[:1000], "_extraction_time_ms": ms}), flush=True)
-"#,
-        )
-        .unwrap();
-
-        let small_file = tmp_dir.path().join("small.txt");
-        std::fs::write(&small_file, "Hello, small file!").unwrap();
-
-        let medium_file = tmp_dir.path().join("medium.txt");
-        std::fs::write(&medium_file, "x".repeat(100_000)).unwrap(); // 100KB
-
-        let large_file = tmp_dir.path().join("large.txt");
-        std::fs::write(&large_file, "y".repeat(1_000_000)).unwrap(); // 1MB
-
-        // Create persistent adapter pointing to echo server
-        let adapter = SubprocessAdapter::with_persistent_mode(
-            "test-echo",
-            "python3",
-            vec![script_path.to_string_lossy().to_string()],
-            vec![],
-            vec!["txt".to_string()],
-        );
-
-        // Setup (spawns the persistent process)
-        adapter.setup().await.expect("setup should succeed");
-
-        // Warmup extraction (like CI does)
-        let warmup_result = adapter
-            .extract(&small_file, Duration::from_secs(10), false, OutputFormat::Markdown)
-            .await
-            .expect("warmup should succeed");
-        eprintln!(
-            "Warmup: success={}, duration={:?}, extraction_duration={:?}",
-            warmup_result.success, warmup_result.duration, warmup_result.extraction_duration
-        );
-
-        // Run 3 benchmark iterations like CI (different files to check for desync)
-        let files = [&small_file, &medium_file, &large_file];
-        for (i, file) in files.iter().enumerate() {
-            let result = adapter
-                .extract(file, Duration::from_secs(30), false, OutputFormat::Markdown)
-                .await
-                .expect("extract should succeed");
-
-            eprintln!(
-                "Iter {}: file={:?} size={} duration={:?} extraction_duration={:?} has_text={}",
-                i + 1,
-                file.file_name().unwrap(),
-                result.file_size,
-                result.duration,
-                result.extraction_duration,
-                result.extracted_text.is_some()
-            );
-
-            assert!(result.success, "Extraction {} should succeed", i + 1);
-            assert!(
-                result.extraction_duration.is_some(),
-                "Iteration {}: extraction_duration should NOT be null",
-                i + 1
-            );
-            assert!(
-                result.extracted_text.is_some(),
-                "Iteration {}: extracted_text should be present",
-                i + 1
-            );
-
-            // Duration should be reasonable
-            assert!(
-                result.duration.as_micros() > 10,
-                "Iteration {}: Duration too short: {:?}",
-                i + 1,
-                result.duration
-            );
-        }
-
-        // Verify durations scale with file size
-        let r_small = adapter
-            .extract(&small_file, Duration::from_secs(10), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        let r_large = adapter
-            .extract(&large_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        eprintln!(
-            "Small duration: {:?}, Large duration: {:?}",
-            r_small.duration, r_large.duration
-        );
-
-        // Teardown
-        adapter.teardown().await.expect("teardown should succeed");
     }
 
     #[test]
@@ -1552,14 +1136,6 @@ for line in sys.stdin:
     }
 
     #[test]
-    fn test_with_max_timeout_builder_persistent() {
-        let adapter = SubprocessAdapter::with_persistent_mode("test", "echo", vec![], vec![], vec!["pdf".to_string()])
-            .with_max_timeout(Duration::from_secs(180));
-        assert_eq!(adapter.max_timeout, Some(Duration::from_secs(180)));
-        assert!(adapter.persistent);
-    }
-
-    #[test]
     fn test_parse_output_empty_string_content() {
         // {"content": "", "_extraction_time_ms": 5} → EmptyContent
         let adapter = SubprocessAdapter::new("test", "echo", vec![], vec![], vec!["pdf".to_string()]);
@@ -1619,294 +1195,4 @@ for line in sys.stdin:
         );
     }
 
-    #[tokio::test]
-    async fn test_persistent_kreuzberg_python() {
-        // Test with actual kreuzberg Python script if available
-        let script_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("scripts")
-            .join("kreuzberg_extract.py");
-        if !script_path.exists() {
-            eprintln!("Skipping test: kreuzberg script not found");
-            return;
-        }
-
-        // Check if python3 has kreuzberg installed (skip if not)
-        let check = std::process::Command::new("python3")
-            .arg("-c")
-            .arg("import kreuzberg")
-            .output();
-        if check.is_err() || !check.unwrap().status.success() {
-            eprintln!("Skipping test: kreuzberg not installed in python3");
-            return;
-        }
-
-        let tmp_dir = tempfile::TempDir::new().unwrap();
-        let test_file = tmp_dir.path().join("test.txt");
-        std::fs::write(&test_file, "Hello from kreuzberg benchmark test!").unwrap();
-
-        let adapter = SubprocessAdapter::with_persistent_mode(
-            "kreuzberg-python-test",
-            "python3",
-            vec![
-                script_path.to_string_lossy().to_string(),
-                "--no-ocr".to_string(),
-                "server".to_string(),
-            ],
-            vec![],
-            vec!["txt".to_string()],
-        );
-
-        adapter.setup().await.expect("setup should succeed");
-
-        // Run warmup + 3 iterations (like CI)
-        let warmup = adapter
-            .extract(&test_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-            .await;
-        eprintln!(
-            "Kreuzberg warmup: {:?}",
-            warmup.as_ref().map(|r| (r.success, r.duration, r.extraction_duration))
-        );
-
-        for i in 0..3 {
-            let result = adapter
-                .extract(&test_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-                .await;
-            match &result {
-                Ok(r) => {
-                    eprintln!(
-                        "Kreuzberg iter {}: success={} duration={:?} extraction_duration={:?}",
-                        i + 1,
-                        r.success,
-                        r.duration,
-                        r.extraction_duration
-                    );
-                    assert!(r.success, "Kreuzberg iter {} should succeed", i + 1);
-                    assert!(
-                        r.extraction_duration.is_some(),
-                        "Kreuzberg iter {}: extraction_duration must not be null!",
-                        i + 1
-                    );
-                }
-                Err(e) => {
-                    eprintln!("Kreuzberg iter {} failed: {}", i + 1, e);
-                }
-            }
-        }
-
-        adapter.teardown().await.expect("teardown should succeed");
-    }
-
-    #[tokio::test]
-    async fn test_persistent_timeout_kills_and_restarts() {
-        // Create a "slow server" that sleeps 5s on a magic filename, responds instantly otherwise
-        let tmp_dir = tempfile::TempDir::new().unwrap();
-        let script_path = tmp_dir.path().join("slow_server.py");
-        std::fs::write(
-            &script_path,
-            r#"
-import json, sys, time
-print("READY", flush=True)
-for line in sys.stdin:
-    fp = line.strip()
-    if not fp:
-        continue
-    if "SLOW" in fp:
-        time.sleep(5)
-    content = f"processed: {fp}"
-    print(json.dumps({"content": content, "_extraction_time_ms": 1.0}), flush=True)
-"#,
-        )
-        .unwrap();
-
-        let fast_file = tmp_dir.path().join("fast.txt");
-        std::fs::write(&fast_file, "hello").unwrap();
-
-        let slow_file = tmp_dir.path().join("SLOW.txt");
-        std::fs::write(&slow_file, "slow").unwrap();
-
-        let adapter = SubprocessAdapter::with_persistent_mode(
-            "test-timeout",
-            "python3",
-            vec![script_path.to_string_lossy().to_string()],
-            vec![],
-            vec!["txt".to_string()],
-        )
-        .with_max_timeout(Duration::from_secs(2)); // 2s timeout
-
-        adapter.setup().await.expect("setup should succeed");
-
-        // 1. Fast file should work
-        let r1 = adapter
-            .extract(&fast_file, Duration::from_secs(10), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        assert!(r1.success, "fast file should succeed");
-        eprintln!("fast file OK: {:?}", r1.duration);
-
-        // 2. Slow file should timeout (5s sleep > 2s timeout)
-        let r2 = adapter
-            .extract(&slow_file, Duration::from_secs(10), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        assert!(!r2.success, "slow file should fail with timeout");
-        assert_eq!(r2.error_kind, ErrorKind::Timeout);
-        eprintln!("slow file timed out as expected: {:?}", r2.error_message);
-
-        // 3. KEY TEST: fast file should STILL work after the timeout
-        //    (proves the process was killed and restarted, not left in a desync state)
-        let r3 = adapter
-            .extract(&fast_file, Duration::from_secs(10), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        assert!(
-            r3.success,
-            "fast file after timeout should succeed (process was restarted)"
-        );
-        eprintln!("fast file after restart OK: {:?}", r3.duration);
-
-        adapter.teardown().await.expect("teardown should succeed");
-    }
-
-    #[tokio::test]
-    async fn test_python_side_fork_timeout() {
-        // Test the fork-based timeout mechanism: the Python script handles
-        // timeouts internally by killing only the forked child process,
-        // keeping the parent alive (no Rust-side kill+restart needed).
-        //
-        // Skip on macOS where multiprocessing.fork is unreliable with Python 3.13+.
-        if cfg!(target_os = "macos") {
-            let output = std::process::Command::new("python3")
-                .args(["-c", "import sys; print(sys.version_info[:2])"])
-                .output();
-            if let Ok(out) = output {
-                let ver = String::from_utf8_lossy(&out.stdout);
-                if ver.contains("(3, 13)") || ver.contains("(3, 14)") || ver.contains("(3, 15)") {
-                    eprintln!(
-                        "Skipping test: multiprocessing.fork unreliable on macOS with Python {}",
-                        ver.trim()
-                    );
-                    return;
-                }
-            }
-        }
-
-        let script_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("scripts")
-            .join("test_fork_timeout.py");
-        if !script_path.exists() {
-            eprintln!("Skipping test: test_fork_timeout.py not found");
-            return;
-        }
-
-        let tmp_dir = tempfile::TempDir::new().unwrap();
-        let fast_file = tmp_dir.path().join("fast.txt");
-        std::fs::write(&fast_file, "hello fast").unwrap();
-
-        let slow_file = tmp_dir.path().join("SLOW.txt");
-        std::fs::write(&slow_file, "hello slow").unwrap();
-
-        // Python-side timeout = 2s, Rust-side safety net = 10s.
-        // The Python side should fire first.
-        let adapter = SubprocessAdapter::with_persistent_mode(
-            "test-fork-timeout",
-            "python3",
-            vec![
-                script_path.to_string_lossy().to_string(),
-                "--timeout=2".to_string(),
-                "server".to_string(),
-            ],
-            vec![],
-            vec!["txt".to_string()],
-        )
-        .with_max_timeout(Duration::from_secs(10));
-
-        adapter.setup().await.expect("setup should succeed");
-
-        // 1. Fast file through forked child — should succeed
-        let r1 = adapter
-            .extract(&fast_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        assert!(r1.success, "fast file should succeed through fork");
-        assert!(
-            r1.extracted_text.as_deref().unwrap().contains("hello fast"),
-            "content should contain file text"
-        );
-        eprintln!(
-            "1. fast file OK: duration={:?}, extraction_duration={:?}",
-            r1.duration, r1.extraction_duration
-        );
-
-        // 2. Slow file should be timed out by the Python side (2s < 10s sleep)
-        let start = std::time::Instant::now();
-        let r2 = adapter
-            .extract(&slow_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        let elapsed = start.elapsed();
-
-        assert!(!r2.success, "slow file should fail");
-        assert_eq!(
-            r2.error_kind,
-            ErrorKind::Timeout,
-            "should be classified as Timeout, got {:?}: {:?}",
-            r2.error_kind,
-            r2.error_message
-        );
-        assert!(
-            r2.error_message.as_deref().unwrap_or("").contains("timed out"),
-            "error should mention 'timed out': {:?}",
-            r2.error_message
-        );
-        // Should have timed out around 2s (Python side), NOT 10s (Rust side)
-        assert!(
-            elapsed < Duration::from_secs(5),
-            "timeout should fire at ~2s (Python side), not 10s — actual: {:?}",
-            elapsed
-        );
-        eprintln!(
-            "2. slow file timed out (Python-side) in {:?}: {:?}",
-            elapsed, r2.error_message
-        );
-
-        // 3. KEY TEST: fast file should STILL work immediately after timeout.
-        //    This proves the parent Python process stayed alive — no kill+restart.
-        let start = std::time::Instant::now();
-        let r3 = adapter
-            .extract(&fast_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        let elapsed = start.elapsed();
-
-        assert!(
-            r3.success,
-            "fast file after timeout should succeed (parent stayed alive)"
-        );
-        // Should be fast — no process restart overhead
-        assert!(
-            elapsed < Duration::from_secs(2),
-            "post-timeout extraction should be fast (no restart), actual: {:?}",
-            elapsed
-        );
-        eprintln!("3. fast file after timeout OK in {:?}", elapsed);
-
-        // 4. Another slow file to test repeated timeouts don't break anything
-        let r4 = adapter
-            .extract(&slow_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        assert!(!r4.success, "second slow file should also timeout");
-        assert_eq!(r4.error_kind, ErrorKind::Timeout);
-        eprintln!("4. second timeout OK: {:?}", r4.error_message);
-
-        // 5. Final fast file — parent still alive after two timeouts
-        let r5 = adapter
-            .extract(&fast_file, Duration::from_secs(30), false, OutputFormat::Markdown)
-            .await
-            .unwrap();
-        assert!(r5.success, "fast file after two timeouts should still succeed");
-        eprintln!("5. fast file after two timeouts OK: {:?}", r5.duration);
-
-        adapter.teardown().await.expect("teardown should succeed");
-    }
 }

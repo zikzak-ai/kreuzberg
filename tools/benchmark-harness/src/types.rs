@@ -46,6 +46,52 @@ fn default_output_format() -> OutputFormat {
     OutputFormat::Markdown
 }
 
+/// Kreuzberg extraction pipeline variant
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum KreuzbergPipeline {
+    /// Baseline: text extraction without layout or OCR
+    Baseline,
+    /// Layout: layout detection and structure preservation
+    Layout,
+    /// PaddleOCR: OCR with PaddleOCR backend
+    #[serde(rename = "paddle-ocr")]
+    PaddleOcr,
+}
+
+impl KreuzbergPipeline {
+    /// Get the string representation of the pipeline
+    pub fn as_str(self) -> &'static str {
+        match self {
+            KreuzbergPipeline::Baseline => "baseline",
+            KreuzbergPipeline::Layout => "layout",
+            KreuzbergPipeline::PaddleOcr => "paddle-ocr",
+        }
+    }
+}
+
+impl std::fmt::Display for KreuzbergPipeline {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+impl FromStr for KreuzbergPipeline {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "baseline" => Ok(KreuzbergPipeline::Baseline),
+            "layout" => Ok(KreuzbergPipeline::Layout),
+            "paddle-ocr" | "paddle_ocr" | "paddleocr" => Ok(KreuzbergPipeline::PaddleOcr),
+            _ => Err(format!(
+                "unknown Kreuzberg pipeline: {}. Valid: baseline, layout, paddle-ocr",
+                s
+            )),
+        }
+    }
+}
+
 /// OCR usage status for a benchmark extraction
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]

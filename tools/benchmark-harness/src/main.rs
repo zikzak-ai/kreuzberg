@@ -392,14 +392,61 @@ async fn main() -> Result<()> {
                 };
             }
 
-            // Wave 2: kreuzberg-cli adapter registration (replaces 3 rust flavor adapters)
-            // Placeholder for: kreuzberg-rust, kreuzberg-rust-paddle, kreuzberg-rust-oxide
-            // See adapters/kreuzberg.rs for Wave 2 implementation details
-            let kreuzberg_count = 0;
-            eprintln!("[adapter] Kreuzberg CLI adapters: Wave 2 pending (benchmarks for 3rd-party only)");
+            // Wave 2: kreuzberg-cli adapter registration
+            // Supports 3 pipelines (baseline, layout, paddle-ocr) x 2 output formats x single+batch modes
+            use benchmark_harness::KreuzbergPipeline;
+            use benchmark_harness::adapters::create_kreuzberg_adapter;
 
-            // Wave 2: binding adapters removed. Only kreuzberg-rust (CLI) and 3rd-party frameworks remain.
-            let total_requested = if frameworks.is_empty() { 1 } else { frameworks.iter().filter(|f| f.contains("kreuzberg")).count() };
+            let mut kreuzberg_count = 0;
+            let pipelines = [
+                KreuzbergPipeline::Baseline,
+                KreuzbergPipeline::Layout,
+                KreuzbergPipeline::PaddleOcr,
+            ];
+            let formats = [OutputFormat::Markdown, OutputFormat::Plaintext];
+
+            for pipeline in &pipelines {
+                for format in &formats {
+                    let format_slug = match format {
+                        OutputFormat::Markdown => "markdown",
+                        OutputFormat::Plaintext => "plaintext",
+                    };
+                    let framework_name = format!("kreuzberg-{}-{}", format_slug, pipeline.as_str());
+                    if should_init(&framework_name) {
+                        // Single-file mode
+                        match create_kreuzberg_adapter(*pipeline, *format, false) {
+                            Ok(adapter) => {
+                                if let Err(err) = registry.register(Arc::new(adapter)) {
+                                    eprintln!("[adapter] ✗ {} (registration failed: {})", framework_name, err);
+                                } else {
+                                    eprintln!("[adapter] ✓ {} (registered)", framework_name);
+                                    kreuzberg_count += 1;
+                                }
+                            }
+                            Err(err) => eprintln!("[adapter] ✗ {} (initialization failed: {})", framework_name, err),
+                        }
+
+                        // Batch mode
+                        let batch_name = format!("{}-batch", framework_name);
+                        if should_init(&batch_name) && !matches!(config.benchmark_mode, BenchmarkMode::Batch) {
+                            // Skip registering batch in batch mode (would be redundant)
+                            match create_kreuzberg_adapter(*pipeline, *format, true) {
+                                Ok(adapter) => {
+                                    if let Err(err) = registry.register(Arc::new(adapter)) {
+                                        eprintln!("[adapter] ✗ {} (registration failed: {})", batch_name, err);
+                                    } else {
+                                        eprintln!("[adapter] ✓ {} (registered)", batch_name);
+                                        kreuzberg_count += 1;
+                                    }
+                                }
+                                Err(err) => eprintln!("[adapter] ✗ {} (initialization failed: {})", batch_name, err),
+                            }
+                        }
+                    }
+                }
+            }
+
+            let total_requested = if frameworks.is_empty() { 6 } else { frameworks.iter().filter(|f| f.contains("kreuzberg")).count() };
             eprintln!(
                 "[adapter] Kreuzberg CLI: {}/{} available",
                 kreuzberg_count, total_requested

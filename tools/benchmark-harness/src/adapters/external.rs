@@ -164,10 +164,9 @@ fn get_supported_formats(framework_name: &str) -> Vec<String> {
     }
 }
 
-/// Creates a subprocess adapter for Docling (persistent server mode)
+/// Creates a subprocess adapter for Docling.
 ///
-/// Uses persistent mode to avoid repeated Python startup and heavy ML model
-/// loading on every file.
+/// Uses wrapper script approach for extraction.
 pub fn create_docling_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("docling_extract.py")?;
     let (command, mut args) = find_python_with_framework("docling")?;
@@ -178,15 +177,14 @@ pub fn create_docling_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
 
     let supported_formats = get_supported_formats("docling");
     Ok(
-        SubprocessAdapter::with_persistent_mode("docling", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("docling", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
 
-/// Creates a subprocess adapter for Unstructured (persistent server mode)
+/// Creates a subprocess adapter for Unstructured.
 ///
-/// Uses persistent mode to keep the Python process alive, avoiding repeated
-/// import overhead for the heavy unstructured ML library on each file.
+/// Uses wrapper script approach for extraction.
 pub fn create_unstructured_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("unstructured_extract.py")?;
     let (command, mut args) = find_python_with_framework("unstructured")?;
@@ -197,12 +195,12 @@ pub fn create_unstructured_adapter(ocr_enabled: bool) -> Result<SubprocessAdapte
 
     let supported_formats = get_supported_formats("unstructured");
     Ok(
-        SubprocessAdapter::with_persistent_mode("unstructured", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("unstructured", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
 
-/// Creates a subprocess adapter for MarkItDown (persistent server mode)
+/// Creates a subprocess adapter for MarkItDown
 pub fn create_markitdown_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("markitdown_extract.py")?;
     let (command, mut args) = find_python_with_framework("markitdown")?;
@@ -213,7 +211,7 @@ pub fn create_markitdown_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter>
 
     let supported_formats = get_supported_formats("markitdown");
     Ok(
-        SubprocessAdapter::with_persistent_mode("markitdown", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("markitdown", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
@@ -341,8 +339,7 @@ fn get_tika_jar_path() -> Result<PathBuf> {
 
 /// Creates a subprocess adapter for Apache Tika (persistent server mode)
 ///
-/// Uses Tika's built-in server mode which keeps the JVM alive and accepts
-/// file paths via stdin, eliminating per-file JVM startup overhead.
+/// Uses Tika via wrapper script approach for extraction.
 pub fn create_tika_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let jar_path = get_tika_jar_path()?;
     let script_path = get_script_path("TikaExtract.java")?;
@@ -362,12 +359,12 @@ pub fn create_tika_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
 
     let supported_formats = get_supported_formats("tika");
     Ok(
-        SubprocessAdapter::with_persistent_mode("tika", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("tika", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(180)),
     )
 }
 
-/// Creates a subprocess adapter for PyMuPDF4LLM (persistent server mode)
+/// Creates a subprocess adapter for PyMuPDF4LLM
 pub fn create_pymupdf4llm_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("pymupdf4llm_extract.py")?;
     let (command, mut args) = find_python_with_framework("pymupdf4llm")?;
@@ -378,12 +375,12 @@ pub fn create_pymupdf4llm_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter
 
     let supported_formats = get_supported_formats("pymupdf4llm");
     Ok(
-        SubprocessAdapter::with_persistent_mode("pymupdf4llm", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("pymupdf4llm", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(SLOW_ML_TIMEOUT_SECS)),
     )
 }
 
-/// Creates a subprocess adapter for pdfplumber (persistent server mode)
+/// Creates a subprocess adapter for pdfplumber
 pub fn create_pdfplumber_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("pdfplumber_extract.py")?;
     let (command, mut args) = find_python_with_framework("pdfplumber")?;
@@ -394,12 +391,12 @@ pub fn create_pdfplumber_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter>
 
     let supported_formats = get_supported_formats("pdfplumber");
     Ok(
-        SubprocessAdapter::with_persistent_mode("pdfplumber", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("pdfplumber", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
 
-/// Creates a subprocess adapter for pypdf (persistent server mode)
+/// Creates a subprocess adapter for pypdf
 pub fn create_pypdf_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("pypdf_extract.py")?;
     let (command, mut args) = find_python_with_framework("pypdf")?;
@@ -410,12 +407,12 @@ pub fn create_pypdf_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
 
     let supported_formats = get_supported_formats("pypdf");
     Ok(
-        SubprocessAdapter::with_persistent_mode("pypdf", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("pypdf", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
 
-/// Creates a subprocess adapter for playa-pdf (persistent server mode)
+/// Creates a subprocess adapter for playa-pdf
 pub fn create_playa_pdf_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("playa_pdf_extract.py")?;
     let (command, mut args) = find_python_with_framework("playa")?;
@@ -426,12 +423,12 @@ pub fn create_playa_pdf_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> 
 
     let supported_formats = get_supported_formats("playa-pdf");
     Ok(
-        SubprocessAdapter::with_persistent_mode("playa-pdf", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("playa-pdf", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
 
-/// Creates a subprocess adapter for pdfminer.six (persistent server mode)
+/// Creates a subprocess adapter for pdfminer.six
 pub fn create_pdfminer_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("pdfminer_extract.py")?;
     let (command, mut args) = find_python_with_framework("pdfminer")?;
@@ -442,7 +439,7 @@ pub fn create_pdfminer_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
 
     let supported_formats = get_supported_formats("pdfminer");
     Ok(
-        SubprocessAdapter::with_persistent_mode("pdfminer", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("pdfminer", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
@@ -460,15 +457,14 @@ pub fn create_pdftotext_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> 
 
     let supported_formats = get_supported_formats("pdftotext");
     Ok(
-        SubprocessAdapter::with_persistent_mode("pdftotext", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("pdftotext", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(PERSISTENT_MAX_TIMEOUT_SECS)),
     )
 }
 
 /// Creates a subprocess adapter for MinerU (persistent server mode)
 ///
-/// Uses persistent mode to avoid repeated Python startup and heavy ML model
-/// loading on every file.
+/// Uses wrapper script approach for extraction.
 pub fn create_mineru_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
     let script_path = get_script_path("mineru_extract.py")?;
     let (command, mut args) = find_python_with_framework("mineru")?;
@@ -479,7 +475,7 @@ pub fn create_mineru_adapter(ocr_enabled: bool) -> Result<SubprocessAdapter> {
 
     let supported_formats = get_supported_formats("mineru");
     Ok(
-        SubprocessAdapter::with_persistent_mode("mineru", command, args, vec![], supported_formats)
+        SubprocessAdapter::new("mineru", command, args, vec![], supported_formats)
             .with_max_timeout(Duration::from_secs(SLOW_ML_TIMEOUT_SECS)),
     )
 }
