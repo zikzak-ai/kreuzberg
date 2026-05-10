@@ -11,6 +11,43 @@ pub(crate) mod instrumented;
 // Re-export trait for backward compatibility
 pub use r#trait::DocumentExtractor;
 
+use std::sync::Arc;
+
+/// Register a document extractor with the global registry.
+///
+/// The extractor is keyed by [`crate::plugins::Plugin::name`] and indexed for
+/// every MIME type returned by
+/// [`crate::plugins::DocumentExtractor::supported_mime_types`].
+///
+/// # Errors
+///
+/// - [`crate::KreuzbergError::Validation`] if the plugin name is empty or
+///   contains whitespace.
+/// - Any error returned by the extractor's `initialize()` method.
+pub fn register_document_extractor(extractor: Arc<dyn DocumentExtractor>) -> crate::Result<()> {
+    use crate::plugins::registry::get_document_extractor_registry;
+
+    let registry = get_document_extractor_registry();
+    let mut registry = registry.write();
+    registry.register(extractor)
+}
+
+/// Unregister a document extractor by name.
+///
+/// Removes the extractor from the global registry and calls its `shutdown()`
+/// method. No-op if no extractor with that name is registered.
+///
+/// # Errors
+///
+/// - Any error returned by the extractor's `shutdown()` method.
+pub fn unregister_document_extractor(name: &str) -> crate::Result<()> {
+    use crate::plugins::registry::get_document_extractor_registry;
+
+    let registry = get_document_extractor_registry();
+    let mut registry = registry.write();
+    registry.remove(name)
+}
+
 /// List names of all registered document extractors.
 pub fn list_document_extractors() -> crate::Result<Vec<String>> {
     use crate::plugins::registry::get_document_extractor_registry;
@@ -19,6 +56,22 @@ pub fn list_document_extractors() -> crate::Result<Vec<String>> {
     let registry = registry.read();
 
     Ok(registry.list())
+}
+
+/// Clear all document extractors from the global registry.
+///
+/// Calls `shutdown()` on every registered extractor, then empties the registry.
+///
+/// # Errors
+///
+/// - Any error returned by an extractor's `shutdown()` method. The first error
+///   encountered stops processing of remaining extractors.
+pub fn clear_document_extractors() -> crate::Result<()> {
+    use crate::plugins::registry::get_document_extractor_registry;
+
+    let registry = get_document_extractor_registry();
+    let mut registry = registry.write();
+    registry.shutdown_all()
 }
 
 #[cfg(test)]
@@ -320,5 +373,76 @@ mod tests {
             .unwrap();
 
         assert_eq!(result.mime_type, "application/json");
+    }
+
+    // ── Lifecycle free-function tests ────────────────────────────────────────
+
+    /// Unique MIME type per test to avoid collisions in the shared global registry.
+    fn unique_mime(suffix: &str) -> String {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        let id = COUNTER.fetch_add(1, Ordering::SeqCst);
+        format!("application/x-test-{suffix}-{id}")
+    }
+
+    struct LifecycleMock {
+        mime: String,
+    }
+
+    impl Plugin for LifecycleMock {
+        fn name(&self) -> &str {
+            &self.mime
+        }
+        fn version(&self) -> String {
+            "1.0.0".to_string()
+        }
+        fn initialize(&self) -> Result<()> {
+            Ok(())
+        }
+        fn shutdown(&self) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    #[async_trait]
+    impl DocumentExtractor for LifecycleMock {
+        async fn extract_bytes(
+            &self,
+            _content: &[u8],
+            _mime_type: &str,
+            _config: &ExtractionConfig,
+        ) -> Result<crate::types::internal::InternalDocument> {
+            Ok(crate::types::internal::InternalDocument::new("mock"))
+        }
+
+        fn supported_mime_types(&self) -> &[&str] {
+            // Safety: self-referential slice kept alive for the duration of the call.
+            // Tests do not inspect MIME registration; this is only for Plugin::name uniqueness.
+            &[]
+        }
+    }
+
+    #[test]
+    fn register_list_unregister_roundtrip() {
+        let mime = unique_mime("rlu");
+        let extractor = Arc::new(LifecycleMock { mime: mime.clone() });
+
+        register_document_extractor(Arc::clone(&extractor) as Arc<dyn DocumentExtractor>).unwrap();
+        assert!(list_document_extractors().unwrap().contains(&mime));
+
+        unregister_document_extractor(&mime).unwrap();
+        assert!(!list_document_extractors().unwrap().contains(&mime));
+    }
+
+    #[test]
+    fn register_list_clear_list_roundtrip() {
+        let mime = unique_mime("rlcl");
+        let extractor = Arc::new(LifecycleMock { mime: mime.clone() });
+
+        register_document_extractor(Arc::clone(&extractor) as Arc<dyn DocumentExtractor>).unwrap();
+        assert!(list_document_extractors().unwrap().contains(&mime));
+
+        clear_document_extractors().unwrap();
+        assert!(!list_document_extractors().unwrap().contains(&mime));
     }
 }

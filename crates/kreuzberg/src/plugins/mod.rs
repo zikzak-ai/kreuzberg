@@ -185,8 +185,14 @@ pub mod startup_validation;
 mod traits;
 mod validator;
 
-pub use embedding::{EmbeddingBackend, list_embedding_backends};
-pub use extractor::{DocumentExtractor, list_document_extractors};
+pub use embedding::{
+    EmbeddingBackend, clear_embedding_backends, list_embedding_backends, register_embedding_backend,
+    unregister_embedding_backend,
+};
+pub use extractor::{
+    DocumentExtractor, clear_document_extractors, list_document_extractors, register_document_extractor,
+    unregister_document_extractor,
+};
 pub use ocr::{
     OcrBackend, OcrBackendType, clear_ocr_backends, list_ocr_backends, register_ocr_backend, unregister_ocr_backend,
 };
@@ -194,7 +200,7 @@ pub use processor::{
     PostProcessor, ProcessingStage, clear_post_processors, list_post_processors, register_post_processor,
     unregister_post_processor,
 };
-pub use renderer::{Renderer, list_renderers, register_renderer, unregister_renderer};
+pub use renderer::{Renderer, clear_renderers, list_renderers, register_renderer, unregister_renderer};
 pub use traits::Plugin;
 pub use validator::{Validator, clear_validators, list_validators, register_validator, unregister_validator};
 

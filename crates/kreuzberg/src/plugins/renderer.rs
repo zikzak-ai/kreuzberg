@@ -91,3 +91,61 @@ pub fn list_renderers() -> Vec<String> {
     let registry = registry.read();
     registry.list()
 }
+
+/// Clear all renderers from the global registry.
+///
+/// Removes every renderer, including the built-in defaults (markdown, html,
+/// djot, plain). After calling this no renderers are registered; re-register
+/// as needed.
+pub fn clear_renderers() {
+    use crate::plugins::registry::get_renderer_registry;
+
+    let registry = get_renderer_registry();
+    let mut registry = registry.write();
+    registry.clear_all();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct MockRenderer {
+        format: &'static str,
+    }
+
+    impl Plugin for MockRenderer {
+        fn name(&self) -> &str {
+            self.format
+        }
+    }
+
+    impl Renderer for MockRenderer {
+        fn render(&self, doc: &crate::types::internal::InternalDocument) -> crate::Result<String> {
+            Ok(format!("mock-{}-{}", self.format, doc.elements.len()))
+        }
+    }
+
+    #[test]
+    fn register_list_unregister_roundtrip() {
+        register_renderer(Arc::new(MockRenderer { format: "test-fmt-a" })).unwrap();
+        assert!(list_renderers().contains(&"test-fmt-a".to_string()));
+
+        unregister_renderer("test-fmt-a");
+        assert!(!list_renderers().contains(&"test-fmt-a".to_string()));
+    }
+
+    #[test]
+    fn register_list_clear_list_roundtrip() {
+        register_renderer(Arc::new(MockRenderer { format: "test-fmt-b" })).unwrap();
+        assert!(list_renderers().contains(&"test-fmt-b".to_string()));
+
+        clear_renderers();
+        assert!(list_renderers().is_empty());
+
+        // Restore built-ins so other tests are unaffected.
+        use crate::plugins::registry::get_renderer_registry;
+        let registry = get_renderer_registry();
+        let mut registry = registry.write();
+        registry.reset_to_defaults().unwrap();
+    }
+}

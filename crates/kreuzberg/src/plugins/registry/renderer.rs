@@ -198,6 +198,14 @@ impl RendererRegistry {
         self.renderers.remove(name);
     }
 
+    /// Clear all renderers from the registry.
+    ///
+    /// Removes every renderer, including the built-in defaults. After calling
+    /// this the registry is empty; re-register renderers as needed.
+    pub fn clear_all(&mut self) {
+        self.renderers.clear();
+    }
+
     /// Clear all renderers and re-register the built-in defaults.
     #[cfg(test)]
     pub(crate) fn reset_to_defaults(&mut self) -> Result<()> {
