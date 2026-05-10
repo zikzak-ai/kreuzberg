@@ -456,11 +456,14 @@ jobs:
           # PyO3 abi3-py310 → one wheel per platform covers Python 3.10+.
           cibw-build: "cp310-*"
           upload-artifact: "false"
-          # ort/reqwest/hf-hub pull native-tls → openssl-sys; manylinux2014 needs openssl-devel.
+          # manylinux2014: openssl-devel for ort native-tls; CARGO_TARGET_*_LINKER=gcc so
+          # cargo finds the host gcc instead of looking for an aarch64-linux-gnu-gcc prefix.
           cibw-before-build-linux: "yum install -y openssl-devel pkgconfig && pip install maturin uv && source ~/.cargo/env"
-          # cibw's bundled rustup-init on Windows defaults host triple to gnu, but ort-sys
-          # only ships msvc prebuilt binaries. Force msvc toolchain + target before maturin runs.
-          cibw-before-build-windows: "rustup default stable-x86_64-pc-windows-msvc && rustup target add x86_64-pc-windows-msvc && pip install maturin uv && set PATH=%USERPROFILE%\\.cargo\\bin;%PATH%"
+          cibw-environment: 'MATURIN_BUILD_ARGS="--compatibility linux" CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=gcc CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=gcc CC_x86_64_unknown_linux_gnu=gcc CC_aarch64_unknown_linux_gnu=gcc CXX_x86_64_unknown_linux_gnu=g++ CXX_aarch64_unknown_linux_gnu=g++'
+          # cibw's bundled rustup-init on Windows defaults host triple to gnu and
+          # rust-toolchain.toml resolves channel="1.95" against that gnu host. Install the
+          # msvc 1.95 toolchain explicitly so it wins regardless of rustup's host default.
+          cibw-before-build-windows: "rustup install 1.95-x86_64-pc-windows-msvc && rustup default 1.95-x86_64-pc-windows-msvc && rustup target add x86_64-pc-windows-msvc && pip install maturin uv && set PATH=%USERPROFILE%\\.cargo\\bin;%PATH%"
           cibw-environment-windows: 'MATURIN_BUILD_ARGS="--target x86_64-pc-windows-msvc"'
 
       - name: Upload wheels
