@@ -46,7 +46,7 @@ jobs:
 
       - name: Rename for upload
         run: |
-          cp target/release/libkreuzberg_dart.${{ matrix.ext }} \
+          cp ../../../target/release/libkreuzberg_dart.${{ matrix.ext }} \
             libkreuzberg_dart-${{ matrix.target }}.${{ matrix.ext }}
 
       - uses: actions/upload-artifact@v4
