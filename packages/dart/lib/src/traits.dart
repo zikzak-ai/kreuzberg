@@ -481,3 +481,156 @@ abstract class EmbeddingBackend {
   /// throws anyhow::Error on failure
   Future<List<List<double>>> embed(List<String> texts);
 }
+
+/// Abstract class for the `DocumentExtractor` Rust trait.
+///
+/// Implement this class and register your implementation via:
+/// ```dart
+/// class MyDocumentExtractor implements DocumentExtractor {
+///   @override
+///   Future<InternalDocument> extractBytes(...) async { ... }
+///   @override
+///   Future<InternalDocument> extractFile(...) async { ... }
+///   @override
+///   Future<List<String>> supportedMimeTypes(...) async { ... }
+///   @override
+///   Future<int> priority(...) async { ... }
+///   @override
+///   Future<bool> canHandle(...) async { ... }
+///   @override
+///   Future<SyncExtractor?> asSyncExtractor(...) async { ... }
+/// }
+///
+/// final impl = createDocumentExtractorDartImpl(
+///   extractBytes: (...) => myInstance.extractBytes(...),
+///   extractFile: (...) => myInstance.extractFile(...),
+///   supportedMimeTypes: (...) => myInstance.supportedMimeTypes(...),
+///   priority: (...) => myInstance.priority(...),
+///   canHandle: (...) => myInstance.canHandle(...),
+///   asSyncExtractor: (...) => myInstance.asSyncExtractor(...),
+/// );
+/// ```
+///
+abstract class DocumentExtractor {
+  /// Extract content from a byte array.
+  ///
+  /// This is the core extraction method that processes in-memory document data.
+  ///
+  /// # Arguments
+  ///
+  /// * `content` - Raw document bytes
+  /// * `mime_type` - MIME type of the document (already validated)
+  /// * `config` - Extraction configuration
+  ///
+  /// # Returns
+  ///
+  /// An `InternalDocument` containing the extracted elements, metadata, and tables.
+  /// The pipeline will convert this into the public `ExtractionResult`.
+  ///
+  /// # Errors
+  ///
+  /// - `KreuzbergError::Parsing` - Document parsing failed
+  /// - `KreuzbergError::Validation` - Invalid document structure
+  /// - `KreuzbergError::Io` - I/O errors (these always bubble up)
+  /// - `KreuzbergError::MissingDependency` - Required dependency not available
+  /// throws anyhow::Error on failure
+  Future<InternalDocument> extractBytes(Uint8List content, String mimeType, ExtractionConfig config);
+  /// Extract content from a file.
+  ///
+  /// Default implementation reads the file and calls `extract_bytes`.
+  /// Override for custom file handling, streaming, or memory optimizations.
+  ///
+  /// # Arguments
+  ///
+  /// * `path` - Path to the document file
+  /// * `mime_type` - MIME type of the document (already validated)
+  /// * `config` - Extraction configuration
+  ///
+  /// # Returns
+  ///
+  /// An `InternalDocument` containing the extracted elements, metadata, and tables.
+  ///
+  /// # Errors
+  ///
+  /// Same as `extract_bytes`, plus file I/O errors.
+  /// throws anyhow::Error on failure
+  Future<InternalDocument> extractFile(String path, String mimeType, ExtractionConfig config);
+  /// Get the list of MIME types supported by this extractor.
+  ///
+  /// Can include exact MIME types and prefix patterns:
+  /// - Exact: `"application/pdf"`, `"text/plain"`
+  /// - Prefix: `"image/*"` (matches any image type)
+  ///
+  /// # Returns
+  ///
+  /// A slice of MIME type strings.
+  Future<List<String>> supportedMimeTypes();
+  /// Get the priority of this extractor.
+  ///
+  /// Higher priority extractors are preferred when multiple extractors
+  /// support the same MIME type.
+  ///
+  /// # Priority Guidelines
+  ///
+  /// - **0-25**: Fallback/low-quality extractors
+  /// - **26-49**: Alternative extractors
+  /// - **50**: Default priority (built-in extractors)
+  /// - **51-75**: Premium/enhanced extractors
+  /// - **76-100**: Specialized/high-priority extractors
+  ///
+  /// # Returns
+  ///
+  /// Priority value (default: 50)
+  Future<int> priority();
+  /// Optional: Check if this extractor can handle a specific file.
+  ///
+  /// Allows for more sophisticated detection beyond MIME types.
+  /// Defaults to `true` (rely on MIME type matching).
+  ///
+  /// # Arguments
+  ///
+  /// * `path` - Path to the file to check
+  /// * `mime_type` - Detected MIME type
+  ///
+  /// # Returns
+  ///
+  /// `true` if the extractor can handle this file, `false` otherwise.
+  Future<bool> canHandle(String path, String mimeType);
+  /// Attempt to get a reference to this extractor as a SyncExtractor.
+  ///
+  /// Returns None if the extractor doesn't support synchronous extraction.
+  /// This is used for WASM and other sync-only environments.
+  Future<SyncExtractor?> asSyncExtractor();
+}
+
+/// Abstract class for the `Renderer` Rust trait.
+///
+/// Implement this class and register your implementation via:
+/// ```dart
+/// class MyRenderer implements Renderer {
+///   @override
+///   Future<String> render(...) async { ... }
+/// }
+///
+/// final impl = createRendererDartImpl(
+///   render: (...) => myInstance.render(...),
+/// );
+/// ```
+///
+abstract class Renderer {
+  /// Render an [`InternalDocument`] to the output format.
+  ///
+  /// # Arguments
+  ///
+  /// * `doc` - The internal document to render
+  ///
+  /// # Returns
+  ///
+  /// The rendered output as a string.
+  ///
+  /// # Errors
+  ///
+  /// Returns an error if rendering fails.
+  /// throws anyhow::Error on failure
+  Future<String> render(InternalDocument doc);
+}

@@ -267,7 +267,6 @@ public final class PostProcessorBridge implements AutoCloseable {
         PostProcessorBridge old = POST_PROCESSOR_BRIDGES.remove(name);
         if (old != null) { old.close(); }
     }
-
     /** Clear all registered PostProcessor implementations. */
     public static void clearAllPostProcessor() throws Exception {
         try {
@@ -290,5 +289,4 @@ public final class PostProcessorBridge implements AutoCloseable {
         POST_PROCESSOR_BRIDGES.values().forEach(PostProcessorBridge::close);
         POST_PROCESSOR_BRIDGES.clear();
     }
-
 }

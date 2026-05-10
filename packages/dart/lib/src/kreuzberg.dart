@@ -427,6 +427,11 @@ class KreuzbergBridge {
   }
 
   /// List names of all registered renderers.
+  ///
+  /// # Errors
+  ///
+  /// Returns an error if the registry lock is poisoned.
+  /// throws anyhow::Error on failure
   static Future<List<String>> listRenderers() async {
     return await rust_bridge.listRenderers();
   }
@@ -582,6 +587,36 @@ class KreuzbergBridge {
   /// Clear all registered [EmbeddingBackend] plugins from the registry.
   static Future<void> clearEmbeddingBackends() async {
     await rust_bridge.clearEmbeddingBackends();
+  }
+
+  /// Register a Dart implementation of [DocumentExtractor] with the plugin registry.
+  static Future<void> registerDocumentExtractor(DocumentExtractorDartImpl impl_) async {
+    await rust_bridge.registerDocumentExtractor(impl_: impl_);
+  }
+
+  /// Unregister a previously-registered [DocumentExtractor] plugin by name.
+  static Future<void> unregisterDocumentExtractor(String name) async {
+    await rust_bridge.unregisterDocumentExtractor(name: name);
+  }
+
+  /// Clear all registered [DocumentExtractor] plugins from the registry.
+  static Future<void> clearDocumentExtractors() async {
+    await rust_bridge.clearDocumentExtractors();
+  }
+
+  /// Register a Dart implementation of [Renderer] with the plugin registry.
+  static Future<void> registerRenderer(RendererDartImpl impl_) async {
+    await rust_bridge.registerRenderer(impl_: impl_);
+  }
+
+  /// Unregister a previously-registered [Renderer] plugin by name.
+  static Future<void> unregisterRenderer(String name) async {
+    await rust_bridge.unregisterRenderer(name: name);
+  }
+
+  /// Clear all registered [Renderer] plugins from the registry.
+  static Future<void> clearRenderers() async {
+    await rust_bridge.clearRenderers();
   }
 
 }

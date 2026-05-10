@@ -225,7 +225,6 @@ public final class ValidatorBridge implements AutoCloseable {
         ValidatorBridge old = VALIDATOR_BRIDGES.remove(name);
         if (old != null) { old.close(); }
     }
-
     /** Clear all registered Validator implementations. */
     public static void clearAllValidator() throws Exception {
         try {
@@ -248,5 +247,4 @@ public final class ValidatorBridge implements AutoCloseable {
         VALIDATOR_BRIDGES.values().forEach(ValidatorBridge::close);
         VALIDATOR_BRIDGES.clear();
     }
-
 }

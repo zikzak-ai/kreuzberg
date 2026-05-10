@@ -336,6 +336,7 @@ pub const OcrConfig = struct {
     vlm_config: ?LlmConfig,
     vlm_prompt: ?[:0]const u8,
     acceleration: ?AccelerationConfig,
+    tessdata_bytes: ?std.StringHashMap([]const u8),
 };
 
 /// Page extraction and tracking configuration.
@@ -2934,8 +2935,15 @@ pub fn list_post_processors() (KreuzbergError||error{OutOfMemory})![]u8 {
 }
 
 /// List names of all registered renderers.
-pub fn list_renderers() []u8 {
+///
+/// **Errors:**
+///
+/// Returns an error if the registry lock is poisoned.
+pub fn list_renderers() (KreuzbergError||error{OutOfMemory})![]u8 {
     const _result = c.kreuzberg_list_renderers();
+    if (c.kreuzberg_last_error_code() != 0) {
+        return _first_error(KreuzbergError);
+    }
     return blk: {
         const slice = std.mem.sliceTo(_result, 0);
         const owned = try std.heap.c_allocator.dupe(u8, slice);
@@ -3927,6 +3935,357 @@ pub fn make_embedding_backend_vtable(comptime T: type, instance: *T) IEmbeddingB
             fn thunk(ud: ?*anyopaque, texts: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.embed(texts)) |value| {
+                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                } else |err| {
+                    _ = err;
+                    if (out_error) |ptr| ptr.* = null; // caller checks error code
+                    return 1;
+                }
+            }
+        }.thunk,
+
+        .free_user_data = struct {
+            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+                _ = user_data;
+            }
+        }.thunk,
+    };
+}
+
+/// Vtable for a Zig implementation of the `DocumentExtractor` trait.
+/// Fill each function pointer, then pass this struct to the corresponding
+/// `register_document_extractor` function to register your implementation.
+pub const IDocumentExtractor = extern struct {
+    /// Return the plugin name into `out_name` (heap-allocated, caller frees).
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+
+    /// Return the plugin version into `out_version` (heap-allocated, caller frees).
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+
+    /// Initialise the plugin; return 0 on success, non-zero on error.
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+
+    /// Shut down the plugin; return 0 on success, non-zero on error.
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+
+    /// Extract content from a byte array.
+    ///
+    /// This is the core extraction method that processes in-memory document data.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - Raw document bytes
+    /// * `mime_type` - MIME type of the document (already validated)
+    /// * `config` - Extraction configuration
+    ///
+    /// # Returns
+    ///
+    /// An `InternalDocument` containing the extracted elements, metadata, and tables.
+    /// The pipeline will convert this into the public `ExtractionResult`.
+    ///
+    /// # Errors
+    ///
+    /// - `KreuzbergError::Parsing` - Document parsing failed
+    /// - `KreuzbergError::Validation` - Invalid document structure
+    /// - `KreuzbergError::Io` - I/O errors (these always bubble up)
+    /// - `KreuzbergError::MissingDependency` - Required dependency not available
+    extract_bytes: ?*const fn (user_data: ?*anyopaque, content_ptr: [*c]const u8, content_len: usize, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    /// Extract content from a file.
+    ///
+    /// Default implementation reads the file and calls `extract_bytes`.
+    /// Override for custom file handling, streaming, or memory optimizations.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Path to the document file
+    /// * `mime_type` - MIME type of the document (already validated)
+    /// * `config` - Extraction configuration
+    ///
+    /// # Returns
+    ///
+    /// An `InternalDocument` containing the extracted elements, metadata, and tables.
+    ///
+    /// # Errors
+    ///
+    /// Same as `extract_bytes`, plus file I/O errors.
+    extract_file: ?*const fn (user_data: ?*anyopaque, path: [*c]const u8, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    /// Get the list of MIME types supported by this extractor.
+    ///
+    /// Can include exact MIME types and prefix patterns:
+    /// - Exact: `"application/pdf"`, `"text/plain"`
+    /// - Prefix: `"image/*"` (matches any image type)
+    ///
+    /// # Returns
+    ///
+    /// A slice of MIME type strings.
+    supported_mime_types: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 = null,
+    /// Get the priority of this extractor.
+    ///
+    /// Higher priority extractors are preferred when multiple extractors
+    /// support the same MIME type.
+    ///
+    /// # Priority Guidelines
+    ///
+    /// - **0-25**: Fallback/low-quality extractors
+    /// - **26-49**: Alternative extractors
+    /// - **50**: Default priority (built-in extractors)
+    /// - **51-75**: Premium/enhanced extractors
+    /// - **76-100**: Specialized/high-priority extractors
+    ///
+    /// # Returns
+    ///
+    /// Priority value (default: 50)
+    priority: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    /// Optional: Check if this extractor can handle a specific file.
+    ///
+    /// Allows for more sophisticated detection beyond MIME types.
+    /// Defaults to `true` (rely on MIME type matching).
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Path to the file to check
+    /// * `mime_type` - Detected MIME type
+    ///
+    /// # Returns
+    ///
+    /// `true` if the extractor can handle this file, `false` otherwise.
+    can_handle: ?*const fn (user_data: ?*anyopaque, _path: [*c]const u8, _mime_type: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    /// Attempt to get a reference to this extractor as a SyncExtractor.
+    ///
+    /// Returns None if the extractor doesn't support synchronous extraction.
+    /// This is used for WASM and other sync-only environments.
+    as_sync_extractor: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 = null,
+    /// Called by the Rust runtime when the bridge is dropped.
+    /// Use this to release any Zig-side state held via `user_data`.
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+};
+
+/// Register a `DocumentExtractor` implementation with the Rust runtime.
+///
+/// `name`     — null-terminated plugin name.
+/// `vtable`   — filled `IDocumentExtractor` struct with all required function pointers.
+/// `user_data`— opaque pointer passed back as the first argument of every vtable call.
+///
+/// Returns 0 on success; non-zero on failure (error text written to `out_error`).
+pub fn register_document_extractor(name: [*c]const u8, vtable: IDocumentExtractor, user_data: ?*anyopaque, out_error: ?*?[*c]u8) i32 {
+    return c.kreuzberg_register_document_extractor(name, vtable, user_data, out_error);
+}
+
+/// Unregister a previously registered `DocumentExtractor` implementation by name.
+///
+/// Returns 0 on success; non-zero on failure.
+pub fn unregister_document_extractor(name: [*c]const u8, out_error: ?*?[*c]u8) i32 {
+    return c.kreuzberg_unregister_document_extractor(name, out_error);
+}
+
+/// Build an `IDocumentExtractor` vtable for a concrete Zig type `T`.
+///
+/// `T` must implement every method of `DocumentExtractor` as a plain Zig function.
+/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// back to `*T` and forwards the call.
+///
+/// # Usage
+/// ```zig
+/// const vtable = make_document_extractor_vtable(MyType, &my_instance);
+/// _ = register_document_extractor("my-impl", vtable, &my_instance, &out_error);
+/// ```
+pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentExtractor {
+    _ = instance; // instance is passed as user_data by the caller
+    return IDocumentExtractor{
+        .name_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+                _ = user_data;
+                _ = out_name;
+                unreachable; // override .name_fn in the returned vtable
+            }
+        }.thunk,
+        .version_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+                _ = user_data;
+                _ = out_version;
+                unreachable; // override .version_fn in the returned vtable
+            }
+        }.thunk,
+        .initialize_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+                _ = user_data;
+                _ = out_error;
+                return 0;
+            }
+        }.thunk,
+        .shutdown_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+                _ = user_data;
+                _ = out_error;
+                return 0;
+            }
+        }.thunk,
+        .extract_bytes = struct {
+            fn thunk(ud: ?*anyopaque, content_ptr: [*c]const u8, content_len: usize, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+                const self: *T = @ptrCast(@alignCast(ud));
+                const content_slice = content_ptr[0..content_len];
+                if (self.extract_bytes(content_slice, mime_type, config)) |value| {
+                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                } else |err| {
+                    _ = err;
+                    if (out_error) |ptr| ptr.* = null; // caller checks error code
+                    return 1;
+                }
+            }
+        }.thunk,
+
+        .extract_file = struct {
+            fn thunk(ud: ?*anyopaque, path: [*c]const u8, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+                const self: *T = @ptrCast(@alignCast(ud));
+                if (self.extract_file(path, mime_type, config)) |value| {
+                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                } else |err| {
+                    _ = err;
+                    if (out_error) |ptr| ptr.* = null; // caller checks error code
+                    return 1;
+                }
+            }
+        }.thunk,
+
+        .supported_mime_types = struct {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 {
+                const self: *T = @ptrCast(@alignCast(ud));
+                _ = out_result;
+                return self.supported_mime_types();
+            }
+        }.thunk,
+
+        .priority = struct {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 {
+                const self: *T = @ptrCast(@alignCast(ud));
+                _ = out_result;
+                return self.priority();
+            }
+        }.thunk,
+
+        .can_handle = struct {
+            fn thunk(ud: ?*anyopaque, _path: [*c]const u8, _mime_type: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 {
+                const self: *T = @ptrCast(@alignCast(ud));
+                _ = out_result;
+                return self.can_handle(_path, _mime_type);
+            }
+        }.thunk,
+
+        .as_sync_extractor = struct {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 {
+                const self: *T = @ptrCast(@alignCast(ud));
+                _ = out_result;
+                return self.as_sync_extractor();
+            }
+        }.thunk,
+
+        .free_user_data = struct {
+            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+                _ = user_data;
+            }
+        }.thunk,
+    };
+}
+
+/// Vtable for a Zig implementation of the `Renderer` trait.
+/// Fill each function pointer, then pass this struct to the corresponding
+/// `register_renderer` function to register your implementation.
+pub const IRenderer = extern struct {
+    /// Return the plugin name into `out_name` (heap-allocated, caller frees).
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+
+    /// Return the plugin version into `out_version` (heap-allocated, caller frees).
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+
+    /// Initialise the plugin; return 0 on success, non-zero on error.
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+
+    /// Shut down the plugin; return 0 on success, non-zero on error.
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+
+    /// Render an [`InternalDocument`] to the output format.
+    ///
+    /// # Arguments
+    ///
+    /// * `doc` - The internal document to render
+    ///
+    /// # Returns
+    ///
+    /// The rendered output as a string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if rendering fails.
+    render: ?*const fn (user_data: ?*anyopaque, doc: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    /// Called by the Rust runtime when the bridge is dropped.
+    /// Use this to release any Zig-side state held via `user_data`.
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+};
+
+/// Register a `Renderer` implementation with the Rust runtime.
+///
+/// `name`     — null-terminated plugin name.
+/// `vtable`   — filled `IRenderer` struct with all required function pointers.
+/// `user_data`— opaque pointer passed back as the first argument of every vtable call.
+///
+/// Returns 0 on success; non-zero on failure (error text written to `out_error`).
+pub fn register_renderer(name: [*c]const u8, vtable: IRenderer, user_data: ?*anyopaque, out_error: ?*?[*c]u8) i32 {
+    return c.kreuzberg_register_renderer(name, vtable, user_data, out_error);
+}
+
+/// Unregister a previously registered `Renderer` implementation by name.
+///
+/// Returns 0 on success; non-zero on failure.
+pub fn unregister_renderer(name: [*c]const u8, out_error: ?*?[*c]u8) i32 {
+    return c.kreuzberg_unregister_renderer(name, out_error);
+}
+
+/// Build an `IRenderer` vtable for a concrete Zig type `T`.
+///
+/// `T` must implement every method of `Renderer` as a plain Zig function.
+/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// back to `*T` and forwards the call.
+///
+/// # Usage
+/// ```zig
+/// const vtable = make_renderer_vtable(MyType, &my_instance);
+/// _ = register_renderer("my-impl", vtable, &my_instance, &out_error);
+/// ```
+pub fn make_renderer_vtable(comptime T: type, instance: *T) IRenderer {
+    _ = instance; // instance is passed as user_data by the caller
+    return IRenderer{
+        .name_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+                _ = user_data;
+                _ = out_name;
+                unreachable; // override .name_fn in the returned vtable
+            }
+        }.thunk,
+        .version_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+                _ = user_data;
+                _ = out_version;
+                unreachable; // override .version_fn in the returned vtable
+            }
+        }.thunk,
+        .initialize_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+                _ = user_data;
+                _ = out_error;
+                return 0;
+            }
+        }.thunk,
+        .shutdown_fn = struct {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+                _ = user_data;
+                _ = out_error;
+                return 0;
+            }
+        }.thunk,
+        .render = struct {
+            fn thunk(ud: ?*anyopaque, doc: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+                const self: *T = @ptrCast(@alignCast(ud));
+                if (self.render(doc)) |value| {
                     _ = value; _ = out_result; unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;

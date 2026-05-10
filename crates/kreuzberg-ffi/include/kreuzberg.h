@@ -802,6 +802,209 @@ typedef struct KREUZBERGKreuzbergEmbeddingBackendVTable {
 } KREUZBERGKreuzbergEmbeddingBackendVTable;
 
 /**
+ * VTable for C plugin bridges implementing the `DocumentExtractor` trait.
+ *
+ * # Safety
+ *
+ * All function pointers must be valid for the lifetime of any bridge created from
+ * this vtable.  `free_user_data`, when non-null, is called once with `user_data`
+ * when the bridge is dropped.
+ */
+typedef struct KREUZBERGKreuzbergDocumentExtractorVTable {
+  /**
+   * Return a null-terminated UTF-8 name string into `out_name`.
+   */
+  void (*name_fn)(const void *user_data,
+                  char **out_name);
+  /**
+   * Return a null-terminated UTF-8 version string into `out_version`.
+   */
+  void (*version_fn)(const void *user_data,
+                     char **out_version);
+  /**
+   * Initialise the plugin; return 0 on success, non-zero on failure (error text in `out_error`).
+   */
+  int32_t (*initialize_fn)(const void *user_data,
+                           char **out_error);
+  /**
+   * Shut down the plugin; return 0 on success, non-zero on failure (error text in `out_error`).
+   */
+  int32_t (*shutdown_fn)(const void *user_data,
+                         char **out_error);
+  /**
+   * Extract content from a byte array.
+   *
+   * This is the core extraction method that processes in-memory document data.
+   *
+   * # Arguments
+   *
+   * * `content` - Raw document bytes
+   * * `mime_type` - MIME type of the document (already validated)
+   * * `config` - Extraction configuration
+   *
+   * # Returns
+   *
+   * An `InternalDocument` containing the extracted elements, metadata, and tables.
+   * The pipeline will convert this into the public `ExtractionResult`.
+   *
+   * # Errors
+   *
+   * - `KreuzbergError::Parsing` - Document parsing failed
+   * - `KreuzbergError::Validation` - Invalid document structure
+   * - `KreuzbergError::Io` - I/O errors (these always bubble up)
+   * - `KreuzbergError::MissingDependency` - Required dependency not available
+   */
+  int32_t (*extract_bytes)(const void *user_data,
+                           const uint8_t *content,
+                           const char *mime_type,
+                           const char *config,
+                           char **out_result,
+                           char **out_error);
+  /**
+   * Extract content from a file.
+   *
+   * Default implementation reads the file and calls `extract_bytes`.
+   * Override for custom file handling, streaming, or memory optimizations.
+   *
+   * # Arguments
+   *
+   * * `path` - Path to the document file
+   * * `mime_type` - MIME type of the document (already validated)
+   * * `config` - Extraction configuration
+   *
+   * # Returns
+   *
+   * An `InternalDocument` containing the extracted elements, metadata, and tables.
+   *
+   * # Errors
+   *
+   * Same as `extract_bytes`, plus file I/O errors.
+   */
+  int32_t (*extract_file)(const void *user_data,
+                          const char *path,
+                          const char *mime_type,
+                          const char *config,
+                          char **out_result,
+                          char **out_error);
+  /**
+   * Get the list of MIME types supported by this extractor.
+   *
+   * Can include exact MIME types and prefix patterns:
+   * - Exact: `"application/pdf"`, `"text/plain"`
+   * - Prefix: `"image/*"` (matches any image type)
+   *
+   * # Returns
+   *
+   * A slice of MIME type strings.
+   */
+  int32_t (*supported_mime_types)(const void *user_data,
+                                  char **out_result);
+  /**
+   * Get the priority of this extractor.
+   *
+   * Higher priority extractors are preferred when multiple extractors
+   * support the same MIME type.
+   *
+   * # Priority Guidelines
+   *
+   * - **0-25**: Fallback/low-quality extractors
+   * - **26-49**: Alternative extractors
+   * - **50**: Default priority (built-in extractors)
+   * - **51-75**: Premium/enhanced extractors
+   * - **76-100**: Specialized/high-priority extractors
+   *
+   * # Returns
+   *
+   * Priority value (default: 50)
+   */
+  int32_t (*priority)(const void *user_data);
+  /**
+   * Optional: Check if this extractor can handle a specific file.
+   *
+   * Allows for more sophisticated detection beyond MIME types.
+   * Defaults to `true` (rely on MIME type matching).
+   *
+   * # Arguments
+   *
+   * * `path` - Path to the file to check
+   * * `mime_type` - Detected MIME type
+   *
+   * # Returns
+   *
+   * `true` if the extractor can handle this file, `false` otherwise.
+   */
+  int32_t (*can_handle)(const void *user_data,
+                        const char *_path,
+                        const char *_mime_type);
+  /**
+   * Attempt to get a reference to this extractor as a SyncExtractor.
+   *
+   * Returns None if the extractor doesn't support synchronous extraction.
+   * This is used for WASM and other sync-only environments.
+   */
+  int32_t (*as_sync_extractor)(const void *user_data);
+  /**
+   * Optional destructor: called once with `user_data` when the bridge is dropped.
+   */
+  void (*free_user_data)(void*);
+} KREUZBERGKreuzbergDocumentExtractorVTable;
+
+/**
+ * VTable for C plugin bridges implementing the `Renderer` trait.
+ *
+ * # Safety
+ *
+ * All function pointers must be valid for the lifetime of any bridge created from
+ * this vtable.  `free_user_data`, when non-null, is called once with `user_data`
+ * when the bridge is dropped.
+ */
+typedef struct KREUZBERGKreuzbergRendererVTable {
+  /**
+   * Return a null-terminated UTF-8 name string into `out_name`.
+   */
+  void (*name_fn)(const void *user_data,
+                  char **out_name);
+  /**
+   * Return a null-terminated UTF-8 version string into `out_version`.
+   */
+  void (*version_fn)(const void *user_data,
+                     char **out_version);
+  /**
+   * Initialise the plugin; return 0 on success, non-zero on failure (error text in `out_error`).
+   */
+  int32_t (*initialize_fn)(const void *user_data,
+                           char **out_error);
+  /**
+   * Shut down the plugin; return 0 on success, non-zero on failure (error text in `out_error`).
+   */
+  int32_t (*shutdown_fn)(const void *user_data,
+                         char **out_error);
+  /**
+   * Render an [`InternalDocument`] to the output format.
+   *
+   * # Arguments
+   *
+   * * `doc` - The internal document to render
+   *
+   * # Returns
+   *
+   * The rendered output as a string.
+   *
+   * # Errors
+   *
+   * Returns an error if rendering fails.
+   */
+  int32_t (*render)(const void *user_data,
+                    const char *doc,
+                    char **out_result,
+                    char **out_error);
+  /**
+   * Optional destructor: called once with `user_data` when the bridge is dropped.
+   */
+  void (*free_user_data)(void*);
+} KREUZBERGKreuzbergRendererVTable;
+
+/**
  * Return the last error code (0 means no error).
  * # Safety
  * Caller must ensure all pointer arguments are valid or null.
@@ -2291,6 +2494,13 @@ char *kreuzberg_ocr_config_vlm_prompt(const KREUZBERGOcrConfig *ptr);
  * Pointer must be a valid handle returned by this library.
  */
 KREUZBERGAccelerationConfig *kreuzberg_ocr_config_acceleration(const KREUZBERGOcrConfig *ptr);
+
+/**
+ * Get the `tessdata_bytes` field from a `OcrConfig`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_ocr_config_tessdata_bytes(const KREUZBERGOcrConfig *ptr);
 
 /**
  * # Safety
@@ -11970,6 +12180,10 @@ char *kreuzberg_list_post_processors(void);
 
 /**
  * List names of all registered renderers.
+ *
+ * # Errors
+ *
+ * Returns an error if the registry lock is poisoned.
  * # Safety
  * Caller must ensure all pointer arguments are valid or null.
  * Returned pointers must be freed with the appropriate free function.
@@ -12238,5 +12452,77 @@ int32_t kreuzberg_register_embedding_backend(const char *name,
  */
 int32_t kreuzberg_unregister_embedding_backend(const char *name,
                                                char **out_error);
+
+/**
+ * Register a C plugin implementing `DocumentExtractor` via a vtable.
+ *
+ * # Parameters
+ *
+ * - `name`: null-terminated UTF-8 plugin name. Must not be null.
+ * - `vtable`: vtable with function pointers implementing the trait.
+ * - `user_data`: opaque pointer forwarded to every vtable function.
+ * - `out_error`: receives a heap-allocated error string on failure.
+ *
+ * # Safety
+ *
+ * All function pointers in `vtable` must remain valid until the plugin is
+ * unregistered. `user_data` must be safe to use from any thread that calls
+ * into the plugin.
+ */
+int32_t kreuzberg_register_document_extractor(const char *name,
+                                              struct KREUZBERGKreuzbergDocumentExtractorVTable vtable,
+                                              const void *user_data,
+                                              char **out_error);
+
+/**
+ * Unregister a previously registered C plugin by name.
+ *
+ * # Parameters
+ *
+ * - `name`: null-terminated UTF-8 plugin name. Must not be null.
+ * - `out_error`: receives a heap-allocated error string on failure.
+ *
+ * # Safety
+ *
+ * `name` must point to a valid null-terminated C string.
+ */
+int32_t kreuzberg_unregister_document_extractor(const char *name,
+                                                char **out_error);
+
+/**
+ * Register a C plugin implementing `Renderer` via a vtable.
+ *
+ * # Parameters
+ *
+ * - `name`: null-terminated UTF-8 plugin name. Must not be null.
+ * - `vtable`: vtable with function pointers implementing the trait.
+ * - `user_data`: opaque pointer forwarded to every vtable function.
+ * - `out_error`: receives a heap-allocated error string on failure.
+ *
+ * # Safety
+ *
+ * All function pointers in `vtable` must remain valid until the plugin is
+ * unregistered. `user_data` must be safe to use from any thread that calls
+ * into the plugin.
+ */
+int32_t kreuzberg_register_renderer(const char *name,
+                                    struct KREUZBERGKreuzbergRendererVTable vtable,
+                                    const void *user_data,
+                                    char **out_error);
+
+/**
+ * Unregister a previously registered C plugin by name.
+ *
+ * # Parameters
+ *
+ * - `name`: null-terminated UTF-8 plugin name. Must not be null.
+ * - `out_error`: receives a heap-allocated error string on failure.
+ *
+ * # Safety
+ *
+ * `name` must point to a valid null-terminated C string.
+ */
+int32_t kreuzberg_unregister_renderer(const char *name,
+                                      char **out_error);
 
 #endif  /* KREUZBERG_H */

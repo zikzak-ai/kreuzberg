@@ -331,7 +331,6 @@ public final class OcrBackendBridge implements AutoCloseable {
         OcrBackendBridge old = OCR_BACKEND_BRIDGES.remove(name);
         if (old != null) { old.close(); }
     }
-
     /** Clear all registered OcrBackend implementations. */
     public static void clearAllOcrBackend() throws Exception {
         try {
@@ -354,5 +353,4 @@ public final class OcrBackendBridge implements AutoCloseable {
         OCR_BACKEND_BRIDGES.values().forEach(OcrBackendBridge::close);
         OCR_BACKEND_BRIDGES.clear();
     }
-
 }

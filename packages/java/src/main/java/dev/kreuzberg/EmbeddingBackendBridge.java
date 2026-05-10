@@ -203,7 +203,6 @@ public final class EmbeddingBackendBridge implements AutoCloseable {
         EmbeddingBackendBridge old = EMBEDDING_BACKEND_BRIDGES.remove(name);
         if (old != null) { old.close(); }
     }
-
     /** Clear all registered EmbeddingBackend implementations. */
     public static void clearAllEmbeddingBackend() throws Exception {
         try {
@@ -226,5 +225,4 @@ public final class EmbeddingBackendBridge implements AutoCloseable {
         EMBEDDING_BACKEND_BRIDGES.values().forEach(EmbeddingBackendBridge::close);
         EMBEDDING_BACKEND_BRIDGES.clear();
     }
-
 }

@@ -224,6 +224,7 @@ pub struct OcrConfig {
     pub vlm_config: Option<LlmConfig>,
     pub vlm_prompt: Option<String>,
     pub acceleration: Option<AccelerationConfig>,
+    pub tessdata_bytes: Option<std::collections::HashMap<String, Vec<u8>>>,
 }
 
 #[frb(mirror(PageConfig))]
@@ -2113,20 +2114,26 @@ impl From<kreuzberg::ExtractionConfig> for ExtractionConfig {
             chunking: v.chunking.map(ChunkingConfig::from),
             content_filter: v.content_filter.map(ContentFilterConfig::from),
             images: v.images.map(ImageExtractionConfig::from),
+            #[cfg(feature = "pdf")]
             pdf_options: v.pdf_options.map(PdfConfig::from),
             token_reduction: v.token_reduction.map(TokenReductionOptions::from),
             language_detection: v.language_detection.map(LanguageDetectionConfig::from),
             pages: v.pages.map(PageConfig::from),
+            #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
             keywords: v.keywords.map(KeywordConfig::from),
             postprocessor: v.postprocessor.map(PostProcessorConfig::from),
+            #[cfg(feature = "html")]
             html_options: Default::default(),
+            #[cfg(feature = "html")]
             html_output: v.html_output.map(HtmlOutputConfig::from),
             extraction_timeout_secs: v.extraction_timeout_secs.map(|x| x as _),
             max_concurrent_extractions: v.max_concurrent_extractions.map(|x| x as _),
             result_format: ResultFormat::from(v.result_format),
             security_limits: v.security_limits.map(SecurityLimits::from),
             output_format: OutputFormat::from(v.output_format),
+            #[cfg(feature = "layout-detection")]
             layout: v.layout.map(LayoutDetectionConfig::from),
+            #[cfg(feature = "layout-detection")]
             use_layout_for_markdown: v.use_layout_for_markdown as _,
             include_document_structure: v.include_document_structure as _,
             acceleration: v.acceleration.map(AccelerationConfig::from),
@@ -2135,6 +2142,7 @@ impl From<kreuzberg::ExtractionConfig> for ExtractionConfig {
             email: v.email.map(EmailConfig::from),
             concurrency: Default::default(),
             max_archive_depth: v.max_archive_depth as _,
+            #[cfg(feature = "tree-sitter")]
             tree_sitter: v.tree_sitter.map(TreeSitterConfig::from),
             structured_extraction: v.structured_extraction.map(StructuredExtractionConfig::from),
             cancel_token: Default::default(),
@@ -2153,18 +2161,23 @@ impl From<kreuzberg::FileExtractionConfig> for FileExtractionConfig {
             chunking: v.chunking.map(ChunkingConfig::from),
             content_filter: v.content_filter.map(ContentFilterConfig::from),
             images: v.images.map(ImageExtractionConfig::from),
+            #[cfg(feature = "pdf")]
             pdf_options: v.pdf_options.map(PdfConfig::from),
             token_reduction: v.token_reduction.map(TokenReductionOptions::from),
             language_detection: v.language_detection.map(LanguageDetectionConfig::from),
             pages: v.pages.map(PageConfig::from),
+            #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
             keywords: v.keywords.map(KeywordConfig::from),
             postprocessor: v.postprocessor.map(PostProcessorConfig::from),
+            #[cfg(feature = "html")]
             html_options: Default::default(),
             result_format: v.result_format.map(ResultFormat::from),
             output_format: v.output_format.map(OutputFormat::from),
             include_document_structure: v.include_document_structure.map(|x| x as _),
+            #[cfg(feature = "layout-detection")]
             layout: v.layout.map(LayoutDetectionConfig::from),
             timeout_secs: v.timeout_secs.map(|x| x as _),
+            #[cfg(feature = "tree-sitter")]
             tree_sitter: v.tree_sitter.map(TreeSitterConfig::from),
             structured_extraction: v.structured_extraction.map(StructuredExtractionConfig::from),
         }
@@ -2340,6 +2353,9 @@ impl From<kreuzberg::OcrConfig> for OcrConfig {
             vlm_config: v.vlm_config.map(LlmConfig::from),
             vlm_prompt: v.vlm_prompt.map(|s| s.into()),
             acceleration: v.acceleration.map(AccelerationConfig::from),
+            tessdata_bytes: v
+                .tessdata_bytes
+                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v.into())).collect()),
         }
     }
 }
@@ -2942,6 +2958,7 @@ impl From<kreuzberg::ExtractionResult> for ExtractionResult {
                 .ocr_elements
                 .map(|vec| vec.into_iter().map(OcrElement::from).collect()),
             document: v.document.map(DocumentStructure::from),
+            #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
             extracted_keywords: v
                 .extracted_keywords
                 .map(|vec| vec.into_iter().map(Keyword::from).collect()),
@@ -2955,6 +2972,7 @@ impl From<kreuzberg::ExtractionResult> for ExtractionResult {
             structured_output: v
                 .structured_output
                 .map(|j| serde_json::to_string(&j).unwrap_or_default()),
+            #[cfg(feature = "tree-sitter")]
             code_intelligence: Default::default(),
             llm_usage: v.llm_usage.map(|vec| vec.into_iter().map(LlmUsage::from).collect()),
             formatted_content: v.formatted_content.map(|s| s.into()),
@@ -4045,7 +4063,9 @@ impl From<kreuzberg::KeywordConfig> for KeywordConfig {
             min_score: v.min_score as _,
             ngram_range: Default::default(),
             language: v.language.map(|s| s.into()),
+            #[cfg(feature = "keywords-yake")]
             yake_params: v.yake_params.map(YakeParams::from),
+            #[cfg(feature = "keywords-rake")]
             rake_params: v.rake_params.map(RakeParams::from),
         }
     }
@@ -4866,20 +4886,26 @@ impl From<ExtractionConfig> for kreuzberg::ExtractionConfig {
             chunking: v.chunking.map(Into::into),
             content_filter: v.content_filter.map(Into::into),
             images: v.images.map(Into::into),
+            #[cfg(feature = "pdf")]
             pdf_options: v.pdf_options.map(Into::into),
             token_reduction: v.token_reduction.map(Into::into),
             language_detection: v.language_detection.map(Into::into),
             pages: v.pages.map(Into::into),
+            #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
             keywords: v.keywords.map(Into::into),
             postprocessor: v.postprocessor.map(Into::into),
+            #[cfg(feature = "html")]
             html_options: Default::default(),
+            #[cfg(feature = "html")]
             html_output: v.html_output.map(Into::into),
             extraction_timeout_secs: v.extraction_timeout_secs.map(|x| x as _),
             max_concurrent_extractions: v.max_concurrent_extractions.map(|x| x as _),
             result_format: v.result_format.into(),
             security_limits: v.security_limits.map(Into::into),
             output_format: v.output_format.into(),
+            #[cfg(feature = "layout-detection")]
             layout: v.layout.map(Into::into),
+            #[cfg(feature = "layout-detection")]
             use_layout_for_markdown: v.use_layout_for_markdown as _,
             include_document_structure: v.include_document_structure as _,
             acceleration: v.acceleration.map(Into::into),
@@ -4888,6 +4914,7 @@ impl From<ExtractionConfig> for kreuzberg::ExtractionConfig {
             email: v.email.map(Into::into),
             concurrency: Default::default(),
             max_archive_depth: v.max_archive_depth as _,
+            #[cfg(feature = "tree-sitter")]
             tree_sitter: v.tree_sitter.map(Into::into),
             structured_extraction: v.structured_extraction.map(Into::into),
             cancel_token: Default::default(),
@@ -4907,18 +4934,23 @@ impl From<FileExtractionConfig> for kreuzberg::FileExtractionConfig {
             chunking: v.chunking.map(Into::into),
             content_filter: v.content_filter.map(Into::into),
             images: v.images.map(Into::into),
+            #[cfg(feature = "pdf")]
             pdf_options: v.pdf_options.map(Into::into),
             token_reduction: v.token_reduction.map(Into::into),
             language_detection: v.language_detection.map(Into::into),
             pages: v.pages.map(Into::into),
+            #[cfg(any(feature = "keywords-yake", feature = "keywords-rake"))]
             keywords: v.keywords.map(Into::into),
             postprocessor: v.postprocessor.map(Into::into),
+            #[cfg(feature = "html")]
             html_options: Default::default(),
             result_format: v.result_format.map(Into::into),
             output_format: v.output_format.map(Into::into),
             include_document_structure: v.include_document_structure.map(|x| x as _),
+            #[cfg(feature = "layout-detection")]
             layout: v.layout.map(Into::into),
             timeout_secs: v.timeout_secs.map(|x| x as _),
+            #[cfg(feature = "tree-sitter")]
             tree_sitter: v.tree_sitter.map(Into::into),
             structured_extraction: v.structured_extraction.map(Into::into),
             ..Default::default()
@@ -5097,6 +5129,9 @@ impl From<OcrConfig> for kreuzberg::OcrConfig {
             vlm_config: v.vlm_config.map(Into::into),
             vlm_prompt: v.vlm_prompt.map(Into::into),
             acceleration: v.acceleration.map(Into::into),
+            tessdata_bytes: v
+                .tessdata_bytes
+                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v.into())).collect()),
         }
     }
 }
@@ -5305,7 +5340,9 @@ impl From<KeywordConfig> for kreuzberg::KeywordConfig {
             min_score: v.min_score as _,
             ngram_range: Default::default(),
             language: v.language.map(Into::into),
+            #[cfg(feature = "keywords-yake")]
             yake_params: v.yake_params.map(Into::into),
+            #[cfg(feature = "keywords-rake")]
             rake_params: v.rake_params.map(Into::into),
             ..Default::default()
         }
@@ -5737,11 +5774,14 @@ pub fn list_post_processors() -> Result<Vec<String>, String> {
 }
 
 /// List names of all registered renderers.
-pub fn list_renderers() -> Vec<String> {
+///
+/// **Errors:**
+///
+/// Returns an error if the registry lock is poisoned.
+pub fn list_renderers() -> Result<Vec<String>, String> {
     kreuzberg::list_renderers()
-        .into_iter()
-        .map(|s| s.to_string())
-        .collect::<Vec<_>>()
+        .map(|v| v.into_iter().map(|s| s.to_string()).collect::<Vec<_>>())
+        .map_err(|e| e.to_string())
 }
 
 /// List names of all registered validators.
@@ -6320,6 +6360,228 @@ pub fn unregister_embedding_backend(name: String) -> Result<(), String> {
 /// Removes every plugin from `kreuzberg::plugins::registry::get_embedding_backend_registry()` and stringifies any host error.
 pub fn clear_embedding_backends() -> Result<(), String> {
     let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
+    let mut registry = registry.write();
+    registry.clear().map_err(|e| e.to_string())
+}
+
+/// FRB opaque handle holding Dart callbacks for each trait method.
+/// Dart-side: register callbacks via `create_{snake}_dart_impl(...)` factory.
+#[frb(opaque)]
+pub struct DocumentExtractorDartImpl {
+    /// Plugin name used by the Plugin super-trait impl.
+    plugin_name: String,
+    /// Plugin version used by the Plugin super-trait impl.
+    plugin_version: String,
+    extract_bytes: Box<
+        dyn Fn(Vec<u8>, String, ExtractionConfig) -> flutter_rust_bridge::DartFnFuture<InternalDocument> + Send + Sync,
+    >,
+    extract_file: Box<
+        dyn Fn(String, String, ExtractionConfig) -> flutter_rust_bridge::DartFnFuture<InternalDocument> + Send + Sync,
+    >,
+    supported_mime_types: Box<dyn Fn() -> flutter_rust_bridge::DartFnFuture<Vec<String>> + Send + Sync>,
+    priority: Box<dyn Fn() -> flutter_rust_bridge::DartFnFuture<i64> + Send + Sync>,
+    can_handle: Box<dyn Fn(String, String) -> flutter_rust_bridge::DartFnFuture<bool> + Send + Sync>,
+    as_sync_extractor: Box<dyn Fn() -> flutter_rust_bridge::DartFnFuture<Option<SyncExtractor>> + Send + Sync>,
+}
+
+impl kreuzberg::plugins::Plugin for DocumentExtractorDartImpl {
+    fn name(&self) -> &str {
+        &self.plugin_name
+    }
+
+    fn version(&self) -> String {
+        self.plugin_version.clone()
+    }
+
+    fn initialize(&self) -> kreuzberg::Result<()> {
+        Ok(())
+    }
+
+    fn shutdown(&self) -> kreuzberg::Result<()> {
+        Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl kreuzberg::plugins::DocumentExtractor for DocumentExtractorDartImpl {
+    async fn extract_bytes(
+        &self,
+        content: &[u8],
+        mime_type: &str,
+        config: &kreuzberg::ExtractionConfig,
+    ) -> kreuzberg::Result<kreuzberg::internal::InternalDocument> {
+        let content = content.to_vec();
+        let mime_type = mime_type.to_string();
+        let config = ExtractionConfig::from(config.clone());
+        let _ = (self.extract_bytes)(content, mime_type, config).await;
+        Ok(Default::default())
+    }
+
+    async fn extract_file(
+        &self,
+        path: &std::path::Path,
+        mime_type: &str,
+        config: &kreuzberg::ExtractionConfig,
+    ) -> kreuzberg::Result<kreuzberg::internal::InternalDocument> {
+        let path = path.to_string_lossy().into_owned();
+        let mime_type = mime_type.to_string();
+        let config = ExtractionConfig::from(config.clone());
+        let _ = (self.extract_file)(path, mime_type, config).await;
+        Ok(Default::default())
+    }
+
+    fn supported_mime_types(&self) -> Vec<String> {
+        let __result = tokio::runtime::Handle::current().block_on(async { (self.supported_mime_types)().await });
+        __result
+    }
+
+    fn priority(&self) -> i32 {
+        let __result = tokio::runtime::Handle::current().block_on(async { (self.priority)().await });
+        __result as i32
+    }
+
+    fn can_handle(&self, _path: &std::path::Path, _mime_type: &str) -> bool {
+        let _path = _path.to_string_lossy().into_owned();
+        let _mime_type = _mime_type.to_string();
+        let __result = tokio::runtime::Handle::current().block_on(async { (self.can_handle)(_path, _mime_type).await });
+        __result
+    }
+
+    fn as_sync_extractor(&self) -> Option<kreuzberg::extractors::SyncExtractor> {
+        let __result = tokio::runtime::Handle::current().block_on(async { (self.as_sync_extractor)().await });
+        __result
+    }
+}
+
+/// Create a `DocumentExtractorDartImpl` from Dart callback closures.
+/// `plugin_name` and `plugin_version` are required for the Plugin super-trait.
+pub fn create_document_extractor_dart_impl(
+    plugin_name: String,
+    plugin_version: String,
+    extract_bytes: Box<
+        dyn Fn(Vec<u8>, String, ExtractionConfig) -> flutter_rust_bridge::DartFnFuture<InternalDocument> + Send + Sync,
+    >,
+    extract_file: Box<
+        dyn Fn(String, String, ExtractionConfig) -> flutter_rust_bridge::DartFnFuture<InternalDocument> + Send + Sync,
+    >,
+    supported_mime_types: Box<dyn Fn() -> flutter_rust_bridge::DartFnFuture<Vec<String>> + Send + Sync>,
+    priority: Box<dyn Fn() -> flutter_rust_bridge::DartFnFuture<i64> + Send + Sync>,
+    can_handle: Box<dyn Fn(String, String) -> flutter_rust_bridge::DartFnFuture<bool> + Send + Sync>,
+    as_sync_extractor: Box<dyn Fn() -> flutter_rust_bridge::DartFnFuture<Option<SyncExtractor>> + Send + Sync>,
+) -> DocumentExtractorDartImpl {
+    DocumentExtractorDartImpl {
+        plugin_name,
+        plugin_version,
+        extract_bytes,
+        extract_file,
+        supported_mime_types,
+        priority,
+        can_handle,
+        as_sync_extractor,
+    }
+}
+
+/// Register a Dart implementation as a `DocumentExtractor` plugin.
+///
+/// Wraps `impl_` in an `Arc` and inserts it into `kreuzberg::plugins::registry::get_document_extractor_registry()`.
+/// Errors from the host registry are stringified for FRB transport.
+pub fn register_document_extractor(impl_: DocumentExtractorDartImpl) -> Result<(), String> {
+    let arc: std::sync::Arc<dyn kreuzberg::plugins::DocumentExtractor> = std::sync::Arc::new(impl_);
+    let registry = kreuzberg::plugins::registry::get_document_extractor_registry();
+    let mut registry = registry.write();
+    registry.register(arc).map_err(|e| e.to_string())
+}
+
+/// Unregister a previously-registered `DocumentExtractor` plugin by name.
+/// Removes the plugin from `kreuzberg::plugins::registry::get_document_extractor_registry()` and stringifies any host error.
+pub fn unregister_document_extractor(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_document_extractor_registry();
+    let mut registry = registry.write();
+    registry.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `DocumentExtractor` plugins.
+/// Removes every plugin from `kreuzberg::plugins::registry::get_document_extractor_registry()` and stringifies any host error.
+pub fn clear_document_extractors() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_document_extractor_registry();
+    let mut registry = registry.write();
+    registry.clear().map_err(|e| e.to_string())
+}
+
+/// FRB opaque handle holding Dart callbacks for each trait method.
+/// Dart-side: register callbacks via `create_{snake}_dart_impl(...)` factory.
+#[frb(opaque)]
+pub struct RendererDartImpl {
+    /// Plugin name used by the Plugin super-trait impl.
+    plugin_name: String,
+    /// Plugin version used by the Plugin super-trait impl.
+    plugin_version: String,
+    render: Box<dyn Fn(InternalDocument) -> flutter_rust_bridge::DartFnFuture<String> + Send + Sync>,
+}
+
+impl kreuzberg::plugins::Plugin for RendererDartImpl {
+    fn name(&self) -> &str {
+        &self.plugin_name
+    }
+
+    fn version(&self) -> String {
+        self.plugin_version.clone()
+    }
+
+    fn initialize(&self) -> kreuzberg::Result<()> {
+        Ok(())
+    }
+
+    fn shutdown(&self) -> kreuzberg::Result<()> {
+        Ok(())
+    }
+}
+
+impl kreuzberg::plugins::Renderer for RendererDartImpl {
+    fn render(&self, doc: &kreuzberg::internal::InternalDocument) -> kreuzberg::Result<String> {
+        let doc = InternalDocument::from(doc.clone());
+        let __result = tokio::runtime::Handle::current().block_on(async { (self.render)(doc).await });
+        Ok(__result)
+    }
+}
+
+/// Create a `RendererDartImpl` from Dart callback closures.
+/// `plugin_name` and `plugin_version` are required for the Plugin super-trait.
+pub fn create_renderer_dart_impl(
+    plugin_name: String,
+    plugin_version: String,
+    render: Box<dyn Fn(InternalDocument) -> flutter_rust_bridge::DartFnFuture<String> + Send + Sync>,
+) -> RendererDartImpl {
+    RendererDartImpl {
+        plugin_name,
+        plugin_version,
+        render,
+    }
+}
+
+/// Register a Dart implementation as a `Renderer` plugin.
+///
+/// Wraps `impl_` in an `Arc` and inserts it into `kreuzberg::plugins::registry::get_renderer_registry()`.
+/// Errors from the host registry are stringified for FRB transport.
+pub fn register_renderer(impl_: RendererDartImpl) -> Result<(), String> {
+    let arc: std::sync::Arc<dyn kreuzberg::plugins::Renderer> = std::sync::Arc::new(impl_);
+    let registry = kreuzberg::plugins::registry::get_renderer_registry();
+    let mut registry = registry.write();
+    registry.register(arc).map_err(|e| e.to_string())
+}
+
+/// Unregister a previously-registered `Renderer` plugin by name.
+/// Removes the plugin from `kreuzberg::plugins::registry::get_renderer_registry()` and stringifies any host error.
+pub fn unregister_renderer(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_renderer_registry();
+    let mut registry = registry.write();
+    registry.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `Renderer` plugins.
+/// Removes every plugin from `kreuzberg::plugins::registry::get_renderer_registry()` and stringifies any host error.
+pub fn clear_renderers() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_renderer_registry();
     let mut registry = registry.write();
     registry.clear().map_err(|e| e.to_string())
 }

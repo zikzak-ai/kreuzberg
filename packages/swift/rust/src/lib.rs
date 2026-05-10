@@ -362,6 +362,7 @@ mod ffi {
             vlm_config: Option<LlmConfig>,
             vlm_prompt: Option<String>,
             acceleration: Option<AccelerationConfig>,
+            tessdata_bytes: String,
         ) -> OcrConfig;
         fn enabled(&self) -> bool;
         fn backend(&self) -> String;
@@ -376,6 +377,7 @@ mod ffi {
         fn vlm_config(&self) -> Option<LlmConfig>;
         fn vlm_prompt(&self) -> Option<String>;
         fn acceleration(&self) -> Option<AccelerationConfig>;
+        fn tessdata_bytes(&self) -> String;
     }
 
     extern "Rust" {
@@ -2486,7 +2488,7 @@ mod ffi {
         #[swift_bridge(swift_name = "listPostProcessors")]
         fn list_post_processors() -> Result<Vec<String>, String>;
         #[swift_bridge(swift_name = "listRenderers")]
-        fn list_renderers() -> Vec<String>;
+        fn list_renderers() -> Result<Vec<String>, String>;
         #[swift_bridge(swift_name = "listValidators")]
         fn list_validators() -> Result<Vec<String>, String>;
         #[swift_bridge(swift_name = "embedTextsAsync")]
@@ -2575,6 +2577,33 @@ mod ffi {
     }
 
     extern "Rust" {
+        type DocumentExtractorBox;
+        fn alef_phantom_vec_document_extractor() -> Vec<DocumentExtractorBox>;
+        fn document_extractor_call_extract_bytes(
+            this: &DocumentExtractorBox,
+            content: Vec<u8>,
+            mime_type: String,
+            config: ExtractionConfig,
+        ) -> Result<InternalDocument, String>;
+        fn document_extractor_call_extract_file(
+            this: &DocumentExtractorBox,
+            path: String,
+            mime_type: String,
+            config: ExtractionConfig,
+        ) -> Result<InternalDocument, String>;
+        fn document_extractor_call_supported_mime_types(this: &DocumentExtractorBox) -> Vec<String>;
+        fn document_extractor_call_priority(this: &DocumentExtractorBox) -> i32;
+        fn document_extractor_call_can_handle(this: &DocumentExtractorBox, path: String, mime_type: String) -> bool;
+        fn document_extractor_call_as_sync_extractor(this: &DocumentExtractorBox) -> String;
+    }
+
+    extern "Rust" {
+        type RendererBox;
+        fn alef_phantom_vec_renderer() -> Vec<RendererBox>;
+        fn renderer_call_render(this: &RendererBox, doc: InternalDocument) -> Result<String, String>;
+    }
+
+    extern "Rust" {
         #[swift_bridge(swift_name = "registerOcrBackend")]
         fn register_ocr_backend(swift_box: SwiftOcrBackendBox) -> Result<(), String>;
         #[swift_bridge(swift_name = "unregisterOcrBackend")]
@@ -2608,6 +2637,24 @@ mod ffi {
         fn unregister_embedding_backend(name: String) -> Result<(), String>;
         #[swift_bridge(swift_name = "clearEmbeddingBackends")]
         fn clear_embedding_backends() -> Result<(), String>;
+    }
+
+    extern "Rust" {
+        #[swift_bridge(swift_name = "registerDocumentExtractor")]
+        fn register_document_extractor(swift_box: SwiftDocumentExtractorBox) -> Result<(), String>;
+        #[swift_bridge(swift_name = "unregisterDocumentExtractor")]
+        fn unregister_document_extractor(name: String) -> Result<(), String>;
+        #[swift_bridge(swift_name = "clearDocumentExtractors")]
+        fn clear_document_extractors() -> Result<(), String>;
+    }
+
+    extern "Rust" {
+        #[swift_bridge(swift_name = "registerRenderer")]
+        fn register_renderer(swift_box: SwiftRendererBox) -> Result<(), String>;
+        #[swift_bridge(swift_name = "unregisterRenderer")]
+        fn unregister_renderer(name: String) -> Result<(), String>;
+        #[swift_bridge(swift_name = "clearRenderers")]
+        fn clear_renderers() -> Result<(), String>;
     }
 
     extern "Swift" {
@@ -2658,6 +2705,29 @@ mod ffi {
         fn alef_shutdown(&self) -> String;
         fn alef_dimensions(&self) -> usize;
         fn alef_embed(&self, texts: Vec<String>) -> String;
+    }
+
+    extern "Swift" {
+        type SwiftDocumentExtractorBox;
+        fn alef_name(&self) -> String;
+        fn alef_version(&self) -> String;
+        fn alef_initialize(&self) -> String;
+        fn alef_shutdown(&self) -> String;
+        fn alef_extract_bytes(&self, content: Vec<u8>, mime_type: String, config: String) -> String;
+        fn alef_extract_file(&self, path: String, mime_type: String, config: String) -> String;
+        fn alef_supported_mime_types(&self) -> Vec<String>;
+        fn alef_priority(&self) -> i32;
+        fn alef_can_handle(&self, path: String, mime_type: String) -> bool;
+        fn alef_as_sync_extractor(&self) -> String;
+    }
+
+    extern "Swift" {
+        type SwiftRendererBox;
+        fn alef_name(&self) -> String;
+        fn alef_version(&self) -> String;
+        fn alef_initialize(&self) -> String;
+        fn alef_shutdown(&self) -> String;
+        fn alef_render(&self, doc: String) -> String;
     }
 
     extern "Rust" {
@@ -3748,6 +3818,7 @@ impl OcrConfig {
         vlm_config: Option<LlmConfig>,
         vlm_prompt: Option<String>,
         acceleration: Option<AccelerationConfig>,
+        tessdata_bytes: String,
     ) -> OcrConfig {
         let mut __target: kreuzberg::OcrConfig = ::std::default::Default::default();
         __target.enabled = enabled;
@@ -3794,6 +3865,11 @@ impl OcrConfig {
         }
         if let Some(w) = acceleration {
             __target.acceleration = Some(w.0);
+        }
+        if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&tessdata_bytes) {
+            if let Ok(t) = ::serde_json::from_value(v) {
+                __target.tessdata_bytes = t;
+            }
         }
         OcrConfig(__target)
     }
@@ -3844,6 +3920,9 @@ impl OcrConfig {
     }
     pub fn acceleration(&self) -> Option<AccelerationConfig> {
         self.0.acceleration.clone().map(AccelerationConfig)
+    }
+    pub fn tessdata_bytes(&self) -> String {
+        serde_json::to_string(&self.0.tessdata_bytes).expect("serializable tessdata_bytes")
     }
 }
 
@@ -7640,10 +7719,10 @@ impl ArchiveMetadata {
     }
 }
 
-pub struct ImageMetadata(pub kreuzberg::ImageMetadata);
+pub struct ImageMetadata(pub kreuzberg::extraction::image::ImageMetadata);
 impl ImageMetadata {
     pub fn new(width: u32, height: u32, format: String, exif: String) -> ImageMetadata {
-        let mut __target: kreuzberg::ImageMetadata = ::std::default::Default::default();
+        let mut __target: kreuzberg::extraction::image::ImageMetadata = ::std::default::Default::default();
         __target.width = width;
         __target.height = height;
         if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&format) {
@@ -8969,10 +9048,10 @@ impl HierarchicalBlock {
     }
 }
 
-pub struct Table(pub kreuzberg::Table);
+pub struct Table(pub kreuzberg::extraction::docx::parser::Table);
 impl Table {
     pub fn new(cells: String, markdown: String, page_number: usize, bounding_box: Option<String>) -> Table {
-        let mut __target: kreuzberg::Table = ::std::default::Default::default();
+        let mut __target: kreuzberg::extraction::docx::parser::Table = ::std::default::Default::default();
         if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&cells) {
             if let Ok(t) = ::serde_json::from_value(v) {
                 __target.cells = t;
@@ -9010,10 +9089,10 @@ impl Table {
     }
 }
 
-pub struct TableCell(pub kreuzberg::TableCell);
+pub struct TableCell(pub kreuzberg::extraction::docx::parser::TableCell);
 impl TableCell {
     pub fn new(content: String, row_span: usize, col_span: usize, is_header: bool) -> TableCell {
-        let mut __target: kreuzberg::TableCell = ::std::default::Default::default();
+        let mut __target: kreuzberg::extraction::docx::parser::TableCell = ::std::default::Default::default();
         if let Ok(v) = ::serde_json::from_str::<::serde_json::Value>(&content) {
             if let Ok(t) = ::serde_json::from_value(v) {
                 __target.content = t;
@@ -10890,11 +10969,10 @@ pub fn list_post_processors() -> Result<Vec<String>, String> {
         .map(|v| v.into_iter().map(|s| s.to_string()).collect::<Vec<_>>())
 }
 
-pub fn list_renderers() -> Vec<String> {
+pub fn list_renderers() -> Result<Vec<String>, String> {
     kreuzberg::list_renderers()
-        .into_iter()
-        .map(|s| s.to_string())
-        .collect::<Vec<_>>()
+        .map_err(|e| e.to_string())
+        .map(|v| v.into_iter().map(|s| s.to_string()).collect::<Vec<_>>())
 }
 
 pub fn list_validators() -> Result<Vec<String>, String> {
@@ -11101,6 +11179,69 @@ pub fn embedding_backend_call_embed(this: &EmbeddingBackendBox, texts: Vec<Strin
                 .map(|v| serde_json::to_string(&v).expect("serializable return"))
                 .map_err(|e| e.to_string())
         })
+}
+
+pub struct DocumentExtractorBox(pub Box<dyn kreuzberg::plugins::DocumentExtractor + Send + Sync>);
+#[doc(hidden)]
+pub fn alef_phantom_vec_document_extractor() -> Vec<DocumentExtractorBox> {
+    Vec::new()
+}
+pub fn document_extractor_call_extract_bytes(
+    this: &DocumentExtractorBox,
+    content: Vec<u8>,
+    mime_type: String,
+    config: ExtractionConfig,
+) -> Result<InternalDocument, String> {
+    ::tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("build tokio runtime")
+        .block_on(async {
+            this.0
+                .extract_bytes(&content, &mime_type, &config.0)
+                .await
+                .map(|v| InternalDocument(v))
+                .map_err(|e| e.to_string())
+        })
+}
+pub fn document_extractor_call_extract_file(
+    this: &DocumentExtractorBox,
+    path: String,
+    mime_type: String,
+    config: ExtractionConfig,
+) -> Result<InternalDocument, String> {
+    ::tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("build tokio runtime")
+        .block_on(async {
+            this.0
+                .extract_file(std::path::Path::new(&path), &mime_type, &config.0)
+                .await
+                .map(|v| InternalDocument(v))
+                .map_err(|e| e.to_string())
+        })
+}
+pub fn document_extractor_call_supported_mime_types(this: &DocumentExtractorBox) -> Vec<String> {
+    this.0.supported_mime_types()
+}
+pub fn document_extractor_call_priority(this: &DocumentExtractorBox) -> i32 {
+    this.0.priority()
+}
+pub fn document_extractor_call_can_handle(this: &DocumentExtractorBox, path: String, mime_type: String) -> bool {
+    this.0.can_handle(std::path::Path::new(&path), &mime_type)
+}
+pub fn document_extractor_call_as_sync_extractor(this: &DocumentExtractorBox) -> String {
+    serde_json::to_string(&(this.0.as_sync_extractor())).expect("serializable return")
+}
+
+pub struct RendererBox(pub Box<dyn kreuzberg::plugins::Renderer + Send + Sync>);
+#[doc(hidden)]
+pub fn alef_phantom_vec_renderer() -> Vec<RendererBox> {
+    Vec::new()
+}
+pub fn renderer_call_render(this: &RendererBox, doc: InternalDocument) -> Result<String, String> {
+    this.0.render(&doc.0).map(|s| s.to_string()).map_err(|e| e.to_string())
 }
 
 /// Convert a stringified Swift error into the source crate's `KreuzbergError::Plugin`.
@@ -11540,6 +11681,201 @@ pub fn unregister_embedding_backend(name: String) -> Result<(), String> {
 /// Clear all registered `EmbeddingBackend` plugins.
 pub fn clear_embedding_backends() -> Result<(), String> {
     let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
+    let mut guard = registry.write();
+    guard.clear().map_err(|e| e.to_string())
+}
+
+/// Rust-side wrapper around a Swift class implementing the `DocumentExtractor` plugin protocol.
+///
+/// The Swift instance is held via a `swift-bridge` opaque handle that retains
+/// the underlying ARC reference for the lifetime of this struct. Send + Sync are
+/// asserted unsafely: Swift classes used as kreuzberg plugins must be thread-safe
+/// (the `Plugin` super-trait requires it), and ARC handles themselves are safe to share.
+pub struct SwiftDocumentExtractorWrapper {
+    inner: ffi::SwiftDocumentExtractorBox,
+    /// Cached `Plugin::name()` — required because the trait returns `&str` but
+    /// the Swift FFI shim returns an owned `String`. Populated lazily on first access.
+    name_cache: ::std::sync::OnceLock<String>,
+}
+unsafe impl Send for SwiftDocumentExtractorWrapper {}
+unsafe impl Sync for SwiftDocumentExtractorWrapper {}
+
+impl SwiftDocumentExtractorWrapper {
+    /// Construct a new wrapper from a Swift `SwiftDocumentExtractorBox` handle.
+    pub fn new(inner: ffi::SwiftDocumentExtractorBox) -> Self {
+        Self {
+            inner,
+            name_cache: ::std::sync::OnceLock::new(),
+        }
+    }
+}
+
+impl kreuzberg::plugins::Plugin for SwiftDocumentExtractorWrapper {
+    fn name(&self) -> &str {
+        self.name_cache.get_or_init(|| self.inner.alef_name()).as_str()
+    }
+
+    fn version(&self) -> String {
+        self.inner.alef_version()
+    }
+
+    fn initialize(&self) -> kreuzberg::Result<()> {
+        decode_inbound_envelope::<()>(&self.inner.alef_initialize()).map(|_| ())
+    }
+
+    fn shutdown(&self) -> kreuzberg::Result<()> {
+        decode_inbound_envelope::<()>(&self.inner.alef_shutdown()).map(|_| ())
+    }
+}
+
+#[async_trait::async_trait]
+impl kreuzberg::plugins::DocumentExtractor for SwiftDocumentExtractorWrapper {
+    async fn extract_bytes(
+        &self,
+        content: &[u8],
+        mime_type: &str,
+        config: &kreuzberg::ExtractionConfig,
+    ) -> kreuzberg::Result<kreuzberg::internal::InternalDocument> {
+        let content = content.to_vec();
+        let mime_type = mime_type.to_string();
+        let config = ::serde_json::to_string(&config).expect("serializable param config");
+        let envelope = self.inner.alef_extract_bytes(content, mime_type, config);
+        decode_inbound_envelope::<kreuzberg::internal::InternalDocument>(&envelope)
+    }
+
+    async fn extract_file(
+        &self,
+        path: &::std::path::Path,
+        mime_type: &str,
+        config: &kreuzberg::ExtractionConfig,
+    ) -> kreuzberg::Result<kreuzberg::internal::InternalDocument> {
+        let path = path.to_string_lossy().into_owned();
+        let mime_type = mime_type.to_string();
+        let config = ::serde_json::to_string(&config).expect("serializable param config");
+        let envelope = self.inner.alef_extract_file(path, mime_type, config);
+        decode_inbound_envelope::<kreuzberg::internal::InternalDocument>(&envelope)
+    }
+
+    fn supported_mime_types(&self) -> Vec<String> {
+        self.inner.alef_supported_mime_types()
+    }
+
+    fn priority(&self) -> i32 {
+        self.inner.alef_priority()
+    }
+
+    fn can_handle(&self, path: &::std::path::Path, mime_type: &str) -> bool {
+        let path = path.to_string_lossy().into_owned();
+        let mime_type = mime_type.to_string();
+        self.inner.alef_can_handle(path, mime_type)
+    }
+
+    fn as_sync_extractor(&self) -> Option<kreuzberg::extractors::SyncExtractor> {
+        let json = self.inner.alef_as_sync_extractor();
+        ::serde_json::from_str::<Option<kreuzberg::extractors::SyncExtractor>>(&json)
+            .expect("swift document_extractor.as_sync_extractor returned invalid JSON")
+    }
+}
+
+/// Register a Swift class implementation as a `DocumentExtractor` plugin.
+///
+/// Wraps the Swift handle in `Arc<SwiftXxxWrapper>` and inserts it into the host registry.
+/// Errors from the registry are stringified for swift-bridge transport.
+pub fn register_document_extractor(swift_box: ffi::SwiftDocumentExtractorBox) -> Result<(), String> {
+    let arc: ::std::sync::Arc<dyn kreuzberg::plugins::DocumentExtractor> =
+        ::std::sync::Arc::new(SwiftDocumentExtractorWrapper::new(swift_box));
+    let registry = kreuzberg::plugins::registry::get_document_extractor_registry();
+    let mut guard = registry.write();
+    guard.register(arc).map_err(|e| e.to_string())
+}
+
+/// Unregister a previously-registered `DocumentExtractor` plugin by name.
+pub fn unregister_document_extractor(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_document_extractor_registry();
+    let mut guard = registry.write();
+    guard.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `DocumentExtractor` plugins.
+pub fn clear_document_extractors() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_document_extractor_registry();
+    let mut guard = registry.write();
+    guard.clear().map_err(|e| e.to_string())
+}
+
+/// Rust-side wrapper around a Swift class implementing the `Renderer` plugin protocol.
+///
+/// The Swift instance is held via a `swift-bridge` opaque handle that retains
+/// the underlying ARC reference for the lifetime of this struct. Send + Sync are
+/// asserted unsafely: Swift classes used as kreuzberg plugins must be thread-safe
+/// (the `Plugin` super-trait requires it), and ARC handles themselves are safe to share.
+pub struct SwiftRendererWrapper {
+    inner: ffi::SwiftRendererBox,
+    /// Cached `Plugin::name()` — required because the trait returns `&str` but
+    /// the Swift FFI shim returns an owned `String`. Populated lazily on first access.
+    name_cache: ::std::sync::OnceLock<String>,
+}
+unsafe impl Send for SwiftRendererWrapper {}
+unsafe impl Sync for SwiftRendererWrapper {}
+
+impl SwiftRendererWrapper {
+    /// Construct a new wrapper from a Swift `SwiftRendererBox` handle.
+    pub fn new(inner: ffi::SwiftRendererBox) -> Self {
+        Self {
+            inner,
+            name_cache: ::std::sync::OnceLock::new(),
+        }
+    }
+}
+
+impl kreuzberg::plugins::Plugin for SwiftRendererWrapper {
+    fn name(&self) -> &str {
+        self.name_cache.get_or_init(|| self.inner.alef_name()).as_str()
+    }
+
+    fn version(&self) -> String {
+        self.inner.alef_version()
+    }
+
+    fn initialize(&self) -> kreuzberg::Result<()> {
+        decode_inbound_envelope::<()>(&self.inner.alef_initialize()).map(|_| ())
+    }
+
+    fn shutdown(&self) -> kreuzberg::Result<()> {
+        decode_inbound_envelope::<()>(&self.inner.alef_shutdown()).map(|_| ())
+    }
+}
+
+impl kreuzberg::plugins::Renderer for SwiftRendererWrapper {
+    fn render(&self, doc: &kreuzberg::internal::InternalDocument) -> kreuzberg::Result<str> {
+        let doc = ::serde_json::to_string(&doc).expect("serializable param doc");
+        let envelope = self.inner.alef_render(doc);
+        decode_inbound_envelope::<String>(&envelope)
+    }
+}
+
+/// Register a Swift class implementation as a `Renderer` plugin.
+///
+/// Wraps the Swift handle in `Arc<SwiftXxxWrapper>` and inserts it into the host registry.
+/// Errors from the registry are stringified for swift-bridge transport.
+pub fn register_renderer(swift_box: ffi::SwiftRendererBox) -> Result<(), String> {
+    let arc: ::std::sync::Arc<dyn kreuzberg::plugins::Renderer> =
+        ::std::sync::Arc::new(SwiftRendererWrapper::new(swift_box));
+    let registry = kreuzberg::plugins::registry::get_renderer_registry();
+    let mut guard = registry.write();
+    guard.register(arc).map_err(|e| e.to_string())
+}
+
+/// Unregister a previously-registered `Renderer` plugin by name.
+pub fn unregister_renderer(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_renderer_registry();
+    let mut guard = registry.write();
+    guard.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `Renderer` plugins.
+pub fn clear_renderers() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_renderer_registry();
     let mut guard = registry.write();
     guard.clear().map_err(|e| e.to_string())
 }

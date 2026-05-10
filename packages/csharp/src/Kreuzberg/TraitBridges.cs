@@ -1347,6 +1347,628 @@ public static class EmbeddingBackendRegistry {
     }
 }
 
+/// <summary>
+/// Bridge interface for DocumentExtractor trait implementation via native FFI
+/// </summary>
+public interface IDocumentExtractor {
+
+    /// <summary>Get the plugin name.</summary>
+    string Name { get; }
+
+    /// <summary>Get the plugin version.</summary>
+    string Version { get; }
+
+    /// <summary>Initialize the plugin.</summary>
+    void Initialize();
+
+    /// <summary>Shut down the plugin.</summary>
+    void Shutdown();
+
+    /// <summary>extract_bytes</summary>
+    InternalDocument ExtractBytes(byte[] Content, string MimeType, ExtractionConfig Config);
+
+    /// <summary>extract_file</summary>
+    InternalDocument ExtractFile(string Path, string MimeType, ExtractionConfig Config);
+
+    /// <summary>supported_mime_types</summary>
+    List<string> SupportedMimeTypes();
+
+    /// <summary>priority</summary>
+    int Priority();
+
+    /// <summary>can_handle</summary>
+    bool CanHandle(string Path, string MimeType);
+
+    /// <summary>as_sync_extractor</summary>
+    SyncExtractor? AsSyncExtractor();
+}
+
+/// <summary>
+/// Manages the FFI vtable and delegates for a DocumentExtractor implementation
+/// </summary>
+public sealed class DocumentExtractorBridge : IDisposable {
+
+    private readonly IDocumentExtractor _impl;
+    private readonly GCHandle _implHandle;
+    internal IntPtr _vtable;
+    private bool _disposed;
+    private readonly object[] _delegates;
+
+    // Vtable slot delegates (11)
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int NameFn(IntPtr userData, out IntPtr outName);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int VersionFn(IntPtr userData, out IntPtr outVersion);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int InitializeFn(IntPtr userData, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ShutdownFn(IntPtr userData, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ExtractBytesFn(IntPtr userData, IntPtr Content, IntPtr MimeType, IntPtr Config, out IntPtr outResult, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ExtractFileFn(IntPtr userData, IntPtr Path, IntPtr MimeType, IntPtr Config, out IntPtr outResult, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int SupportedMimeTypesFn(IntPtr userData, out IntPtr outResult, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int PriorityFn(IntPtr userData, out IntPtr outResult, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int CanHandleFn(IntPtr userData, IntPtr Path, IntPtr MimeType, out IntPtr outResult, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int AsSyncExtractorFn(IntPtr userData, out IntPtr outResult, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void FreeUserDataFn(IntPtr userData);
+
+    public DocumentExtractorBridge(IDocumentExtractor impl) {
+        _impl = impl ?? throw new ArgumentNullException(nameof(impl));
+        _implHandle = GCHandle.Alloc(impl, GCHandleType.Normal);
+        _vtable = IntPtr.Zero;
+        _disposed = false;
+        _delegates = new object[11];
+        BuildVtable();
+    }
+
+    private void BuildVtable() {
+        // Allocate unmanaged vtable struct (array of function pointers)
+        _vtable = Marshal.AllocHGlobal(IntPtr.Size * 11);
+
+        // Slot 0: name_fn
+        var nameFn = new NameFn(NameFnCallback);
+        _delegates[0] = nameFn;
+        Marshal.WriteIntPtr(_vtable, 0, Marshal.GetFunctionPointerForDelegate(nameFn));
+
+        // Slot 1: version_fn
+        var versionFn = new VersionFn(VersionFnCallback);
+        _delegates[1] = versionFn;
+        Marshal.WriteIntPtr(_vtable, 8, Marshal.GetFunctionPointerForDelegate(versionFn));
+
+        // Slot 2: initialize_fn
+        var initFn = new InitializeFn(InitializeFnCallback);
+        _delegates[2] = initFn;
+        Marshal.WriteIntPtr(_vtable, 16, Marshal.GetFunctionPointerForDelegate(initFn));
+
+        // Slot 3: shutdown_fn
+        var shutdownFn = new ShutdownFn(ShutdownFnCallback);
+        _delegates[3] = shutdownFn;
+        Marshal.WriteIntPtr(_vtable, 24, Marshal.GetFunctionPointerForDelegate(shutdownFn));
+
+        // Slot 4: extract_bytes_fn
+        var extractBytesFn = new ExtractBytesFn(ExtractBytesFnCallback);
+        _delegates[4] = extractBytesFn;
+        Marshal.WriteIntPtr(_vtable, 32, Marshal.GetFunctionPointerForDelegate(extractBytesFn));
+
+        // Slot 5: extract_file_fn
+        var extractFileFn = new ExtractFileFn(ExtractFileFnCallback);
+        _delegates[5] = extractFileFn;
+        Marshal.WriteIntPtr(_vtable, 40, Marshal.GetFunctionPointerForDelegate(extractFileFn));
+
+        // Slot 6: supported_mime_types_fn
+        var supportedMimeTypesFn = new SupportedMimeTypesFn(SupportedMimeTypesFnCallback);
+        _delegates[6] = supportedMimeTypesFn;
+        Marshal.WriteIntPtr(_vtable, 48, Marshal.GetFunctionPointerForDelegate(supportedMimeTypesFn));
+
+        // Slot 7: priority_fn
+        var priorityFn = new PriorityFn(PriorityFnCallback);
+        _delegates[7] = priorityFn;
+        Marshal.WriteIntPtr(_vtable, 56, Marshal.GetFunctionPointerForDelegate(priorityFn));
+
+        // Slot 8: can_handle_fn
+        var canHandleFn = new CanHandleFn(CanHandleFnCallback);
+        _delegates[8] = canHandleFn;
+        Marshal.WriteIntPtr(_vtable, 64, Marshal.GetFunctionPointerForDelegate(canHandleFn));
+
+        // Slot 9: as_sync_extractor_fn
+        var asSyncExtractorFn = new AsSyncExtractorFn(AsSyncExtractorFnCallback);
+        _delegates[9] = asSyncExtractorFn;
+        Marshal.WriteIntPtr(_vtable, 72, Marshal.GetFunctionPointerForDelegate(asSyncExtractorFn));
+
+        // Slot 10: free_user_data
+        var freeFn = new FreeUserDataFn(FreeUserDataCallback);
+        _delegates[10] = freeFn;
+        Marshal.WriteIntPtr(_vtable, 80, Marshal.GetFunctionPointerForDelegate(freeFn));
+
+    }
+
+    private static string ToJsonString<T>(T value) {
+        return JsonSerializer.Serialize(value);
+    }
+
+    private static byte[] MarshalBytesFromIntPtr(IntPtr ptr) {
+        if (ptr == IntPtr.Zero) return Array.Empty<byte>();
+        var json = Marshal.PtrToStringUTF8(ptr) ?? "[]";
+        return JsonSerializer.Deserialize<byte[]>(json) ?? Array.Empty<byte>();
+    }
+
+    private int NameFnCallback(IntPtr userData, out IntPtr outName) {
+        try {
+            var name = _impl.Name;
+            outName = Marshal.StringToCoTaskMemUTF8(name);
+            return 0;
+        } catch {
+            outName = IntPtr.Zero;
+            return 1;
+        }
+    }
+
+    private int VersionFnCallback(IntPtr userData, out IntPtr outVersion) {
+        try {
+            var version = _impl.Version;
+            outVersion = Marshal.StringToCoTaskMemUTF8(version);
+            return 0;
+        } catch {
+            outVersion = IntPtr.Zero;
+            return 1;
+        }
+    }
+
+    private int InitializeFnCallback(IntPtr userData, out IntPtr outError) {
+        try {
+            _impl.Initialize();
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int ShutdownFnCallback(IntPtr userData, out IntPtr outError) {
+        try {
+            _impl.Shutdown();
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int ExtractBytesFnCallback(IntPtr userData, IntPtr Content, IntPtr MimeType, IntPtr Config, out IntPtr outResult, out IntPtr outError) {
+        try {
+            var managed_Content = MarshalBytesFromIntPtr(Content);
+            var managed_MimeType = Marshal.PtrToStringUTF8(MimeType) ?? string.Empty;
+            var json_Config = Marshal.PtrToStringUTF8(Config) ?? "{}";
+            var managed_Config = JsonSerializer.Deserialize<ExtractionConfig>(json_Config)!;
+            var result = _impl.ExtractBytes(managed_Content, managed_MimeType, managed_Config);
+            outResult = Marshal.StringToCoTaskMemUTF8(result.ToFfiJson());
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outResult = IntPtr.Zero;
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int ExtractFileFnCallback(IntPtr userData, IntPtr Path, IntPtr MimeType, IntPtr Config, out IntPtr outResult, out IntPtr outError) {
+        try {
+            var json_Path = Marshal.PtrToStringUTF8(Path) ?? "{}";
+            var managed_Path = JsonSerializer.Deserialize<string>(json_Path)!;
+            var managed_MimeType = Marshal.PtrToStringUTF8(MimeType) ?? string.Empty;
+            var json_Config = Marshal.PtrToStringUTF8(Config) ?? "{}";
+            var managed_Config = JsonSerializer.Deserialize<ExtractionConfig>(json_Config)!;
+            var result = _impl.ExtractFile(managed_Path, managed_MimeType, managed_Config);
+            outResult = Marshal.StringToCoTaskMemUTF8(result.ToFfiJson());
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outResult = IntPtr.Zero;
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int SupportedMimeTypesFnCallback(IntPtr userData, out IntPtr outResult, out IntPtr outError) {
+        try {
+            var result = _impl.SupportedMimeTypes();
+            outResult = Marshal.StringToCoTaskMemUTF8(ToJsonString(result));
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outResult = IntPtr.Zero;
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int PriorityFnCallback(IntPtr userData, out IntPtr outResult, out IntPtr outError) {
+        try {
+            var result = _impl.Priority();
+            outResult = Marshal.StringToCoTaskMemUTF8(ToJsonString(result));
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outResult = IntPtr.Zero;
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int CanHandleFnCallback(IntPtr userData, IntPtr Path, IntPtr MimeType, out IntPtr outResult, out IntPtr outError) {
+        try {
+            var json_Path = Marshal.PtrToStringUTF8(Path) ?? "{}";
+            var managed_Path = JsonSerializer.Deserialize<string>(json_Path)!;
+            var managed_MimeType = Marshal.PtrToStringUTF8(MimeType) ?? string.Empty;
+            var result = _impl.CanHandle(managed_Path, managed_MimeType);
+            outResult = Marshal.StringToCoTaskMemUTF8(ToJsonString(result));
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outResult = IntPtr.Zero;
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int AsSyncExtractorFnCallback(IntPtr userData, out IntPtr outResult, out IntPtr outError) {
+        try {
+            var result = _impl.AsSyncExtractor();
+            outResult = Marshal.StringToCoTaskMemUTF8(ToJsonString(result));
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outResult = IntPtr.Zero;
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private void FreeUserDataCallback(IntPtr userData) {
+        if (userData != IntPtr.Zero) {
+            try {
+                var handle = GCHandle.FromIntPtr(userData);
+                handle.Free();
+            } catch (ObjectDisposedException) {
+                // Handle already freed; safe to ignore during finalization
+            }
+        }
+    }
+
+
+    public void Dispose() {
+        if (_disposed) return;
+        _disposed = true;
+
+        if (_vtable != IntPtr.Zero) {
+            Marshal.FreeHGlobal(_vtable);
+            _vtable = IntPtr.Zero;
+        }
+
+        if (_implHandle.IsAllocated) {
+            _implHandle.Free();
+        }
+    }
+}
+
+/// <summary>Static helpers for registering trait implementations</summary>
+public static class DocumentExtractorRegistry {
+
+    private static readonly ConcurrentDictionary<string, DocumentExtractorBridge> _bridges =
+        new ConcurrentDictionary<string, DocumentExtractorBridge>();
+
+    /// <summary>Register a DocumentExtractor implementation</summary>
+
+    public static void Register(IDocumentExtractor impl) {
+        if (impl == null)
+            throw new ArgumentNullException(nameof(impl));
+
+        var name = impl.Name;
+
+
+        var bridge = new DocumentExtractorBridge(impl);
+
+        try {
+            var userDataHandle = GCHandle.Alloc(bridge, GCHandleType.Normal);
+            var userData = GCHandle.ToIntPtr(userDataHandle);
+            var vtablePtr = bridge._vtable;
+
+            var result = NativeMethods.RegisterDocumentExtractor(name, vtablePtr, userData, out var outError);
+            if (result != 0) {
+                userDataHandle.Free();
+                bridge.Dispose();
+                var errorMsg = Marshal.PtrToStringUTF8(outError) ?? "Unknown error";
+                Marshal.FreeCoTaskMem(outError);
+                throw new InvalidOperationException($"Failed to register {name}: {errorMsg}");
+            }
+
+            _bridges.TryAdd(name, bridge);
+        } catch {
+            bridge.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Unregister a DocumentExtractor implementation</summary>
+    public static void Unregister(string name) {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("Name cannot be empty", nameof(name));
+
+        var result = NativeMethods.UnregisterDocumentExtractor(name, out var outError);
+        if (result != 0) {
+            var errorMsg = Marshal.PtrToStringUTF8(outError) ?? "Unknown error";
+            Marshal.FreeCoTaskMem(outError);
+            throw new InvalidOperationException($"Failed to unregister {name}: {errorMsg}");
+        }
+
+        if (_bridges.TryRemove(name, out var bridge)) {
+            bridge.Dispose();
+        }
+    }
+}
+
+/// <summary>
+/// Bridge interface for Renderer trait implementation via native FFI
+/// </summary>
+public interface IRenderer {
+
+    /// <summary>Get the plugin name.</summary>
+    string Name { get; }
+
+    /// <summary>Get the plugin version.</summary>
+    string Version { get; }
+
+    /// <summary>Initialize the plugin.</summary>
+    void Initialize();
+
+    /// <summary>Shut down the plugin.</summary>
+    void Shutdown();
+
+    /// <summary>render</summary>
+    string Render(InternalDocument Doc);
+}
+
+/// <summary>
+/// Manages the FFI vtable and delegates for a Renderer implementation
+/// </summary>
+public sealed class RendererBridge : IDisposable {
+
+    private readonly IRenderer _impl;
+    private readonly GCHandle _implHandle;
+    internal IntPtr _vtable;
+    private bool _disposed;
+    private readonly object[] _delegates;
+
+    // Vtable slot delegates (6)
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int NameFn(IntPtr userData, out IntPtr outName);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int VersionFn(IntPtr userData, out IntPtr outVersion);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int InitializeFn(IntPtr userData, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ShutdownFn(IntPtr userData, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int RenderFn(IntPtr userData, IntPtr Doc, out IntPtr outResult, out IntPtr outError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void FreeUserDataFn(IntPtr userData);
+
+    public RendererBridge(IRenderer impl) {
+        _impl = impl ?? throw new ArgumentNullException(nameof(impl));
+        _implHandle = GCHandle.Alloc(impl, GCHandleType.Normal);
+        _vtable = IntPtr.Zero;
+        _disposed = false;
+        _delegates = new object[6];
+        BuildVtable();
+    }
+
+    private void BuildVtable() {
+        // Allocate unmanaged vtable struct (array of function pointers)
+        _vtable = Marshal.AllocHGlobal(IntPtr.Size * 6);
+
+        // Slot 0: name_fn
+        var nameFn = new NameFn(NameFnCallback);
+        _delegates[0] = nameFn;
+        Marshal.WriteIntPtr(_vtable, 0, Marshal.GetFunctionPointerForDelegate(nameFn));
+
+        // Slot 1: version_fn
+        var versionFn = new VersionFn(VersionFnCallback);
+        _delegates[1] = versionFn;
+        Marshal.WriteIntPtr(_vtable, 8, Marshal.GetFunctionPointerForDelegate(versionFn));
+
+        // Slot 2: initialize_fn
+        var initFn = new InitializeFn(InitializeFnCallback);
+        _delegates[2] = initFn;
+        Marshal.WriteIntPtr(_vtable, 16, Marshal.GetFunctionPointerForDelegate(initFn));
+
+        // Slot 3: shutdown_fn
+        var shutdownFn = new ShutdownFn(ShutdownFnCallback);
+        _delegates[3] = shutdownFn;
+        Marshal.WriteIntPtr(_vtable, 24, Marshal.GetFunctionPointerForDelegate(shutdownFn));
+
+        // Slot 4: render_fn
+        var renderFn = new RenderFn(RenderFnCallback);
+        _delegates[4] = renderFn;
+        Marshal.WriteIntPtr(_vtable, 32, Marshal.GetFunctionPointerForDelegate(renderFn));
+
+        // Slot 5: free_user_data
+        var freeFn = new FreeUserDataFn(FreeUserDataCallback);
+        _delegates[5] = freeFn;
+        Marshal.WriteIntPtr(_vtable, 40, Marshal.GetFunctionPointerForDelegate(freeFn));
+
+    }
+
+    private static string ToJsonString<T>(T value) {
+        return JsonSerializer.Serialize(value);
+    }
+
+    private int NameFnCallback(IntPtr userData, out IntPtr outName) {
+        try {
+            var name = _impl.Name;
+            outName = Marshal.StringToCoTaskMemUTF8(name);
+            return 0;
+        } catch {
+            outName = IntPtr.Zero;
+            return 1;
+        }
+    }
+
+    private int VersionFnCallback(IntPtr userData, out IntPtr outVersion) {
+        try {
+            var version = _impl.Version;
+            outVersion = Marshal.StringToCoTaskMemUTF8(version);
+            return 0;
+        } catch {
+            outVersion = IntPtr.Zero;
+            return 1;
+        }
+    }
+
+    private int InitializeFnCallback(IntPtr userData, out IntPtr outError) {
+        try {
+            _impl.Initialize();
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int ShutdownFnCallback(IntPtr userData, out IntPtr outError) {
+        try {
+            _impl.Shutdown();
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private int RenderFnCallback(IntPtr userData, IntPtr Doc, out IntPtr outResult, out IntPtr outError) {
+        try {
+            var json_Doc = Marshal.PtrToStringUTF8(Doc) ?? "{}";
+            var managed_Doc = JsonSerializer.Deserialize<InternalDocument>(json_Doc)!;
+            var result = _impl.Render(managed_Doc);
+            outResult = Marshal.StringToCoTaskMemUTF8(ToJsonString(result));
+            outError = IntPtr.Zero;
+            return 0;
+        } catch (Exception ex) {
+            outResult = IntPtr.Zero;
+            outError = Marshal.StringToCoTaskMemUTF8(ex.Message);
+            return 1;
+        }
+    }
+
+    private void FreeUserDataCallback(IntPtr userData) {
+        if (userData != IntPtr.Zero) {
+            try {
+                var handle = GCHandle.FromIntPtr(userData);
+                handle.Free();
+            } catch (ObjectDisposedException) {
+                // Handle already freed; safe to ignore during finalization
+            }
+        }
+    }
+
+
+    public void Dispose() {
+        if (_disposed) return;
+        _disposed = true;
+
+        if (_vtable != IntPtr.Zero) {
+            Marshal.FreeHGlobal(_vtable);
+            _vtable = IntPtr.Zero;
+        }
+
+        if (_implHandle.IsAllocated) {
+            _implHandle.Free();
+        }
+    }
+}
+
+/// <summary>Static helpers for registering trait implementations</summary>
+public static class RendererRegistry {
+
+    private static readonly ConcurrentDictionary<string, RendererBridge> _bridges =
+        new ConcurrentDictionary<string, RendererBridge>();
+
+    /// <summary>Register a Renderer implementation</summary>
+
+    public static void Register(IRenderer impl) {
+        if (impl == null)
+            throw new ArgumentNullException(nameof(impl));
+
+        var name = impl.Name;
+
+
+        var bridge = new RendererBridge(impl);
+
+        try {
+            var userDataHandle = GCHandle.Alloc(bridge, GCHandleType.Normal);
+            var userData = GCHandle.ToIntPtr(userDataHandle);
+            var vtablePtr = bridge._vtable;
+
+            var result = NativeMethods.RegisterRenderer(name, vtablePtr, userData, out var outError);
+            if (result != 0) {
+                userDataHandle.Free();
+                bridge.Dispose();
+                var errorMsg = Marshal.PtrToStringUTF8(outError) ?? "Unknown error";
+                Marshal.FreeCoTaskMem(outError);
+                throw new InvalidOperationException($"Failed to register {name}: {errorMsg}");
+            }
+
+            _bridges.TryAdd(name, bridge);
+        } catch {
+            bridge.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Unregister a Renderer implementation</summary>
+    public static void Unregister(string name) {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("Name cannot be empty", nameof(name));
+
+        var result = NativeMethods.UnregisterRenderer(name, out var outError);
+        if (result != 0) {
+            var errorMsg = Marshal.PtrToStringUTF8(outError) ?? "Unknown error";
+            Marshal.FreeCoTaskMem(outError);
+            throw new InvalidOperationException($"Failed to unregister {name}: {errorMsg}");
+        }
+
+        if (_bridges.TryRemove(name, out var bridge)) {
+            bridge.Dispose();
+        }
+    }
+}
+
 /// <summary>FFI JSON serialization extension methods</summary>
 internal static class FfiJsonExtensions {
 

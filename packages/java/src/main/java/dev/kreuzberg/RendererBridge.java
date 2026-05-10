@@ -182,7 +182,6 @@ public final class RendererBridge implements AutoCloseable {
         RendererBridge old = RENDERER_BRIDGES.remove(name);
         if (old != null) { old.close(); }
     }
-
     /** Clear all registered Renderer implementations. */
     public static void clearAllRenderer() throws Exception {
         try {
@@ -205,5 +204,4 @@ public final class RendererBridge implements AutoCloseable {
         RENDERER_BRIDGES.values().forEach(RendererBridge::close);
         RENDERER_BRIDGES.clear();
     }
-
 }

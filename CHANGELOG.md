@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   construct `InternalDocument` values that round-trip through JSON at the
   FFI boundary — unblocking `DocumentExtractor` and `Renderer` trait bridges
   in alef 0.15.25+.
+- **DocumentExtractor + Renderer cross-language plugins**: both trait_bridges
+  are now active in `alef.toml`. All 16 language bindings expose
+  `register_document_extractor` / `unregister_document_extractor` /
+  `clear_document_extractors` / `list_document_extractors` and the matching
+  Renderer lifecycle. Foreign-language plugin authors can now implement
+  arbitrary document extractors and renderers in their host language.
 - **#619 follow-up**: `POST /extract-async` now returns HTTP 429 when more than 100 jobs are active simultaneously, preventing unbounded memory growth under load.
 - **WASM OCR backend**: `TesseractWasmBackend` registered for the
   `ocr-wasm` feature set, exposing OCR on the WASM target via

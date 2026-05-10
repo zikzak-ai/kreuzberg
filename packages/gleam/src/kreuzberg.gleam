@@ -305,7 +305,8 @@ pub type OcrConfig {
     auto_rotate: Bool,
     vlm_config: Option(LlmConfig),
     vlm_prompt: Option(String),
-    acceleration: Option(AccelerationConfig)
+    acceleration: Option(AccelerationConfig),
+    tessdata_bytes: Option(Dict(String, BitArray))
   )
 }
 
@@ -3318,8 +3319,12 @@ pub fn list_ocr_backends() -> Result(List(String), KreuzbergError)
 pub fn list_post_processors() -> Result(List(String), KreuzbergError)
 
 /// List names of all registered renderers.
+///
+/// **Errors:**
+///
+/// Returns an error if the registry lock is poisoned.
 @external(erlang, "kreuzberg_gleam_ffi", "list_renderers")
-pub fn list_renderers() -> List(String)
+pub fn list_renderers() -> Result(List(String), KreuzbergError)
 
 /// List names of all registered validators.
 @external(erlang, "kreuzberg_gleam_ffi", "list_validators")
@@ -4055,3 +4060,283 @@ pub fn embedding_backend_dimensions_response(call_id: Dynamic, result: Result(In
 ///
 @external(erlang, "kreuzberg_gleam_ffi", "embedding_backend_embed_response")
 pub fn embedding_backend_embed_response(call_id: Dynamic, result: Result(List(List(Float)), KreuzbergError)) -> Nil
+
+
+/// Trait bridge shims for `DocumentExtractor`.
+///
+/// Trait for document extractor plugins.
+///
+/// Implement this trait to add support for new document formats or to override
+/// built-in extraction behavior with custom logic.
+///
+/// # Return Type
+///
+/// Extractors return `InternalDocument`, a flat intermediate representation.
+/// The pipeline converts this into the public `ExtractionResult` via the
+/// derivation step.
+///
+/// # Priority System
+///
+/// When multiple extractors support the same MIME type, the registry selects
+/// the extractor with the highest priority value. Use this to:
+/// - Override built-in extractors (priority > 50)
+/// - Provide fallback extractors (priority < 50)
+/// - Implement specialized extractors for specific use cases
+///
+/// Default priority is 50.
+///
+/// # Thread Safety
+///
+/// Extractors must be thread-safe (`Send + Sync`) to support concurrent extraction.
+///
+/// # Example
+///
+/// ```rust
+/// use kreuzberg::plugins::{Plugin, DocumentExtractor};
+/// use kreuzberg::{Result, ExtractionConfig};
+/// use kreuzberg::types::internal::InternalDocument;
+/// use async_trait::async_trait;
+/// use std::path::Path;
+///
+/// /// Custom PDF extractor with premium features
+/// struct PremiumPdfExtractor;
+///
+/// impl Plugin for PremiumPdfExtractor {
+///     fn name(&self) -> &str { "premium-pdf" }
+///     fn version(&self) -> String { "2.0.0".to_string() }
+///     fn initialize(&self) -> Result<()> { Ok(()) }
+///     fn shutdown(&self) -> Result<()> { Ok(()) }
+/// }
+///
+/// #[async_trait]
+/// impl DocumentExtractor for PremiumPdfExtractor {
+///     async fn extract_bytes(&self, content: &[u8], mime_type: &str, config: &ExtractionConfig)
+///         -> Result<InternalDocument> {
+///         // Premium extraction logic with better accuracy
+///         let mut doc = InternalDocument::new("pdf");
+///         // ... populate doc.elements, doc.metadata, etc.
+///         Ok(doc)
+///     }
+///
+///     fn supported_mime_types(&self) -> &[&str] {
+///         &["application/pdf"]
+///     }
+///
+///     fn priority(&self) -> i32 {
+///         100  // Higher than default (50) - will be preferred
+///     }
+/// }
+/// ```
+///
+/// # Scope cap
+///
+/// Real callback round-trips require the caller to register a GenServer PID
+/// that implements `handle_info/2` to handle
+/// `{:trait_call, method, args_json, reply_id}` messages and then calls
+/// `complete_trait_call` or `fail_trait_call` with the reply.
+/// Gleam emits the registration and reply shims here; wiring the callback
+/// module is done via the Elixir/Rustler side (existing GenServer pattern).
+@external(erlang, "kreuzberg_gleam_ffi", "register_document_extractor")
+pub fn register_document_extractor(pid: Dynamic, plugin_name: String) -> Nil
+
+@external(erlang, "kreuzberg_gleam_ffi", "unregister_document_extractor")
+pub fn unregister_document_extractor(name: String) -> Result(Nil, String)
+
+@external(erlang, "kreuzberg_gleam_ffi", "clear_document_extractors")
+pub fn clear_document_extractors() -> Result(Nil, String)
+
+/// Send the `extract_bytes` response back to the Rustler reply-registry.
+///
+/// Call this from your `handle_info/2` after processing a
+/// `{:trait_call, "extract_bytes", args_json, call_id}` message:
+///
+/// ```gleam
+/// // pub fn handle_info(msg, state) {
+/// //   case msg {
+/// //     #(atom.create("extract_bytes"), args_json, call_id) ->
+/// //       let result = do_extract_bytes(args_json)
+/// //       document_extractor_extract_bytes_response(call_id, result)
+/// //       actor.continue(state)
+/// //     _ -> actor.continue(state)
+/// //   }
+/// // }
+/// ```
+///
+@external(erlang, "kreuzberg_gleam_ffi", "document_extractor_extract_bytes_response")
+pub fn document_extractor_extract_bytes_response(call_id: Dynamic, result: Result(InternalDocument, KreuzbergError)) -> Nil
+
+/// Send the `extract_file` response back to the Rustler reply-registry.
+///
+/// Call this from your `handle_info/2` after processing a
+/// `{:trait_call, "extract_file", args_json, call_id}` message:
+///
+/// ```gleam
+/// // pub fn handle_info(msg, state) {
+/// //   case msg {
+/// //     #(atom.create("extract_file"), args_json, call_id) ->
+/// //       let result = do_extract_file(args_json)
+/// //       document_extractor_extract_file_response(call_id, result)
+/// //       actor.continue(state)
+/// //     _ -> actor.continue(state)
+/// //   }
+/// // }
+/// ```
+///
+@external(erlang, "kreuzberg_gleam_ffi", "document_extractor_extract_file_response")
+pub fn document_extractor_extract_file_response(call_id: Dynamic, result: Result(InternalDocument, KreuzbergError)) -> Nil
+
+/// Send the `supported_mime_types` response back to the Rustler reply-registry.
+///
+/// Call this from your `handle_info/2` after processing a
+/// `{:trait_call, "supported_mime_types", args_json, call_id}` message:
+///
+/// ```gleam
+/// // pub fn handle_info(msg, state) {
+/// //   case msg {
+/// //     #(atom.create("supported_mime_types"), args_json, call_id) ->
+/// //       let result = do_supported_mime_types(args_json)
+/// //       document_extractor_supported_mime_types_response(call_id, result)
+/// //       actor.continue(state)
+/// //     _ -> actor.continue(state)
+/// //   }
+/// // }
+/// ```
+///
+@external(erlang, "kreuzberg_gleam_ffi", "document_extractor_supported_mime_types_response")
+pub fn document_extractor_supported_mime_types_response(call_id: Dynamic, result: Result(List(String), String)) -> Nil
+
+/// Send the `priority` response back to the Rustler reply-registry.
+///
+/// Call this from your `handle_info/2` after processing a
+/// `{:trait_call, "priority", args_json, call_id}` message:
+///
+/// ```gleam
+/// // pub fn handle_info(msg, state) {
+/// //   case msg {
+/// //     #(atom.create("priority"), args_json, call_id) ->
+/// //       let result = do_priority(args_json)
+/// //       document_extractor_priority_response(call_id, result)
+/// //       actor.continue(state)
+/// //     _ -> actor.continue(state)
+/// //   }
+/// // }
+/// ```
+///
+@external(erlang, "kreuzberg_gleam_ffi", "document_extractor_priority_response")
+pub fn document_extractor_priority_response(call_id: Dynamic, result: Result(Int, String)) -> Nil
+
+/// Send the `can_handle` response back to the Rustler reply-registry.
+///
+/// Call this from your `handle_info/2` after processing a
+/// `{:trait_call, "can_handle", args_json, call_id}` message:
+///
+/// ```gleam
+/// // pub fn handle_info(msg, state) {
+/// //   case msg {
+/// //     #(atom.create("can_handle"), args_json, call_id) ->
+/// //       let result = do_can_handle(args_json)
+/// //       document_extractor_can_handle_response(call_id, result)
+/// //       actor.continue(state)
+/// //     _ -> actor.continue(state)
+/// //   }
+/// // }
+/// ```
+///
+@external(erlang, "kreuzberg_gleam_ffi", "document_extractor_can_handle_response")
+pub fn document_extractor_can_handle_response(call_id: Dynamic, result: Result(Bool, String)) -> Nil
+
+/// Send the `as_sync_extractor` response back to the Rustler reply-registry.
+///
+/// Call this from your `handle_info/2` after processing a
+/// `{:trait_call, "as_sync_extractor", args_json, call_id}` message:
+///
+/// ```gleam
+/// // pub fn handle_info(msg, state) {
+/// //   case msg {
+/// //     #(atom.create("as_sync_extractor"), args_json, call_id) ->
+/// //       let result = do_as_sync_extractor(args_json)
+/// //       document_extractor_as_sync_extractor_response(call_id, result)
+/// //       actor.continue(state)
+/// //     _ -> actor.continue(state)
+/// //   }
+/// // }
+/// ```
+///
+@external(erlang, "kreuzberg_gleam_ffi", "document_extractor_as_sync_extractor_response")
+pub fn document_extractor_as_sync_extractor_response(call_id: Dynamic, result: Result(Option(SyncExtractor), String)) -> Nil
+
+
+/// Trait bridge shims for `Renderer`.
+///
+/// Trait for document renderers that convert [`InternalDocument`] to output strings.
+///
+/// Renderers are typically stateless converters that transform the internal
+/// document representation into a specific output format (Markdown, HTML,
+/// Djot, plain text, etc.). They participate in the standard [`Plugin`]
+/// lifecycle so custom renderers can be registered from any supported binding
+/// language.
+///
+/// The format name is exposed via [`Plugin::name`]. For stateless renderers
+/// the [`Plugin`] lifecycle methods (`version`, `initialize`, `shutdown`) all
+/// take no-op defaults and need not be overridden.
+///
+/// # Thread Safety
+///
+/// Renderers must be `Send + Sync` (inherited from [`Plugin`]).
+///
+/// # Example
+///
+/// ```rust
+/// use kreuzberg::plugins::{Plugin, Renderer};
+/// use kreuzberg::types::internal::InternalDocument;
+/// use kreuzberg::Result;
+///
+/// struct CustomRenderer;
+///
+/// impl Plugin for CustomRenderer {
+///     fn name(&self) -> &str { "custom" }
+/// }
+///
+/// impl Renderer for CustomRenderer {
+///     fn render(&self, doc: &InternalDocument) -> Result<String> {
+///         Ok(format!("Custom output with {} elements", doc.elements.len()))
+///     }
+/// }
+/// ```
+///
+/// # Scope cap
+///
+/// Real callback round-trips require the caller to register a GenServer PID
+/// that implements `handle_info/2` to handle
+/// `{:trait_call, method, args_json, reply_id}` messages and then calls
+/// `complete_trait_call` or `fail_trait_call` with the reply.
+/// Gleam emits the registration and reply shims here; wiring the callback
+/// module is done via the Elixir/Rustler side (existing GenServer pattern).
+@external(erlang, "kreuzberg_gleam_ffi", "register_renderer")
+pub fn register_renderer(pid: Dynamic, plugin_name: String) -> Nil
+
+@external(erlang, "kreuzberg_gleam_ffi", "unregister_renderer")
+pub fn unregister_renderer(name: String) -> Result(Nil, String)
+
+@external(erlang, "kreuzberg_gleam_ffi", "clear_renderers")
+pub fn clear_renderers() -> Result(Nil, String)
+
+/// Send the `render` response back to the Rustler reply-registry.
+///
+/// Call this from your `handle_info/2` after processing a
+/// `{:trait_call, "render", args_json, call_id}` message:
+///
+/// ```gleam
+/// // pub fn handle_info(msg, state) {
+/// //   case msg {
+/// //     #(atom.create("render"), args_json, call_id) ->
+/// //       let result = do_render(args_json)
+/// //       renderer_render_response(call_id, result)
+/// //       actor.continue(state)
+/// //     _ -> actor.continue(state)
+/// //   }
+/// // }
+/// ```
+///
+@external(erlang, "kreuzberg_gleam_ffi", "renderer_render_response")
+pub fn renderer_render_response(call_id: Dynamic, result: Result(String, KreuzbergError)) -> Nil

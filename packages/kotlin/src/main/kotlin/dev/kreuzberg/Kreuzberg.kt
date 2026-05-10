@@ -58,8 +58,10 @@ typealias OdtProperties = dev.kreuzberg.OdtProperties
 typealias SecurityLimits = dev.kreuzberg.SecurityLimits
 typealias ZipBombValidator = dev.kreuzberg.ZipBombValidator
 typealias EmbeddingBackend = dev.kreuzberg.IEmbeddingBackend
+typealias DocumentExtractor = dev.kreuzberg.IDocumentExtractor
 typealias OcrBackend = dev.kreuzberg.IOcrBackend
 typealias PostProcessor = dev.kreuzberg.IPostProcessor
+typealias Renderer = dev.kreuzberg.IRenderer
 typealias Validator = dev.kreuzberg.IValidator
 typealias TokenReductionConfig = dev.kreuzberg.TokenReductionConfig
 typealias PdfAnnotation = dev.kreuzberg.PdfAnnotation
@@ -490,6 +492,10 @@ object Kreuzberg {
 
     /**
      * List names of all registered renderers.
+     *
+     * **Errors:**
+     *
+     * Returns an error if the registry lock is poisoned.
      */
     fun listRenderers(): List<String> {
 

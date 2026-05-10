@@ -291,7 +291,6 @@ public final class DocumentExtractorBridge implements AutoCloseable {
         DocumentExtractorBridge old = DOCUMENT_EXTRACTOR_BRIDGES.remove(name);
         if (old != null) { old.close(); }
     }
-
     /** Clear all registered DocumentExtractor implementations. */
     public static void clearAllDocumentExtractor() throws Exception {
         try {
@@ -314,5 +313,4 @@ public final class DocumentExtractorBridge implements AutoCloseable {
         DOCUMENT_EXTRACTOR_BRIDGES.values().forEach(DocumentExtractorBridge::close);
         DOCUMENT_EXTRACTOR_BRIDGES.clear();
     }
-
 }

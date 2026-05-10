@@ -226,6 +226,12 @@ pub mod embedding_backend {
         unregister_embedding_backend,
     };
 }
+pub mod document_extractor {
+    pub use super::{
+        DocumentExtractor, clear_document_extractors, list_document_extractors, register_document_extractor,
+        unregister_document_extractor,
+    };
+}
 
 #[cfg(any(feature = "embeddings", feature = "api", feature = "mcp"))]
 pub(crate) use registry::get_embedding_backend_registry;

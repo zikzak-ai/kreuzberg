@@ -120,16 +120,15 @@ pub(in crate::pdf::structure) fn validate_region_has_text(
 /// segment suppression). Other classes return `Skipped`.
 #[cfg(feature = "layout-detection")]
 pub(in crate::pdf::structure) fn validate_page_regions(
-    page_image: &image::DynamicImage,
+    page_image: &image::RgbImage,
     hints: &[super::super::types::LayoutHint],
     page_result: &crate::pdf::structure::types::PageLayoutResult,
 ) -> Vec<RegionValidation> {
     use super::super::types::LayoutHintClass;
 
-    let rgb = page_image.to_rgb8();
-    let img_w = rgb.width();
-    let img_h = rgb.height();
-    let rgb_data = rgb.as_raw();
+    let img_w = page_image.width();
+    let img_h = page_image.height();
+    let rgb_data = page_image.as_raw();
 
     // Scale factors: PDF points → rendered image pixels
     let sx = img_w as f32 / page_result.page_width_pts;
