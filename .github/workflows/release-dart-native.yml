@@ -44,10 +44,15 @@ jobs:
       - name: Build
         run: cargo build --release
 
+      - name: Rename for upload
+        run: |
+          cp target/release/libkreuzberg_dart.${{ matrix.ext }} \
+            libkreuzberg_dart-${{ matrix.target }}.${{ matrix.ext }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: libkreuzberg_dart-${{ matrix.target }}
-          path: target/release/libkreuzberg_dart.${{ matrix.ext }}
+          path: libkreuzberg_dart-${{ matrix.target }}.${{ matrix.ext }}
 
   release:
     if: github.event_name == 'release'
@@ -62,6 +67,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for f in libkreuzberg_dart-*; do
-            gh release upload "${{ github.event.release.tag_name }}" "$f"
-          done
+          gh release upload "${{ github.event.release.tag_name }}" libkreuzberg_dart-* --clobber
