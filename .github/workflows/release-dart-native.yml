@@ -47,7 +47,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: libkreuzberg_dart-${{ matrix.target }}
-          path: packages/dart/rust/target/release/libkreuzberg_dart.${{ matrix.ext }}
+          path: target/release/libkreuzberg_dart.${{ matrix.ext }}
 
   release:
     if: github.event_name == 'release'
