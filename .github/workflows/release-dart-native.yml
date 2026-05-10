@@ -30,41 +30,25 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: packages/dart/rust
-
       - name: Install deps (macOS)
         if: runner.os == 'macOS'
         run: brew install tesseract leptonica onnxruntime
-
       - name: Install deps (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y tesseract-ocr libleptonica-dev
-
       - name: Build
         run: cargo build --release
-
       - name: Rename for upload
         run: |
           cp ../../../target/release/libkreuzberg_dart.${{ matrix.ext }} \
             libkreuzberg_dart-${{ matrix.target }}.${{ matrix.ext }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: libkreuzberg_dart-${{ matrix.target }}
-          path: libkreuzberg_dart-${{ matrix.target }}.${{ matrix.ext }}
-
-  release:
-    if: github.event_name == 'release'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: libkreuzberg_dart-*
-          merge-multiple: true
       - name: Upload to release
+        if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" libkreuzberg_dart-* --clobber
+          gh release upload "${{ github.event.release.tag_name }}" \
+            libkreuzberg_dart-${{ matrix.target }}.${{ matrix.ext }} \
+            --repo arrrrny/kreuzberg --clobber
