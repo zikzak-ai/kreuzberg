@@ -205,14 +205,14 @@ pub fn detect_mime_type(path: String, check_exists: bool) -> crate::Result<Strin
 #[cfg(feature = "pdf")]
 pub use pdf::render::render_pdf_page_to_png;
 
-// ── Plugin Lifecycle — public API (13 functions) ─────────────────────────────
-pub use plugins::extractor::list_document_extractors;
-pub use plugins::list_ocr_backends;
-pub use plugins::list_post_processors;
-pub use plugins::list_validators;
+// ── Plugin Lifecycle — public API ────────────────────────────────────────────
 pub use plugins::{
-    clear_ocr_backends, clear_post_processors, clear_validators, register_ocr_backend, register_post_processor,
-    register_validator, unregister_ocr_backend, unregister_post_processor, unregister_validator,
+    clear_document_extractors, clear_embedding_backends, clear_ocr_backends, clear_post_processors, clear_renderers,
+    clear_validators, list_document_extractors, list_embedding_backends, list_ocr_backends, list_post_processors,
+    list_renderers, list_validators, register_document_extractor, register_embedding_backend, register_ocr_backend,
+    register_post_processor, register_renderer, register_validator, unregister_document_extractor,
+    unregister_embedding_backend, unregister_ocr_backend, unregister_post_processor, unregister_renderer,
+    unregister_validator,
 };
 
 // ── Embeddings — public API (4 functions + 1 type, feature-gated) ────────────

@@ -2911,22 +2911,6 @@ pub fn list_ocr_backends() (KreuzbergError||error{OutOfMemory})![]u8 {
     };
 }
 
-/// Clear all OCR backends from the global registry.
-///
-/// Removes all OCR backends and calls their `shutdown()` methods.
-///
-/// **Returns:**
-///
-/// - `Ok(())` if all backends were cleared successfully
-/// - `Err(...)` if any shutdown method failed
-pub fn clear_ocr_backends() (KreuzbergError||error{OutOfMemory})!void {
-    _ = c.kreuzberg_clear_ocr_backends();
-    if (c.kreuzberg_last_error_code() != 0) {
-        return _first_error(KreuzbergError);
-    }
-    return;
-}
-
 /// List all registered post-processor names.
 ///
 /// Returns a vector of all post-processor names currently registered in the
@@ -2947,15 +2931,6 @@ pub fn list_post_processors() (KreuzbergError||error{OutOfMemory})![]u8 {
         _free_string(_result);
         break :blk owned;
     };
-}
-
-/// Remove all registered post-processors.
-pub fn clear_post_processors() (KreuzbergError||error{OutOfMemory})!void {
-    _ = c.kreuzberg_clear_post_processors();
-    if (c.kreuzberg_last_error_code() != 0) {
-        return _first_error(KreuzbergError);
-    }
-    return;
 }
 
 /// List names of all registered renderers.
@@ -2981,15 +2956,6 @@ pub fn list_validators() (KreuzbergError||error{OutOfMemory})![]u8 {
         _free_string(_result);
         break :blk owned;
     };
-}
-
-/// Remove all registered validators.
-pub fn clear_validators() (KreuzbergError||error{OutOfMemory})!void {
-    _ = c.kreuzberg_clear_validators();
-    if (c.kreuzberg_last_error_code() != 0) {
-        return _first_error(KreuzbergError);
-    }
-    return;
 }
 
 /// Render a single PDF page to PNG bytes.

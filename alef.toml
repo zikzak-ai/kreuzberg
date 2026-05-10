@@ -861,11 +861,21 @@ functions = [
   "register_validator",
   "register_embedding_backend",
   "register_renderer",
+  "register_document_extractor",
   "unregister_ocr_backend",
   "unregister_post_processor",
   "unregister_validator",
   "unregister_embedding_backend",
   "unregister_renderer",
+  "unregister_document_extractor",
+  # Trait-bridge `clear_*` functions — bridges already emit them where the backend
+  # supports it; raw `gen_function` would produce duplicates with mismatched signatures.
+  "clear_ocr_backends",
+  "clear_post_processors",
+  "clear_validators",
+  "clear_embedding_backends",
+  "clear_renderers",
+  "clear_document_extractors",
   # warm_model — used by kreuzberg-cli `kreuzberg cache warm` and by the api/mcp
   # `cache.warm` endpoints. Not part of the public binding surface.
   "warm_model",
@@ -2259,6 +2269,8 @@ trait_name = "OcrBackend"
 super_trait = "kreuzberg::plugins::Plugin"
 registry_getter = "kreuzberg::plugins::registry::get_ocr_backend_registry"
 register_fn = "register_ocr_backend"
+unregister_fn = "unregister_ocr_backend"
+clear_fn = "clear_ocr_backends"
 # extendr trait_bridge codegen produces String error literals where extendr_api::Error
 # is expected (E0308) and calls .map_err() on parking_lot RwLockWriteGuard (which is
 # infallible) — 85 build errors as of alef 0.15.0. Rustler now uses LocalPid which is
@@ -2270,6 +2282,8 @@ trait_name = "PostProcessor"
 super_trait = "kreuzberg::plugins::Plugin"
 registry_getter = "kreuzberg::plugins::registry::get_post_processor_registry"
 register_fn = "register_post_processor"
+unregister_fn = "unregister_post_processor"
+clear_fn = "clear_post_processors"
 exclude_languages = ["r"]
 
 [[crates.trait_bridges]]
@@ -2277,6 +2291,8 @@ trait_name = "Validator"
 super_trait = "kreuzberg::plugins::Plugin"
 registry_getter = "kreuzberg::plugins::registry::get_validator_registry"
 register_fn = "register_validator"
+unregister_fn = "unregister_validator"
+clear_fn = "clear_validators"
 exclude_languages = ["r"]
 
 [[crates.trait_bridges]]
@@ -2284,16 +2300,31 @@ trait_name = "EmbeddingBackend"
 super_trait = "kreuzberg::plugins::Plugin"
 registry_getter = "kreuzberg::plugins::registry::get_embedding_backend_registry"
 register_fn = "register_embedding_backend"
+unregister_fn = "unregister_embedding_backend"
+clear_fn = "clear_embedding_backends"
 exclude_languages = ["r"]
 
-# Renderer is intentionally NOT bridged cross-language yet:
-# its `render(&InternalDocument)` method takes a private internal type that
-# alef cannot serialize across the FFI boundary without per-backend
-# excluded-type-paths integration (alef >= 0.16). Until that lands, custom
-# renderers remain a Rust-only extension point.
+# DocumentExtractor and Renderer are intentionally NOT bridged cross-language yet:
+# their trait methods take/return `InternalDocument`, a private internal type that
+# alef cannot serialize across the FFI boundary without per-backend excluded-type-paths
+# integration (alef >= 0.16). The Rust core exposes the full register/unregister/clear/list
+# free-function surface for both (see `register_document_extractor`, `register_renderer`,
+# etc. in `crates/kreuzberg/src/lib.rs`); these bindings remain Rust-only extension points
+# until alef gains InternalDocument bridging support.
+# [[crates.trait_bridges]]
+# trait_name = "DocumentExtractor"
+# super_trait = "kreuzberg::plugins::Plugin"
+# registry_getter = "kreuzberg::plugins::registry::get_document_extractor_registry"
+# register_fn = "register_document_extractor"
+# unregister_fn = "unregister_document_extractor"
+# clear_fn = "clear_document_extractors"
+# exclude_languages = ["r"]
+#
 # [[crates.trait_bridges]]
 # trait_name = "Renderer"
 # super_trait = "kreuzberg::plugins::Plugin"
 # registry_getter = "kreuzberg::plugins::registry::get_renderer_registry"
 # register_fn = "register_renderer"
+# unregister_fn = "unregister_renderer"
+# clear_fn = "clear_renderers"
 # exclude_languages = ["r"]

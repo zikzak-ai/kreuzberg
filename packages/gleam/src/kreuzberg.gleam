@@ -3305,17 +3305,6 @@ pub fn list_document_extractors() -> Result(List(String), KreuzbergError)
 @external(erlang, "kreuzberg_gleam_ffi", "list_ocr_backends")
 pub fn list_ocr_backends() -> Result(List(String), KreuzbergError)
 
-/// Clear all OCR backends from the global registry.
-///
-/// Removes all OCR backends and calls their `shutdown()` methods.
-///
-/// **Returns:**
-///
-/// - `Ok(())` if all backends were cleared successfully
-/// - `Err(...)` if any shutdown method failed
-@external(erlang, "kreuzberg_gleam_ffi", "clear_ocr_backends")
-pub fn clear_ocr_backends() -> Result(Nil, KreuzbergError)
-
 /// List all registered post-processor names.
 ///
 /// Returns a vector of all post-processor names currently registered in the
@@ -3328,10 +3317,6 @@ pub fn clear_ocr_backends() -> Result(Nil, KreuzbergError)
 @external(erlang, "kreuzberg_gleam_ffi", "list_post_processors")
 pub fn list_post_processors() -> Result(List(String), KreuzbergError)
 
-/// Remove all registered post-processors.
-@external(erlang, "kreuzberg_gleam_ffi", "clear_post_processors")
-pub fn clear_post_processors() -> Result(Nil, KreuzbergError)
-
 /// List names of all registered renderers.
 @external(erlang, "kreuzberg_gleam_ffi", "list_renderers")
 pub fn list_renderers() -> List(String)
@@ -3339,10 +3324,6 @@ pub fn list_renderers() -> List(String)
 /// List names of all registered validators.
 @external(erlang, "kreuzberg_gleam_ffi", "list_validators")
 pub fn list_validators() -> Result(List(String), KreuzbergError)
-
-/// Remove all registered validators.
-@external(erlang, "kreuzberg_gleam_ffi", "clear_validators")
-pub fn clear_validators() -> Result(Nil, KreuzbergError)
 
 /// Generate embeddings asynchronously for a list of text strings.
 ///
@@ -3466,6 +3447,12 @@ pub fn list_embedding_presets() -> List(String)
 /// module is done via the Elixir/Rustler side (existing GenServer pattern).
 @external(erlang, "kreuzberg_gleam_ffi", "register_ocr_backend")
 pub fn register_ocr_backend(pid: Dynamic, plugin_name: String) -> Nil
+
+@external(erlang, "kreuzberg_gleam_ffi", "unregister_ocr_backend")
+pub fn unregister_ocr_backend(name: String) -> Result(Nil, String)
+
+@external(erlang, "kreuzberg_gleam_ffi", "clear_ocr_backends")
+pub fn clear_ocr_backends() -> Result(Nil, String)
 
 /// Send the `process_image` response back to the Rustler reply-registry.
 ///
@@ -3717,6 +3704,12 @@ pub fn fail_trait_call(reply_id: Int, error_message: String) -> Nil
 @external(erlang, "kreuzberg_gleam_ffi", "register_post_processor")
 pub fn register_post_processor(pid: Dynamic, plugin_name: String) -> Nil
 
+@external(erlang, "kreuzberg_gleam_ffi", "unregister_post_processor")
+pub fn unregister_post_processor(name: String) -> Result(Nil, String)
+
+@external(erlang, "kreuzberg_gleam_ffi", "clear_post_processors")
+pub fn clear_post_processors() -> Result(Nil, String)
+
 /// Send the `process` response back to the Rustler reply-registry.
 ///
 /// Call this from your `handle_info/2` after processing a
@@ -3891,6 +3884,12 @@ pub fn post_processor_priority_response(call_id: Dynamic, result: Result(Int, St
 @external(erlang, "kreuzberg_gleam_ffi", "register_validator")
 pub fn register_validator(pid: Dynamic, plugin_name: String) -> Nil
 
+@external(erlang, "kreuzberg_gleam_ffi", "unregister_validator")
+pub fn unregister_validator(name: String) -> Result(Nil, String)
+
+@external(erlang, "kreuzberg_gleam_ffi", "clear_validators")
+pub fn clear_validators() -> Result(Nil, String)
+
 /// Send the `validate` response back to the Rustler reply-registry.
 ///
 /// Call this from your `handle_info/2` after processing a
@@ -4010,6 +4009,12 @@ pub fn validator_priority_response(call_id: Dynamic, result: Result(Int, String)
 /// module is done via the Elixir/Rustler side (existing GenServer pattern).
 @external(erlang, "kreuzberg_gleam_ffi", "register_embedding_backend")
 pub fn register_embedding_backend(pid: Dynamic, plugin_name: String) -> Nil
+
+@external(erlang, "kreuzberg_gleam_ffi", "unregister_embedding_backend")
+pub fn unregister_embedding_backend(name: String) -> Result(Nil, String)
+
+@external(erlang, "kreuzberg_gleam_ffi", "clear_embedding_backends")
+pub fn clear_embedding_backends() -> Result(Nil, String)
 
 /// Send the `dimensions` response back to the Rustler reply-registry.
 ///

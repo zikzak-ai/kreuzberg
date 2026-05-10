@@ -373,7 +373,7 @@ jobs:
           tag: ${{ needs.prepare.outputs.tag }}
           asset-prefix: kreuzberg-cli-
           assets: |
-            kreuzberg-cli-aarch64-apple-darwin.tar.gz,kreuzberg-cli-aarch64-unknown-linux-gnu.tar.gz,kreuzberg-cli-aarch64-unknown-linux-musl.tar.gz,kreuzberg-cli-x86_64-apple-darwin.tar.gz,kreuzberg-cli-x86_64-unknown-linux-gnu.tar.gz,kreuzberg-cli-x86_64-unknown-linux-musl.tar.gz,kreuzberg-cli-x86_64-pc-windows-msvc.zip
+            kreuzberg-cli-aarch64-apple-darwin.tar.gz,kreuzberg-cli-aarch64-unknown-linux-gnu.tar.gz,kreuzberg-cli-aarch64-unknown-linux-musl.tar.gz,kreuzberg-cli-x86_64-unknown-linux-gnu.tar.gz,kreuzberg-cli-x86_64-unknown-linux-musl.tar.gz,kreuzberg-cli-x86_64-pc-windows-msvc.zip
 
   check-go:
     name: Check GitHub Release for Go FFI assets
@@ -441,7 +441,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest, macos-15-intel]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -456,6 +456,15 @@ jobs:
           # PyO3 abi3-py310 → one wheel per platform covers Python 3.10+.
           cibw-build: "cp310-*"
           upload-artifact: "false"
+          # manylinux2014: openssl-devel for ort native-tls; CARGO_TARGET_*_LINKER=gcc so
+          # cargo finds the host gcc instead of looking for an aarch64-linux-gnu-gcc prefix.
+          cibw-before-build-linux: "yum install -y openssl-devel pkgconfig && pip install maturin uv && source ~/.cargo/env"
+          cibw-environment: 'MATURIN_BUILD_ARGS="--compatibility linux" CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=gcc CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=gcc CC_x86_64_unknown_linux_gnu=gcc CC_aarch64_unknown_linux_gnu=gcc CXX_x86_64_unknown_linux_gnu=g++ CXX_aarch64_unknown_linux_gnu=g++'
+          # cibw's bundled rustup-init on Windows defaults host triple to gnu and
+          # rust-toolchain.toml resolves channel="1.95" against that gnu host. Install the
+          # msvc 1.95 toolchain explicitly so it wins regardless of rustup's host default.
+          cibw-before-build-windows: "rustup install 1.95-x86_64-pc-windows-msvc && rustup default 1.95-x86_64-pc-windows-msvc && rustup target add x86_64-pc-windows-msvc && pip install maturin uv && set PATH=%USERPROFILE%\\.cargo\\bin;%PATH%"
+          cibw-environment-windows: 'MATURIN_BUILD_ARGS="--target x86_64-pc-windows-msvc"'
 
       - name: Upload wheels
         uses: actions/upload-artifact@v7
@@ -482,9 +491,11 @@ jobs:
 
       - name: Build sdist via maturin
         # Inline: maturin sdist is a one-liner; no shared action wraps it.
+        # `-m` must point to the Rust crate's Cargo.toml; pyproject.toml in
+        # packages/python/ already declares the manifest-path that maturin reads.
         run: |
           python -m pip install --upgrade pip maturin
-          maturin sdist -m packages/python/pyproject.toml -o dist
+          maturin sdist -m crates/kreuzberg-py/Cargo.toml -o dist
         shell: bash
 
       - uses: actions/upload-artifact@v7
@@ -505,7 +516,6 @@ jobs:
           - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
           - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu }
           - { os: macos-latest, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, target: x86_64-apple-darwin }
           - { os: windows-latest, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v6
@@ -580,7 +590,6 @@ jobs:
           - { os: ubuntu-latest, label: linux-x86_64 }
           - { os: ubuntu-24.04-arm, label: linux-aarch64 }
           - { os: macos-latest, label: macos-arm64 }
-          - { os: macos-15-intel, label: macos-x86_64 }
           - { os: windows-latest, label: windows-x64 }
     steps:
       - uses: actions/checkout@v6
@@ -625,7 +634,6 @@ jobs:
           - { os: ubuntu-latest, label: linux-x86_64, target: x86_64-unknown-linux-gnu }
           - { os: ubuntu-24.04-arm, label: linux-arm64, target: aarch64-unknown-linux-gnu }
           - { os: macos-latest, label: macos-arm64, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, label: macos-x86_64, target: x86_64-apple-darwin }
           - { os: windows-latest, label: windows-x86_64, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v6
@@ -676,11 +684,8 @@ jobs:
       matrix:
         include:
           - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl }
           - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu }
-          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl }
           - { os: macos-latest, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, target: x86_64-apple-darwin }
           - { os: windows-latest, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v6
@@ -726,6 +731,52 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  cli-binaries-musl:
+    # Alpine container build: ort-sys ships no musl prebuilts, so we use Alpine's
+    # system onnxruntime-dev (apk) plus -C target-feature=-crt-static for cdylib.
+    # Each Dockerfile is single-arch (FROM alpine:3.21); arch-matched runners
+    # produce arch-matched binaries without qemu emulation.
+    name: Build CLI binary (${{ matrix.target }})
+    needs: [prepare, check-cli]
+    if: ${{ needs.prepare.outputs.release_cli == 'true' && (needs.check-cli.outputs.exists != 'true' || needs.prepare.outputs.force_republish == 'true') }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl }
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.checkout_ref }}
+          fetch-depth: 0
+
+      - name: Build CLI via Alpine Docker
+        run: |
+          docker build -f docker/Dockerfile.musl-build \
+            --output type=local,dest=./build-output .
+
+      - name: Package CLI artifact (with bundled lib/)
+        env:
+          TARGET: ${{ matrix.target }}
+        shell: bash
+        run: |
+          STAGE="kreuzberg-cli-${TARGET}"
+          mkdir -p "$STAGE/lib"
+          cp build-output/kreuzberg "$STAGE/kreuzberg"
+          cp build-output/kreuzberg.bin "$STAGE/kreuzberg.bin"
+          cp -a build-output/lib/. "$STAGE/lib/"
+          chmod +x "$STAGE/kreuzberg"
+          tar -czf "${STAGE}.tar.gz" "$STAGE"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cli-${{ matrix.target }}
+          path: kreuzberg-cli-${{ matrix.target }}.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
   go-ffi-libraries:
     name: Build Go FFI library (${{ matrix.platform }})
     needs: [prepare, check-go]
@@ -738,7 +789,6 @@ jobs:
           - { os: ubuntu-latest, platform: linux-x86_64, target: x86_64-unknown-linux-gnu }
           - { os: ubuntu-24.04-arm, platform: linux-aarch64, target: aarch64-unknown-linux-gnu }
           - { os: macos-latest, platform: macos-arm64, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, platform: macos-x86_64, target: x86_64-apple-darwin }
           - { os: windows-latest, platform: windows-x86_64, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v6
@@ -778,7 +828,6 @@ jobs:
           - { os: ubuntu-latest, platform: linux-x86_64, target: x86_64-unknown-linux-gnu }
           - { os: ubuntu-24.04-arm, platform: linux-aarch64, target: aarch64-unknown-linux-gnu }
           - { os: macos-latest, platform: macos-arm64, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, platform: macos-x86_64, target: x86_64-apple-darwin }
           - { os: windows-latest, platform: windows-x86_64, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v6
@@ -832,7 +881,6 @@ jobs:
           - { os: ubuntu-latest, classifier: linux-x86_64, target: x86_64-unknown-linux-gnu }
           - { os: ubuntu-24.04-arm, classifier: linux-aarch64, target: aarch64-unknown-linux-gnu }
           - { os: macos-latest, classifier: macos-arm64, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, classifier: macos-x86_64, target: x86_64-apple-darwin }
           - { os: windows-latest, classifier: windows-x86_64, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v6
@@ -859,6 +907,7 @@ jobs:
           retention-days: 14
 
   java-natives-musl:
+    # Alpine container build via Dockerfile.musl-ffi (system onnxruntime-dev).
     name: Build Java natives (linux-musl-${{ matrix.arch }})
     needs: [prepare, check-maven]
     if: ${{ needs.prepare.outputs.release_java == 'true' && (needs.check-maven.outputs.java_exists != 'true' || needs.prepare.outputs.force_republish == 'true') }}
@@ -867,24 +916,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, arch: x86_64, target: x86_64-unknown-linux-musl, classifier: linux-musl-x86_64 }
-          - { os: ubuntu-24.04-arm, arch: aarch64, target: aarch64-unknown-linux-musl, classifier: linux-musl-aarch64 }
+          - { os: ubuntu-latest, arch: x86_64, classifier: linux-musl-x86_64 }
+          - { os: ubuntu-24.04-arm, arch: aarch64, classifier: linux-musl-aarch64 }
     steps:
       - uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
 
-      - uses: kreuzberg-dev/actions/setup-rust@v1
-        with:
-          target: ${{ matrix.target }}
+      - name: Build kreuzberg-ffi via Alpine Docker
+        run: |
+          docker build -f docker/Dockerfile.musl-ffi \
+            --output type=local,dest=./build-output .
 
-      - uses: kreuzberg-dev/actions/build-java-natives@v1
-        with:
-          target: ${{ matrix.target }}
-          crate-name: kreuzberg-ffi
-          lib-name: kreuzberg_ffi
-          classifier: ${{ matrix.classifier }}
+      - name: Stage native lib for Java classifier layout
+        env:
+          CLASSIFIER: ${{ matrix.classifier }}
+        run: |
+          mkdir -p "dist/java-natives/${CLASSIFIER}"
+          cp build-output/libkreuzberg_ffi.so "dist/java-natives/${CLASSIFIER}/libkreuzberg_ffi.so"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -905,7 +955,6 @@ jobs:
           - { os: ubuntu-latest, rid: linux-x64, target: x86_64-unknown-linux-gnu }
           - { os: ubuntu-24.04-arm, rid: linux-arm64, target: aarch64-unknown-linux-gnu }
           - { os: macos-latest, rid: osx-arm64, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, rid: osx-x64, target: x86_64-apple-darwin }
           - { os: windows-latest, rid: win-x64, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v6
@@ -932,6 +981,7 @@ jobs:
           retention-days: 14
 
   csharp-natives-musl:
+    # Alpine container build via Dockerfile.musl-ffi (system onnxruntime-dev).
     name: Build C# natives (linux-musl-${{ matrix.arch }})
     needs: [prepare, check-nuget]
     if: ${{ needs.prepare.outputs.release_csharp == 'true' && (needs.check-nuget.outputs.exists != 'true' || needs.prepare.outputs.force_republish == 'true') }}
@@ -940,24 +990,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, arch: x64, target: x86_64-unknown-linux-musl, rid: linux-musl-x64 }
-          - { os: ubuntu-24.04-arm, arch: arm64, target: aarch64-unknown-linux-musl, rid: linux-musl-arm64 }
+          - { os: ubuntu-latest, arch: x64, rid: linux-musl-x64 }
+          - { os: ubuntu-24.04-arm, arch: arm64, rid: linux-musl-arm64 }
     steps:
       - uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
 
-      - uses: kreuzberg-dev/actions/setup-rust@v1
-        with:
-          target: ${{ matrix.target }}
+      - name: Build kreuzberg-ffi via Alpine Docker
+        run: |
+          docker build -f docker/Dockerfile.musl-ffi \
+            --output type=local,dest=./build-output .
 
-      - uses: kreuzberg-dev/actions/build-csharp-natives@v1
-        with:
-          target: ${{ matrix.target }}
-          crate-name: kreuzberg-ffi
-          lib-name: kreuzberg_ffi
-          rid: ${{ matrix.rid }}
+      - name: Stage native lib for NuGet RID layout
+        env:
+          RID: ${{ matrix.rid }}
+        run: |
+          mkdir -p "dist/csharp-natives/runtimes/${RID}/native"
+          cp build-output/libkreuzberg_ffi.so "dist/csharp-natives/runtimes/${RID}/native/libkreuzberg_ffi.so"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -979,7 +1030,6 @@ jobs:
           - { os: ubuntu-latest, label: linux-x86_64, target: x86_64-unknown-linux-gnu }
           - { os: ubuntu-24.04-arm, label: linux-aarch64, target: aarch64-unknown-linux-gnu }
           - { os: macos-latest, label: macos-arm64, target: aarch64-apple-darwin }
-          - { os: macos-15-intel, label: macos-x86_64, target: x86_64-apple-darwin }
           - { os: windows-latest, label: windows-x86_64, target: x86_64-pc-windows-msvc }
         nif: ["2.16", "2.17"]
     steps:
@@ -1014,6 +1064,9 @@ jobs:
           retention-days: 14
 
   elixir-natives-musl:
+    # Alpine container build via Dockerfile.musl-rustler (system onnxruntime-dev).
+    # Replicates RustlerPrecompiled tarball naming the build-elixir-natives action
+    # uses for non-musl variants: lib{nif}-v{ver}-nif-{api}-{target}.so.tar.gz + sha256.
     name: Build Elixir NIF (linux-musl-${{ matrix.arch }} nif-${{ matrix.nif }})
     needs: [prepare, check-elixir-release]
     if: ${{ needs.prepare.outputs.release_elixir == 'true' && (needs.check-elixir-release.outputs.exists != 'true' || needs.prepare.outputs.force_republish == 'true') }}
@@ -1032,23 +1085,24 @@ jobs:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
 
-      - uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.17"
-          otp-version: "27"
+      - name: Build kreuzberg_nif via Alpine Docker
+        run: |
+          docker build -f docker/Dockerfile.musl-rustler \
+            --output type=local,dest=./build-output .
 
-      - uses: kreuzberg-dev/actions/setup-rust@v1
-        with:
-          target: ${{ matrix.target }}
-
-      - uses: kreuzberg-dev/actions/build-elixir-natives@v1
-        with:
-          target: ${{ matrix.target }}
-          nif-crate-name: kreuzberg_nif
-          nif-crate-path: packages/elixir/native/kreuzberg_nif
-          package-dir: packages/elixir
-          nif-version: ${{ needs.prepare.outputs.version }}
-          nif-api-version: ${{ matrix.nif }}
+      - name: Package NIF as RustlerPrecompiled tarball
+        env:
+          TARGET: ${{ matrix.target }}
+          NIF_API: ${{ matrix.nif }}
+          NIF_VERSION: ${{ needs.prepare.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/elixir-natives staging
+          cp build-output/libkreuzberg_nif.so staging/libkreuzberg_nif.so
+          TARBALL="libkreuzberg_nif-v${NIF_VERSION}-nif-${NIF_API}-${TARGET}.so.tar.gz"
+          tar -czf "dist/elixir-natives/${TARBALL}" -C staging libkreuzberg_nif.so
+          ( cd dist/elixir-natives && sha256sum "${TARBALL}" >"${TARBALL}.sha256" )
 
       - uses: actions/upload-artifact@v7
         with:
@@ -1591,7 +1645,7 @@ jobs:
           tag: ${{ needs.prepare.outputs.tag }}
           version: ${{ needs.prepare.outputs.version }}
           lib-name: kreuzberg_nif
-          targets: x86_64-unknown-linux-gnu,aarch64-unknown-linux-gnu,x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,aarch64-apple-darwin,x86_64-apple-darwin,x86_64-pc-windows-msvc
+          targets: x86_64-unknown-linux-gnu,aarch64-unknown-linux-gnu,x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,aarch64-apple-darwin,x86_64-pc-windows-msvc
           output-path: packages/elixir/checksum-Elixir.Kreuzberg.Native.exs
 
       - uses: kreuzberg-dev/actions/publish-hex@v1
@@ -1741,7 +1795,6 @@ jobs:
       matrix:
         include:
           - { os: macos-latest, bottle_tag: arm64_sonoma, install_brew: false }
-          - { os: macos-15-intel, bottle_tag: sonoma, install_brew: false }
           - { os: ubuntu-latest, bottle_tag: x86_64_linux, install_brew: true }
           - { os: ubuntu-24.04-arm, bottle_tag: arm64_linux, install_brew: true }
     steps:

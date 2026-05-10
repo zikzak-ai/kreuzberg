@@ -332,4 +332,27 @@ public final class OcrBackendBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
 
+    /** Clear all registered OcrBackend implementations. */
+    public static void clearAllOcrBackend() throws Exception {
+        try {
+            try (var arena = Arena.ofConfined()) {
+                MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
+                int rc = (int) NativeLib.KREUZBERG_CLEAR_OCR_BACKEND.invoke(outErr);
+                if (rc != 0) {
+                    MemorySegment errPtr = outErr.get(ValueLayout.ADDRESS, 0);
+                    String msg = errPtr.equals(MemorySegment.NULL) ? "clear failed (rc=" + rc + ")" : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
+                    throw new RuntimeException("clearAllOcrBackend: " + msg);
+                }
+            }
+        } catch (Throwable t) {
+            if (t instanceof Exception e) {
+                throw e;
+            } else {
+                throw new RuntimeException("Unexpected error during clear", t);
+            }
+        }
+        OCR_BACKEND_BRIDGES.values().forEach(OcrBackendBridge::close);
+        OCR_BACKEND_BRIDGES.clear();
+    }
+
 }

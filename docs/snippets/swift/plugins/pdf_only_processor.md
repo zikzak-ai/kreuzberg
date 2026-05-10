@@ -1,15 +1,46 @@
-<!-- snippet:skip -->
 ```swift title="Swift"
 import Kreuzberg
-import RustBridge
 
-// Note: a "PDF-only" post-processor relies on implementing the Rust
-// `PostProcessor` trait with `should_process` returning `true` only for
-// `application/pdf`. swift-bridge cannot map Rust traits onto Swift
-// protocols, so this pattern is not available from Swift.
-//
-// Implement the gating logic in Rust against the `PostProcessor` trait
-// from `kreuzberg::plugins`, register it in a Rust shim crate, and consume
-// the resulting behaviour through the regular `ExtractionConfig` surface
-// already exposed to Swift.
+final class PdfOnlyProcessor: PostProcessor {
+    func name() -> String {
+        "pdf-only-processor"
+    }
+    
+    func version() -> String {
+        "1.0.0"
+    }
+    
+    func processingStage() -> String {
+        "middle"  // ProcessingStage enum name
+    }
+    
+    func priority() -> Int32 {
+        50  // Default priority
+    }
+    
+    func process(result: ExtractionResult, config: ExtractionConfig) -> String {
+        // Returns JSON-encoded Result<(), String>
+        // No-op post-processor for PDF-only processing
+        "{\"ok\": null}"
+    }
+    
+    func shouldProcess(result: ExtractionResult, config: ExtractionConfig) -> Bool {
+        result.mimeType() == "application/pdf"
+    }
+    
+    func estimatedDurationMs(result: ExtractionResult) -> UInt64 {
+        0  // No processing overhead
+    }
+    
+    func initialize() -> String {
+        "{\"ok\": null}"
+    }
+    
+    func shutdown() -> String {
+        "{\"ok\": null}"
+    }
+}
+
+let processor = PdfOnlyProcessor()
+try Kreuzberg.registerPostProcessor(processor)
 ```

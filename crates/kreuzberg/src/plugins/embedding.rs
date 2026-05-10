@@ -40,13 +40,7 @@
 use crate::Result;
 use crate::plugins::Plugin;
 use async_trait::async_trait;
-#[cfg(test)]
 use std::sync::Arc;
-
-// `register_embedding_backend` is consumed by the `embeddings::tests::plugin_dispatch`
-// integration tests; `list_embedding_backends` by `kreuzberg-cli` and the api/mcp
-// `cache.warm` endpoints. Both are excluded from the language bindings via
-// `alef.toml [exclude].functions`.
 
 /// Trait for in-process embedding backend plugins.
 ///
@@ -121,11 +115,7 @@ pub trait EmbeddingBackend: Plugin {
 ///   or `dimensions()` is zero.
 /// - [`crate::KreuzbergError::Plugin`] if a backend with that name is already registered.
 /// - Any error from the backend's `initialize()` method.
-// Embedding backend plugin lifecycle is currently exercised only by the
-// `embeddings::tests::plugin_dispatch` module — gated to `#[cfg(test)]` so the
-// release build stays free of dead code while the test suite still has access.
-#[cfg(test)]
-pub(crate) fn register_embedding_backend(backend: Arc<dyn EmbeddingBackend>) -> Result<()> {
+pub fn register_embedding_backend(backend: Arc<dyn EmbeddingBackend>) -> Result<()> {
     use crate::plugins::registry::get_embedding_backend_registry;
 
     let registry = get_embedding_backend_registry();
@@ -136,13 +126,32 @@ pub(crate) fn register_embedding_backend(backend: Arc<dyn EmbeddingBackend>) -> 
 /// Unregister an embedding backend by name, calling its `shutdown()` method.
 ///
 /// No-op if the backend is not registered.
-#[cfg(test)]
-pub(crate) fn unregister_embedding_backend(name: &str) -> Result<()> {
+///
+/// # Errors
+///
+/// - Any error returned by the backend's `shutdown()` method.
+pub fn unregister_embedding_backend(name: &str) -> Result<()> {
     use crate::plugins::registry::get_embedding_backend_registry;
 
     let registry = get_embedding_backend_registry();
     let mut registry = registry.write();
     registry.remove(name)
+}
+
+/// Clear all embedding backends from the global registry.
+///
+/// Calls `shutdown()` on every registered backend, then empties the registry.
+///
+/// # Errors
+///
+/// - Any error returned by a backend's `shutdown()` method. The first error
+///   encountered stops processing of remaining backends.
+pub fn clear_embedding_backends() -> Result<()> {
+    use crate::plugins::registry::get_embedding_backend_registry;
+
+    let registry = get_embedding_backend_registry();
+    let mut registry = registry.write();
+    registry.shutdown_all()
 }
 
 /// List the names of all registered embedding backends.
@@ -248,5 +257,20 @@ mod tests {
             .unwrap();
         assert_eq!(vectors.len(), 3);
         assert!(vectors.iter().all(|v| v.len() == 5));
+    }
+
+    #[test]
+    fn register_list_clear_list_roundtrip() {
+        let name = unique_name("clear");
+        register_embedding_backend(Arc::new(MockEmbeddingBackend {
+            name: name.clone(),
+            dimensions: 128,
+        }))
+        .unwrap();
+
+        assert!(list_embedding_backends().unwrap().contains(&name));
+
+        clear_embedding_backends().unwrap();
+        assert!(!list_embedding_backends().unwrap().contains(&name));
     }
 }

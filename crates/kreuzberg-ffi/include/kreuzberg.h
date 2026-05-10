@@ -11942,29 +11942,6 @@ char *kreuzberg_list_document_extractors(void);
 char *kreuzberg_list_ocr_backends(void);
 
 /**
- * Clear all OCR backends from the global registry.
- *
- * Removes all OCR backends and calls their `shutdown()` methods.
- *
- * # Returns
- *
- * - `Ok(())` if all backends were cleared successfully
- * - `Err(...)` if any shutdown method failed
- *
- * # Example
- *
- * ```rust
- * use kreuzberg::plugins::clear_ocr_backends;
- *
- * clear_ocr_backends()?;
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
- */
-int32_t kreuzberg_clear_ocr_backends(void);
-
-/**
  * List all registered post-processor names.
  *
  * Returns a vector of all post-processor names currently registered in the
@@ -11992,14 +11969,6 @@ int32_t kreuzberg_clear_ocr_backends(void);
 char *kreuzberg_list_post_processors(void);
 
 /**
- * Remove all registered post-processors.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
- */
-int32_t kreuzberg_clear_post_processors(void);
-
-/**
  * List names of all registered renderers.
  * # Safety
  * Caller must ensure all pointer arguments are valid or null.
@@ -12014,14 +11983,6 @@ char *kreuzberg_list_renderers(void);
  * Returned pointers must be freed with the appropriate free function.
  */
 char *kreuzberg_list_validators(void);
-
-/**
- * Remove all registered validators.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
- */
-int32_t kreuzberg_clear_validators(void);
 
 /**
  * Generate embeddings asynchronously for a list of text strings.

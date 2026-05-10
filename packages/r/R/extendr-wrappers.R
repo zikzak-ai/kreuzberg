@@ -33,17 +33,11 @@ list_document_extractors <- function() .Call("wrap__list_document_extractors", P
 #' @export
 list_ocr_backends <- function() .Call("wrap__list_ocr_backends", PACKAGE = "kreuzberg")
 #' @export
-clear_ocr_backends <- function() .Call("wrap__clear_ocr_backends", PACKAGE = "kreuzberg")
-#' @export
 list_post_processors <- function() .Call("wrap__list_post_processors", PACKAGE = "kreuzberg")
-#' @export
-clear_post_processors <- function() .Call("wrap__clear_post_processors", PACKAGE = "kreuzberg")
 #' @export
 list_renderers <- function() .Call("wrap__list_renderers", PACKAGE = "kreuzberg")
 #' @export
 list_validators <- function() .Call("wrap__list_validators", PACKAGE = "kreuzberg")
-#' @export
-clear_validators <- function() .Call("wrap__clear_validators", PACKAGE = "kreuzberg")
 #' @export
 embed_texts_async <- function(texts, config) .Call("wrap__embed_texts_async", texts, config, PACKAGE = "kreuzberg")
 #' @export

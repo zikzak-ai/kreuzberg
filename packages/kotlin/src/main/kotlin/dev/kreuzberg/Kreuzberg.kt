@@ -472,22 +472,6 @@ object Kreuzberg {
     }
 
     /**
-     * Clear all OCR backends from the global registry.
-     *
-     * Removes all OCR backends and calls their `shutdown()` methods.
-     *
-     * **Returns:**
-     *
-     * - `Ok(())` if all backends were cleared successfully
-     * - `Err(...)` if any shutdown method failed
-     */
-    fun clearOcrBackends(): Unit {
-
-        Bridge.clearOcrBackends()
-
-    }
-
-    /**
      * List all registered post-processor names.
      *
      * Returns a vector of all post-processor names currently registered in the
@@ -501,15 +485,6 @@ object Kreuzberg {
     fun listPostProcessors(): List<String> {
 
         return Bridge.listPostProcessors()
-
-    }
-
-    /**
-     * Remove all registered post-processors.
-     */
-    fun clearPostProcessors(): Unit {
-
-        Bridge.clearPostProcessors()
 
     }
 
@@ -528,15 +503,6 @@ object Kreuzberg {
     fun listValidators(): List<String> {
 
         return Bridge.listValidators()
-
-    }
-
-    /**
-     * Remove all registered validators.
-     */
-    fun clearValidators(): Unit {
-
-        Bridge.clearValidators()
 
     }
 

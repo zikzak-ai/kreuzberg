@@ -5721,18 +5721,6 @@ pub fn list_ocr_backends() -> Result<Vec<String>, String> {
         .map_err(|e| e.to_string())
 }
 
-/// Clear all OCR backends from the global registry.
-///
-/// Removes all OCR backends and calls their `shutdown()` methods.
-///
-/// **Returns:**
-///
-/// - `Ok(())` if all backends were cleared successfully
-/// - `Err(...)` if any shutdown method failed
-pub fn clear_ocr_backends() -> Result<(), String> {
-    kreuzberg::clear_ocr_backends().map(|v| v).map_err(|e| e.to_string())
-}
-
 /// List all registered post-processor names.
 ///
 /// Returns a vector of all post-processor names currently registered in the
@@ -5748,14 +5736,9 @@ pub fn list_post_processors() -> Result<Vec<String>, String> {
         .map_err(|e| e.to_string())
 }
 
-/// Remove all registered post-processors.
-pub fn clear_post_processors() -> Result<(), String> {
-    kreuzberg::clear_post_processors().map(|v| v).map_err(|e| e.to_string())
-}
-
 /// List names of all registered renderers.
 pub fn list_renderers() -> Vec<String> {
-    kreuzberg::plugins::list_renderers()
+    kreuzberg::list_renderers()
         .into_iter()
         .map(|s| s.to_string())
         .collect::<Vec<_>>()
@@ -5766,11 +5749,6 @@ pub fn list_validators() -> Result<Vec<String>, String> {
     kreuzberg::list_validators()
         .map(|v| v.into_iter().map(|s| s.to_string()).collect::<Vec<_>>())
         .map_err(|e| e.to_string())
-}
-
-/// Remove all registered validators.
-pub fn clear_validators() -> Result<(), String> {
-    kreuzberg::clear_validators().map(|v| v).map_err(|e| e.to_string())
 }
 
 /// Generate embeddings asynchronously for a list of text strings.
@@ -6012,6 +5990,22 @@ pub fn register_ocr_backend(impl_: OcrBackendDartImpl) -> Result<(), String> {
     registry.register(arc).map_err(|e| e.to_string())
 }
 
+/// Unregister a previously-registered `OcrBackend` plugin by name.
+/// Removes the plugin from `kreuzberg::plugins::registry::get_ocr_backend_registry()` and stringifies any host error.
+pub fn unregister_ocr_backend(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_ocr_backend_registry();
+    let mut registry = registry.write();
+    registry.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `OcrBackend` plugins.
+/// Removes every plugin from `kreuzberg::plugins::registry::get_ocr_backend_registry()` and stringifies any host error.
+pub fn clear_ocr_backends() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_ocr_backend_registry();
+    let mut registry = registry.write();
+    registry.clear().map_err(|e| e.to_string())
+}
+
 /// FRB opaque handle holding Dart callbacks for each trait method.
 /// Dart-side: register callbacks via `create_{snake}_dart_impl(...)` factory.
 #[frb(opaque)]
@@ -6120,6 +6114,22 @@ pub fn register_post_processor(impl_: PostProcessorDartImpl) -> Result<(), Strin
     registry.register(arc).map_err(|e| e.to_string())
 }
 
+/// Unregister a previously-registered `PostProcessor` plugin by name.
+/// Removes the plugin from `kreuzberg::plugins::registry::get_post_processor_registry()` and stringifies any host error.
+pub fn unregister_post_processor(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_post_processor_registry();
+    let mut registry = registry.write();
+    registry.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `PostProcessor` plugins.
+/// Removes every plugin from `kreuzberg::plugins::registry::get_post_processor_registry()` and stringifies any host error.
+pub fn clear_post_processors() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_post_processor_registry();
+    let mut registry = registry.write();
+    registry.clear().map_err(|e| e.to_string())
+}
+
 /// FRB opaque handle holding Dart callbacks for each trait method.
 /// Dart-side: register callbacks via `create_{snake}_dart_impl(...)` factory.
 #[frb(opaque)]
@@ -6209,6 +6219,22 @@ pub fn register_validator(impl_: ValidatorDartImpl) -> Result<(), String> {
     registry.register(arc).map_err(|e| e.to_string())
 }
 
+/// Unregister a previously-registered `Validator` plugin by name.
+/// Removes the plugin from `kreuzberg::plugins::registry::get_validator_registry()` and stringifies any host error.
+pub fn unregister_validator(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_validator_registry();
+    let mut registry = registry.write();
+    registry.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `Validator` plugins.
+/// Removes every plugin from `kreuzberg::plugins::registry::get_validator_registry()` and stringifies any host error.
+pub fn clear_validators() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_validator_registry();
+    let mut registry = registry.write();
+    registry.clear().map_err(|e| e.to_string())
+}
+
 /// FRB opaque handle holding Dart callbacks for each trait method.
 /// Dart-side: register callbacks via `create_{snake}_dart_impl(...)` factory.
 #[frb(opaque)]
@@ -6280,4 +6306,20 @@ pub fn register_embedding_backend(impl_: EmbeddingBackendDartImpl) -> Result<(),
     let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
     let mut registry = registry.write();
     registry.register(arc).map_err(|e| e.to_string())
+}
+
+/// Unregister a previously-registered `EmbeddingBackend` plugin by name.
+/// Removes the plugin from `kreuzberg::plugins::registry::get_embedding_backend_registry()` and stringifies any host error.
+pub fn unregister_embedding_backend(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
+    let mut registry = registry.write();
+    registry.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `EmbeddingBackend` plugins.
+/// Removes every plugin from `kreuzberg::plugins::registry::get_embedding_backend_registry()` and stringifies any host error.
+pub fn clear_embedding_backends() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
+    let mut registry = registry.write();
+    registry.clear().map_err(|e| e.to_string())
 }

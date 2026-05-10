@@ -2483,18 +2483,12 @@ mod ffi {
         fn list_document_extractors() -> Result<Vec<String>, String>;
         #[swift_bridge(swift_name = "listOcrBackends")]
         fn list_ocr_backends() -> Result<Vec<String>, String>;
-        #[swift_bridge(swift_name = "clearOcrBackends")]
-        fn clear_ocr_backends() -> Result<(), String>;
         #[swift_bridge(swift_name = "listPostProcessors")]
         fn list_post_processors() -> Result<Vec<String>, String>;
-        #[swift_bridge(swift_name = "clearPostProcessors")]
-        fn clear_post_processors() -> Result<(), String>;
         #[swift_bridge(swift_name = "listRenderers")]
         fn list_renderers() -> Vec<String>;
         #[swift_bridge(swift_name = "listValidators")]
         fn list_validators() -> Result<Vec<String>, String>;
-        #[swift_bridge(swift_name = "clearValidators")]
-        fn clear_validators() -> Result<(), String>;
         #[swift_bridge(swift_name = "embedTextsAsync")]
         fn embed_texts_async(texts: Vec<String>, config: EmbeddingConfig) -> Result<String, String>;
         #[swift_bridge(swift_name = "renderPdfPageToPng")]
@@ -2583,21 +2577,37 @@ mod ffi {
     extern "Rust" {
         #[swift_bridge(swift_name = "registerOcrBackend")]
         fn register_ocr_backend(swift_box: SwiftOcrBackendBox) -> Result<(), String>;
+        #[swift_bridge(swift_name = "unregisterOcrBackend")]
+        fn unregister_ocr_backend(name: String) -> Result<(), String>;
+        #[swift_bridge(swift_name = "clearOcrBackends")]
+        fn clear_ocr_backends() -> Result<(), String>;
     }
 
     extern "Rust" {
         #[swift_bridge(swift_name = "registerPostProcessor")]
         fn register_post_processor(swift_box: SwiftPostProcessorBox) -> Result<(), String>;
+        #[swift_bridge(swift_name = "unregisterPostProcessor")]
+        fn unregister_post_processor(name: String) -> Result<(), String>;
+        #[swift_bridge(swift_name = "clearPostProcessors")]
+        fn clear_post_processors() -> Result<(), String>;
     }
 
     extern "Rust" {
         #[swift_bridge(swift_name = "registerValidator")]
         fn register_validator(swift_box: SwiftValidatorBox) -> Result<(), String>;
+        #[swift_bridge(swift_name = "unregisterValidator")]
+        fn unregister_validator(name: String) -> Result<(), String>;
+        #[swift_bridge(swift_name = "clearValidators")]
+        fn clear_validators() -> Result<(), String>;
     }
 
     extern "Rust" {
         #[swift_bridge(swift_name = "registerEmbeddingBackend")]
         fn register_embedding_backend(swift_box: SwiftEmbeddingBackendBox) -> Result<(), String>;
+        #[swift_bridge(swift_name = "unregisterEmbeddingBackend")]
+        fn unregister_embedding_backend(name: String) -> Result<(), String>;
+        #[swift_bridge(swift_name = "clearEmbeddingBackends")]
+        fn clear_embedding_backends() -> Result<(), String>;
     }
 
     extern "Swift" {
@@ -10874,22 +10884,14 @@ pub fn list_ocr_backends() -> Result<Vec<String>, String> {
         .map(|v| v.into_iter().map(|s| s.to_string()).collect::<Vec<_>>())
 }
 
-pub fn clear_ocr_backends() -> Result<(), String> {
-    kreuzberg::clear_ocr_backends().map_err(|e| e.to_string())
-}
-
 pub fn list_post_processors() -> Result<Vec<String>, String> {
     kreuzberg::list_post_processors()
         .map_err(|e| e.to_string())
         .map(|v| v.into_iter().map(|s| s.to_string()).collect::<Vec<_>>())
 }
 
-pub fn clear_post_processors() -> Result<(), String> {
-    kreuzberg::clear_post_processors().map_err(|e| e.to_string())
-}
-
 pub fn list_renderers() -> Vec<String> {
-    kreuzberg::plugins::list_renderers()
+    kreuzberg::list_renderers()
         .into_iter()
         .map(|s| s.to_string())
         .collect::<Vec<_>>()
@@ -10899,10 +10901,6 @@ pub fn list_validators() -> Result<Vec<String>, String> {
     kreuzberg::list_validators()
         .map_err(|e| e.to_string())
         .map(|v| v.into_iter().map(|s| s.to_string()).collect::<Vec<_>>())
-}
-
-pub fn clear_validators() -> Result<(), String> {
-    kreuzberg::clear_validators().map_err(|e| e.to_string())
 }
 
 pub fn embed_texts_async(texts: Vec<String>, config: EmbeddingConfig) -> Result<String, String> {
@@ -11254,6 +11252,20 @@ pub fn register_ocr_backend(swift_box: ffi::SwiftOcrBackendBox) -> Result<(), St
     guard.register(arc).map_err(|e| e.to_string())
 }
 
+/// Unregister a previously-registered `OcrBackend` plugin by name.
+pub fn unregister_ocr_backend(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_ocr_backend_registry();
+    let mut guard = registry.write();
+    guard.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `OcrBackend` plugins.
+pub fn clear_ocr_backends() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_ocr_backend_registry();
+    let mut guard = registry.write();
+    guard.clear().map_err(|e| e.to_string())
+}
+
 /// Rust-side wrapper around a Swift class implementing the `PostProcessor` plugin protocol.
 ///
 /// The Swift instance is held via a `swift-bridge` opaque handle that retains
@@ -11344,6 +11356,20 @@ pub fn register_post_processor(swift_box: ffi::SwiftPostProcessorBox) -> Result<
     guard.register(arc).map_err(|e| e.to_string())
 }
 
+/// Unregister a previously-registered `PostProcessor` plugin by name.
+pub fn unregister_post_processor(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_post_processor_registry();
+    let mut guard = registry.write();
+    guard.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `PostProcessor` plugins.
+pub fn clear_post_processors() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_post_processor_registry();
+    let mut guard = registry.write();
+    guard.clear().map_err(|e| e.to_string())
+}
+
 /// Rust-side wrapper around a Swift class implementing the `Validator` plugin protocol.
 ///
 /// The Swift instance is held via a `swift-bridge` opaque handle that retains
@@ -11423,6 +11449,20 @@ pub fn register_validator(swift_box: ffi::SwiftValidatorBox) -> Result<(), Strin
     guard.register(arc).map_err(|e| e.to_string())
 }
 
+/// Unregister a previously-registered `Validator` plugin by name.
+pub fn unregister_validator(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_validator_registry();
+    let mut guard = registry.write();
+    guard.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `Validator` plugins.
+pub fn clear_validators() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_validator_registry();
+    let mut guard = registry.write();
+    guard.clear().map_err(|e| e.to_string())
+}
+
 /// Rust-side wrapper around a Swift class implementing the `EmbeddingBackend` plugin protocol.
 ///
 /// The Swift instance is held via a `swift-bridge` opaque handle that retains
@@ -11488,6 +11528,20 @@ pub fn register_embedding_backend(swift_box: ffi::SwiftEmbeddingBackendBox) -> R
     let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
     let mut guard = registry.write();
     guard.register(arc).map_err(|e| e.to_string())
+}
+
+/// Unregister a previously-registered `EmbeddingBackend` plugin by name.
+pub fn unregister_embedding_backend(name: String) -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
+    let mut guard = registry.write();
+    guard.remove(&name).map_err(|e| e.to_string())
+}
+
+/// Clear all registered `EmbeddingBackend` plugins.
+pub fn clear_embedding_backends() -> Result<(), String> {
+    let registry = kreuzberg::plugins::registry::get_embedding_backend_registry();
+    let mut guard = registry.write();
+    guard.clear().map_err(|e| e.to_string())
 }
 
 // JSON factory shims for e2e test layer.

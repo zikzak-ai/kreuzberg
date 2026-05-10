@@ -268,4 +268,27 @@ public final class PostProcessorBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
 
+    /** Clear all registered PostProcessor implementations. */
+    public static void clearAllPostProcessor() throws Exception {
+        try {
+            try (var arena = Arena.ofConfined()) {
+                MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
+                int rc = (int) NativeLib.KREUZBERG_CLEAR_POST_PROCESSOR.invoke(outErr);
+                if (rc != 0) {
+                    MemorySegment errPtr = outErr.get(ValueLayout.ADDRESS, 0);
+                    String msg = errPtr.equals(MemorySegment.NULL) ? "clear failed (rc=" + rc + ")" : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
+                    throw new RuntimeException("clearAllPostProcessor: " + msg);
+                }
+            }
+        } catch (Throwable t) {
+            if (t instanceof Exception e) {
+                throw e;
+            } else {
+                throw new RuntimeException("Unexpected error during clear", t);
+            }
+        }
+        POST_PROCESSOR_BRIDGES.values().forEach(PostProcessorBridge::close);
+        POST_PROCESSOR_BRIDGES.clear();
+    }
+
 }

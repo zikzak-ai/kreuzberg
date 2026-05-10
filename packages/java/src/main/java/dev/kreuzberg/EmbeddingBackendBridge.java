@@ -204,4 +204,27 @@ public final class EmbeddingBackendBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
 
+    /** Clear all registered EmbeddingBackend implementations. */
+    public static void clearAllEmbeddingBackend() throws Exception {
+        try {
+            try (var arena = Arena.ofConfined()) {
+                MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
+                int rc = (int) NativeLib.KREUZBERG_CLEAR_EMBEDDING_BACKEND.invoke(outErr);
+                if (rc != 0) {
+                    MemorySegment errPtr = outErr.get(ValueLayout.ADDRESS, 0);
+                    String msg = errPtr.equals(MemorySegment.NULL) ? "clear failed (rc=" + rc + ")" : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
+                    throw new RuntimeException("clearAllEmbeddingBackend: " + msg);
+                }
+            }
+        } catch (Throwable t) {
+            if (t instanceof Exception e) {
+                throw e;
+            } else {
+                throw new RuntimeException("Unexpected error during clear", t);
+            }
+        }
+        EMBEDDING_BACKEND_BRIDGES.values().forEach(EmbeddingBackendBridge::close);
+        EMBEDDING_BACKEND_BRIDGES.clear();
+    }
+
 }
