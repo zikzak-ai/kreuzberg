@@ -1,0 +1,118 @@
+name: Build Dart Native Library (macOS x86_64)
+
+on:
+  push:
+    branches: [main, "013-dws-kreuzberg-extension"]
+    paths:
+      - "packages/dart/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/dart/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  workflow_dispatch:
+
+concurrency:
+  group: dart-native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Dart native library (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            artifact-name: libkreuzberg_dart-x86_64-apple-darwin
+          - runner: macos-latest
+            target: aarch64-apple-darwin
+            artifact-name: libkreuzberg_dart-aarch64-apple-darwin
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact-name: libkreuzberg_dart-x86_64-unknown-linux-gnu
+
+    defaults:
+      run:
+        working-directory: packages/dart/rust
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/dart/rust
+          key: dart-native-${{ matrix.target }}
+
+      - name: Install Tesseract (macOS)
+        if: runner.os == 'macOS'
+        run: brew install tesseract leptonica
+
+      - name: Install Tesseract (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr libleptonica-dev
+
+      - name: Build native library
+        run: cargo build --release
+        env:
+          CARGO_TERM_COLOR: always
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: packages/dart/rust/target/release/libkreuzberg_dart.*
+          if-no-files-found: error
+
+  test-dart:
+    name: Test Dart package
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/dart
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/dart/rust
+
+      - name: Install Tesseract
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+
+      - name: Build native library
+        run: cargo build --release
+        working-directory: packages/dart/rust
+        env:
+          CARGO_TERM_COLOR: always
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Get Dart dependencies
+        run: dart pub get
+
+      - name: Analyze
+        run: dart analyze
+
+      - name: Run tests
+        run: dart test
