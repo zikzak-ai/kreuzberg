@@ -41,6 +41,7 @@ async fn test_full_hierarchy_extraction() {
         }),
         pdf_options: Some(PdfConfig {
             extract_images: false,
+            extract_tables: true,
             passwords: None,
             extract_metadata: true,
             hierarchy: Some(HierarchyConfig {
@@ -157,6 +158,7 @@ async fn test_hierarchy_disabled() {
         }),
         pdf_options: Some(PdfConfig {
             extract_images: false,
+            extract_tables: true,
             passwords: None,
             extract_metadata: true,
             hierarchy: Some(HierarchyConfig {
@@ -216,6 +218,7 @@ async fn test_hierarchy_with_explicit_disabled() {
         }),
         pdf_options: Some(PdfConfig {
             extract_images: false,
+            extract_tables: true,
             passwords: None,
             extract_metadata: true,
             hierarchy: Some(HierarchyConfig {
@@ -276,6 +279,7 @@ async fn test_hierarchy_different_k_clusters() {
             }),
             pdf_options: Some(PdfConfig {
                 extract_images: false,
+                extract_tables: true,
                 passwords: None,
                 extract_metadata: true,
                 hierarchy: Some(HierarchyConfig {

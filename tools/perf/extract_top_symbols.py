@@ -53,9 +53,7 @@ def is_kreuzberg_or_application(symbol: str) -> bool:
         return False
     if ADDRESS_PATTERN.match(symbol):
         return False
-    if symbol.startswith(EXCLUDE_PREFIXES):
-        return False
-    return True
+    return not symbol.startswith(EXCLUDE_PREFIXES)
 
 
 def short(symbol: str, max_len: int = 110) -> str:

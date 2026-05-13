@@ -147,6 +147,7 @@ lint.per-file-ignores."test_documents/cross_language_serialization_test.py" = [
   "SIM108",
 ]
 lint.per-file-ignores."tools/benchmark-harness/scripts/*.py" = [ "BLE001", "D103", "T201" ]
+lint.per-file-ignores."tools/perf/*.py" = [ "D103", "T201" ]
 lint.isort.known-first-party = [ "kreuzberg" ]
 lint.mccabe.max-complexity = 15
 lint.pydocstyle.convention = "google"
