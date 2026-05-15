@@ -30,4 +30,9 @@ linker = "aarch64-linux-gnu-gcc"
 linker = "musl-gcc"
 
 [target.wasm32-unknown-unknown]
-rustflags = ["-C", "target-feature=+bulk-memory", "--cfg", "getrandom_backend=\"wasm_js\""]
+rustflags = [
+  "-C",
+  "target-feature=+bulk-memory",
+  "--cfg",
+  "getrandom_backend=\"wasm_js\"",
+]

@@ -25,6 +25,7 @@ pub fn build(b: *std.Build) void {
     });
     async_module.addImport("kreuzberg", kreuzberg_module);
     const async_tests = b.addTest(.{
+        .name = "async_test",
         .root_module = async_module,
     });
     const async_run = b.addRunArtifact(async_tests);
@@ -39,6 +40,7 @@ pub fn build(b: *std.Build) void {
     });
     batch_module.addImport("kreuzberg", kreuzberg_module);
     const batch_tests = b.addTest(.{
+        .name = "batch_test",
         .root_module = batch_module,
     });
     const batch_run = b.addRunArtifact(batch_tests);
@@ -53,6 +55,7 @@ pub fn build(b: *std.Build) void {
     });
     contract_module.addImport("kreuzberg", kreuzberg_module);
     const contract_tests = b.addTest(.{
+        .name = "contract_test",
         .root_module = contract_module,
     });
     const contract_run = b.addRunArtifact(contract_tests);
@@ -67,6 +70,7 @@ pub fn build(b: *std.Build) void {
     });
     detection_module.addImport("kreuzberg", kreuzberg_module);
     const detection_tests = b.addTest(.{
+        .name = "detection_test",
         .root_module = detection_module,
     });
     const detection_run = b.addRunArtifact(detection_tests);
@@ -81,6 +85,7 @@ pub fn build(b: *std.Build) void {
     });
     embeddings_module.addImport("kreuzberg", kreuzberg_module);
     const embeddings_tests = b.addTest(.{
+        .name = "embeddings_test",
         .root_module = embeddings_module,
     });
     const embeddings_run = b.addRunArtifact(embeddings_tests);
@@ -95,6 +100,7 @@ pub fn build(b: *std.Build) void {
     });
     error_module.addImport("kreuzberg", kreuzberg_module);
     const error_tests = b.addTest(.{
+        .name = "error_test",
         .root_module = error_module,
     });
     const error_run = b.addRunArtifact(error_tests);
@@ -109,6 +115,7 @@ pub fn build(b: *std.Build) void {
     });
     format_specific_module.addImport("kreuzberg", kreuzberg_module);
     const format_specific_tests = b.addTest(.{
+        .name = "format_specific_test",
         .root_module = format_specific_module,
     });
     const format_specific_run = b.addRunArtifact(format_specific_tests);
@@ -123,6 +130,7 @@ pub fn build(b: *std.Build) void {
     });
     registry_module.addImport("kreuzberg", kreuzberg_module);
     const registry_tests = b.addTest(.{
+        .name = "registry_test",
         .root_module = registry_module,
     });
     const registry_run = b.addRunArtifact(registry_tests);
@@ -137,6 +145,7 @@ pub fn build(b: *std.Build) void {
     });
     registry_operations_module.addImport("kreuzberg", kreuzberg_module);
     const registry_operations_tests = b.addTest(.{
+        .name = "registry_operations_test",
         .root_module = registry_operations_module,
     });
     const registry_operations_run = b.addRunArtifact(registry_operations_tests);
@@ -151,6 +160,7 @@ pub fn build(b: *std.Build) void {
     });
     smoke_module.addImport("kreuzberg", kreuzberg_module);
     const smoke_tests = b.addTest(.{
+        .name = "smoke_test",
         .root_module = smoke_module,
     });
     const smoke_run = b.addRunArtifact(smoke_tests);

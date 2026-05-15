@@ -354,6 +354,18 @@ pub struct StreamReader {
     pub(crate) inner: kreuzberg::extraction::hwp::reader::StreamReader,
 }
 
+impl From<kreuzberg::extraction::hwp::reader::StreamReader> for StreamReader {
+    fn from(inner: kreuzberg::extraction::hwp::reader::StreamReader) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<StreamReader> for kreuzberg::extraction::hwp::reader::StreamReader {
+    fn from(value: StreamReader) -> Self {
+        value.inner
+    }
+}
+
 #[frb(mirror(ImageOcrResult))]
 pub struct ImageOcrResult {
     pub content: String,
@@ -514,6 +526,18 @@ pub struct CustomProperties {
     pub(crate) inner: kreuzberg::extraction::office_metadata::CustomProperties,
 }
 
+impl From<kreuzberg::extraction::office_metadata::CustomProperties> for CustomProperties {
+    fn from(inner: kreuzberg::extraction::office_metadata::CustomProperties) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<CustomProperties> for kreuzberg::extraction::office_metadata::CustomProperties {
+    fn from(value: CustomProperties) -> Self {
+        value.inner
+    }
+}
+
 #[frb(mirror(OdtProperties))]
 pub struct OdtProperties {
     pub title: Option<String>,
@@ -554,9 +578,33 @@ pub struct ZipBombValidator {
     pub(crate) inner: kreuzberg::extractors::security::ZipBombValidator,
 }
 
+impl From<kreuzberg::extractors::security::ZipBombValidator> for ZipBombValidator {
+    fn from(inner: kreuzberg::extractors::security::ZipBombValidator) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<ZipBombValidator> for kreuzberg::extractors::security::ZipBombValidator {
+    fn from(value: ZipBombValidator) -> Self {
+        value.inner
+    }
+}
+
 #[frb(opaque)]
 pub struct HwpxExtractor {
     pub(crate) inner: kreuzberg::extractors::HwpxExtractor,
+}
+
+impl From<kreuzberg::extractors::HwpxExtractor> for HwpxExtractor {
+    fn from(inner: kreuzberg::extractors::HwpxExtractor) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<HwpxExtractor> for kreuzberg::extractors::HwpxExtractor {
+    fn from(value: HwpxExtractor) -> Self {
+        value.inner
+    }
 }
 
 #[frb(mirror(TokenReductionConfig))]
@@ -1329,9 +1377,33 @@ pub struct StringBufferPool {
     pub(crate) inner: kreuzberg::utils::pool::StringBufferPool,
 }
 
+impl From<kreuzberg::utils::pool::StringBufferPool> for StringBufferPool {
+    fn from(inner: kreuzberg::utils::pool::StringBufferPool) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<StringBufferPool> for kreuzberg::utils::pool::StringBufferPool {
+    fn from(value: StringBufferPool) -> Self {
+        value.inner
+    }
+}
+
 #[frb(opaque)]
 pub struct ByteBufferPool {
     pub(crate) inner: kreuzberg::utils::pool::ByteBufferPool,
+}
+
+impl From<kreuzberg::utils::pool::ByteBufferPool> for ByteBufferPool {
+    fn from(inner: kreuzberg::utils::pool::ByteBufferPool) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<ByteBufferPool> for kreuzberg::utils::pool::ByteBufferPool {
+    fn from(value: ByteBufferPool) -> Self {
+        value.inner
+    }
 }
 
 #[frb(opaque)]
@@ -1339,9 +1411,33 @@ pub struct TracingLayer {
     pub(crate) inner: kreuzberg::service::layers::tracing::TracingLayer,
 }
 
+impl From<kreuzberg::service::layers::tracing::TracingLayer> for TracingLayer {
+    fn from(inner: kreuzberg::service::layers::tracing::TracingLayer) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<TracingLayer> for kreuzberg::service::layers::tracing::TracingLayer {
+    fn from(value: TracingLayer) -> Self {
+        value.inner
+    }
+}
+
 #[frb(opaque)]
 pub struct ApiDoc {
     pub(crate) inner: kreuzberg::api::openapi::ApiDoc,
+}
+
+impl From<kreuzberg::api::openapi::ApiDoc> for ApiDoc {
+    fn from(inner: kreuzberg::api::openapi::ApiDoc) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<ApiDoc> for kreuzberg::api::openapi::ApiDoc {
+    fn from(value: ApiDoc) -> Self {
+        value.inner
+    }
 }
 
 #[frb(mirror(InfoResponse))]
@@ -1353,6 +1449,18 @@ pub struct InfoResponse {
 #[frb(opaque)]
 pub struct ExtractResponse {
     pub(crate) inner: kreuzberg::api::ExtractResponse,
+}
+
+impl From<kreuzberg::api::ExtractResponse> for ExtractResponse {
+    fn from(inner: kreuzberg::api::ExtractResponse) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<ExtractResponse> for kreuzberg::api::ExtractResponse {
+    fn from(value: ExtractResponse) -> Self {
+        value.inner
+    }
 }
 
 #[frb(mirror(EmbedRequest))]
@@ -1545,6 +1653,18 @@ pub struct OcrCacheStats {
 #[frb(opaque)]
 pub struct TessdataManager {
     pub(crate) inner: kreuzberg::ocr::TessdataManager,
+}
+
+impl From<kreuzberg::ocr::TessdataManager> for TessdataManager {
+    fn from(inner: kreuzberg::ocr::TessdataManager) -> Self {
+        Self { inner }
+    }
+}
+
+impl From<TessdataManager> for kreuzberg::ocr::TessdataManager {
+    fn from(value: TessdataManager) -> Self {
+        value.inner
+    }
 }
 
 #[frb(mirror(PaddleOcrConfig))]
@@ -2217,7 +2337,7 @@ impl From<kreuzberg::ExtractionConfig> for ExtractionConfig {
             use_layout_for_markdown: v.use_layout_for_markdown as _,
             include_document_structure: v.include_document_structure as _,
             acceleration: v.acceleration.map(AccelerationConfig::from),
-            cache_namespace: v.cache_namespace.map(|s| s.into()),
+            cache_namespace: v.cache_namespace,
             cache_ttl_secs: v.cache_ttl_secs.map(|x| x as _),
             email: v.email.map(EmailConfig::from),
             concurrency: Default::default(),
@@ -2315,7 +2435,7 @@ impl From<kreuzberg::LanguageDetectionConfig> for LanguageDetectionConfig {
 impl From<kreuzberg::HtmlOutputConfig> for HtmlOutputConfig {
     fn from(v: kreuzberg::HtmlOutputConfig) -> Self {
         HtmlOutputConfig {
-            css: v.css.map(|s| s.into()),
+            css: v.css,
             css_file: v.css_file.map(|p| p.to_string_lossy().into_owned()),
             theme: HtmlTheme::from(v.theme),
             class_prefix: v.class_prefix,
@@ -2339,8 +2459,8 @@ impl From<kreuzberg::LlmConfig> for LlmConfig {
     fn from(v: kreuzberg::LlmConfig) -> Self {
         LlmConfig {
             model: v.model,
-            api_key: v.api_key.map(|s| s.into()),
-            base_url: v.base_url.map(|s| s.into()),
+            api_key: v.api_key,
+            base_url: v.base_url,
             timeout_secs: v.timeout_secs.map(|x| x as _),
             max_retries: v.max_retries.map(|x| x as _),
             temperature: v.temperature.map(|x| x as _),
@@ -2354,9 +2474,9 @@ impl From<kreuzberg::StructuredExtractionConfig> for StructuredExtractionConfig 
         StructuredExtractionConfig {
             schema: serde_json::to_string(&v.schema).unwrap_or_default(),
             schema_name: v.schema_name,
-            schema_description: v.schema_description.map(|s| s.into()),
+            schema_description: v.schema_description,
             strict: v.strict as _,
-            prompt: v.prompt.map(|s| s.into()),
+            prompt: v.prompt,
             llm: LlmConfig::from(v.llm),
         }
     }
@@ -2390,7 +2510,7 @@ impl From<kreuzberg::OcrPipelineStage> for OcrPipelineStage {
         OcrPipelineStage {
             backend: v.backend,
             priority: v.priority as _,
-            language: v.language.map(|s| s.into()),
+            language: v.language,
             tesseract_config: v.tesseract_config.map(TesseractConfig::from),
             paddle_ocr_config: v
                 .paddle_ocr_config
@@ -2425,11 +2545,11 @@ impl From<kreuzberg::OcrConfig> for OcrConfig {
             pipeline: v.pipeline.map(OcrPipelineConfig::from),
             auto_rotate: v.auto_rotate as _,
             vlm_config: v.vlm_config.map(LlmConfig::from),
-            vlm_prompt: v.vlm_prompt.map(|s| s.into()),
+            vlm_prompt: v.vlm_prompt,
             acceleration: v.acceleration.map(AccelerationConfig::from),
             tessdata_bytes: v
                 .tessdata_bytes
-                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v.into())).collect()),
+                .map(|m| m.into_iter().map(|(k, v)| (k, v.into())).collect()),
         }
     }
 }
@@ -2449,7 +2569,7 @@ impl From<kreuzberg::PdfConfig> for PdfConfig {
         PdfConfig {
             extract_images: v.extract_images as _,
             extract_tables: v.extract_tables as _,
-            passwords: v.passwords.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            passwords: v.passwords,
             extract_metadata: v.extract_metadata as _,
             hierarchy: v.hierarchy.map(HierarchyConfig::from),
             extract_annotations: v.extract_annotations as _,
@@ -2476,12 +2596,8 @@ impl From<kreuzberg::PostProcessorConfig> for PostProcessorConfig {
     fn from(v: kreuzberg::PostProcessorConfig) -> Self {
         PostProcessorConfig {
             enabled: v.enabled as _,
-            enabled_processors: v
-                .enabled_processors
-                .map(|vec| vec.into_iter().map(|s| s.into()).collect()),
-            disabled_processors: v
-                .disabled_processors
-                .map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            enabled_processors: v.enabled_processors,
+            disabled_processors: v.disabled_processors,
             enabled_set: Default::default(),
             disabled_set: Default::default(),
         }
@@ -2496,7 +2612,7 @@ impl From<kreuzberg::ChunkingConfig> for ChunkingConfig {
             trim: v.trim as _,
             chunker_type: ChunkerType::from(v.chunker_type),
             embedding: v.embedding.map(EmbeddingConfig::from),
-            preset: v.preset.map(|s| s.into()),
+            preset: v.preset,
             sizing: ChunkSizing::from(v.sizing),
             prepend_heading_context: v.prepend_heading_context as _,
             topic_threshold: v.topic_threshold.map(|x| x as _),
@@ -2523,8 +2639,8 @@ impl From<kreuzberg::TreeSitterConfig> for TreeSitterConfig {
         TreeSitterConfig {
             enabled: v.enabled as _,
             cache_dir: v.cache_dir.map(|p| p.to_string_lossy().into_owned()),
-            languages: v.languages.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
-            groups: v.groups.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            languages: v.languages,
+            groups: v.groups,
             process: TreeSitterProcessConfig::from(v.process),
         }
     }
@@ -2560,7 +2676,7 @@ impl From<kreuzberg::ServerConfig> for ServerConfig {
         ServerConfig {
             host: v.host,
             port: v.port as _,
-            cors_origins: v.cors_origins.into_iter().map(|s| s.into()).collect(),
+            cors_origins: v.cors_origins,
             max_request_body_bytes: v.max_request_body_bytes as _,
             max_multipart_field_bytes: v.max_multipart_field_bytes as _,
         }
@@ -2572,8 +2688,8 @@ impl From<kreuzberg::extraction::structured::StructuredDataResult> for Structure
         StructuredDataResult {
             content: v.content,
             format: v.format.into_owned(),
-            metadata: v.metadata.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
-            text_fields: v.text_fields.into_iter().map(|s| s.into()).collect(),
+            metadata: v.metadata.into_iter().map(|(k, v)| (k, v)).collect(),
+            text_fields: v.text_fields,
         }
     }
 }
@@ -2616,7 +2732,7 @@ impl From<kreuzberg::extraction::html::HtmlExtractionResult> for HtmlExtractionR
         HtmlExtractionResult {
             markdown: v.markdown,
             images: v.images.into_iter().map(ExtractedInlineImage::from).collect(),
-            warnings: v.warnings.into_iter().map(|s| s.into()).collect(),
+            warnings: v.warnings,
         }
     }
 }
@@ -2626,8 +2742,8 @@ impl From<kreuzberg::extraction::html::ExtractedInlineImage> for ExtractedInline
         ExtractedInlineImage {
             data: v.data.into(),
             format: v.format,
-            filename: v.filename.map(|s| s.into()),
-            description: v.description.map(|s| s.into()),
+            filename: v.filename,
+            description: v.description,
             dimensions: Default::default(),
             attributes: Default::default(),
         }
@@ -2640,7 +2756,7 @@ impl From<kreuzberg::extraction::docx::drawing::Drawing> for Drawing {
             drawing_type: Default::default(),
             extent: Default::default(),
             doc_properties: Default::default(),
-            image_ref: v.image_ref.map(|s| s.into()),
+            image_ref: v.image_ref,
         }
     }
 }
@@ -2676,10 +2792,10 @@ impl From<kreuzberg::extraction::docx::styles::StyleDefinition> for StyleDefinit
     fn from(v: kreuzberg::extraction::docx::styles::StyleDefinition) -> Self {
         StyleDefinition {
             id: v.id,
-            name: v.name.map(|s| s.into()),
+            name: v.name,
             style_type: Default::default(),
-            based_on: v.based_on.map(|s| s.into()),
-            next_style: v.next_style.map(|s| s.into()),
+            based_on: v.based_on,
+            next_style: v.next_style,
             is_default: v.is_default as _,
             paragraph_properties: Default::default(),
             run_properties: Default::default(),
@@ -2699,15 +2815,15 @@ impl From<kreuzberg::extraction::docx::styles::ResolvedStyle> for ResolvedStyle 
 impl From<kreuzberg::extraction::docx::table::TableProperties> for TableProperties {
     fn from(v: kreuzberg::extraction::docx::table::TableProperties) -> Self {
         TableProperties {
-            style_id: v.style_id.map(|s| s.into()),
+            style_id: v.style_id,
             width: Default::default(),
-            alignment: v.alignment.map(|s| s.into()),
-            layout: v.layout.map(|s| s.into()),
+            alignment: v.alignment,
+            layout: v.layout,
             look: Default::default(),
             borders: Default::default(),
             cell_margins: Default::default(),
             indent: Default::default(),
-            caption: v.caption.map(|s| s.into()),
+            caption: v.caption,
         }
     }
 }
@@ -2715,9 +2831,9 @@ impl From<kreuzberg::extraction::docx::table::TableProperties> for TableProperti
 impl From<kreuzberg::extraction::office_metadata::DocxAppProperties> for DocxAppProperties {
     fn from(v: kreuzberg::extraction::office_metadata::DocxAppProperties) -> Self {
         DocxAppProperties {
-            application: v.application.map(|s| s.into()),
-            app_version: v.app_version.map(|s| s.into()),
-            template: v.template.map(|s| s.into()),
+            application: v.application,
+            app_version: v.app_version,
+            template: v.template,
             total_time: v.total_time.map(|x| x as _),
             pages: v.pages.map(|x| x as _),
             words: v.words.map(|x| x as _),
@@ -2725,7 +2841,7 @@ impl From<kreuzberg::extraction::office_metadata::DocxAppProperties> for DocxApp
             characters_with_spaces: v.characters_with_spaces.map(|x| x as _),
             lines: v.lines.map(|x| x as _),
             paragraphs: v.paragraphs.map(|x| x as _),
-            company: v.company.map(|s| s.into()),
+            company: v.company,
             doc_security: v.doc_security.map(|x| x as _),
             scale_crop: v.scale_crop.map(|x| x as _),
             links_up_to_date: v.links_up_to_date.map(|x| x as _),
@@ -2738,15 +2854,15 @@ impl From<kreuzberg::extraction::office_metadata::DocxAppProperties> for DocxApp
 impl From<kreuzberg::extraction::office_metadata::app_properties::XlsxAppProperties> for XlsxAppProperties {
     fn from(v: kreuzberg::extraction::office_metadata::app_properties::XlsxAppProperties) -> Self {
         XlsxAppProperties {
-            application: v.application.map(|s| s.into()),
-            app_version: v.app_version.map(|s| s.into()),
+            application: v.application,
+            app_version: v.app_version,
             doc_security: v.doc_security.map(|x| x as _),
             scale_crop: v.scale_crop.map(|x| x as _),
             links_up_to_date: v.links_up_to_date.map(|x| x as _),
             shared_doc: v.shared_doc.map(|x| x as _),
             hyperlinks_changed: v.hyperlinks_changed.map(|x| x as _),
-            company: v.company.map(|s| s.into()),
-            worksheet_names: v.worksheet_names.into_iter().map(|s| s.into()).collect(),
+            company: v.company,
+            worksheet_names: v.worksheet_names,
         }
     }
 }
@@ -2754,10 +2870,10 @@ impl From<kreuzberg::extraction::office_metadata::app_properties::XlsxAppPropert
 impl From<kreuzberg::extraction::office_metadata::app_properties::PptxAppProperties> for PptxAppProperties {
     fn from(v: kreuzberg::extraction::office_metadata::app_properties::PptxAppProperties) -> Self {
         PptxAppProperties {
-            application: v.application.map(|s| s.into()),
-            app_version: v.app_version.map(|s| s.into()),
+            application: v.application,
+            app_version: v.app_version,
             total_time: v.total_time.map(|x| x as _),
-            company: v.company.map(|s| s.into()),
+            company: v.company,
             doc_security: v.doc_security.map(|x| x as _),
             scale_crop: v.scale_crop.map(|x| x as _),
             links_up_to_date: v.links_up_to_date.map(|x| x as _),
@@ -2767,8 +2883,8 @@ impl From<kreuzberg::extraction::office_metadata::app_properties::PptxAppPropert
             notes: v.notes.map(|x| x as _),
             hidden_slides: v.hidden_slides.map(|x| x as _),
             multimedia_clips: v.multimedia_clips.map(|x| x as _),
-            presentation_format: v.presentation_format.map(|s| s.into()),
-            slide_titles: v.slide_titles.into_iter().map(|s| s.into()).collect(),
+            presentation_format: v.presentation_format,
+            slide_titles: v.slide_titles,
         }
     }
 }
@@ -2776,21 +2892,21 @@ impl From<kreuzberg::extraction::office_metadata::app_properties::PptxAppPropert
 impl From<kreuzberg::extraction::office_metadata::CoreProperties> for CoreProperties {
     fn from(v: kreuzberg::extraction::office_metadata::CoreProperties) -> Self {
         CoreProperties {
-            title: v.title.map(|s| s.into()),
-            subject: v.subject.map(|s| s.into()),
-            creator: v.creator.map(|s| s.into()),
-            keywords: v.keywords.map(|s| s.into()),
-            description: v.description.map(|s| s.into()),
-            last_modified_by: v.last_modified_by.map(|s| s.into()),
-            revision: v.revision.map(|s| s.into()),
-            created: v.created.map(|s| s.into()),
-            modified: v.modified.map(|s| s.into()),
-            category: v.category.map(|s| s.into()),
-            content_status: v.content_status.map(|s| s.into()),
-            language: v.language.map(|s| s.into()),
-            identifier: v.identifier.map(|s| s.into()),
-            version: v.version.map(|s| s.into()),
-            last_printed: v.last_printed.map(|s| s.into()),
+            title: v.title,
+            subject: v.subject,
+            creator: v.creator,
+            keywords: v.keywords,
+            description: v.description,
+            last_modified_by: v.last_modified_by,
+            revision: v.revision,
+            created: v.created,
+            modified: v.modified,
+            category: v.category,
+            content_status: v.content_status,
+            language: v.language,
+            identifier: v.identifier,
+            version: v.version,
+            last_printed: v.last_printed,
         }
     }
 }
@@ -2798,18 +2914,18 @@ impl From<kreuzberg::extraction::office_metadata::CoreProperties> for CoreProper
 impl From<kreuzberg::extraction::office_metadata::OdtProperties> for OdtProperties {
     fn from(v: kreuzberg::extraction::office_metadata::OdtProperties) -> Self {
         OdtProperties {
-            title: v.title.map(|s| s.into()),
-            subject: v.subject.map(|s| s.into()),
-            creator: v.creator.map(|s| s.into()),
-            initial_creator: v.initial_creator.map(|s| s.into()),
-            keywords: v.keywords.map(|s| s.into()),
-            description: v.description.map(|s| s.into()),
-            date: v.date.map(|s| s.into()),
-            creation_date: v.creation_date.map(|s| s.into()),
-            language: v.language.map(|s| s.into()),
-            generator: v.generator.map(|s| s.into()),
-            editing_duration: v.editing_duration.map(|s| s.into()),
-            editing_cycles: v.editing_cycles.map(|s| s.into()),
+            title: v.title,
+            subject: v.subject,
+            creator: v.creator,
+            initial_creator: v.initial_creator,
+            keywords: v.keywords,
+            description: v.description,
+            date: v.date,
+            creation_date: v.creation_date,
+            language: v.language,
+            generator: v.generator,
+            editing_duration: v.editing_duration,
+            editing_cycles: v.editing_cycles,
             page_count: v.page_count.map(|x| x as _),
             word_count: v.word_count.map(|x| x as _),
             character_count: v.character_count.map(|x| x as _),
@@ -2840,7 +2956,7 @@ impl From<kreuzberg::TokenReductionConfig> for TokenReductionConfig {
     fn from(v: kreuzberg::TokenReductionConfig) -> Self {
         TokenReductionConfig {
             level: ReductionLevel::from(v.level),
-            language_hint: v.language_hint.map(|s| s.into()),
+            language_hint: v.language_hint,
             preserve_markdown: v.preserve_markdown as _,
             preserve_code: v.preserve_code as _,
             semantic_threshold: v.semantic_threshold as _,
@@ -2848,8 +2964,8 @@ impl From<kreuzberg::TokenReductionConfig> for TokenReductionConfig {
             use_simd: v.use_simd as _,
             custom_stopwords: v
                 .custom_stopwords
-                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v.into())).collect()),
-            preserve_patterns: v.preserve_patterns.into_iter().map(|s| s.into()).collect(),
+                .map(|m| m.into_iter().map(|(k, v)| (k, v.into())).collect()),
+            preserve_patterns: v.preserve_patterns,
             target_reduction: v.target_reduction.map(|x| x as _),
             enable_semantic_clustering: v.enable_semantic_clustering as _,
         }
@@ -2860,7 +2976,7 @@ impl From<kreuzberg::PdfAnnotation> for PdfAnnotation {
     fn from(v: kreuzberg::PdfAnnotation) -> Self {
         PdfAnnotation {
             annotation_type: PdfAnnotationType::from(v.annotation_type),
-            content: v.content.map(|s| s.into()),
+            content: v.content,
             page_number: v.page_number as _,
             bounding_box: Default::default(),
         }
@@ -2889,8 +3005,8 @@ impl From<kreuzberg::FormattedBlock> for FormattedBlock {
             level: v.level.map(|x| x as _),
             inline_content: v.inline_content.into_iter().map(InlineElement::from).collect(),
             attributes: Default::default(),
-            language: v.language.map(|s| s.into()),
-            code: v.code.map(|s| s.into()),
+            language: v.language,
+            code: v.code,
             children: v.children.into_iter().map(FormattedBlock::from).collect(),
         }
     }
@@ -2902,9 +3018,7 @@ impl From<kreuzberg::InlineElement> for InlineElement {
             element_type: InlineType::from(v.element_type),
             content: v.content,
             attributes: Default::default(),
-            metadata: v
-                .metadata
-                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v.into())).collect()),
+            metadata: v.metadata.map(|m| m.into_iter().map(|(k, v)| (k, v)).collect()),
         }
     }
 }
@@ -2914,7 +3028,7 @@ impl From<kreuzberg::DjotImage> for DjotImage {
         DjotImage {
             src: v.src,
             alt: v.alt,
-            title: v.title.map(|s| s.into()),
+            title: v.title,
             attributes: Default::default(),
         }
     }
@@ -2925,7 +3039,7 @@ impl From<kreuzberg::DjotLink> for DjotLink {
         DjotLink {
             url: v.url,
             text: v.text,
-            title: v.title.map(|s| s.into()),
+            title: v.title,
             attributes: Default::default(),
         }
     }
@@ -2944,9 +3058,9 @@ impl From<kreuzberg::DocumentStructure> for DocumentStructure {
     fn from(v: kreuzberg::DocumentStructure) -> Self {
         DocumentStructure {
             nodes: v.nodes.into_iter().map(DocumentNode::from).collect(),
-            source_format: v.source_format.map(|s| s.into()),
+            source_format: v.source_format,
             relationships: v.relationships.into_iter().map(DocumentRelationship::from).collect(),
-            node_types: v.node_types.into_iter().map(|s| s.into()).collect(),
+            node_types: v.node_types,
         }
     }
 }
@@ -2973,9 +3087,7 @@ impl From<kreuzberg::DocumentNode> for DocumentNode {
             page_end: v.page_end.map(|x| x as _),
             bbox: Default::default(),
             annotations: v.annotations.into_iter().map(TextAnnotation::from).collect(),
-            attributes: v
-                .attributes
-                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v.into())).collect()),
+            attributes: v.attributes.map(|m| m.into_iter().map(|(k, v)| (k, v)).collect()),
         }
     }
 }
@@ -3022,9 +3134,7 @@ impl From<kreuzberg::ExtractionResult> for ExtractionResult {
             metadata: Metadata::from(v.metadata),
             extraction_method: v.extraction_method.map(ExtractionMethod::from),
             tables: v.tables.into_iter().map(Table::from).collect(),
-            detected_languages: v
-                .detected_languages
-                .map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            detected_languages: v.detected_languages,
             chunks: v.chunks.map(|vec| vec.into_iter().map(Chunk::from).collect()),
             images: v.images.map(|vec| vec.into_iter().map(ExtractedImage::from).collect()),
             pages: v.pages.map(|vec| vec.into_iter().map(PageContent::from).collect()),
@@ -3049,7 +3159,7 @@ impl From<kreuzberg::ExtractionResult> for ExtractionResult {
                 .map(|j| serde_json::to_string(&j).unwrap_or_default()),
             code_intelligence: Default::default(),
             llm_usage: v.llm_usage.map(|vec| vec.into_iter().map(LlmUsage::from).collect()),
-            formatted_content: v.formatted_content.map(|s| s.into()),
+            formatted_content: v.formatted_content,
             ocr_internal_document: Default::default(),
         }
     }
@@ -3083,7 +3193,7 @@ impl From<kreuzberg::LlmUsage> for LlmUsage {
             output_tokens: v.output_tokens.map(|x| x as _),
             total_tokens: v.total_tokens.map(|x| x as _),
             estimated_cost: v.estimated_cost.map(|x| x as _),
-            finish_reason: v.finish_reason.map(|s| s.into()),
+            finish_reason: v.finish_reason,
         }
     }
 }
@@ -3140,13 +3250,13 @@ impl From<kreuzberg::ExtractedImage> for ExtractedImage {
             page_number: v.page_number.map(|x| x as _),
             width: v.width.map(|x| x as _),
             height: v.height.map(|x| x as _),
-            colorspace: v.colorspace.map(|s| s.into()),
+            colorspace: v.colorspace,
             bits_per_component: v.bits_per_component.map(|x| x as _),
             is_mask: v.is_mask as _,
-            description: v.description.map(|s| s.into()),
+            description: v.description,
             ocr_result: v.ocr_result.map(|b| ExtractionResult::from(*b)),
             bounding_box: Default::default(),
-            source_path: v.source_path.map(|s| s.into()),
+            source_path: v.source_path,
             image_kind: v.image_kind.map(ImageKind::from),
             kind_confidence: v.kind_confidence.map(|x| x as _),
             cluster_id: v.cluster_id.map(|x| x as _),
@@ -3158,10 +3268,10 @@ impl From<kreuzberg::ElementMetadata> for ElementMetadata {
     fn from(v: kreuzberg::ElementMetadata) -> Self {
         ElementMetadata {
             page_number: v.page_number.map(|x| x as _),
-            filename: v.filename.map(|s| s.into()),
+            filename: v.filename,
             coordinates: Default::default(),
             element_index: v.element_index.map(|x| x as _),
-            additional: v.additional.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
+            additional: v.additional.into_iter().map(|(k, v)| (k, v)).collect(),
         }
     }
 }
@@ -3181,7 +3291,7 @@ impl From<kreuzberg::ExcelWorkbook> for ExcelWorkbook {
     fn from(v: kreuzberg::ExcelWorkbook) -> Self {
         ExcelWorkbook {
             sheets: v.sheets.into_iter().map(ExcelSheet::from).collect(),
-            metadata: v.metadata.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
+            metadata: v.metadata.into_iter().map(|(k, v)| (k, v)).collect(),
         }
     }
 }
@@ -3204,7 +3314,7 @@ impl From<kreuzberg::XmlExtractionResult> for XmlExtractionResult {
         XmlExtractionResult {
             content: v.content,
             element_count: v.element_count as _,
-            unique_elements: v.unique_elements.into_iter().map(|s| s.into()).collect(),
+            unique_elements: v.unique_elements,
         }
     }
 }
@@ -3216,7 +3326,7 @@ impl From<kreuzberg::TextExtractionResult> for TextExtractionResult {
             line_count: v.line_count as _,
             word_count: v.word_count as _,
             character_count: v.character_count as _,
-            headers: v.headers.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            headers: v.headers,
             links: Default::default(),
             code_blocks: Default::default(),
         }
@@ -3238,11 +3348,7 @@ impl From<kreuzberg::PptxExtractionResult> for PptxExtractionResult {
                 .map(|vec| vec.into_iter().map(PageContent::from).collect()),
             document: v.document.map(DocumentStructure::from),
             hyperlinks: Default::default(),
-            office_metadata: v
-                .office_metadata
-                .into_iter()
-                .map(|(k, v)| (k.into(), v.into()))
-                .collect(),
+            office_metadata: v.office_metadata.into_iter().map(|(k, v)| (k, v)).collect(),
         }
     }
 }
@@ -3250,18 +3356,18 @@ impl From<kreuzberg::PptxExtractionResult> for PptxExtractionResult {
 impl From<kreuzberg::EmailExtractionResult> for EmailExtractionResult {
     fn from(v: kreuzberg::EmailExtractionResult) -> Self {
         EmailExtractionResult {
-            subject: v.subject.map(|s| s.into()),
-            from_email: v.from_email.map(|s| s.into()),
-            to_emails: v.to_emails.into_iter().map(|s| s.into()).collect(),
-            cc_emails: v.cc_emails.into_iter().map(|s| s.into()).collect(),
-            bcc_emails: v.bcc_emails.into_iter().map(|s| s.into()).collect(),
-            date: v.date.map(|s| s.into()),
-            message_id: v.message_id.map(|s| s.into()),
-            plain_text: v.plain_text.map(|s| s.into()),
-            html_content: v.html_content.map(|s| s.into()),
+            subject: v.subject,
+            from_email: v.from_email,
+            to_emails: v.to_emails,
+            cc_emails: v.cc_emails,
+            bcc_emails: v.bcc_emails,
+            date: v.date,
+            message_id: v.message_id,
+            plain_text: v.plain_text,
+            html_content: v.html_content,
             content: v.content,
             attachments: v.attachments.into_iter().map(EmailAttachment::from).collect(),
-            metadata: v.metadata.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
+            metadata: v.metadata.into_iter().map(|(k, v)| (k, v)).collect(),
         }
     }
 }
@@ -3269,9 +3375,9 @@ impl From<kreuzberg::EmailExtractionResult> for EmailExtractionResult {
 impl From<kreuzberg::EmailAttachment> for EmailAttachment {
     fn from(v: kreuzberg::EmailAttachment) -> Self {
         EmailAttachment {
-            name: v.name.map(|s| s.into()),
-            filename: v.filename.map(|s| s.into()),
-            mime_type: v.mime_type.map(|s| s.into()),
+            name: v.name,
+            filename: v.filename,
+            mime_type: v.mime_type,
             size: v.size.map(|x| x as _),
             is_image: v.is_image as _,
             data: v.data.map(|b| b.into()),
@@ -3287,7 +3393,7 @@ impl From<kreuzberg::OcrExtractionResult> for OcrExtractionResult {
             metadata: v
                 .metadata
                 .into_iter()
-                .map(|(k, v)| (k.into(), serde_json::to_string(&v).unwrap_or_default()))
+                .map(|(k, v)| (k, serde_json::to_string(&v).unwrap_or_default()))
                 .collect(),
             tables: v.tables.into_iter().map(OcrTable::from).collect(),
             ocr_elements: v
@@ -3376,7 +3482,7 @@ impl From<kreuzberg::ImagePreprocessingMetadata> for ImagePreprocessingMetadata 
             dimension_clamped: v.dimension_clamped as _,
             calculated_dpi: v.calculated_dpi.map(|x| x as _),
             skipped_resize: v.skipped_resize as _,
-            resize_error: v.resize_error.map(|s| s.into()),
+            resize_error: v.resize_error,
         }
     }
 }
@@ -3384,31 +3490,31 @@ impl From<kreuzberg::ImagePreprocessingMetadata> for ImagePreprocessingMetadata 
 impl From<kreuzberg::Metadata> for Metadata {
     fn from(v: kreuzberg::Metadata) -> Self {
         Metadata {
-            title: v.title.map(|s| s.into()),
-            subject: v.subject.map(|s| s.into()),
-            authors: v.authors.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
-            keywords: v.keywords.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
-            language: v.language.map(|s| s.into()),
-            created_at: v.created_at.map(|s| s.into()),
-            modified_at: v.modified_at.map(|s| s.into()),
-            created_by: v.created_by.map(|s| s.into()),
-            modified_by: v.modified_by.map(|s| s.into()),
+            title: v.title,
+            subject: v.subject,
+            authors: v.authors,
+            keywords: v.keywords,
+            language: v.language,
+            created_at: v.created_at,
+            modified_at: v.modified_at,
+            created_by: v.created_by,
+            modified_by: v.modified_by,
             pages: v.pages.map(PageStructure::from),
             format: v.format.map(FormatMetadata::from),
             image_preprocessing: v.image_preprocessing.map(ImagePreprocessingMetadata::from),
             json_schema: v.json_schema.map(|j| serde_json::to_string(&j).unwrap_or_default()),
             error: v.error.map(ErrorMetadata::from),
             extraction_duration_ms: v.extraction_duration_ms.map(|x| x as _),
-            category: v.category.map(|s| s.into()),
-            tags: v.tags.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
-            document_version: v.document_version.map(|s| s.into()),
-            abstract_text: v.abstract_text.map(|s| s.into()),
-            output_format: v.output_format.map(|s| s.into()),
+            category: v.category,
+            tags: v.tags,
+            document_version: v.document_version,
+            abstract_text: v.abstract_text,
+            output_format: v.output_format,
             ocr_used: v.ocr_used as _,
             additional: v
                 .additional
                 .into_iter()
-                .map(|(k, v)| (k.into(), serde_json::to_string(&v).unwrap_or_default()))
+                .map(|(k, v)| (k, serde_json::to_string(&v).unwrap_or_default()))
                 .collect(),
         }
     }
@@ -3418,7 +3524,7 @@ impl From<kreuzberg::ExcelMetadata> for ExcelMetadata {
     fn from(v: kreuzberg::ExcelMetadata) -> Self {
         ExcelMetadata {
             sheet_count: v.sheet_count.map(|x| x as _),
-            sheet_names: v.sheet_names.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            sheet_names: v.sheet_names,
         }
     }
 }
@@ -3426,13 +3532,13 @@ impl From<kreuzberg::ExcelMetadata> for ExcelMetadata {
 impl From<kreuzberg::EmailMetadata> for EmailMetadata {
     fn from(v: kreuzberg::EmailMetadata) -> Self {
         EmailMetadata {
-            from_email: v.from_email.map(|s| s.into()),
-            from_name: v.from_name.map(|s| s.into()),
-            to_emails: v.to_emails.into_iter().map(|s| s.into()).collect(),
-            cc_emails: v.cc_emails.into_iter().map(|s| s.into()).collect(),
-            bcc_emails: v.bcc_emails.into_iter().map(|s| s.into()).collect(),
-            message_id: v.message_id.map(|s| s.into()),
-            attachments: v.attachments.into_iter().map(|s| s.into()).collect(),
+            from_email: v.from_email,
+            from_name: v.from_name,
+            to_emails: v.to_emails,
+            cc_emails: v.cc_emails,
+            bcc_emails: v.bcc_emails,
+            message_id: v.message_id,
+            attachments: v.attachments,
         }
     }
 }
@@ -3442,7 +3548,7 @@ impl From<kreuzberg::ArchiveMetadata> for ArchiveMetadata {
         ArchiveMetadata {
             format: v.format.into_owned(),
             file_count: v.file_count as _,
-            file_list: v.file_list.into_iter().map(|s| s.into()).collect(),
+            file_list: v.file_list,
             total_size: v.total_size as _,
             compressed_size: v.compressed_size.map(|x| x as _),
         }
@@ -3455,7 +3561,7 @@ impl From<kreuzberg::ImageMetadata> for ImageMetadata {
             width: v.width as _,
             height: v.height as _,
             format: v.format,
-            exif: v.exif.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
+            exif: v.exif.into_iter().map(|(k, v)| (k, v)).collect(),
         }
     }
 }
@@ -3464,7 +3570,7 @@ impl From<kreuzberg::XmlMetadata> for XmlMetadata {
     fn from(v: kreuzberg::XmlMetadata) -> Self {
         XmlMetadata {
             element_count: v.element_count as _,
-            unique_elements: v.unique_elements.into_iter().map(|s| s.into()).collect(),
+            unique_elements: v.unique_elements,
         }
     }
 }
@@ -3475,7 +3581,7 @@ impl From<kreuzberg::TextMetadata> for TextMetadata {
             line_count: v.line_count as _,
             word_count: v.word_count as _,
             character_count: v.character_count as _,
-            headers: v.headers.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            headers: v.headers,
             links: Default::default(),
             code_blocks: Default::default(),
         }
@@ -3487,7 +3593,7 @@ impl From<kreuzberg::HeaderMetadata> for HeaderMetadata {
         HeaderMetadata {
             level: v.level as _,
             text: v.text,
-            id: v.id.map(|s| s.into()),
+            id: v.id,
             depth: v.depth as _,
             html_offset: v.html_offset as _,
         }
@@ -3499,9 +3605,9 @@ impl From<kreuzberg::LinkMetadata> for LinkMetadata {
         LinkMetadata {
             href: v.href,
             text: v.text,
-            title: v.title.map(|s| s.into()),
+            title: v.title,
             link_type: LinkType::from(v.link_type),
-            rel: v.rel.into_iter().map(|s| s.into()).collect(),
+            rel: v.rel,
             attributes: Default::default(),
         }
     }
@@ -3511,8 +3617,8 @@ impl From<kreuzberg::ImageMetadataType> for ImageMetadataType {
     fn from(v: kreuzberg::ImageMetadataType) -> Self {
         ImageMetadataType {
             src: v.src,
-            alt: v.alt.map(|s| s.into()),
-            title: v.title.map(|s| s.into()),
+            alt: v.alt,
+            title: v.title,
             dimensions: Default::default(),
             image_type: ImageType::from(v.image_type),
             attributes: Default::default(),
@@ -3525,7 +3631,7 @@ impl From<kreuzberg::StructuredData> for StructuredData {
         StructuredData {
             data_type: StructuredDataType::from(v.data_type),
             raw_json: v.raw_json,
-            schema_type: v.schema_type.map(|s| s.into()),
+            schema_type: v.schema_type,
         }
     }
 }
@@ -3533,17 +3639,17 @@ impl From<kreuzberg::StructuredData> for StructuredData {
 impl From<kreuzberg::HtmlMetadata> for HtmlMetadata {
     fn from(v: kreuzberg::HtmlMetadata) -> Self {
         HtmlMetadata {
-            title: v.title.map(|s| s.into()),
-            description: v.description.map(|s| s.into()),
-            keywords: v.keywords.into_iter().map(|s| s.into()).collect(),
-            author: v.author.map(|s| s.into()),
-            canonical_url: v.canonical_url.map(|s| s.into()),
-            base_href: v.base_href.map(|s| s.into()),
-            language: v.language.map(|s| s.into()),
+            title: v.title,
+            description: v.description,
+            keywords: v.keywords,
+            author: v.author,
+            canonical_url: v.canonical_url,
+            base_href: v.base_href,
+            language: v.language,
             text_direction: v.text_direction.map(TextDirection::from),
-            open_graph: v.open_graph.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
-            twitter_card: v.twitter_card.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
-            meta_tags: v.meta_tags.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
+            open_graph: v.open_graph.into_iter().map(|(k, v)| (k, v)).collect(),
+            twitter_card: v.twitter_card.into_iter().map(|(k, v)| (k, v)).collect(),
+            meta_tags: v.meta_tags.into_iter().map(|(k, v)| (k, v)).collect(),
             headers: v.headers.into_iter().map(HeaderMetadata::from).collect(),
             links: v.links.into_iter().map(LinkMetadata::from).collect(),
             images: v.images.into_iter().map(ImageMetadataType::from).collect(),
@@ -3578,7 +3684,7 @@ impl From<kreuzberg::PptxMetadata> for PptxMetadata {
     fn from(v: kreuzberg::PptxMetadata) -> Self {
         PptxMetadata {
             slide_count: v.slide_count as _,
-            slide_names: v.slide_names.into_iter().map(|s| s.into()).collect(),
+            slide_names: v.slide_names,
             image_count: v.image_count.map(|x| x as _),
             table_count: v.table_count.map(|x| x as _),
         }
@@ -3592,7 +3698,7 @@ impl From<kreuzberg::DocxMetadata> for DocxMetadata {
             app_properties: v.app_properties.map(DocxAppProperties::from),
             custom_properties: v.custom_properties.map(|m| {
                 m.into_iter()
-                    .map(|(k, v)| (k.into(), serde_json::to_string(&v).unwrap_or_default()))
+                    .map(|(k, v)| (k, serde_json::to_string(&v).unwrap_or_default()))
                     .collect()
             }),
         }
@@ -3604,9 +3710,9 @@ impl From<kreuzberg::CsvMetadata> for CsvMetadata {
         CsvMetadata {
             row_count: v.row_count as _,
             column_count: v.column_count as _,
-            delimiter: v.delimiter.map(|s| s.into()),
+            delimiter: v.delimiter,
             has_header: v.has_header as _,
-            column_types: v.column_types.map(|vec| vec.into_iter().map(|s| s.into()).collect()),
+            column_types: v.column_types,
         }
     }
 }
@@ -3615,12 +3721,10 @@ impl From<kreuzberg::BibtexMetadata> for BibtexMetadata {
     fn from(v: kreuzberg::BibtexMetadata) -> Self {
         BibtexMetadata {
             entry_count: v.entry_count as _,
-            citation_keys: v.citation_keys.into_iter().map(|s| s.into()).collect(),
-            authors: v.authors.into_iter().map(|s| s.into()).collect(),
+            citation_keys: v.citation_keys,
+            authors: v.authors,
             year_range: v.year_range.map(YearRange::from),
-            entry_types: v
-                .entry_types
-                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v as _)).collect()),
+            entry_types: v.entry_types.map(|m| m.into_iter().map(|(k, v)| (k, v as _)).collect()),
         }
     }
 }
@@ -3629,11 +3733,11 @@ impl From<kreuzberg::CitationMetadata> for CitationMetadata {
     fn from(v: kreuzberg::CitationMetadata) -> Self {
         CitationMetadata {
             citation_count: v.citation_count as _,
-            format: v.format.map(|s| s.into()),
-            authors: v.authors.into_iter().map(|s| s.into()).collect(),
+            format: v.format,
+            authors: v.authors,
             year_range: v.year_range.map(YearRange::from),
-            dois: v.dois.into_iter().map(|s| s.into()).collect(),
-            keywords: v.keywords.into_iter().map(|s| s.into()).collect(),
+            dois: v.dois,
+            keywords: v.keywords,
         }
     }
 }
@@ -3651,9 +3755,9 @@ impl From<kreuzberg::YearRange> for YearRange {
 impl From<kreuzberg::FictionBookMetadata> for FictionBookMetadata {
     fn from(v: kreuzberg::FictionBookMetadata) -> Self {
         FictionBookMetadata {
-            genres: v.genres.into_iter().map(|s| s.into()).collect(),
-            sequences: v.sequences.into_iter().map(|s| s.into()).collect(),
-            annotation: v.annotation.map(|s| s.into()),
+            genres: v.genres,
+            sequences: v.sequences,
+            annotation: v.annotation,
         }
     }
 }
@@ -3680,9 +3784,9 @@ impl From<kreuzberg::DbfFieldInfo> for DbfFieldInfo {
 impl From<kreuzberg::JatsMetadata> for JatsMetadata {
     fn from(v: kreuzberg::JatsMetadata) -> Self {
         JatsMetadata {
-            copyright: v.copyright.map(|s| s.into()),
-            license: v.license.map(|s| s.into()),
-            history_dates: v.history_dates.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
+            copyright: v.copyright,
+            license: v.license,
+            history_dates: v.history_dates.into_iter().map(|(k, v)| (k, v)).collect(),
             contributor_roles: v.contributor_roles.into_iter().map(ContributorRole::from).collect(),
         }
     }
@@ -3692,7 +3796,7 @@ impl From<kreuzberg::ContributorRole> for ContributorRole {
     fn from(v: kreuzberg::ContributorRole) -> Self {
         ContributorRole {
             name: v.name,
-            role: v.role.map(|s| s.into()),
+            role: v.role,
         }
     }
 }
@@ -3700,12 +3804,12 @@ impl From<kreuzberg::ContributorRole> for ContributorRole {
 impl From<kreuzberg::EpubMetadata> for EpubMetadata {
     fn from(v: kreuzberg::EpubMetadata) -> Self {
         EpubMetadata {
-            coverage: v.coverage.map(|s| s.into()),
-            dc_format: v.dc_format.map(|s| s.into()),
-            relation: v.relation.map(|s| s.into()),
-            source: v.source.map(|s| s.into()),
-            dc_type: v.dc_type.map(|s| s.into()),
-            cover_image: v.cover_image.map(|s| s.into()),
+            coverage: v.coverage,
+            dc_format: v.dc_format,
+            relation: v.relation,
+            source: v.source,
+            dc_type: v.dc_type,
+            cover_image: v.cover_image,
         }
     }
 }
@@ -3745,11 +3849,11 @@ impl From<kreuzberg::OcrElement> for OcrElement {
             level: OcrElementLevel::from(v.level),
             rotation: v.rotation.map(OcrRotation::from),
             page_number: v.page_number as _,
-            parent_id: v.parent_id.map(|s| s.into()),
+            parent_id: v.parent_id,
             backend_metadata: v
                 .backend_metadata
                 .into_iter()
-                .map(|(k, v)| (k.into(), serde_json::to_string(&v).unwrap_or_default()))
+                .map(|(k, v)| (k, serde_json::to_string(&v).unwrap_or_default()))
                 .collect(),
         }
     }
@@ -3793,7 +3897,7 @@ impl From<kreuzberg::PageInfo> for PageInfo {
     fn from(v: kreuzberg::PageInfo) -> Self {
         PageInfo {
             number: v.number as _,
-            title: v.title.map(|s| s.into()),
+            title: v.title,
             dimensions: Default::default(),
             image_count: v.image_count.map(|x| x as _),
             table_count: v.table_count.map(|x| x as _),
@@ -3881,7 +3985,7 @@ impl From<kreuzberg::Uri> for Uri {
     fn from(v: kreuzberg::Uri) -> Self {
         Uri {
             url: v.url,
-            label: v.label.map(|s| s.into()),
+            label: v.label,
             page: v.page.map(|x| x as _),
             kind: UriKind::from(v.kind),
         }
@@ -3900,7 +4004,7 @@ impl From<kreuzberg::api::InfoResponse> for InfoResponse {
 impl From<kreuzberg::api::EmbedRequest> for EmbedRequest {
     fn from(v: kreuzberg::api::EmbedRequest) -> Self {
         EmbedRequest {
-            texts: v.texts.into_iter().map(|s| s.into()).collect(),
+            texts: v.texts,
             config: v.config.map(EmbeddingConfig::from),
         }
     }
@@ -3947,7 +4051,7 @@ impl From<kreuzberg::api::DetectResponse> for DetectResponse {
     fn from(v: kreuzberg::api::DetectResponse) -> Self {
         DetectResponse {
             mime_type: v.mime_type,
-            filename: v.filename.map(|s| s.into()),
+            filename: v.filename,
         }
     }
 }
@@ -3978,8 +4082,8 @@ impl From<kreuzberg::api::WarmResponse> for WarmResponse {
     fn from(v: kreuzberg::api::WarmResponse) -> Self {
         WarmResponse {
             cache_dir: v.cache_dir,
-            downloaded: v.downloaded.into_iter().map(|s| s.into()).collect(),
-            already_cached: v.already_cached.into_iter().map(|s| s.into()).collect(),
+            downloaded: v.downloaded,
+            already_cached: v.already_cached,
         }
     }
 }
@@ -4025,7 +4129,7 @@ impl From<kreuzberg::mcp::CacheWarmParams> for CacheWarmParams {
     fn from(v: kreuzberg::mcp::CacheWarmParams) -> Self {
         CacheWarmParams {
             all_embeddings: v.all_embeddings as _,
-            embedding_model: v.embedding_model.map(|s| s.into()),
+            embedding_model: v.embedding_model,
         }
     }
 }
@@ -4033,11 +4137,11 @@ impl From<kreuzberg::mcp::CacheWarmParams> for CacheWarmParams {
 impl From<kreuzberg::mcp::EmbedTextParams> for EmbedTextParams {
     fn from(v: kreuzberg::mcp::EmbedTextParams) -> Self {
         EmbedTextParams {
-            texts: v.texts.into_iter().map(|s| s.into()).collect(),
-            preset: v.preset.map(|s| s.into()),
-            model: v.model.map(|s| s.into()),
-            api_key: v.api_key.map(|s| s.into()),
-            embedding_plugin: v.embedding_plugin.map(|s| s.into()),
+            texts: v.texts,
+            preset: v.preset,
+            model: v.model,
+            api_key: v.api_key,
+            embedding_plugin: v.embedding_plugin,
         }
     }
 }
@@ -4049,9 +4153,9 @@ impl From<kreuzberg::mcp::ExtractStructuredParams> for ExtractStructuredParams {
             schema: serde_json::to_string(&v.schema).unwrap_or_default(),
             model: v.model,
             schema_name: v.schema_name,
-            schema_description: v.schema_description.map(|s| s.into()),
-            prompt: v.prompt.map(|s| s.into()),
-            api_key: v.api_key.map(|s| s.into()),
+            schema_description: v.schema_description,
+            prompt: v.prompt,
+            api_key: v.api_key,
             strict: v.strict as _,
         }
     }
@@ -4063,7 +4167,7 @@ impl From<kreuzberg::mcp::ChunkTextParams> for ChunkTextParams {
             text: v.text,
             max_characters: v.max_characters.map(|x| x as _),
             overlap: v.overlap.map(|x| x as _),
-            chunker_type: v.chunker_type.map(|s| s.into()),
+            chunker_type: v.chunker_type,
             topic_threshold: v.topic_threshold.map(|x| x as _),
         }
     }
@@ -4136,7 +4240,7 @@ impl From<kreuzberg::KeywordConfig> for KeywordConfig {
             max_keywords: v.max_keywords as _,
             min_score: v.min_score as _,
             ngram_range: Default::default(),
-            language: v.language.map(|s| s.into()),
+            language: v.language,
             yake_params: v.yake_params.map(YakeParams::from),
             rake_params: v.rake_params.map(RakeParams::from),
         }
@@ -4248,7 +4352,7 @@ impl From<kreuzberg::pdf::embedded_files::EmbeddedFile> for EmbeddedFile {
         EmbeddedFile {
             name: v.name,
             data: v.data.into(),
-            mime_type: v.mime_type.map(|s| s.into()),
+            mime_type: v.mime_type,
         }
     }
 }
@@ -4256,8 +4360,8 @@ impl From<kreuzberg::pdf::embedded_files::EmbeddedFile> for EmbeddedFile {
 impl From<kreuzberg::pdf::metadata::PdfMetadata> for PdfMetadata {
     fn from(v: kreuzberg::pdf::metadata::PdfMetadata) -> Self {
         PdfMetadata {
-            pdf_version: v.pdf_version.map(|s| s.into()),
-            producer: v.producer.map(|s| s.into()),
+            pdf_version: v.pdf_version,
+            producer: v.producer,
             is_encrypted: v.is_encrypted.map(|x| x as _),
             width: v.width.map(|x| x as _),
             height: v.height.map(|x| x as _),
@@ -4287,7 +4391,7 @@ impl From<kreuzberg::OutputFormat> for OutputFormat {
             kreuzberg::OutputFormat::Html => OutputFormat::Html,
             kreuzberg::OutputFormat::Json => OutputFormat::Json,
             kreuzberg::OutputFormat::Structured => OutputFormat::Structured,
-            kreuzberg::OutputFormat::Custom(f0) => OutputFormat::Custom { field0: f0.into() },
+            kreuzberg::OutputFormat::Custom(f0) => OutputFormat::Custom { field0: f0 },
         }
     }
 }
@@ -4333,7 +4437,7 @@ impl From<kreuzberg::ChunkSizing> for ChunkSizing {
         match v {
             kreuzberg::ChunkSizing::Characters => ChunkSizing::Characters,
             kreuzberg::ChunkSizing::Tokenizer { model, cache_dir } => ChunkSizing::Tokenizer {
-                model: model.into(),
+                model,
                 cache_dir: cache_dir.map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(),
             },
         }
@@ -4343,15 +4447,15 @@ impl From<kreuzberg::ChunkSizing> for ChunkSizing {
 impl From<kreuzberg::EmbeddingModelType> for EmbeddingModelType {
     fn from(v: kreuzberg::EmbeddingModelType) -> Self {
         match v {
-            kreuzberg::EmbeddingModelType::Preset { name } => EmbeddingModelType::Preset { name: name.into() },
+            kreuzberg::EmbeddingModelType::Preset { name } => EmbeddingModelType::Preset { name },
             kreuzberg::EmbeddingModelType::Custom { model_id, dimensions } => EmbeddingModelType::Custom {
-                model_id: model_id.into(),
+                model_id,
                 dimensions: dimensions as _,
             },
             kreuzberg::EmbeddingModelType::Llm { llm } => EmbeddingModelType::Llm {
                 llm: LlmConfig::from(llm),
             },
-            kreuzberg::EmbeddingModelType::Plugin { name } => EmbeddingModelType::Plugin { name: name.into() },
+            kreuzberg::EmbeddingModelType::Plugin { name } => EmbeddingModelType::Plugin { name },
         }
     }
 }
@@ -4498,14 +4602,14 @@ impl From<kreuzberg::ContentLayer> for ContentLayer {
 impl From<kreuzberg::NodeContent> for NodeContent {
     fn from(v: kreuzberg::NodeContent) -> Self {
         match v {
-            kreuzberg::NodeContent::Title { text } => NodeContent::Title { text: text.into() },
+            kreuzberg::NodeContent::Title { text } => NodeContent::Title { text },
             kreuzberg::NodeContent::Heading { level, text } => NodeContent::Heading {
                 level: level as _,
-                text: text.into(),
+                text,
             },
-            kreuzberg::NodeContent::Paragraph { text } => NodeContent::Paragraph { text: text.into() },
+            kreuzberg::NodeContent::Paragraph { text } => NodeContent::Paragraph { text },
             kreuzberg::NodeContent::List { ordered } => NodeContent::List { ordered: ordered as _ },
-            kreuzberg::NodeContent::ListItem { text } => NodeContent::ListItem { text: text.into() },
+            kreuzberg::NodeContent::ListItem { text } => NodeContent::ListItem { text },
             kreuzberg::NodeContent::Table { grid } => NodeContent::Table {
                 grid: TableGrid::from(grid),
             },
@@ -4519,12 +4623,12 @@ impl From<kreuzberg::NodeContent> for NodeContent {
                 src: src.unwrap_or_default(),
             },
             kreuzberg::NodeContent::Code { text, language } => NodeContent::Code {
-                text: text.into(),
+                text,
                 language: language.unwrap_or_default(),
             },
             kreuzberg::NodeContent::Quote => NodeContent::Quote,
-            kreuzberg::NodeContent::Formula { text } => NodeContent::Formula { text: text.into() },
-            kreuzberg::NodeContent::Footnote { text } => NodeContent::Footnote { text: text.into() },
+            kreuzberg::NodeContent::Formula { text } => NodeContent::Formula { text },
+            kreuzberg::NodeContent::Footnote { text } => NodeContent::Footnote { text },
             kreuzberg::NodeContent::Group {
                 label,
                 heading_level,
@@ -4540,22 +4644,15 @@ impl From<kreuzberg::NodeContent> for NodeContent {
                 title: title.unwrap_or_default(),
             },
             kreuzberg::NodeContent::DefinitionList => NodeContent::DefinitionList,
-            kreuzberg::NodeContent::DefinitionItem { term, definition } => NodeContent::DefinitionItem {
-                term: term.into(),
-                definition: definition.into(),
-            },
-            kreuzberg::NodeContent::Citation { key, text } => NodeContent::Citation {
-                key: key.into(),
-                text: text.into(),
-            },
+            kreuzberg::NodeContent::DefinitionItem { term, definition } => {
+                NodeContent::DefinitionItem { term, definition }
+            }
+            kreuzberg::NodeContent::Citation { key, text } => NodeContent::Citation { key, text },
             kreuzberg::NodeContent::Admonition { kind, title } => NodeContent::Admonition {
-                kind: kind.into(),
+                kind,
                 title: title.unwrap_or_default(),
             },
-            kreuzberg::NodeContent::RawBlock { format, content } => NodeContent::RawBlock {
-                format: format.into(),
-                content: content.into(),
-            },
+            kreuzberg::NodeContent::RawBlock { format, content } => NodeContent::RawBlock { format, content },
             kreuzberg::NodeContent::MetadataBlock { entries } => NodeContent::MetadataBlock {
                 entries: entries
                     .into_iter()
@@ -4577,14 +4674,14 @@ impl From<kreuzberg::AnnotationKind> for AnnotationKind {
             kreuzberg::AnnotationKind::Subscript => AnnotationKind::Subscript,
             kreuzberg::AnnotationKind::Superscript => AnnotationKind::Superscript,
             kreuzberg::AnnotationKind::Link { url, title } => AnnotationKind::Link {
-                url: url.into(),
+                url,
                 title: title.unwrap_or_default(),
             },
             kreuzberg::AnnotationKind::Highlight => AnnotationKind::Highlight,
-            kreuzberg::AnnotationKind::Color { value } => AnnotationKind::Color { value: value.into() },
-            kreuzberg::AnnotationKind::FontSize { value } => AnnotationKind::FontSize { value: value.into() },
+            kreuzberg::AnnotationKind::Color { value } => AnnotationKind::Color { value },
+            kreuzberg::AnnotationKind::FontSize { value } => AnnotationKind::FontSize { value },
             kreuzberg::AnnotationKind::Custom { name, value } => AnnotationKind::Custom {
-                name: name.into(),
+                name,
                 value: value.unwrap_or_default(),
             },
         }
@@ -4946,6 +5043,7 @@ impl From<EmailConfig> for kreuzberg::EmailConfig {
     }
 }
 
+#[allow(clippy::needless_update)]
 impl From<ExtractionConfig> for kreuzberg::ExtractionConfig {
     fn from(v: ExtractionConfig) -> Self {
         kreuzberg::ExtractionConfig {
@@ -4975,7 +5073,7 @@ impl From<ExtractionConfig> for kreuzberg::ExtractionConfig {
             use_layout_for_markdown: v.use_layout_for_markdown as _,
             include_document_structure: v.include_document_structure as _,
             acceleration: v.acceleration.map(Into::into),
-            cache_namespace: v.cache_namespace.map(Into::into),
+            cache_namespace: v.cache_namespace,
             cache_ttl_secs: v.cache_ttl_secs.map(|x| x as _),
             email: v.email.map(Into::into),
             concurrency: Default::default(),
@@ -4988,6 +5086,7 @@ impl From<ExtractionConfig> for kreuzberg::ExtractionConfig {
     }
 }
 
+#[allow(clippy::needless_update)]
 impl From<FileExtractionConfig> for kreuzberg::FileExtractionConfig {
     fn from(v: FileExtractionConfig) -> Self {
         kreuzberg::FileExtractionConfig {
@@ -5022,7 +5121,7 @@ impl From<BatchBytesItem> for kreuzberg::BatchBytesItem {
     fn from(v: BatchBytesItem) -> Self {
         kreuzberg::BatchBytesItem {
             content: v.content.into(),
-            mime_type: v.mime_type.into(),
+            mime_type: v.mime_type,
             config: v.config.map(Into::into),
         }
     }
@@ -5056,7 +5155,7 @@ impl From<ImageExtractionConfig> for kreuzberg::ImageExtractionConfig {
 impl From<TokenReductionOptions> for kreuzberg::TokenReductionOptions {
     fn from(v: TokenReductionOptions) -> Self {
         kreuzberg::TokenReductionOptions {
-            mode: v.mode.into(),
+            mode: v.mode,
             preserve_important_words: v.preserve_important_words as _,
         }
     }
@@ -5075,10 +5174,10 @@ impl From<LanguageDetectionConfig> for kreuzberg::LanguageDetectionConfig {
 impl From<HtmlOutputConfig> for kreuzberg::HtmlOutputConfig {
     fn from(v: HtmlOutputConfig) -> Self {
         kreuzberg::HtmlOutputConfig {
-            css: v.css.map(Into::into),
+            css: v.css,
             css_file: v.css_file.map(std::path::PathBuf::from),
             theme: v.theme.into(),
-            class_prefix: v.class_prefix.into(),
+            class_prefix: v.class_prefix,
             embed_css: v.embed_css as _,
         }
     }
@@ -5098,9 +5197,9 @@ impl From<LayoutDetectionConfig> for kreuzberg::LayoutDetectionConfig {
 impl From<LlmConfig> for kreuzberg::LlmConfig {
     fn from(v: LlmConfig) -> Self {
         kreuzberg::LlmConfig {
-            model: v.model.into(),
-            api_key: v.api_key.map(Into::into),
-            base_url: v.base_url.map(Into::into),
+            model: v.model,
+            api_key: v.api_key,
+            base_url: v.base_url,
             timeout_secs: v.timeout_secs.map(|x| x as _),
             max_retries: v.max_retries.map(|x| x as _),
             temperature: v.temperature.map(|x| x as _),
@@ -5113,10 +5212,10 @@ impl From<StructuredExtractionConfig> for kreuzberg::StructuredExtractionConfig 
     fn from(v: StructuredExtractionConfig) -> Self {
         kreuzberg::StructuredExtractionConfig {
             schema: serde_json::from_str(&v.schema).unwrap_or_default(),
-            schema_name: v.schema_name.into(),
-            schema_description: v.schema_description.map(Into::into),
+            schema_name: v.schema_name,
+            schema_description: v.schema_description,
             strict: v.strict as _,
-            prompt: v.prompt.map(Into::into),
+            prompt: v.prompt,
             llm: v.llm.into(),
         }
     }
@@ -5148,9 +5247,9 @@ impl From<OcrQualityThresholds> for kreuzberg::OcrQualityThresholds {
 impl From<OcrPipelineStage> for kreuzberg::OcrPipelineStage {
     fn from(v: OcrPipelineStage) -> Self {
         kreuzberg::OcrPipelineStage {
-            backend: v.backend.into(),
+            backend: v.backend,
             priority: v.priority as _,
-            language: v.language.map(Into::into),
+            language: v.language,
             tesseract_config: v.tesseract_config.map(Into::into),
             paddle_ocr_config: v
                 .paddle_ocr_config
@@ -5174,8 +5273,8 @@ impl From<OcrConfig> for kreuzberg::OcrConfig {
     fn from(v: OcrConfig) -> Self {
         kreuzberg::OcrConfig {
             enabled: v.enabled as _,
-            backend: v.backend.into(),
-            language: v.language.into(),
+            backend: v.backend,
+            language: v.language,
             tesseract_config: v.tesseract_config.map(Into::into),
             output_format: v.output_format.map(Into::into),
             paddle_ocr_config: v
@@ -5187,11 +5286,11 @@ impl From<OcrConfig> for kreuzberg::OcrConfig {
             pipeline: v.pipeline.map(Into::into),
             auto_rotate: v.auto_rotate as _,
             vlm_config: v.vlm_config.map(Into::into),
-            vlm_prompt: v.vlm_prompt.map(Into::into),
+            vlm_prompt: v.vlm_prompt,
             acceleration: v.acceleration.map(Into::into),
             tessdata_bytes: v
                 .tessdata_bytes
-                .map(|m| m.into_iter().map(|(k, v)| (k.into(), v.into())).collect()),
+                .map(|m| m.into_iter().map(|(k, v)| (k, v.into())).collect()),
         }
     }
 }
@@ -5201,7 +5300,7 @@ impl From<PageConfig> for kreuzberg::PageConfig {
         kreuzberg::PageConfig {
             extract_pages: v.extract_pages as _,
             insert_page_markers: v.insert_page_markers as _,
-            marker_format: v.marker_format.into(),
+            marker_format: v.marker_format,
         }
     }
 }
@@ -5211,7 +5310,7 @@ impl From<PdfConfig> for kreuzberg::PdfConfig {
         kreuzberg::PdfConfig {
             extract_images: v.extract_images as _,
             extract_tables: v.extract_tables as _,
-            passwords: v.passwords.map(|vec| vec.into_iter().map(Into::into).collect()),
+            passwords: v.passwords,
             extract_metadata: v.extract_metadata as _,
             hierarchy: v.hierarchy.map(Into::into),
             extract_annotations: v.extract_annotations as _,
@@ -5238,12 +5337,8 @@ impl From<PostProcessorConfig> for kreuzberg::PostProcessorConfig {
     fn from(v: PostProcessorConfig) -> Self {
         kreuzberg::PostProcessorConfig {
             enabled: v.enabled as _,
-            enabled_processors: v
-                .enabled_processors
-                .map(|vec| vec.into_iter().map(Into::into).collect()),
-            disabled_processors: v
-                .disabled_processors
-                .map(|vec| vec.into_iter().map(Into::into).collect()),
+            enabled_processors: v.enabled_processors,
+            disabled_processors: v.disabled_processors,
             enabled_set: Default::default(),
             disabled_set: Default::default(),
         }
@@ -5258,7 +5353,7 @@ impl From<ChunkingConfig> for kreuzberg::ChunkingConfig {
             trim: v.trim as _,
             chunker_type: v.chunker_type.into(),
             embedding: v.embedding.map(Into::into),
-            preset: v.preset.map(Into::into),
+            preset: v.preset,
             sizing: v.sizing.into(),
             prepend_heading_context: v.prepend_heading_context as _,
             topic_threshold: v.topic_threshold.map(|x| x as _),
@@ -5285,8 +5380,8 @@ impl From<TreeSitterConfig> for kreuzberg::TreeSitterConfig {
         kreuzberg::TreeSitterConfig {
             enabled: v.enabled as _,
             cache_dir: v.cache_dir.map(std::path::PathBuf::from),
-            languages: v.languages.map(|vec| vec.into_iter().map(Into::into).collect()),
-            groups: v.groups.map(|vec| vec.into_iter().map(Into::into).collect()),
+            languages: v.languages,
+            groups: v.groups,
             process: v.process.into(),
         }
     }
@@ -5332,7 +5427,7 @@ impl From<ImagePreprocessingConfig> for kreuzberg::ImagePreprocessingConfig {
             deskew: v.deskew as _,
             denoise: v.denoise as _,
             contrast_enhance: v.contrast_enhance as _,
-            binarization_method: v.binarization_method.into(),
+            binarization_method: v.binarization_method,
             invert_colors: v.invert_colors as _,
         }
     }
@@ -5341,9 +5436,9 @@ impl From<ImagePreprocessingConfig> for kreuzberg::ImagePreprocessingConfig {
 impl From<TesseractConfig> for kreuzberg::TesseractConfig {
     fn from(v: TesseractConfig) -> Self {
         kreuzberg::TesseractConfig {
-            language: v.language.into(),
+            language: v.language,
             psm: v.psm as _,
-            output_format: v.output_format.into(),
+            output_format: v.output_format,
             oem: v.oem as _,
             min_confidence: v.min_confidence as _,
             preprocessing: v.preprocessing.map(Into::into),
@@ -5357,8 +5452,8 @@ impl From<TesseractConfig> for kreuzberg::TesseractConfig {
             tessedit_dont_blkrej_good_wds: v.tessedit_dont_blkrej_good_wds as _,
             tessedit_dont_rowrej_good_wds: v.tessedit_dont_rowrej_good_wds as _,
             tessedit_enable_dict_correction: v.tessedit_enable_dict_correction as _,
-            tessedit_char_whitelist: v.tessedit_char_whitelist.into(),
-            tessedit_char_blacklist: v.tessedit_char_blacklist.into(),
+            tessedit_char_whitelist: v.tessedit_char_whitelist,
+            tessedit_char_blacklist: v.tessedit_char_blacklist,
             tessedit_use_primary_params_model: v.tessedit_use_primary_params_model as _,
             textord_space_size_is_variable: v.textord_space_size_is_variable as _,
             thresholding_method: v.thresholding_method as _,
@@ -5394,6 +5489,7 @@ impl From<RakeParams> for kreuzberg::RakeParams {
     }
 }
 
+#[allow(clippy::needless_update)]
 impl From<KeywordConfig> for kreuzberg::KeywordConfig {
     fn from(v: KeywordConfig) -> Self {
         kreuzberg::KeywordConfig {
@@ -5401,7 +5497,7 @@ impl From<KeywordConfig> for kreuzberg::KeywordConfig {
             max_keywords: v.max_keywords as _,
             min_score: v.min_score as _,
             ngram_range: Default::default(),
-            language: v.language.map(Into::into),
+            language: v.language,
             yake_params: v.yake_params.map(Into::into),
             rake_params: v.rake_params.map(Into::into),
             ..Default::default()
@@ -5430,7 +5526,7 @@ impl From<OutputFormat> for kreuzberg::OutputFormat {
             OutputFormat::Html => kreuzberg::OutputFormat::Html,
             OutputFormat::Json => kreuzberg::OutputFormat::Json,
             OutputFormat::Structured => kreuzberg::OutputFormat::Structured,
-            OutputFormat::Custom { field0 } => kreuzberg::OutputFormat::Custom(field0.into()),
+            OutputFormat::Custom { field0 } => kreuzberg::OutputFormat::Custom(field0),
         }
     }
 }
@@ -5476,7 +5572,7 @@ impl From<ChunkSizing> for kreuzberg::ChunkSizing {
         match v {
             ChunkSizing::Characters => kreuzberg::ChunkSizing::Characters,
             ChunkSizing::Tokenizer { model, cache_dir } => kreuzberg::ChunkSizing::Tokenizer {
-                model: model.into(),
+                model,
                 cache_dir: if cache_dir.is_empty() {
                     None
                 } else {
@@ -5490,13 +5586,13 @@ impl From<ChunkSizing> for kreuzberg::ChunkSizing {
 impl From<EmbeddingModelType> for kreuzberg::EmbeddingModelType {
     fn from(v: EmbeddingModelType) -> Self {
         match v {
-            EmbeddingModelType::Preset { name } => kreuzberg::EmbeddingModelType::Preset { name: name.into() },
+            EmbeddingModelType::Preset { name } => kreuzberg::EmbeddingModelType::Preset { name },
             EmbeddingModelType::Custom { model_id, dimensions } => kreuzberg::EmbeddingModelType::Custom {
-                model_id: model_id.into(),
+                model_id,
                 dimensions: dimensions as _,
             },
             EmbeddingModelType::Llm { llm } => kreuzberg::EmbeddingModelType::Llm { llm: llm.into() },
-            EmbeddingModelType::Plugin { name } => kreuzberg::EmbeddingModelType::Plugin { name: name.into() },
+            EmbeddingModelType::Plugin { name } => kreuzberg::EmbeddingModelType::Plugin { name },
         }
     }
 }
@@ -5564,7 +5660,7 @@ pub async fn extract_bytes(
 ) -> Result<ExtractionResult, String> {
     kreuzberg::extract_bytes(&content, &mime_type, &kreuzberg::ExtractionConfig::from(config))
         .await
-        .map(|v| ExtractionResult::from(v))
+        .map(ExtractionResult::from)
         .map_err(|e| e.to_string())
 }
 
@@ -5597,7 +5693,7 @@ pub async fn extract_file(
         &kreuzberg::ExtractionConfig::from(config),
     )
     .await
-    .map(|v| ExtractionResult::from(v))
+    .map(ExtractionResult::from)
     .map_err(|e| e.to_string())
 }
 
@@ -5621,7 +5717,7 @@ pub fn extract_file_sync(
         mime_type.as_deref(),
         &kreuzberg::ExtractionConfig::from(config),
     )
-    .map(|v| ExtractionResult::from(v))
+    .map(ExtractionResult::from)
     .map_err(|e| e.to_string())
 }
 
@@ -5638,7 +5734,7 @@ pub fn extract_bytes_sync(
     config: ExtractionConfig,
 ) -> Result<ExtractionResult, String> {
     kreuzberg::extract_bytes_sync(&content, &mime_type, &kreuzberg::ExtractionConfig::from(config))
-        .map(|v| ExtractionResult::from(v))
+        .map(ExtractionResult::from)
         .map_err(|e| e.to_string())
 }
 

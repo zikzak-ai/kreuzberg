@@ -1,5 +1,5 @@
 [workspace]
-alef_version = "0.16.0"
+alef_version = "0.16.1"
 languages = [
   "python",
   "node",
@@ -442,7 +442,10 @@ abis = ["arm64-v8a", "x86_64"]
 module_name = "Kreuzberg"
 package_name = "Kreuzberg"
 features = ["full"]
-exclude_fields = ["ExtractionResult.ocr_internal_document", "OcrExtractionResult.internal_document"]
+exclude_fields = [
+  "ExtractionResult.ocr_internal_document",
+  "OcrExtractionResult.internal_document",
+]
 exclude_functions = [
   # Returns Option<&'static EmbeddingPreset> but EmbeddingPreset: !Serialize — cannot JSON-bridge
   "get_preset",
@@ -555,8 +558,8 @@ types = [
   "ConcurrencyConfig",
   "JsonDocument",
   "JsonNode",
-  "PaddleOcrBackend", # runtime backend with engine pool — cannot serialize
-  "ModelManager", # holds Path/HashMap engines — cannot serialize
+  "PaddleOcrBackend",         # runtime backend with engine pool — cannot serialize
+  "ModelManager",             # holds Path/HashMap engines — cannot serialize
   "PluginHealthStatus",
   "Run",
   "Paragraph",
@@ -572,7 +575,7 @@ types = [
   "ElementKind",
   "ParagraphProperties",
   "ParagraphMeta",
-  "StyledHtmlRenderer", # runtime renderer with internal state — cannot serialize
+  "StyledHtmlRenderer",       # runtime renderer with internal state — cannot serialize
   "ImageDpiConfig",
 
   # Internal extractor implementations (not public API — users use extract_file/extract_bytes)
@@ -773,16 +776,16 @@ types = [
   "kreuzberg::extraction::hwp::model::Section",
 
   # Duplicate types with internal-only versions — use public types instead
-  "BoundingBox", # kreuzberg::pdf::hierarchy::bounding_box::BoundingBox (internal; use kreuzberg::types::BoundingBox)
+  "BoundingBox",                                 # kreuzberg::pdf::hierarchy::bounding_box::BoundingBox (internal; use kreuzberg::types::BoundingBox)
   "kreuzberg::extraction::image::ImageMetadata", # internal; kreuzberg::types::ImageMetadata is the public API type
-  "Attributes", # kreuzberg::extractors::djot_format::attributes::Attributes (internal type with lifetime issues)
+  "Attributes",                                  # kreuzberg::extractors::djot_format::attributes::Attributes (internal type with lifetime issues)
 
   # Content format OutputFormat (from core::config::formats) — exclude by fully-qualified path so
   # that only the internal content-format variant is dropped while types::OutputFormat is retained.
   "kreuzberg::core::config::formats::OutputFormat", # internal; kreuzberg::types::OutputFormat is the public API type
 
   # Internal IDs and newtype wrappers lacking required derives/conversions
-  "NodeId", # String newtype without Serialize/From for FFI
+  "NodeId",    # String newtype without Serialize/From for FFI
   "ElementId", # String newtype without Serialize/From for FFI
 
   # Internal types from docx parser
@@ -792,13 +795,13 @@ types = [
   "CancellationToken", # Arc<AtomicBool> wrapper — not meaningful across FFI boundaries
 
   # Dependency-owned types that cannot be converted for cross-language bindings
-  "LayoutEngine", # tch-rs Session wrapper — can't serialize
+  "LayoutEngine",    # tch-rs Session wrapper — can't serialize
   "NormalizeResult", # ort output type — internal, can't serialize
 
   # Internal stats/response types
-  "NativeTextStats", # missing Debug
-  "ErrorResponse", # API-only error response
-  "ApiSizeLimits", # internal API config
+  "NativeTextStats",       # missing Debug
+  "ErrorResponse",         # API-only error response
+  "ApiSizeLimits",         # internal API config
   "PdfExtractionMetadata", # internal PDF metadata
 
   "VlmOcrBackend",
@@ -1145,7 +1148,23 @@ cmake_config = true
 [crates.e2e]
 fixtures = "fixtures"
 output = "e2e"
-languages = ["python", "rust", "node", "go", "ruby", "elixir", "wasm", "java", "csharp", "php", "r", "dart", "kotlin_android", "swift", "zig"]
+languages = [
+  "python",
+  "rust",
+  "node",
+  "go",
+  "ruby",
+  "elixir",
+  "wasm",
+  "java",
+  "csharp",
+  "php",
+  "r",
+  "dart",
+  "kotlin_android",
+  "swift",
+  "zig",
+]
 fields_optional = [
   "metadata.format",
   "metadata.format.excel",
@@ -1192,9 +1211,7 @@ fields_array = [
   "metadata.format.excel.sheet_names",
   "document.node_types",
 ]
-fields_method_calls = [
-  "metadata.format.excel",
-]
+fields_method_calls = ["metadata.format.excel"]
 
 [crates.e2e.call]
 function = "extract_file"
@@ -2116,7 +2133,11 @@ description = "Extract text, tables, images, and metadata from 91+ file formats 
 package_manager = ["pip"]
 features = { ocr = true, async = true, plugin_system = true, embeddings = true, code_intelligence = true }
 ocr_backends = ["tesseract", "easyocr", "paddleocr"]
-optional_sections = ["async_vs_sync_performance", "ocr_backends", "system_requirements"]
+optional_sections = [
+  "async_vs_sync_performance",
+  "ocr_backends",
+  "system_requirements",
+]
 snippets = { basic_extraction = "getting-started/basic_usage.md", async_extraction = "getting-started/extract_file.md", batch_processing = "getting-started/extract_with_ocr.md", ocr_configuration = "getting-started/hello_world.md", table_extraction = "getting-started/read_content.md" }
 
 [crates.readme.languages.typescript]
@@ -2228,11 +2249,7 @@ description = "Extract text, tables, images, and metadata from 91+ file formats 
 package_manager = ["pnpm"]
 features = { ocr = true, async = true, plugin_system = true, embeddings = false, code_intelligence = true }
 ocr_backends = ["tesseract-wasm"]
-optional_sections = [
-  "multi_threading",
-  "ocr_support",
-  "performance_comparison",
-]
+optional_sections = ["multi_threading", "ocr_support", "performance_comparison"]
 snippets = { basic_extraction = "getting-started/basic-extract.ts", browser_extraction = "getting-started/browser-file-input.ts", node_extraction = "getting-started/basic-extract.ts", async_extraction = "getting-started/async-extraction.ts", cloudflare_workers = "getting-started/runtime-detection.ts", batch_processing = "getting-started/batch-processing.ts", ocr_configuration = "ocr/enable-ocr.ts" }
 
 [crates.readme.languages.r]
