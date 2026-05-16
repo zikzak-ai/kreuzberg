@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
 
       - name: Free disk space
-        uses: kreuzberg-dev/actions/free-disk-space-linux@v1
+        uses: kreuzberg-dev/actions/free-disk-space-linux@v1.0.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -53,7 +53,7 @@ jobs:
           ls -lh /tmp/kreuzberg-${{ matrix.variant }}.tar.gz
 
       - name: Check image size
-        uses: kreuzberg-dev/actions/check-docker-image-size@v1
+        uses: kreuzberg-dev/actions/check-docker-image-size@v1.0.0
         with:
           image: kreuzberg:${{ matrix.variant }}
           warn-mb: ${{ matrix.variant == 'cli' && '200' || '' }}
@@ -69,7 +69,7 @@ jobs:
 
       - name: Run API contract tests with schemathesis
         if: matrix.variant != 'cli'
-        uses: kreuzberg-dev/actions/run-api-contract-tests@v1
+        uses: kreuzberg-dev/actions/run-api-contract-tests@v1.0.0
         with:
           image: kreuzberg:${{ matrix.variant }}
           port: "8000"

@@ -56,13 +56,13 @@ jobs:
 
       - name: Free disk space
         if: runner.os == 'Linux'
-        uses: kreuzberg-dev/actions/free-disk-space-linux@v1
+        uses: kreuzberg-dev/actions/free-disk-space-linux@v1.0.0
         with:
           show-initial: "false"
           show-final: "true"
 
       - name: Setup Rust
-        uses: kreuzberg-dev/actions/setup-rust@v1
+        uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           cache-key-prefix: rust-${{ matrix.os }}
           use-sccache: "true"
@@ -71,7 +71,7 @@ jobs:
         uses: ./.github/actions/install-system-deps
 
       - name: Setup OpenSSL
-        uses: kreuzberg-dev/actions/setup-openssl@v1
+        uses: kreuzberg-dev/actions/setup-openssl@v1.0.0
 
       - name: Setup ONNX Runtime
         uses: ./.github/actions/setup-onnx-runtime
@@ -84,7 +84,7 @@ jobs:
           label: ${{ matrix.os }}
 
       - name: Install Task
-        uses: kreuzberg-dev/actions/install-task@v1
+        uses: kreuzberg-dev/actions/install-task@v1.0.0
 
       - name: Run clippy
         run: cargo clippy --workspace --exclude kreuzberg-ffi --exclude kreuzberg-py --exclude kreuzberg-php --exclude kreuzberg-node --exclude kreuzberg-wasm --exclude kreuzberg-dart --exclude kreuzberg-swift --exclude kreuzberg_nif -- -D warnings

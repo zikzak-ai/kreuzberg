@@ -4,19 +4,19 @@ on:
   push:
     branches: [main]
     paths:
-      - 'crates/**'
-      - 'packages/dart/**'
-      - 'packages/swift/**'
-      - 'packages/kotlin-android/**'
-      - '.github/workflows/ci-mobile.yaml'
+      - "crates/**"
+      - "packages/dart/**"
+      - "packages/swift/**"
+      - "packages/kotlin-android/**"
+      - ".github/workflows/ci-mobile.yaml"
   pull_request:
     branches: [main]
     paths:
-      - 'crates/**'
-      - 'packages/dart/**'
-      - 'packages/swift/**'
-      - 'packages/kotlin-android/**'
-      - '.github/workflows/ci-mobile.yaml'
+      - "crates/**"
+      - "packages/dart/**"
+      - "packages/swift/**"
+      - "packages/kotlin-android/**"
+      - ".github/workflows/ci-mobile.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -49,10 +49,10 @@ jobs:
         abi: [arm64-v8a, x86_64]
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           cache-key-prefix: ci-mobile-android-${{ matrix.abi }}
-      - uses: kreuzberg-dev/actions/setup-android-ndk@v1
+      - uses: kreuzberg-dev/actions/setup-android-ndk@v1.0.0
       - name: cargo ndk check kreuzberg-dart
         run: cargo ndk --target ${{ matrix.abi }} --platform 21 -- check -p kreuzberg-dart
       - name: cargo ndk check kreuzberg-ffi
@@ -69,7 +69,7 @@ jobs:
         target: [aarch64-apple-ios, aarch64-apple-ios-sim]
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
           cache-key-prefix: ci-mobile-ios-${{ matrix.target }}

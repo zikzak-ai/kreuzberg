@@ -100,18 +100,18 @@ jobs:
 
       - name: Retag for republish
         if: ${{ inputs.republish == true || github.event.client_payload.republish == true }}
-        uses: kreuzberg-dev/actions/retag-for-republish@v1
+        uses: kreuzberg-dev/actions/retag-for-republish@v1.0.0
         with:
           tag: ${{ inputs.tag || github.event.client_payload.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve release metadata
         id: meta
-        uses: kreuzberg-dev/actions/prepare-release-metadata@v1
+        uses: kreuzberg-dev/actions/prepare-release-metadata@v1.0.0
 
       - name: Ensure GitHub Release exists for tag
         if: ${{ steps.meta.outputs.is_tag == 'true' && steps.meta.outputs.dry_run != 'true' }}
-        uses: kreuzberg-dev/actions/publish-github-release@v1
+        uses: kreuzberg-dev/actions/publish-github-release@v1.0.0
         with:
           tag: ${{ steps.meta.outputs.tag }}
           target: ${{ steps.meta.outputs.target_sha }}
@@ -132,7 +132,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate versions
-        uses: kreuzberg-dev/actions/validate-versions@v1
+        uses: kreuzberg-dev/actions/validate-versions@v1.0.0
         with:
           version: ${{ needs.prepare.outputs.version }}
 
@@ -147,7 +147,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: pypi
           package: kreuzberg
@@ -163,7 +163,7 @@ jobs:
       wasm_exists: ${{ steps.check.outputs.wasm_exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: npm
           package: "@kreuzberg/node"
@@ -180,7 +180,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: rubygems
           package: kreuzberg
@@ -196,7 +196,7 @@ jobs:
       kotlin_exists: ${{ steps.check.outputs.kotlin_exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: maven
           package: "dev.kreuzberg:kreuzberg"
@@ -213,7 +213,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: nuget
           package: Kreuzberg
@@ -228,7 +228,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: packagist
           package: kreuzberg/kreuzberg
@@ -247,7 +247,7 @@ jobs:
       all_exist: ${{ steps.derive.outputs.all_exist }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: cratesio
           package: kreuzberg
@@ -279,7 +279,7 @@ jobs:
       elixir_exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: hex
           package: kreuzberg
@@ -294,7 +294,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: pub
           package: kreuzberg
@@ -310,7 +310,7 @@ jobs:
     steps:
       # Zig has no central registry; existence === GitHub release tag exists.
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: zig
           package: kreuzberg
@@ -328,7 +328,7 @@ jobs:
       # Swift has no central registry; SPI auto-discovers GitHub tags, so
       # existence === GitHub release tag exists.
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: swift
           package: kreuzberg
@@ -344,7 +344,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: homebrew
           package: kreuzberg
@@ -360,7 +360,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: github-release
           package: kreuzberg
@@ -380,7 +380,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: github-release
           package: kreuzberg
@@ -398,7 +398,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: github-release
           package: kreuzberg
@@ -416,7 +416,7 @@ jobs:
       exists: ${{ steps.check.outputs.exists }}
     steps:
       - id: check
-        uses: kreuzberg-dev/actions/check-registry@v1
+        uses: kreuzberg-dev/actions/check-registry@v1.0.0
         with:
           registry: github-release
           package: kreuzberg
@@ -446,7 +446,7 @@ jobs:
 
           submodules: recursive
       - name: Build wheels
-        uses: kreuzberg-dev/actions/build-python-wheels@v1
+        uses: kreuzberg-dev/actions/build-python-wheels@v1.0.0
         with:
           python-version: "3.13"
           package-dir: packages/python
@@ -488,7 +488,7 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
       - uses: actions/setup-python@v6.2.0
         with:
           python-version: "3.13"
@@ -528,16 +528,16 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
 
-      - uses: kreuzberg-dev/actions/setup-node-workspace@v1
+      - uses: kreuzberg-dev/actions/setup-node-workspace@v1.0.0
         with:
           node-version: "24"
 
       - name: Build NAPI binding
-        uses: kreuzberg-dev/actions/build-node-napi@v1
+        uses: kreuzberg-dev/actions/build-node-napi@v1.0.0
         with:
           crate-dir: crates/kreuzberg-node
           build-command: pnpm exec napi build --release --target ${{ matrix.target }} --platform
@@ -560,17 +560,17 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: wasm32-unknown-unknown
 
-      - uses: kreuzberg-dev/actions/install-wasi-sdk@v1
+      - uses: kreuzberg-dev/actions/install-wasi-sdk@v1.0.0
 
-      - uses: kreuzberg-dev/actions/setup-node-workspace@v1
+      - uses: kreuzberg-dev/actions/setup-node-workspace@v1.0.0
         with:
           node-version: "24"
 
-      - uses: kreuzberg-dev/actions/build-wasm-package@v1
+      - uses: kreuzberg-dev/actions/build-wasm-package@v1.0.0
         with:
           crate-dir: crates/kreuzberg-wasm
           pack-tarball: "true"
@@ -608,14 +608,14 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
 
       - uses: ruby/setup-ruby@v1.307.0
         with:
           ruby-version: "3.3"
           bundler-cache: false
 
-      - uses: kreuzberg-dev/actions/build-ruby-gem@v1
+      - uses: kreuzberg-dev/actions/build-ruby-gem@v1.0.0
         with:
           package-dir: packages/ruby
 
@@ -653,24 +653,24 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-php@v1
+      - uses: kreuzberg-dev/actions/setup-php@v1.0.0
         with:
           php-version: ${{ matrix.php }}
 
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.platform.target }}
 
-      - uses: kreuzberg-dev/actions/build-php-extension@v1
+      - uses: kreuzberg-dev/actions/build-php-extension@v1.0.0
         with:
           crate-name: kreuzberg-php
           lib-name: kreuzberg_php
           php-version: ${{ matrix.php }}
           php-ts: nts
 
-      - uses: kreuzberg-dev/actions/install-alef@v1
+      - uses: kreuzberg-dev/actions/install-alef@v1.0.0
 
-      - uses: kreuzberg-dev/actions/package-php-pie@v1
+      - uses: kreuzberg-dev/actions/package-php-pie@v1.0.0
         with:
           php-version: ${{ matrix.php }}
           php-ts: nts
@@ -709,11 +709,11 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
 
-      - uses: kreuzberg-dev/actions/build-rust-cli@v1
+      - uses: kreuzberg-dev/actions/build-rust-cli@v1.0.0
         id: build
         with:
           package-name: kreuzberg-cli
@@ -814,11 +814,11 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
 
-      - uses: kreuzberg-dev/actions/build-go-ffi@v1
+      - uses: kreuzberg-dev/actions/build-go-ffi@v1.0.0
         with:
           target: ${{ matrix.target }}
           crate-name: kreuzberg-ffi
@@ -854,11 +854,11 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
 
-      - uses: kreuzberg-dev/actions/build-rust-ffi@v1
+      - uses: kreuzberg-dev/actions/build-rust-ffi@v1.0.0
         with:
           crate-name: kreuzberg-ffi
           target: ${{ matrix.target }}
@@ -908,11 +908,11 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
 
-      - uses: kreuzberg-dev/actions/build-java-natives@v1
+      - uses: kreuzberg-dev/actions/build-java-natives@v1.0.0
         with:
           target: ${{ matrix.target }}
           crate-name: kreuzberg-ffi
@@ -981,8 +981,8 @@ jobs:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
-      - uses: kreuzberg-dev/actions/build-android-natives@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
+      - uses: kreuzberg-dev/actions/build-android-natives@v1.0.0
         with:
           crate-name: kreuzberg-ffi
           abis: ${{ matrix.abi }}
@@ -1013,11 +1013,11 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
 
-      - uses: kreuzberg-dev/actions/build-csharp-natives@v1
+      - uses: kreuzberg-dev/actions/build-csharp-natives@v1.0.0
         with:
           target: ${{ matrix.target }}
           crate-name: kreuzberg-ffi
@@ -1096,11 +1096,11 @@ jobs:
           elixir-version: "1.17"
           otp-version: "27"
 
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
 
-      - uses: kreuzberg-dev/actions/build-elixir-natives@v1
+      - uses: kreuzberg-dev/actions/build-elixir-natives@v1.0.0
         with:
           target: ${{ matrix.target }}
           nif-crate-name: kreuzberg_nif
@@ -1182,8 +1182,8 @@ jobs:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
-      - uses: kreuzberg-dev/actions/build-android-natives@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
+      - uses: kreuzberg-dev/actions/build-android-natives@v1.0.0
         with:
           crate-name: kreuzberg-dart
           abis: ${{ matrix.abi }}
@@ -1205,8 +1205,8 @@ jobs:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
-      - uses: kreuzberg-dev/actions/build-ios-xcframework@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
+      - uses: kreuzberg-dev/actions/build-ios-xcframework@v1.0.0
         with:
           crate-name: kreuzberg-dart
       - uses: actions/upload-artifact@v7.0.1
@@ -1225,17 +1225,37 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest,    target: x86_64-unknown-linux-gnu,  blob: linux-x86_64,    lib: libkreuzberg_dart.so  }
-          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu, blob: linux-aarch64,   lib: libkreuzberg_dart.so  }
-          - { os: macos-latest,     target: aarch64-apple-darwin,      blob: macos-arm64,     lib: libkreuzberg_dart.dylib }
-          - { os: windows-latest,   target: x86_64-pc-windows-msvc,    blob: windows-x86_64,  lib: kreuzberg_dart.dll    }
+          - {
+              os: ubuntu-latest,
+              target: x86_64-unknown-linux-gnu,
+              blob: linux-x86_64,
+              lib: libkreuzberg_dart.so,
+            }
+          - {
+              os: ubuntu-24.04-arm,
+              target: aarch64-unknown-linux-gnu,
+              blob: linux-aarch64,
+              lib: libkreuzberg_dart.so,
+            }
+          - {
+              os: macos-latest,
+              target: aarch64-apple-darwin,
+              blob: macos-arm64,
+              lib: libkreuzberg_dart.dylib,
+            }
+          - {
+              os: windows-latest,
+              target: x86_64-pc-windows-msvc,
+              blob: windows-x86_64,
+              lib: kreuzberg_dart.dll,
+            }
     steps:
       - uses: actions/checkout@v6.0.2
         with:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           target: ${{ matrix.target }}
       - name: Build Dart server native
@@ -1268,9 +1288,9 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
 
-      - uses: kreuzberg-dev/actions/build-dart-package@v1
+      - uses: kreuzberg-dev/actions/build-dart-package@v1.0.0
         with:
           # flutter_rust_bridge.yaml lives in packages/dart/rust/, where rust_root: .
           package-dir: packages/dart/rust
@@ -1293,8 +1313,8 @@ jobs:
           ref: ${{ needs.prepare.outputs.checkout_ref }}
           fetch-depth: 0
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
-      - uses: kreuzberg-dev/actions/build-swift-artifactbundle@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
+      - uses: kreuzberg-dev/actions/build-swift-artifactbundle@v1.0.0
         id: bundle
         with:
           crate-name: kreuzberg-swift
@@ -1318,9 +1338,9 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
 
-      - uses: kreuzberg-dev/actions/build-swift-package@v1
+      - uses: kreuzberg-dev/actions/build-swift-package@v1.0.0
         with:
           package-dir: packages/swift
           crate-name: kreuzberg-swift
@@ -1343,9 +1363,9 @@ jobs:
           fetch-depth: 0
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
 
-      - uses: kreuzberg-dev/actions/build-zig-package@v1
+      - uses: kreuzberg-dev/actions/build-zig-package@v1.0.0
         with:
           ffi-crate: kreuzberg-ffi
           package-dir: packages/zig
@@ -1364,7 +1384,7 @@ jobs:
           path: dist/cli
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/upload-release-assets@v1
+      - uses: kreuzberg-dev/actions/upload-release-assets@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           working-directory: dist/cli
@@ -1385,7 +1405,7 @@ jobs:
           path: dist/go-ffi
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/upload-release-assets@v1
+      - uses: kreuzberg-dev/actions/upload-release-assets@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           working-directory: dist/go-ffi
@@ -1404,7 +1424,7 @@ jobs:
           path: dist/c-ffi
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/upload-release-assets@v1
+      - uses: kreuzberg-dev/actions/upload-release-assets@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           working-directory: dist/c-ffi
@@ -1423,7 +1443,7 @@ jobs:
           path: dist/elixir
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/upload-release-assets@v1
+      - uses: kreuzberg-dev/actions/upload-release-assets@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           working-directory: dist/elixir
@@ -1442,7 +1462,7 @@ jobs:
           path: dist/php-package
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/upload-release-assets@v1
+      - uses: kreuzberg-dev/actions/upload-release-assets@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           working-directory: dist/php-package
@@ -1464,7 +1484,7 @@ jobs:
           name: swift-artifactbundle
           path: dist/swift-bundle
 
-      - uses: kreuzberg-dev/actions/upload-release-assets@v1
+      - uses: kreuzberg-dev/actions/upload-release-assets@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           working-directory: dist/swift-bundle
@@ -1485,7 +1505,7 @@ jobs:
     if: ${{ always() && needs.prepare.outputs.is_tag == 'true' && needs.prepare.outputs.dry_run != 'true' && !contains(needs.*.result, 'failure') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: kreuzberg-dev/actions/verify-release-assets@v1
+      - uses: kreuzberg-dev/actions/verify-release-assets@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           expected-assets: |
@@ -1515,9 +1535,9 @@ jobs:
           ref: ${{ needs.prepare.outputs.ref }}
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/setup-rust@v1
+      - uses: kreuzberg-dev/actions/setup-rust@v1.0.0
 
-      - uses: kreuzberg-dev/actions/publish-crates@v1
+      - uses: kreuzberg-dev/actions/publish-crates@v1.0.0
         with:
           crates: kreuzberg-tesseract kreuzberg-paddle-ocr kreuzberg kreuzberg-cli
           version: ${{ needs.prepare.outputs.version }}
@@ -1543,7 +1563,7 @@ jobs:
           name: python-sdist
           path: dist
 
-      - uses: kreuzberg-dev/actions/publish-pypi@v1
+      - uses: kreuzberg-dev/actions/publish-pypi@v1.0.0
         with:
           packages-dir: dist
           dry-run: ${{ needs.prepare.outputs.dry_run }}
@@ -1570,7 +1590,7 @@ jobs:
 
       - uses: rubygems/configure-rubygems-credentials@v2.0.0
 
-      - uses: kreuzberg-dev/actions/publish-rubygems@v1
+      - uses: kreuzberg-dev/actions/publish-rubygems@v1.0.0
         with:
           gems-dir: dist
           dry-run: ${{ needs.prepare.outputs.dry_run }}
@@ -1595,7 +1615,7 @@ jobs:
           path: crates/kreuzberg-node/artifacts
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/setup-node-workspace@v1
+      - uses: kreuzberg-dev/actions/setup-node-workspace@v1.0.0
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org/"
@@ -1610,7 +1630,7 @@ jobs:
         shell: bash
 
       - name: Publish platform sub-packages
-        uses: kreuzberg-dev/actions/publish-npm@v1
+        uses: kreuzberg-dev/actions/publish-npm@v1.0.0
         with:
           packages-dir: crates/kreuzberg-node/npm
           npm-tag: ${{ needs.prepare.outputs.npm_tag }}
@@ -1619,7 +1639,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish main @kreuzberg/node package
-        uses: kreuzberg-dev/actions/publish-npm@v1
+        uses: kreuzberg-dev/actions/publish-npm@v1.0.0
         with:
           package-dir: crates/kreuzberg-node
           npm-tag: ${{ needs.prepare.outputs.npm_tag }}
@@ -1646,12 +1666,12 @@ jobs:
           name: wasm-bundle
           path: crates/kreuzberg-wasm
 
-      - uses: kreuzberg-dev/actions/setup-node-workspace@v1
+      - uses: kreuzberg-dev/actions/setup-node-workspace@v1.0.0
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org/"
 
-      - uses: kreuzberg-dev/actions/publish-npm@v1
+      - uses: kreuzberg-dev/actions/publish-npm@v1.0.0
         with:
           package-dir: crates/kreuzberg-wasm
           npm-tag: ${{ needs.prepare.outputs.npm_tag }}
@@ -1665,7 +1685,7 @@ jobs:
     if: ${{ needs.prepare.outputs.release_php == 'true' && needs.prepare.outputs.is_tag == 'true' && (needs.check-packagist.outputs.exists != 'true' || needs.prepare.outputs.force_republish == 'true') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: kreuzberg-dev/actions/publish-packagist@v1
+      - uses: kreuzberg-dev/actions/publish-packagist@v1.0.0
         with:
           packagist-username: kreuzberg-dev
           package-name: kreuzberg/kreuzberg
@@ -1692,7 +1712,7 @@ jobs:
           path: artifacts/java-natives
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/stage-java-natives@v1
+      - uses: kreuzberg-dev/actions/stage-java-natives@v1.0.0
         with:
           resources-dir: packages/java/src/main/resources/natives
           required-classifiers: >-
@@ -1711,9 +1731,9 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - uses: kreuzberg-dev/actions/setup-maven@v1
+      - uses: kreuzberg-dev/actions/setup-maven@v1.0.0
 
-      - uses: kreuzberg-dev/actions/publish-maven@v1
+      - uses: kreuzberg-dev/actions/publish-maven@v1.0.0
         with:
           pom-file: packages/java/pom.xml
           maven-profile: publish
@@ -1757,7 +1777,7 @@ jobs:
         with:
           packages: "platforms;android-36 build-tools;36.0.0"
 
-      - uses: kreuzberg-dev/actions/publish-maven-gradle@v1
+      - uses: kreuzberg-dev/actions/publish-maven-gradle@v1.0.0
         with:
           working-directory: packages/kotlin-android
           gradle-task: publishAndReleaseToMavenCentral
@@ -1813,7 +1833,7 @@ jobs:
             -o dist/nuget
         shell: bash
 
-      - uses: kreuzberg-dev/actions/publish-nuget@v1
+      - uses: kreuzberg-dev/actions/publish-nuget@v1.0.0
         with:
           packages-dir: dist/nuget
           dry-run: ${{ needs.prepare.outputs.dry_run }}
@@ -1837,7 +1857,7 @@ jobs:
           otp-version: "27"
 
       - name: Generate NIF checksum file
-        uses: kreuzberg-dev/actions/generate-elixir-checksums@v1
+        uses: kreuzberg-dev/actions/generate-elixir-checksums@v1.0.0
         with:
           github-repo: kreuzberg-dev/kreuzberg
           tag: ${{ needs.prepare.outputs.tag }}
@@ -1846,7 +1866,7 @@ jobs:
           targets: x86_64-unknown-linux-gnu,aarch64-unknown-linux-gnu,x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,aarch64-apple-darwin,x86_64-pc-windows-msvc
           output-path: packages/elixir/checksum-Elixir.Kreuzberg.Native.exs
 
-      - uses: kreuzberg-dev/actions/publish-hex@v1
+      - uses: kreuzberg-dev/actions/publish-hex@v1.0.0
         with:
           package-dir: packages/elixir
           dry-run: ${{ needs.prepare.outputs.dry_run }}
@@ -1855,7 +1875,15 @@ jobs:
 
   publish-pub:
     name: Publish Dart package to pub.dev
-    needs: [prepare, dart-package, dart-android-natives, dart-ios-xcframework, dart-server-natives, check-pub]
+    needs:
+      [
+        prepare,
+        dart-package,
+        dart-android-natives,
+        dart-ios-xcframework,
+        dart-server-natives,
+        check-pub,
+      ]
     if: ${{ needs.prepare.outputs.release_dart == 'true' && needs.prepare.outputs.is_tag == 'true' && needs.check-pub.outputs.exists != 'true' }}
     runs-on: ubuntu-latest
     permissions:
@@ -1930,7 +1958,7 @@ jobs:
             [[ -f "$src" ]] && cp -v "$src" "$dest/"
           done
 
-      - uses: kreuzberg-dev/actions/publish-pub@v1
+      - uses: kreuzberg-dev/actions/publish-pub@v1.0.0
         with:
           package-dir: packages/dart
           dry-run: ${{ needs.prepare.outputs.dry_run }}
@@ -1946,7 +1974,7 @@ jobs:
           ref: ${{ needs.prepare.outputs.ref }}
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/publish-swift@v1
+      - uses: kreuzberg-dev/actions/publish-swift@v1.0.0
         with:
           working-directory: packages/swift
           tag: ${{ needs.prepare.outputs.tag }}
@@ -1964,7 +1992,7 @@ jobs:
           ref: ${{ needs.prepare.outputs.ref }}
 
           submodules: recursive
-      - uses: kreuzberg-dev/actions/publish-zig@v1
+      - uses: kreuzberg-dev/actions/publish-zig@v1.0.0
         with:
           working-directory: packages/zig
           tag: ${{ needs.prepare.outputs.tag }}
@@ -2051,10 +2079,10 @@ jobs:
           submodules: recursive
       - name: Install Homebrew (Linux)
         if: ${{ matrix.install_brew }}
-        uses: kreuzberg-dev/actions/install-homebrew-linux@v1
+        uses: kreuzberg-dev/actions/install-homebrew-linux@v1.0.0
 
       - name: Build bottles
-        uses: kreuzberg-dev/actions/homebrew-build-bottles@v1
+        uses: kreuzberg-dev/actions/homebrew-build-bottles@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           version: ${{ needs.prepare.outputs.version }}
@@ -2098,7 +2126,7 @@ jobs:
           pattern: homebrew-bottle-json-*
           merge-multiple: true
 
-      - uses: kreuzberg-dev/actions/homebrew-merge-bottles@v1
+      - uses: kreuzberg-dev/actions/homebrew-merge-bottles@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           version: ${{ needs.prepare.outputs.version }}
@@ -2161,7 +2189,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: kreuzberg-dev/actions/finalize-release@v1
+      - uses: kreuzberg-dev/actions/finalize-release@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           is-prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' && 'true' || 'false' }}
@@ -2204,7 +2232,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: kreuzberg-dev/actions/announce-release-discord@v1
+      - uses: kreuzberg-dev/actions/announce-release-discord@v1.0.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}

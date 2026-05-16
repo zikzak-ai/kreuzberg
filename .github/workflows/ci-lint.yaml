@@ -29,19 +29,19 @@ jobs:
           submodules: recursive
 
       - name: Setup Rust
-        uses: kreuzberg-dev/actions/setup-rust@v1
+        uses: kreuzberg-dev/actions/setup-rust@v1.0.0
         with:
           cache-key-prefix: lint
 
       - name: Setup Python
-        uses: kreuzberg-dev/actions/setup-python-env@v1
+        uses: kreuzberg-dev/actions/setup-python-env@v1.0.0
         with:
           python-version: "3.13"
           cache-prefix: lint-py
           install-command: "uv sync --group dev --no-install-project --no-install-workspace --frozen"
 
       - name: Setup Node
-        uses: kreuzberg-dev/actions/setup-node-workspace@v1
+        uses: kreuzberg-dev/actions/setup-node-workspace@v1.0.0
 
       - name: Setup Go
         uses: actions/setup-go@v6.4.0
@@ -55,7 +55,7 @@ jobs:
           java-version: "25"
 
       - name: Setup Elixir
-        uses: kreuzberg-dev/actions/setup-elixir@v1
+        uses: kreuzberg-dev/actions/setup-elixir@v1.0.0
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1.307.0
@@ -65,7 +65,7 @@ jobs:
           working-directory: packages/ruby
 
       - name: Setup PHP
-        uses: kreuzberg-dev/actions/setup-php@v1
+        uses: kreuzberg-dev/actions/setup-php@v1.0.0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5.2.0
@@ -73,13 +73,13 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Setup R
-        uses: kreuzberg-dev/actions/setup-r@v1
+        uses: kreuzberg-dev/actions/setup-r@v1.0.0
         with:
           r-version: "release"
           install-deps: "false"
 
       - name: Install Task
-        uses: kreuzberg-dev/actions/install-task@v1
+        uses: kreuzberg-dev/actions/install-task@v1.0.0
 
       - name: Setup Helm
         uses: azure/setup-helm@v5
@@ -88,7 +88,7 @@ jobs:
         uses: bmuschko/setup-kubeconform@v1
 
       - name: Install alef CLI
-        uses: kreuzberg-dev/actions/install-alef@v1
+        uses: kreuzberg-dev/actions/install-alef@v1.0.0
 
       - name: Run all prek hooks
         uses: j178/prek-action@v2.0.4

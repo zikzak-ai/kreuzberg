@@ -50,7 +50,7 @@ jobs:
             gpu-build-${{ runner.os }}-
 
       - name: Build GPU test binary
-        uses: kreuzberg-dev/actions/build-gpu-test-binary@v1
+        uses: kreuzberg-dev/actions/build-gpu-test-binary@v1.0.0
         with:
           package: kreuzberg
           test-name: gpu_acceleration
@@ -91,7 +91,7 @@ jobs:
           name: gpu-test-binary
 
       - name: Download ONNX Runtime (GPU/CUDA)
-        uses: kreuzberg-dev/actions/setup-onnx-runtime-gpu@v1
+        uses: kreuzberg-dev/actions/setup-onnx-runtime-gpu@v1.0.0
         with:
           version: ${{ env.ORT_VERSION }}
 

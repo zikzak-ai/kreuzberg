@@ -62,7 +62,7 @@ jobs:
 
       - name: Resolve release metadata
         id: meta
-        uses: kreuzberg-dev/actions/prepare-release-metadata@v1
+        uses: kreuzberg-dev/actions/prepare-release-metadata@v1.0.0
         with:
           tag: ${{ inputs.tag }}
           ref: ${{ inputs.ref }}
@@ -188,7 +188,7 @@ jobs:
           submodules: recursive
 
       - name: Free up disk space
-        uses: kreuzberg-dev/actions/free-disk-space-linux@v1
+        uses: kreuzberg-dev/actions/free-disk-space-linux@v1.0.0
 
       - name: Ensure target commit
         if: ${{ needs.prepare.outputs.target_sha != '' }}
