@@ -6,5 +6,10 @@ package dev.kreuzberg
  * YAKE-specific parameters.
  */
 data class YakeParams(
+    /**
+     * Window size for co-occurrence analysis (default: 2).
+     *
+     * Controls the context window for computing co-occurrence statistics.
+     */
     val windowSize: Long,
 )

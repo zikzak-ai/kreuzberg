@@ -9,11 +9,36 @@ package dev.kreuzberg
  * its own `LlmConfig`, allowing different providers per feature.
  */
 data class LlmConfig(
+    /**
+     * Provider/model string using liter-llm routing format.
+     *
+     * Examples: `"openai/gpt-4o"`, `"anthropic/claude-sonnet-4-20250514"`,
+     * `"groq/llama-3.1-70b-versatile"`.
+     */
     val model: String,
+    /**
+     * API key for the provider. When `null`, liter-llm falls back to
+     * the provider's standard environment variable (e.g., `OPENAI_API_KEY`).
+     */
     val apiKey: String?,
+    /**
+     * Custom base URL override for the provider endpoint.
+     */
     val baseUrl: String?,
+    /**
+     * Request timeout in seconds (default: 60).
+     */
     val timeoutSecs: Long?,
+    /**
+     * Maximum retry attempts (default: 3).
+     */
     val maxRetries: Int?,
+    /**
+     * Sampling temperature for generation tasks.
+     */
     val temperature: Double?,
+    /**
+     * Maximum tokens to generate.
+     */
     val maxTokens: Long?,
 )

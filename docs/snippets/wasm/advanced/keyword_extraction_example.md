@@ -47,7 +47,7 @@ keywords.sort((a, b) => b.score - a.score);
 // Top 15 keywords
 const topKeywords = keywords.slice(0, 15);
 console.log("Top Keywords:");
-topKeywords.forEach(kw => {
+topKeywords.forEach((kw) => {
   console.log(`  ${kw.term}: ${kw.frequency} occurrences (score: ${kw.score.toFixed(2)})`);
 });
 ```
@@ -74,28 +74,32 @@ interface KeywordContext {
 }
 
 // Find keyword occurrences with surrounding context
-function extractKeywordContexts(text: string, keyword: string, contextWindow: number = 50): string[] {
+function extractKeywordContexts(
+  text: string,
+  keyword: string,
+  contextWindow: number = 50,
+): string[] {
   const contexts: string[] = [];
-  const regex = new RegExp(keyword, 'gi');
+  const regex = new RegExp(keyword, "gi");
   let match;
-  
+
   while ((match = regex.exec(text)) !== null) {
     const start = Math.max(0, match.index - contextWindow);
     const end = Math.min(text.length, match.index + keyword.length + contextWindow);
     contexts.push(text.substring(start, end));
   }
-  
+
   return contexts;
 }
 
 // Extract context for top keywords
 const topKeywords = ["document", "analysis", "results"];
-const keywordContexts: KeywordContext[] = topKeywords.map(kw => ({
+const keywordContexts: KeywordContext[] = topKeywords.map((kw) => ({
   keyword: kw,
   contexts: extractKeywordContexts(result.content, kw, 40),
 }));
 
-keywordContexts.forEach(kc => {
+keywordContexts.forEach((kc) => {
   console.log(`\n"${kc.keyword}" appears ${kc.contexts.length} times:`);
   kc.contexts.slice(0, 2).forEach((ctx, idx) => {
     console.log(`  [${idx + 1}] ...${ctx}...`);

@@ -15,8 +15,14 @@ package dev.kreuzberg
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = ChunkSizingDeserializer::class)
 @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = ChunkSizingSerializer::class)
 sealed class ChunkSizing {
+    /**
+     * Size measured in Unicode characters (default).
+     */
     object Characters : ChunkSizing()
 
+    /**
+     * Size measured in tokens from a HuggingFace tokenizer.
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Tokenizer(

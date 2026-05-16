@@ -19,7 +19,7 @@ public class CustomTextExtractor : IDocumentExtractor
     public ExtractionResult ExtractBytes(byte[] content, string mimeType, ExtractionConfig config)
     {
         var text = System.Text.Encoding.UTF8.GetString(content);
-        
+
         return new ExtractionResult
         {
             Content = text.ToUpper(),

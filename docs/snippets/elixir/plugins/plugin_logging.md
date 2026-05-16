@@ -16,9 +16,9 @@ impl DocumentExtractor for MyExtractor {
         _config: &ExtractionConfig,
     ) -> Result<ExtractionResult> {
         debug!("Starting extraction for {}", mime_type);
-        
+
         // Extraction logic...
-        
+
         info!("Extraction completed for {}", mime_type);
         Ok(result)
     }

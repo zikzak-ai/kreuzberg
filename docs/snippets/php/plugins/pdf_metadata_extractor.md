@@ -25,12 +25,12 @@ class PdfMetadataExtractor implements PostProcessor {
         if ($result->mime_type !== 'application/pdf') {
             return;
         }
-        
+
         // Extract and attach metadata
         if (!isset($result->metadata)) {
             $result->metadata = [];
         }
-        
+
         if (is_array($result->metadata)) {
             $result->metadata = array_merge($result->metadata, [
                 'pdf_processor' => 'pdf-metadata-extractor',

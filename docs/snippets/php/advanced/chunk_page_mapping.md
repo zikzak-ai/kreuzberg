@@ -25,7 +25,7 @@ if ($result->getChunks()) {
         if ($metadata) {
             $firstPage = $metadata->getFirstPage();
             $lastPage = $metadata->getLastPage();
-            
+
             if ($firstPage !== null && $lastPage !== null) {
                 if ($firstPage === $lastPage) {
                     $pageRange = "Page " . $firstPage;

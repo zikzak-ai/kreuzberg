@@ -9,6 +9,12 @@ package dev.kreuzberg
  * blocks with heading levels (H1-H6) for semantic document structure.
  */
 data class PageHierarchy(
+    /**
+     * Number of hierarchy blocks on this page
+     */
     val blockCount: Int,
+    /**
+     * Hierarchical blocks with heading levels
+     */
     val blocks: List<HierarchicalBlock>,
 )

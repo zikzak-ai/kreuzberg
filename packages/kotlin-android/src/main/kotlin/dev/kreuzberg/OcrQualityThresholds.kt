@@ -9,20 +9,70 @@ package dev.kreuzberg
  * so `OcrQualityThresholds.default()` preserves existing semantics exactly.
  */
 data class OcrQualityThresholds(
+    /**
+     * Minimum total non-whitespace characters to consider text substantive.
+     */
     val minTotalNonWhitespace: Long,
+    /**
+     * Minimum non-whitespace characters per page on average.
+     */
     val minNonWhitespacePerPage: Double,
+    /**
+     * Minimum character count for a word to be "meaningful".
+     */
     val minMeaningfulWordLen: Long,
+    /**
+     * Minimum count of meaningful words before text is accepted.
+     */
     val minMeaningfulWords: Long,
+    /**
+     * Minimum alphanumeric ratio (non-whitespace chars that are alphanumeric).
+     */
     val minAlnumRatio: Double,
+    /**
+     * Minimum Unicode replacement characters (U+FFFD) to trigger OCR fallback.
+     */
     val minGarbageChars: Long,
+    /**
+     * Maximum fraction of short (1-2 char) words before text is considered fragmented.
+     */
     val maxFragmentedWordRatio: Double,
+    /**
+     * Critical fragmentation threshold — triggers OCR regardless of meaningful words.
+     * Normal English text has ~20-30% short words. 80%+ is definitive garbage.
+     */
     val criticalFragmentedWordRatio: Double,
+    /**
+     * Minimum average word length. Below this with enough words indicates garbled extraction.
+     */
     val minAvgWordLength: Double,
+    /**
+     * Minimum word count before average word length check applies.
+     */
     val minWordsForAvgLengthCheck: Long,
+    /**
+     * Minimum consecutive word repetition ratio to detect column scrambling.
+     */
     val minConsecutiveRepeatRatio: Double,
+    /**
+     * Minimum word count before consecutive repetition check is applied.
+     */
     val minWordsForRepeatCheck: Long,
+    /**
+     * Minimum character count for "substantive markdown" OCR skip gate.
+     */
     val substantiveMinChars: Long,
+    /**
+     * Minimum character count for "non-text content" OCR skip gate.
+     */
     val nonTextMinChars: Long,
+    /**
+     * Alphanumeric+whitespace ratio threshold for skip decisions.
+     */
     val alnumWsRatioThreshold: Double,
+    /**
+     * Minimum quality score (0.0-1.0) for a pipeline stage result to be accepted.
+     * If the result from a backend scores below this, try the next backend.
+     */
     val pipelineMinQuality: Double,
 )

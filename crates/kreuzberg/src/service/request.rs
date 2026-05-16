@@ -4,7 +4,6 @@ use crate::core::config::{ExtractionConfig, FileExtractionConfig};
 use bytes::Bytes;
 use std::path::PathBuf;
 #[cfg_attr(alef, alef(skip))]
-
 /// The source of a document to extract.
 #[derive(Debug, Clone)]
 pub enum ExtractionSource {
@@ -14,7 +13,6 @@ pub enum ExtractionSource {
     Bytes { data: Bytes, mime_type: String },
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// A request to extract content from a single document.
 #[derive(Debug, Clone)]
 pub struct ExtractionRequest {

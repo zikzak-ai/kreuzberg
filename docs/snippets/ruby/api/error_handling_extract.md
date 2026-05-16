@@ -4,7 +4,7 @@ require 'kreuzberg'
 begin
   pdf_bytes = File.read('document.pdf')
   config = Kreuzberg::ExtractionConfig.new
-  
+
   result = Kreuzberg.extract_bytes_sync(pdf_bytes, 'application/pdf', config: config)
   puts "Extracted #{result.content.length} characters"
 rescue RuntimeError => e

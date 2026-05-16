@@ -75,7 +75,7 @@ publishing {
             }
             groupId = "dev.kreuzberg"
             artifactId = "kreuzberg-android"
-            version = "0.0.0"
+            version = "5.0.0-rc.1"
         }
     }
 }

@@ -81,14 +81,14 @@ This is the core of the pipeline. The selected extractor reads the file and prod
 
 Each file format has a tailored extraction strategy:
 
-| Format                             | What happens                                                                                                                                                                                   |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Format                             | What happens                                                                                                                                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **PDF**                            | Text is extracted directly from the PDF text layer using pdf_oxide (pure Rust). If the PDF contains embedded images (scanned pages, diagrams), those images are collected and passed to the OCR stage. |
-| **Excel / Spreadsheets**           | Each sheet is parsed individually using calamine. Cell values are assembled into structured Markdown tables, preserving column alignment.                                                      |
-| **Images** (JPEG, PNG, TIFF, etc.) | The image bytes are loaded into memory and forwarded directly to the OCR backend. There is no text layer to extract from an image.                                                             |
-| **XML / Plain text**               | A streaming parser processes the file incrementally. This keeps memory usage constant even for multi-gigabyte files because the entire file is never loaded at once.                           |
-| **Email** (`.eml`, `.msg`)         | The MIME structure is parsed. The email body (plain text or HTML) is extracted as the main content. Attachments are extracted recursively using the same pipeline.                             |
-| **Office** (DOCX, PPTX)            | The file is a ZIP archive containing XML. Kreuzberg opens the archive, locates the content XML parts, and parses the document structure into text.                                             |
+| **Excel / Spreadsheets**           | Each sheet is parsed individually using calamine. Cell values are assembled into structured Markdown tables, preserving column alignment.                                                              |
+| **Images** (JPEG, PNG, TIFF, etc.) | The image bytes are loaded into memory and forwarded directly to the OCR backend. There is no text layer to extract from an image.                                                                     |
+| **XML / Plain text**               | A streaming parser processes the file incrementally. This keeps memory usage constant even for multi-gigabyte files because the entire file is never loaded at once.                                   |
+| **Email** (`.eml`, `.msg`)         | The MIME structure is parsed. The email body (plain text or HTML) is extracted as the main content. Attachments are extracted recursively using the same pipeline.                                     |
+| **Office** (DOCX, PPTX)            | The file is a ZIP archive containing XML. Kreuzberg opens the archive, locates the content XML parts, and parses the document structure into text.                                                     |
 
 The extraction result at this point contains raw extracted text. It hasn't been validated, scored, or chunked yet.
 

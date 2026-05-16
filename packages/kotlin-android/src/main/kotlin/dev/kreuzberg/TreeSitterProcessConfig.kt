@@ -8,13 +8,40 @@ package dev.kreuzberg
  * Controls which analysis features are enabled when extracting code files.
  */
 data class TreeSitterProcessConfig(
+    /**
+     * Extract structural items (functions, classes, structs, etc.). Default: true.
+     */
     val structure: Boolean,
+    /**
+     * Extract import statements. Default: true.
+     */
     val imports: Boolean,
+    /**
+     * Extract export statements. Default: true.
+     */
     val exports: Boolean,
+    /**
+     * Extract comments. Default: false.
+     */
     val comments: Boolean,
+    /**
+     * Extract docstrings. Default: false.
+     */
     val docstrings: Boolean,
+    /**
+     * Extract symbol definitions. Default: false.
+     */
     val symbols: Boolean,
+    /**
+     * Include parse diagnostics. Default: false.
+     */
     val diagnostics: Boolean,
+    /**
+     * Maximum chunk size in bytes. `null` disables chunking.
+     */
     val chunkMaxSize: Long?,
+    /**
+     * Content rendering mode for code extraction.
+     */
     val contentMode: CodeContentMode,
 )

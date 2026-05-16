@@ -5,7 +5,7 @@ Per-iteration tracker for Kreuzberg perf optimization rounds. Append one row per
 ## Format
 
 | commit | candidate | hotspot self-time | p50 Δ | p95 Δ | SF1 Δ | verdict | notes |
-|--------|-----------|-------------------|-------|-------|-------|---------|-------|
+| ------ | --------- | ----------------- | ----- | ----- | ----- | ------- | ----- |
 
 - **commit** — short SHA of the optimization commit (or REVERTED if rejected).
 - **candidate** — file:function being optimized.
@@ -17,28 +17,28 @@ Per-iteration tracker for Kreuzberg perf optimization rounds. Append one row per
 
 ## History
 
-| commit | candidate | hotspot self-time | p50 Δ | p95 Δ | SF1 Δ | verdict | notes |
-|--------|-----------|-------------------|-------|-------|-------|---------|-------|
-| REVERTED | normalize_whitespace rewrite | not measured | n/a | n/a | n/a | REJECT | perf-engineer agent ACCEPT'd without measurement; correctness regression on leading/trailing spaces. See `feedback_perf_subagent_verification.md`. |
-| REVERTED | split_embedded bullet-count fast path | not measured | +5% | +5% | 0 | REJECT | speculation-driven; ~5% wall-time *regression*. Don't optimize without a flamegraph. |
-| b51472c1c | layout_runner: stream DynamicImage→RgbImage + drop redundant clones in table_recognition/layout_validation | n/a (memory, not CPU) | n/a | n/a | 0 | ACCEPT | No pre-M baseline; post-M anchor: 292 MB peak RSS on 60 MB PDF (plain, no layout). Q gates: 143/143 regression, 3/3 smoke, 18/18 guardrail failures identical to pre-M (all pre-existing pdf_oxide upstream). |
-| 86a706959 | rendering::markdown: Cow single-pass scans replacing 6 eager .replace() chains | 0.02% self-time post-M (flamegraph fa356cb7e) | n/a | n/a | 0 | ACCEPT | M.2 confirmed effective — render_markdown dropped to 0.02% in post-M flamegraph; was queue candidate #2. |
+| commit    | candidate                                                                                                  | hotspot self-time                             | p50 Δ | p95 Δ | SF1 Δ | verdict | notes                                                                                                                                                                                                         |
+| --------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ----- | ----- | ----- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| REVERTED  | normalize_whitespace rewrite                                                                               | not measured                                  | n/a   | n/a   | n/a   | REJECT  | perf-engineer agent ACCEPT'd without measurement; correctness regression on leading/trailing spaces. See `feedback_perf_subagent_verification.md`.                                                            |
+| REVERTED  | split_embedded bullet-count fast path                                                                      | not measured                                  | +5%   | +5%   | 0     | REJECT  | speculation-driven; ~5% wall-time _regression_. Don't optimize without a flamegraph.                                                                                                                          |
+| b51472c1c | layout_runner: stream DynamicImage→RgbImage + drop redundant clones in table_recognition/layout_validation | n/a (memory, not CPU)                         | n/a   | n/a   | 0     | ACCEPT  | No pre-M baseline; post-M anchor: 292 MB peak RSS on 60 MB PDF (plain, no layout). Q gates: 143/143 regression, 3/3 smoke, 18/18 guardrail failures identical to pre-M (all pre-existing pdf_oxide upstream). |
+| 86a706959 | rendering::markdown: Cow single-pass scans replacing 6 eager .replace() chains                             | 0.02% self-time post-M (flamegraph fa356cb7e) | n/a   | n/a   | 0     | ACCEPT  | M.2 confirmed effective — render_markdown dropped to 0.02% in post-M flamegraph; was queue candidate #2.                                                                                                      |
 
 ## Queue — CLEARED (stopping condition met)
 
 **Flamegraph `flamegraphs/fa356cb7e/baseline.svg`** (2026-05-11, 88,524 samples, `--profile profiling`, `--features all`):
 
-| rank | self-time | function |
-|------|-----------|----------|
-| 1 | 0.50% | `kreuzberg::pdf::oxide::table::extract_tables_native` |
-| 2 | 0.33% | `kreuzberg::pdf::oxide::text::extract_text_fast_path` |
-| 3 | 0.14% | `kreuzberg::pdf::oxide::hierarchy::extract_all_segments` |
-| 4 | 0.12% | `kreuzberg::cache::core::GenericCache::set` |
-| 5 | 0.11% | `kreuzberg::pdf::oxide::images::extract_image_positions` |
-| 6 | 0.11% | `kreuzberg::pdf::structure::pipeline::extract_document_structure_from_segments` |
-| 7 | 0.09% | `kreuzberg::cache::cleanup::scan_cache_directory` |
-| 8 | 0.08% | `kreuzberg::pdf::structure::classify::mark_arxiv_noise` |
-| 9 | 0.02% | `kreuzberg::rendering::markdown::render_markdown` |
+| rank | self-time | function                                                                        |
+| ---- | --------- | ------------------------------------------------------------------------------- |
+| 1    | 0.50%     | `kreuzberg::pdf::oxide::table::extract_tables_native`                           |
+| 2    | 0.33%     | `kreuzberg::pdf::oxide::text::extract_text_fast_path`                           |
+| 3    | 0.14%     | `kreuzberg::pdf::oxide::hierarchy::extract_all_segments`                        |
+| 4    | 0.12%     | `kreuzberg::cache::core::GenericCache::set`                                     |
+| 5    | 0.11%     | `kreuzberg::pdf::oxide::images::extract_image_positions`                        |
+| 6    | 0.11%     | `kreuzberg::pdf::structure::pipeline::extract_document_structure_from_segments` |
+| 7    | 0.09%     | `kreuzberg::cache::cleanup::scan_cache_directory`                               |
+| 8    | 0.08%     | `kreuzberg::pdf::structure::classify::mark_arxiv_noise`                         |
+| 9    | 0.02%     | `kreuzberg::rendering::markdown::render_markdown`                               |
 
 **Breakdown by crate (aggregate, 88,524 total samples):**
 

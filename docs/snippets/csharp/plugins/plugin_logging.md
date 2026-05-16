@@ -19,7 +19,7 @@ public class LoggingPostProcessor : IPostProcessor
     public void Process(ExtractionResult result, ExtractionConfig config)
     {
         Console.WriteLine($"Processing: {result.MimeType}, Content length: {result.Content.Length}");
-        
+
         if (string.IsNullOrEmpty(result.Content))
         {
             Console.WriteLine("Warning: Extracted content is empty");

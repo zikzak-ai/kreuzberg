@@ -1,4 +1,5 @@
 <!-- snippet:skip reason="Plugin trait lifecycle methods (initialize, shutdown) are not exposed in Dart; logging must be implemented in Rust." -->
+
 ```dart title="Dart"
 import 'package:kreuzberg/kreuzberg.dart';
 

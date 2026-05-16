@@ -6,7 +6,18 @@ package dev.kreuzberg
  * Text direction enumeration for HTML documents.
  */
 enum class TextDirection {
+    /**
+     * Left-to-right text direction
+     */
     LEFT_TO_RIGHT,
+
+    /**
+     * Right-to-left text direction
+     */
     RIGHT_TO_LEFT,
+
+    /**
+     * Automatic text direction detection
+     */
     AUTO,
 }

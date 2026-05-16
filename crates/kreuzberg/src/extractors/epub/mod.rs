@@ -38,7 +38,6 @@ use content::{
 use metadata::{build_additional_metadata, parse_opf};
 use parsing::{parse_container_xml, read_file_from_zip, resolve_path};
 #[cfg_attr(alef, alef(skip))]
-
 /// EPUB format extractor using permissive-licensed dependencies.
 ///
 /// Extracts content and metadata from EPUB files (both EPUB2 and EPUB3)

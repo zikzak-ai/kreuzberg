@@ -12,7 +12,7 @@ if (file) {
 
   const response = await fetch("http://localhost:8000/extract/file", {
     method: "POST",
-    body: formData
+    body: formData,
   });
 
   const result = await response.json();

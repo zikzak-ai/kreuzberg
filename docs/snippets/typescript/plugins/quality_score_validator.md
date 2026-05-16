@@ -1,9 +1,5 @@
 ```typescript title="TypeScript"
-import {
-  registerValidator,
-  ValidationError,
-  type ExtractionResult,
-} from "@kreuzberg/node";
+import { registerValidator, ValidationError, type ExtractionResult } from "@kreuzberg/node";
 
 class QualityScoreValidator {
   private readonly minScore: number;

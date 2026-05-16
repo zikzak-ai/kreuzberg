@@ -49,7 +49,7 @@ inline fn _first_error(comptime E: type) E {
 /// - `LockPoisoned` - Mutex/RwLock poisoning (should not happen in normal operation)
 /// - `UnsupportedFormat` - Unsupported MIME type or file format
 /// - `Other` - Catch-all for uncommon errors
-pub const KreuzbergError = error {
+pub const KreuzbergError = error{
     Io,
     Parsing,
     Ocr,
@@ -74,7 +74,9 @@ pub const KreuzbergError = error {
 /// Controls which execution provider (CPU, CoreML, CUDA, TensorRT) is used
 /// for inference in layout detection and embedding generation.
 pub const AccelerationConfig = struct {
+    /// Execution provider to use for ONNX inference.
     provider: ExecutionProviderType,
+    /// GPU device ID (for CUDA/TensorRT). Ignored for CPU/CoreML/Auto.
     device_id: u32,
 };
 
@@ -88,14 +90,70 @@ pub const AccelerationConfig = struct {
 /// When `null` on `ExtractionConfig`, each extractor uses its current
 /// default behavior unchanged.
 pub const ContentFilterConfig = struct {
+    /// Include running headers in extraction output.
+    ///
+    /// - PDF: Disables top-margin furniture stripping and prevents the layout
+    ///   model from treating `PageHeader`-classified regions as furniture.
+    /// - DOCX: Includes document headers in text output.
+    /// - RTF/ODT: Headers already included; this is a no-op when true.
+    /// - HTML/EPUB: Keeps `<header>` element content.
+    ///
+    /// Default: `false` (headers are stripped or excluded).
     include_headers: bool,
+    /// Include running footers in extraction output.
+    ///
+    /// - PDF: Disables bottom-margin furniture stripping and prevents the layout
+    ///   model from treating `PageFooter`-classified regions as furniture.
+    /// - DOCX: Includes document footers in text output.
+    /// - RTF/ODT: Footers already included; this is a no-op when true.
+    /// - HTML/EPUB: Keeps `<footer>` element content.
+    ///
+    /// Default: `false` (footers are stripped or excluded).
     include_footers: bool,
+    /// Enable the heuristic cross-page repeating text detector.
+    ///
+    /// When `true` (default), text that repeats verbatim across a supermajority
+    /// of pages is classified as furniture and stripped.  Disable this if brand
+    /// names or repeated headings are being incorrectly removed by the heuristic.
+    ///
+    /// Note: when a layout-detection model is active, the model may independently
+    /// classify page-header / page-footer regions as furniture on a per-page basis.
+    /// To preserve those regions, set `include_headers = true` and/or
+    /// `include_footers = true` in addition to disabling this flag.
+    ///
+    /// Primarily affects PDF extraction.
+    ///
+    /// Default: `true`.
     strip_repeating_text: bool,
+    /// Include watermark text in extraction output.
+    ///
+    /// - PDF: Keeps watermark artifacts and arXiv identifiers.
+    /// - Other formats: No effect currently.
+    ///
+    /// Default: `false` (watermarks are stripped).
     include_watermarks: bool,
 };
 
 /// Configuration for email extraction.
 pub const EmailConfig = struct {
+    /// Windows codepage number to use when an MSG file contains no codepage property.
+    /// Defaults to `null`, which falls back to windows-1252.
+    ///
+    /// If an unrecognized or invalid codepage number is supplied (including 0),
+    /// the behavior silently falls back to windows-1252 — the same as when the
+    /// MSG file itself contains an unrecognized codepage. No error or warning is
+    /// emitted. Users should verify output when supplying unusual values.
+    ///
+    /// Common values:
+    /// - 1250: Central European (Polish, Czech, Hungarian, etc.)
+    /// - 1251: Cyrillic (Russian, Ukrainian, Bulgarian, etc.)
+    /// - 1252: Western European (default)
+    /// - 1253: Greek
+    /// - 1254: Turkish
+    /// - 1255: Hebrew
+    /// - 1256: Arabic
+    /// - 932:  Japanese (Shift-JIS)
+    /// - 936:  Simplified Chinese (GBK)
     msg_fallback_codepage: ?u32,
 };
 
@@ -104,39 +162,185 @@ pub const EmailConfig = struct {
 /// This struct contains all configuration options for the extraction process.
 /// It can be loaded from TOML, YAML, or JSON files, or created programmatically.
 pub const ExtractionConfig = struct {
+    /// Enable caching of extraction results
     use_cache: bool,
+    /// Enable quality post-processing
     enable_quality_processing: bool,
+    /// OCR configuration (None = OCR disabled)
     ocr: ?OcrConfig,
+    /// Force OCR even for searchable PDFs
     force_ocr: bool,
+    /// Force OCR on specific pages only (1-indexed page numbers, must be >= 1).
+    ///
+    /// When set, only the listed pages are OCR'd regardless of text layer quality.
+    /// Unlisted pages use native text extraction. Ignored when `force_ocr` is `true`.
+    /// Only applies to PDF documents. Duplicates are automatically deduplicated.
+    /// An `ocr` config is recommended for backend/language selection; defaults are used if absent.
     force_ocr_pages: ?[]const u32,
+    /// Disable OCR entirely, even for images.
+    ///
+    /// When `true`, OCR is skipped for all document types. Images return metadata
+    /// only (dimensions, format, EXIF) without text extraction. PDFs use only
+    /// native text extraction without OCR fallback.
+    ///
+    /// Cannot be `true` simultaneously with `force_ocr`.
+    ///
+    /// *Added in v4.7.0.*
     disable_ocr: bool,
+    /// Text chunking configuration (None = chunking disabled)
     chunking: ?ChunkingConfig,
+    /// Content filtering configuration (None = use extractor defaults).
+    ///
+    /// Controls whether document "furniture" (headers, footers, watermarks,
+    /// repeating text) is included in or stripped from extraction results.
+    /// See `ContentFilterConfig` for per-field documentation.
     content_filter: ?ContentFilterConfig,
+    /// Image extraction configuration (None = no image extraction)
     images: ?ImageExtractionConfig,
+    /// PDF-specific options (None = use defaults)
     pdf_options: ?PdfConfig,
+    /// Token reduction configuration (None = no token reduction)
     token_reduction: ?TokenReductionOptions,
+    /// Language detection configuration (None = no language detection)
     language_detection: ?LanguageDetectionConfig,
+    /// Page extraction configuration (None = no page tracking)
     pages: ?PageConfig,
+    /// Keyword extraction configuration (None = no keyword extraction)
     keywords: ?KeywordConfig,
+    /// Post-processor configuration (None = use defaults)
     postprocessor: ?PostProcessorConfig,
+    /// HTML to Markdown conversion options (None = use defaults)
+    ///
+    /// Configure how HTML documents are converted to Markdown, including heading styles,
+    /// list formatting, code block styles, and preprocessing options.
     html_options: ?[]const u8,
+    /// Styled HTML output configuration.
+    ///
+    /// When set alongside `output_format = OutputFormat.Html`, the extraction
+    /// pipeline uses `StyledHtmlRenderer`
+    /// which emits stable `kb-*` CSS class hooks on every structural element
+    /// and optionally embeds theme CSS or user-supplied CSS in a `<style>` block.
+    ///
+    /// When `null`, the existing plain comrak-based HTML renderer is used.
     html_output: ?HtmlOutputConfig,
+    /// Default per-file timeout in seconds for batch extraction.
+    ///
+    /// When set, each file in a batch will be canceled after this duration
+    /// unless overridden by `FileExtractionConfig.timeout_secs`.
+    /// `null` means no timeout (unbounded extraction time).
     extraction_timeout_secs: ?u64,
+    /// Maximum concurrent extractions in batch operations (None = (num_cpus × 1.5).ceil()).
+    ///
+    /// Limits parallelism to prevent resource exhaustion when processing
+    /// large batches. Defaults to (num_cpus × 1.5).ceil() when not set.
     max_concurrent_extractions: ?u64,
+    /// Result structure format
+    ///
+    /// Controls whether results are returned in unified format (default) with all
+    /// content in the `content` field, or element-based format with semantic
+    /// elements (for Unstructured-compatible output).
     result_format: ResultFormat,
+    /// Security limits for archive extraction.
+    ///
+    /// Controls maximum archive size, compression ratio, file count, and other
+    /// security thresholds to prevent decompression bomb attacks. Also caps
+    /// nesting depth, iteration count, entity / token length, cumulative
+    /// content size, and table cell count for every extraction path that
+    /// ingests user-controlled bytes.
+    /// When `null`, default limits are used.
     security_limits: ?SecurityLimits,
+    /// Content text format (default: Plain).
+    ///
+    /// Controls the format of the extracted content:
+    /// - `Plain`: Raw extracted text (default)
+    /// - `Markdown`: Markdown formatted output
+    /// - `Djot`: Djot markup format (requires djot feature)
+    /// - `Html`: HTML formatted output
+    ///
+    /// When set to a structured format, extraction results will include
+    /// formatted output. The `formatted_content` field may be populated
+    /// when format conversion is applied.
     output_format: OutputFormat,
+    /// Layout detection configuration (None = layout detection disabled).
+    ///
+    /// When set, PDF pages and images are analyzed for document structure
+    /// (headings, code, formulas, tables, figures, etc.) using RT-DETR models
+    /// via ONNX Runtime. For PDFs, layout hints override paragraph classification
+    /// in the markdown pipeline. For images, per-region OCR is performed with
+    /// markdown formatting based on detected layout classes.
+    /// Requires the `layout-detection` feature to run inference; the field is
+    /// present whenever the `layout-types` feature is active (which includes
+    /// `layout-detection` as well as the no-ORT target groups).
     layout: ?LayoutDetectionConfig,
+    /// Run layout detection on the non-OCR PDF markdown path.
+    ///
+    /// When `true` and `layout` is `Some(_)`, layout regions inform heading,
+    /// table, list, and figure detection in the structure pipeline that would
+    /// otherwise rely on font-clustering heuristics alone. Substantially
+    /// improves SF1 (structural F1) at the cost of inference latency
+    /// (~150-300ms/page CPU, ~20-50ms/page GPU). Default: `false`.
+    /// Requires the `layout-detection` feature.
     use_layout_for_markdown: bool,
+    /// Enable structured document tree output.
+    ///
+    /// When true, populates the `document` field on `ExtractionResult` with a
+    /// hierarchical `DocumentStructure` containing heading-driven section nesting,
+    /// table grids, content layer classification, and inline annotations.
+    ///
+    /// Independent of `result_format` — can be combined with Unified or ElementBased.
     include_document_structure: bool,
+    /// Hardware acceleration configuration for ONNX Runtime models.
+    ///
+    /// Controls execution provider selection for layout detection and embedding
+    /// models. When `null`, uses platform defaults (CoreML on macOS, CUDA on
+    /// Linux, CPU on Windows).
     acceleration: ?AccelerationConfig,
+    /// Cache namespace for tenant isolation.
+    ///
+    /// When set, cache entries are stored under `{cache_dir}/{namespace}/`.
+    /// Must be alphanumeric, hyphens, or underscores only (max 64 chars).
+    /// Different namespaces have isolated cache spaces on the same filesystem.
     cache_namespace: ?[]const u8,
+    /// Per-request cache TTL in seconds.
+    ///
+    /// Overrides the global `max_age_days` for this specific extraction.
+    /// When `0`, caching is completely skipped (no read or write).
+    /// When `null`, the global TTL applies.
     cache_ttl_secs: ?u64,
+    /// Email extraction configuration (None = use defaults).
+    ///
+    /// Currently supports configuring the fallback codepage for MSG files
+    /// that do not specify one. See `EmailConfig` for details.
     email: ?EmailConfig,
+    /// Concurrency limits for constrained environments (None = use defaults).
+    ///
+    /// Controls Rayon thread pool size, ONNX Runtime intra-op threads, and
+    /// (when `max_concurrent_extractions` is unset) the batch concurrency
+    /// semaphore. See `ConcurrencyConfig` for details.
     concurrency: ?[]const u8,
+    /// Maximum recursion depth for archive extraction (default: 3).
+    /// Set to 0 to disable recursive extraction (legacy behavior).
     max_archive_depth: u64,
+    /// Tree-sitter language pack configuration (None = tree-sitter disabled).
+    ///
+    /// When set, enables code file extraction using tree-sitter parsers.
+    /// Controls grammar download behavior and code analysis options.
     tree_sitter: ?TreeSitterConfig,
+    /// Structured extraction via LLM (None = disabled).
+    ///
+    /// When set, the extracted document content is sent to an LLM with the
+    /// provided JSON schema. The structured response is stored in
+    /// `ExtractionResult.structured_output`.
     structured_extraction: ?StructuredExtractionConfig,
+    /// Cancellation token for this extraction (None = no external cancellation).
+    ///
+    /// Pass a `CancellationToken` clone here and call `CancellationToken.cancel`
+    /// from another thread / task to abort the extraction in progress. The extractor
+    /// checks the token at safe checkpoints (before lock acquisition, between pages,
+    /// between batch items) and returns `KreuzbergError.Cancelled` when set.
+    ///
+    /// The field is excluded from serialization because `CancellationToken` is a
+    /// runtime handle, not a configuration value.
     cancel_token: ?[]const u8,
 };
 
@@ -156,27 +360,57 @@ pub const ExtractionConfig = struct {
 /// - `acceleration` — shared ONNX execution provider
 /// - `security_limits` — global archive security policy
 pub const FileExtractionConfig = struct {
+    /// Override quality post-processing for this file.
     enable_quality_processing: ?bool,
+    /// Override OCR configuration for this file (None in the Option = use batch default).
     ocr: ?OcrConfig,
+    /// Override force OCR for this file.
     force_ocr: ?bool,
+    /// Override force OCR pages for this file (1-indexed page numbers).
     force_ocr_pages: ?[]const u32,
+    /// Override disable OCR for this file.
     disable_ocr: ?bool,
+    /// Override chunking configuration for this file.
     chunking: ?ChunkingConfig,
+    /// Override content filtering configuration for this file.
     content_filter: ?ContentFilterConfig,
+    /// Override image extraction configuration for this file.
     images: ?ImageExtractionConfig,
+    /// Override PDF options for this file.
     pdf_options: ?PdfConfig,
+    /// Override token reduction for this file.
     token_reduction: ?TokenReductionOptions,
+    /// Override language detection for this file.
     language_detection: ?LanguageDetectionConfig,
+    /// Override page extraction for this file.
     pages: ?PageConfig,
+    /// Override keyword extraction for this file.
     keywords: ?KeywordConfig,
+    /// Override post-processor for this file.
     postprocessor: ?PostProcessorConfig,
+    /// Override HTML conversion options for this file.
     html_options: ?[]const u8,
+    /// Override result format for this file.
     result_format: ?ResultFormat,
+    /// Override output content format for this file.
     output_format: ?OutputFormat,
+    /// Override document structure output for this file.
     include_document_structure: ?bool,
+    /// Override layout detection for this file.
     layout: ?LayoutDetectionConfig,
+    /// Override per-file extraction timeout in seconds.
+    ///
+    /// When set, the extraction for this file will be canceled after the
+    /// specified duration. A timed-out file produces an error result without
+    /// affecting other files in the batch.
     timeout_secs: ?u64,
+    /// Override tree-sitter configuration for this file.
     tree_sitter: ?TreeSitterConfig,
+    /// Override structured extraction configuration for this file.
+    ///
+    /// When set, enables LLM-based structured extraction with a JSON schema
+    /// for this specific file. The extracted content is sent to a VLM/LLM
+    /// and the response is parsed according to the provided schema.
     structured_extraction: ?StructuredExtractionConfig,
 };
 
@@ -185,8 +419,11 @@ pub const FileExtractionConfig = struct {
 /// Used with `batch_extract_bytes` and `batch_extract_bytes_sync`
 /// to represent a single item in a batch extraction job.
 pub const BatchBytesItem = struct {
+    /// The content bytes to extract from
     content: []const u8,
+    /// MIME type of the content (e.g., "application/pdf", "text/html")
     mime_type: []const u8,
+    /// Per-item configuration overrides (None uses batch-level defaults)
     config: ?FileExtractionConfig,
 };
 
@@ -195,33 +432,61 @@ pub const BatchBytesItem = struct {
 /// Used with `batch_extract_files` and `batch_extract_files_sync`
 /// to represent a single file in a batch extraction job.
 pub const BatchFileItem = struct {
+    /// Path to the file to extract from
     path: []const u8,
+    /// Per-file configuration overrides (None uses batch-level defaults)
     config: ?FileExtractionConfig,
 };
 
 /// Image extraction configuration.
 pub const ImageExtractionConfig = struct {
+    /// Extract images from documents
     extract_images: bool,
+    /// Target DPI for image normalization
     target_dpi: i32,
+    /// Maximum dimension for images (width or height)
     max_image_dimension: i32,
+    /// Whether to inject image reference placeholders into markdown output.
+    /// When `true` (default), image references like `![Image 1](embedded:p1_i0)`
+    /// are appended to the markdown. Set to `false` to extract images as data
+    /// without polluting the markdown output.
     inject_placeholders: bool,
+    /// Automatically adjust DPI based on image content
     auto_adjust_dpi: bool,
+    /// Minimum DPI threshold
     min_dpi: i32,
+    /// Maximum DPI threshold
     max_dpi: i32,
+    /// Maximum number of image objects to extract per PDF page.
+    ///
+    /// Some PDFs (e.g. technical diagrams stored as thousands of raster fragments)
+    /// can trigger extremely long or indefinite extraction times when every image
+    /// object on a dense page is decoded individually via the PDF extractor. Setting this
+    /// limit causes kreuzberg to stop collecting individual images once the count
+    /// per page reaches the cap and emit a warning instead.
+    ///
+    /// `null` (default) means no limit — all images are extracted.
     max_images_per_page: ?u32,
+    /// When `true` (default), extracted images are classified by kind and grouped
+    /// into clusters where they appear to belong to one figure.
     classify: bool,
 };
 
 /// Token reduction configuration.
 pub const TokenReductionOptions = struct {
+    /// Reduction mode: "off", "light", "moderate", "aggressive", "maximum"
     mode: []const u8,
+    /// Preserve important words (capitalized, technical terms)
     preserve_important_words: bool,
 };
 
 /// Language detection configuration.
 pub const LanguageDetectionConfig = struct {
+    /// Enable language detection
     enabled: bool,
+    /// Minimum confidence threshold (0.0-1.0)
     min_confidence: f64,
+    /// Detect multiple languages in the document
     detect_multiple: bool,
 };
 
@@ -232,10 +497,24 @@ pub const LanguageDetectionConfig = struct {
 /// `StyledHtmlRenderer` instead of
 /// the plain comrak-based renderer.
 pub const HtmlOutputConfig = struct {
+    /// Inline CSS string injected into the output after the theme stylesheet.
+    /// Concatenated after `css_file` content when both are set.
     css: ?[]const u8,
+    /// Path to a CSS file loaded once at renderer construction time.
+    /// Concatenated before `css` when both are set.
     css_file: ?[]const u8,
+    /// Built-in colour/typography theme. Default: `HtmlTheme.Unstyled`.
     theme: HtmlTheme,
+    /// CSS class prefix applied to every emitted class name.
+    ///
+    /// Default: `"kb-"`. Change this if your host application already uses
+    /// classes that start with `kb-`.
     class_prefix: []const u8,
+    /// When `true` (default), write the resolved CSS into a `<style>` block
+    /// immediately after the opening `<div class="{prefix}doc">`.
+    ///
+    /// Set to `false` to emit only the structural markup and wire up your
+    /// own stylesheet targeting the `kb-*` class names.
     embed_css: bool,
 };
 
@@ -245,9 +524,19 @@ pub const HtmlOutputConfig = struct {
 /// When set on `ExtractionConfig`, layout detection
 /// is enabled for PDF extraction.
 pub const LayoutDetectionConfig = struct {
+    /// Confidence threshold override (None = use model default).
     confidence_threshold: ?f32,
+    /// Whether to apply postprocessing heuristics (default: true).
     apply_heuristics: bool,
+    /// Table structure recognition model.
+    ///
+    /// Controls which model is used for table cell detection within layout-detected
+    /// table regions. Defaults to `TableModel.Tatr`.
     table_model: TableModel,
+    /// Hardware acceleration for ONNX models (layout detection + table structure).
+    ///
+    /// When set, controls which execution provider (CPU, CUDA, CoreML, TensorRT)
+    /// is used for inference. Defaults to `null` (auto-select per platform).
     acceleration: ?AccelerationConfig,
 };
 
@@ -256,12 +545,23 @@ pub const LayoutDetectionConfig = struct {
 /// Each feature (VLM OCR, VLM embeddings, structured extraction) carries
 /// its own `LlmConfig`, allowing different providers per feature.
 pub const LlmConfig = struct {
+    /// Provider/model string using liter-llm routing format.
+    ///
+    /// Examples: `"openai/gpt-4o"`, `"anthropic/claude-sonnet-4-20250514"`,
+    /// `"groq/llama-3.1-70b-versatile"`.
     model: []const u8,
+    /// API key for the provider. When `null`, liter-llm falls back to
+    /// the provider's standard environment variable (e.g., `OPENAI_API_KEY`).
     api_key: ?[]const u8,
+    /// Custom base URL override for the provider endpoint.
     base_url: ?[]const u8,
+    /// Request timeout in seconds (default: 60).
     timeout_secs: ?u64,
+    /// Maximum retry attempts (default: 3).
     max_retries: ?u32,
+    /// Sampling temperature for generation tasks.
     temperature: ?f64,
+    /// Maximum tokens to generate.
     max_tokens: ?u64,
 };
 
@@ -270,11 +570,23 @@ pub const LlmConfig = struct {
 /// Sends extracted document content to a VLM with a JSON schema,
 /// returning structured data that conforms to the schema.
 pub const StructuredExtractionConfig = struct {
+    /// JSON Schema defining the desired output structure.
     schema: []const u8,
+    /// Schema name passed to the LLM's structured output mode.
     schema_name: []const u8,
+    /// Optional schema description for the LLM.
     schema_description: ?[]const u8,
+    /// Enable strict mode — output must exactly match the schema.
     strict: bool,
+    /// Custom Jinja2 extraction prompt template. When `null`, a default template is used.
+    ///
+    /// Available template variables:
+    /// - `{{ content }}` — The extracted document text.
+    /// - `{{ schema }}` — The JSON schema as a formatted string.
+    /// - `{{ schema_name }}` — The schema name.
+    /// - `{{ schema_description }}` — The schema description (may be empty).
     prompt: ?[]const u8,
+    /// LLM configuration for the extraction.
     llm: LlmConfig,
 };
 
@@ -283,32 +595,68 @@ pub const StructuredExtractionConfig = struct {
 /// All fields default to the values that match the previous hardcoded behavior,
 /// so `OcrQualityThresholds.default()` preserves existing semantics exactly.
 pub const OcrQualityThresholds = struct {
+    /// Minimum total non-whitespace characters to consider text substantive.
     min_total_non_whitespace: u64,
+    /// Minimum non-whitespace characters per page on average.
     min_non_whitespace_per_page: f64,
+    /// Minimum character count for a word to be "meaningful".
     min_meaningful_word_len: u64,
+    /// Minimum count of meaningful words before text is accepted.
     min_meaningful_words: u64,
+    /// Minimum alphanumeric ratio (non-whitespace chars that are alphanumeric).
     min_alnum_ratio: f64,
+    /// Minimum Unicode replacement characters (U+FFFD) to trigger OCR fallback.
     min_garbage_chars: u64,
+    /// Maximum fraction of short (1-2 char) words before text is considered fragmented.
     max_fragmented_word_ratio: f64,
+    /// Critical fragmentation threshold — triggers OCR regardless of meaningful words.
+    /// Normal English text has ~20-30% short words. 80%+ is definitive garbage.
     critical_fragmented_word_ratio: f64,
+    /// Minimum average word length. Below this with enough words indicates garbled extraction.
     min_avg_word_length: f64,
+    /// Minimum word count before average word length check applies.
     min_words_for_avg_length_check: u64,
+    /// Minimum consecutive word repetition ratio to detect column scrambling.
     min_consecutive_repeat_ratio: f64,
+    /// Minimum word count before consecutive repetition check is applied.
     min_words_for_repeat_check: u64,
+    /// Minimum character count for "substantive markdown" OCR skip gate.
     substantive_min_chars: u64,
+    /// Minimum character count for "non-text content" OCR skip gate.
     non_text_min_chars: u64,
+    /// Alphanumeric+whitespace ratio threshold for skip decisions.
     alnum_ws_ratio_threshold: f64,
+    /// Minimum quality score (0.0-1.0) for a pipeline stage result to be accepted.
+    /// If the result from a backend scores below this, try the next backend.
     pipeline_min_quality: f64,
 };
 
 /// A single backend stage in the OCR pipeline.
 pub const OcrPipelineStage = struct {
+    /// Backend name: "tesseract", "paddleocr", "easyocr", or a custom registered name.
     backend: []const u8,
+    /// Priority weight (higher = tried first). Stages are sorted by priority descending.
     priority: u32,
+    /// Language override for this stage (None = use parent OcrConfig.language).
     language: ?[]const u8,
+    /// Tesseract-specific config override for this stage.
     tesseract_config: ?TesseractConfig,
+    /// PaddleOCR-specific config for this stage.
     paddle_ocr_config: ?[]const u8,
+    /// VLM config override for this pipeline stage.
     vlm_config: ?LlmConfig,
+    /// Arbitrary per-call options passed through to the backend unchanged.
+    ///
+    /// Backends that support runtime tuning (mode switching, preprocessing
+    /// flags, inference parameters, etc.) read this value and deserialize
+    /// the keys they care about. Keys unknown to the backend are silently
+    /// ignored, so options from different backends can coexist in the same
+    /// config without conflict.
+    ///
+    /// Example (custom backend):
+    /// ```json
+    /// { "mode": "fast", "enable_layout": true }
+    /// ```
     backend_options: ?[]const u8,
 };
 
@@ -318,26 +666,94 @@ pub const OcrPipelineStage = struct {
 /// produces output, quality is evaluated. If it meets `quality_thresholds.pipeline_min_quality`,
 /// the result is accepted. Otherwise the next backend is tried.
 pub const OcrPipelineConfig = struct {
+    /// Ordered list of backends to try. Sorted by priority (descending) at runtime.
     stages: []const OcrPipelineStage,
+    /// Quality thresholds for deciding whether to accept a result or try the next backend.
     quality_thresholds: OcrQualityThresholds,
 };
 
 /// OCR configuration.
 pub const OcrConfig = struct {
+    /// Whether OCR is enabled.
+    ///
+    /// Setting `enabled: false` is a shorthand for `disable_ocr: true` on the parent
+    /// `ExtractionConfig`. Images return
+    /// metadata only; PDFs use native text extraction without OCR fallback.
+    ///
+    /// Defaults to `true`. When `false`, all other OCR settings are ignored.
     enabled: bool,
+    /// OCR backend: tesseract, easyocr, paddleocr
     backend: []const u8,
+    /// Language code (e.g., "eng", "deu")
     language: []const u8,
+    /// Tesseract-specific configuration (optional)
     tesseract_config: ?TesseractConfig,
+    /// Output format for OCR results (optional, for format conversion)
     output_format: ?OutputFormat,
+    /// PaddleOCR-specific configuration (optional, JSON passthrough)
     paddle_ocr_config: ?[]const u8,
+    /// Arbitrary per-call options passed through to the backend unchanged.
+    ///
+    /// Custom OCR backends and built-in backends that support runtime tuning
+    /// can read this value and deserialize the keys they care about. Keys
+    /// unknown to the backend are silently ignored.
+    ///
+    /// This is the recommended extension point for per-call parameters that
+    /// are not covered by the typed fields above (e.g. mode switching,
+    /// preprocessing flags, inference batch size).
+    ///
+    /// **Scope:** when `pipeline` is `null`, this value is propagated to the
+    /// primary stage of the auto-constructed pipeline. When `pipeline` is
+    /// explicitly set, this field has **no effect** — the caller must set
+    /// `OcrPipelineStage.backend_options` directly on the relevant stage(s)
+    /// instead.
+    ///
+    /// Example:
+    /// ```json
+    /// { "mode": "fast", "enable_layout": true, "timeout_ms": 5000 }
+    /// ```
     backend_options: ?[]const u8,
+    /// OCR element extraction configuration
     element_config: ?OcrElementConfig,
+    /// Quality thresholds for the native-text-to-OCR fallback decision.
+    /// When None, uses compiled defaults (matching previous hardcoded behavior).
     quality_thresholds: ?OcrQualityThresholds,
+    /// Multi-backend OCR pipeline configuration. When set, enables weighted
+    /// fallback across multiple OCR backends based on output quality.
+    /// When None, uses the single `backend` field (same as today).
     pipeline: ?OcrPipelineConfig,
+    /// Enable automatic page rotation based on orientation detection.
+    ///
+    /// When enabled, uses Tesseract's `DetectOrientationScript()` to detect
+    /// page orientation (0/90/180/270 degrees) before OCR. If the page is
+    /// rotated with high confidence, the image is corrected before recognition.
+    /// This is critical for handling rotated scanned documents.
     auto_rotate: bool,
+    /// VLM (Vision Language Model) OCR configuration.
+    ///
+    /// Required when `backend` is `"vlm"`. Uses liter-llm to send page
+    /// images to a vision model for text extraction.
     vlm_config: ?LlmConfig,
+    /// Custom Jinja2 prompt template for VLM OCR.
+    ///
+    /// When `null`, uses the default template. Available variables:
+    /// - `{{ language }}` — The document language code (e.g., "eng", "deu").
     vlm_prompt: ?[]const u8,
+    /// Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection).
+    ///
+    /// Not user-configurable via config files — injected at runtime from
+    /// `ExtractionConfig.acceleration` before each `process_image` call.
     acceleration: ?AccelerationConfig,
+    /// Caller-supplied Tesseract `traineddata` bytes per language code.
+    ///
+    /// Primary use case is the WASM build, which has no filesystem and cannot
+    /// download tessdata at runtime. Native builds typically rely on
+    /// `TessdataManager` and ignore this field. When present, the WASM
+    /// Tesseract backend prefers these bytes over its compile-time-bundled
+    /// English data.
+    ///
+    /// Skipped by serde to keep config files small — supply via the typed API
+    /// at runtime.
     tessdata_bytes: ?std.StringHashMap([]const u8),
 };
 
@@ -349,22 +765,55 @@ pub const OcrConfig = struct {
 /// Page range tracking in chunk metadata (first_page/last_page) is automatically enabled
 /// when page boundaries are available and chunking is configured.
 pub const PageConfig = struct {
+    /// Extract pages as separate array (ExtractionResult.pages)
     extract_pages: bool,
+    /// Insert page markers in main content string
     insert_page_markers: bool,
+    /// Page marker format (use {page_num} placeholder)
+    /// Default: "\n\n<!-- PAGE {page_num} -->\n\n"
     marker_format: []const u8,
 };
 
 /// PDF-specific configuration.
 pub const PdfConfig = struct {
+    /// Extract images from PDF
     extract_images: bool,
+    /// Extract tables from PDF.
+    ///
+    /// When `true` (default), runs pdf_oxide's native grid detector and, if it
+    /// finds nothing, falls back to the heuristic text-layer reconstruction in
+    /// `pdf.oxide.table.extract_tables_heuristic`. Set to `false` to skip
+    /// both passes — `tables` will then be empty in the result.
     extract_tables: bool,
+    /// List of passwords to try when opening encrypted PDFs
     passwords: ?[]const []const u8,
+    /// Extract PDF metadata
     extract_metadata: bool,
+    /// Hierarchy extraction configuration (None = hierarchy extraction disabled)
     hierarchy: ?HierarchyConfig,
+    /// Extract PDF annotations (text notes, highlights, links, stamps).
+    /// Default: false
     extract_annotations: bool,
+    /// Top margin fraction (0.0–1.0) of page height to exclude headers/running heads.
+    /// Default: 0.06 (6%)
     top_margin_fraction: ?f32,
+    /// Bottom margin fraction (0.0–1.0) of page height to exclude footers/page numbers.
+    /// Default: 0.05 (5%)
     bottom_margin_fraction: ?f32,
+    /// Allow single-column pseudo tables in extraction results.
+    ///
+    /// By default, tables with fewer than 2 columns (layout-guided) or 3 columns
+    /// (heuristic) are rejected. When `true`, the minimum column count is relaxed
+    /// to 1, allowing single-column structured data (glossaries, itemized lists)
+    /// to be emitted as tables. Other quality filters (density, sparsity, prose
+    /// detection) still apply.
     allow_single_column_tables: bool,
+    /// Perform OCR on inline images extracted from PDF pages and attach the
+    /// recognized text to each `ExtractedImage.ocr_result`. Requires Tesseract
+    /// to be available; if `ExtractionConfig.ocr` is `null` the extractor
+    /// falls back to `TesseractConfig.default()`. Per-image failures degrade
+    /// gracefully (the image is returned without OCR text rather than failing
+    /// the whole extraction). Default: `false`.
     ocr_inline_images: bool,
 };
 
@@ -374,18 +823,34 @@ pub const PdfConfig = struct {
 /// clustering and semantic analysis. When enabled, hierarchical blocks are
 /// included in page content.
 pub const HierarchyConfig = struct {
+    /// Enable hierarchy extraction
     enabled: bool,
+    /// Number of font size clusters to use for hierarchy levels (1-7)
+    ///
+    /// Default: 6, which provides H1-H6 heading levels with body text.
+    /// Larger values create more fine-grained hierarchy levels.
     k_clusters: u64,
+    /// Include bounding box information in hierarchy blocks
     include_bbox: bool,
+    /// OCR coverage threshold for smart OCR triggering (0.0-1.0)
+    ///
+    /// Determines when OCR should be triggered based on text block coverage.
+    /// OCR is triggered when text blocks cover less than this fraction of the page.
+    /// Default: 0.5 (trigger OCR if less than 50% of page has text)
     ocr_coverage_threshold: ?f32,
 };
 
 /// Post-processor configuration.
 pub const PostProcessorConfig = struct {
+    /// Enable post-processors
     enabled: bool,
+    /// Whitelist of processor names to run (None = all enabled)
     enabled_processors: ?[]const []const u8,
+    /// Blacklist of processor names to skip (None = none disabled)
     disabled_processors: ?[]const []const u8,
+    /// Pre-computed AHashSet for O(1) enabled processor lookup
     enabled_set: ?[]const u8,
+    /// Pre-computed AHashSet for O(1) disabled processor lookup
     disabled_set: ?[]const u8,
 };
 
@@ -396,14 +861,49 @@ pub const PostProcessorConfig = struct {
 ///
 /// Use `..the default constructor` when constructing to allow for future field additions:
 pub const ChunkingConfig = struct {
+    /// Maximum size per chunk (in units determined by `sizing`).
+    ///
+    /// When `sizing` is `Characters` (default), this is the max character count.
+    /// When using token-based sizing, this is the max token count.
+    ///
+    /// Default: 1000
     max_characters: u64,
+    /// Overlap between chunks (in units determined by `sizing`).
+    ///
+    /// Default: 200
     overlap: u64,
+    /// Whether to trim whitespace from chunk boundaries.
+    ///
+    /// Default: true
     trim: bool,
+    /// Type of chunker to use (Text or Markdown).
+    ///
+    /// Default: Text
     chunker_type: ChunkerType,
+    /// Optional embedding configuration for chunk embeddings.
     embedding: ?EmbeddingConfig,
+    /// Use a preset configuration (overrides individual settings if provided).
     preset: ?[]const u8,
+    /// How to measure chunk size.
+    ///
+    /// Default: `Characters` (Unicode character count).
+    /// Enable `chunking-tiktoken` or `chunking-tokenizers` features for token-based sizing.
     sizing: ChunkSizing,
+    /// When `true` and `chunker_type` is `Markdown`, prepend the heading hierarchy
+    /// path (e.g. `"# Title > ## Section\n\n"`) to each chunk's content string.
+    ///
+    /// This is useful for RAG pipelines where each chunk needs self-contained
+    /// context about its position in the document structure.
+    ///
+    /// Default: `false`
     prepend_heading_context: bool,
+    /// Optional cosine similarity threshold for semantic topic boundary detection.
+    ///
+    /// Only used when `chunker_type` is `Semantic` and an `EmbeddingConfig` is
+    /// provided. You almost never need to set this. When omitted, defaults to
+    /// `0.75` which works well for most documents. Lower values detect more
+    /// topic boundaries (more, smaller chunks); higher values detect fewer.
+    /// Range: `0.0..=1.0`.
     topic_threshold: ?f32,
 };
 
@@ -412,12 +912,35 @@ pub const ChunkingConfig = struct {
 /// Configures embedding generation using ONNX models via the vendored embedding engine.
 /// Requires the `embeddings` feature to be enabled.
 pub const EmbeddingConfig = struct {
+    /// The embedding model to use (defaults to "balanced" preset if not specified)
     model: EmbeddingModelType,
+    /// Whether to normalize embedding vectors (recommended for cosine similarity)
     normalize: bool,
+    /// Batch size for embedding generation
     batch_size: u64,
+    /// Show model download progress
     show_download_progress: bool,
+    /// Custom cache directory for model files
+    ///
+    /// Defaults to `~/.cache/kreuzberg/embeddings/` if not specified.
+    /// Allows full customization of model download location.
     cache_dir: ?[]const u8,
+    /// Hardware acceleration for the embedding ONNX model.
+    ///
+    /// When set, controls which execution provider (CPU, CUDA, CoreML, TensorRT)
+    /// is used for inference. Defaults to `null` (auto-select per platform).
     acceleration: ?AccelerationConfig,
+    /// Maximum wall-clock duration (in seconds) for a single `embed()` call when
+    /// using `EmbeddingModelType.Plugin`.
+    ///
+    /// Applies only to the in-process plugin path — protects against hung
+    /// host-language backends (e.g. a Python callback deadlocked on the GIL,
+    /// a model stuck on CUDA OOM retries, etc.). On timeout, the dispatcher
+    /// returns `Plugin` instead of blocking forever.
+    ///
+    /// `null` disables the timeout. The default (60 seconds) is conservative
+    /// for common in-process inference; increase for large batches on slow
+    /// hardware.
     max_embed_duration_secs: ?u64,
 };
 
@@ -438,10 +961,20 @@ pub const EmbeddingConfig = struct {
 /// docstrings = true
 /// ```
 pub const TreeSitterConfig = struct {
+    /// Enable code intelligence processing (default: true).
+    ///
+    /// When `false`, tree-sitter analysis is completely skipped even if
+    /// the config section is present.
     enabled: bool,
+    /// Custom cache directory for downloaded grammars.
+    ///
+    /// When `null`, uses the default: `~/.cache/tree-sitter-language-pack/v{version}/libs/`.
     cache_dir: ?[]const u8,
+    /// Languages to pre-download on init (e.g., `["python", "rust"]`).
     languages: ?[]const []const u8,
+    /// Language groups to pre-download (e.g., `["web", "systems", "scripting"]`).
     groups: ?[]const []const u8,
+    /// Processing options for code analysis.
     process: TreeSitterProcessConfig,
 };
 
@@ -449,14 +982,23 @@ pub const TreeSitterConfig = struct {
 ///
 /// Controls which analysis features are enabled when extracting code files.
 pub const TreeSitterProcessConfig = struct {
+    /// Extract structural items (functions, classes, structs, etc.). Default: true.
     structure: bool,
+    /// Extract import statements. Default: true.
     imports: bool,
+    /// Extract export statements. Default: true.
     exports: bool,
+    /// Extract comments. Default: false.
     comments: bool,
+    /// Extract docstrings. Default: false.
     docstrings: bool,
+    /// Extract symbol definitions. Default: false.
     symbols: bool,
+    /// Include parse diagnostics. Default: false.
     diagnostics: bool,
+    /// Maximum chunk size in bytes. `null` disables chunking.
     chunk_max_size: ?u64,
+    /// Content rendering mode for code extraction.
     content_mode: CodeContentMode,
 };
 
@@ -464,7 +1006,9 @@ pub const TreeSitterProcessConfig = struct {
 ///
 /// Represents a file extension and its corresponding MIME type that Kreuzberg can process.
 pub const SupportedFormat = struct {
+    /// File extension (without leading dot), e.g., "pdf", "docx"
     extension: []const u8,
+    /// MIME type string, e.g., "application/pdf"
     mime_type: []const u8,
 };
 
@@ -481,10 +1025,19 @@ pub const SupportedFormat = struct {
 /// - `max_request_body_bytes`: 104_857_600 (100 MB)
 /// - `max_multipart_field_bytes`: 104_857_600 (100 MB)
 pub const ServerConfig = struct {
+    /// Server host address (e.g., "127.0.0.1", "0.0.0.0")
     host: []const u8,
+    /// Server port number
     port: u16,
+    /// CORS allowed origins. Empty vector means allow all origins.
+    ///
+    /// If this is an empty vector, the server will accept requests from any origin.
+    /// If populated with specific origins (e.g., `"https://example.com"`), only
+    /// those origins will be allowed.
     cors_origins: []const []const u8,
+    /// Maximum size of request body in bytes (default: 100 MB)
     max_request_body_bytes: u64,
+    /// Maximum size of multipart fields in bytes (default: 100 MB)
     max_multipart_field_bytes: u64,
 };
 
@@ -500,14 +1053,27 @@ pub const StructuredDataResult = struct {
 /// All limits are intentionally conservative to prevent DoS attacks
 /// while still supporting legitimate documents.
 pub const SecurityLimits = struct {
+    /// Maximum uncompressed size for archives (500 MB)
     max_archive_size: u64,
+    /// Maximum compression ratio before flagging as potential bomb (100:1)
     max_compression_ratio: u64,
+    /// Maximum number of files in archive (10,000)
     max_files_in_archive: u64,
+    /// Maximum nesting depth for structures (100)
     max_nesting_depth: u64,
+    /// Maximum length of any single XML entity / attribute / token (1 MiB).
+    /// This is a per-token cap, NOT a cumulative cap — billion-laughs class
+    /// attacks where a single entity expands to hundreds of MB are caught
+    /// here, while normal long text content (a paragraph, a CDATA block) is
+    /// caught by `max_content_size` instead.
     max_entity_length: u64,
+    /// Maximum string growth per document (100 MB)
     max_content_size: u64,
+    /// Maximum iterations per operation
     max_iterations: u64,
+    /// Maximum XML depth (100 levels)
     max_xml_depth: u64,
+    /// Maximum cells per table (100,000)
     max_table_cells: u64,
 };
 
@@ -527,9 +1093,13 @@ pub const TokenReductionConfig = struct {
 
 /// A PDF annotation extracted from a document page.
 pub const PdfAnnotation = struct {
+    /// The type of annotation.
     annotation_type: PdfAnnotationType,
+    /// Text content of the annotation (e.g., comment text, link URL).
     content: ?[]const u8,
+    /// Page number where the annotation appears (1-indexed).
     page_number: u32,
+    /// Bounding box of the annotation on the page.
     bounding_box: ?[]const u8,
 };
 
@@ -545,13 +1115,21 @@ pub const PdfAnnotation = struct {
 ///
 /// Available when the `djot` feature is enabled.
 pub const DjotContent = struct {
+    /// Plain text representation for backwards compatibility
     plain_text: []const u8,
+    /// Structured block-level content
     blocks: []const FormattedBlock,
+    /// Metadata from YAML frontmatter
     metadata: Metadata,
+    /// Extracted tables as structured data
     tables: []const Table,
+    /// Extracted images with metadata
     images: []const DjotImage,
+    /// Extracted links with URLs
     links: []const DjotLink,
+    /// Footnote definitions
     footnotes: []const Footnote,
+    /// Attributes mapped by element identifier (if present)
     attributes: []const []const u8,
 };
 
@@ -559,12 +1137,19 @@ pub const DjotContent = struct {
 ///
 /// Represents structural elements like headings, paragraphs, lists, code blocks, etc.
 pub const FormattedBlock = struct {
+    /// Type of block element
     block_type: BlockType,
+    /// Heading level (1-6) for headings, or nesting level for lists
     level: ?u64,
+    /// Inline content within the block
     inline_content: []const InlineElement,
+    /// Element attributes (classes, IDs, key-value pairs)
     attributes: ?[]const u8,
+    /// Language identifier for code blocks
     language: ?[]const u8,
+    /// Raw code content for code blocks
     code: ?[]const u8,
+    /// Nested blocks for containers (blockquotes, list items, divs)
     children: []const FormattedBlock,
 };
 
@@ -572,31 +1157,45 @@ pub const FormattedBlock = struct {
 ///
 /// Represents text with formatting, links, images, etc.
 pub const InlineElement = struct {
+    /// Type of inline element
     element_type: InlineType,
+    /// Text content
     content: []const u8,
+    /// Element attributes
     attributes: ?[]const u8,
+    /// Additional metadata (e.g., href for links, src/alt for images)
     metadata: ?std.StringHashMap([]const u8),
 };
 
 /// Image element in Djot.
 pub const DjotImage = struct {
+    /// Image source URL or path
     src: []const u8,
+    /// Alternative text
     alt: []const u8,
+    /// Optional title
     title: ?[]const u8,
+    /// Element attributes
     attributes: ?[]const u8,
 };
 
 /// Link element in Djot.
 pub const DjotLink = struct {
+    /// Link URL
     url: []const u8,
+    /// Link text content
     text: []const u8,
+    /// Optional title
     title: ?[]const u8,
+    /// Element attributes
     attributes: ?[]const u8,
 };
 
 /// Footnote in Djot.
 pub const Footnote = struct {
+    /// Footnote label
     label: []const u8,
+    /// Footnote content blocks
     content: []const FormattedBlock,
 };
 
@@ -611,16 +1210,36 @@ pub const Footnote = struct {
 /// Call `validate()` after construction to verify all node indices are in bounds
 /// and parent-child relationships are bidirectionally consistent.
 pub const DocumentStructure = struct {
+    /// All nodes in document/reading order.
     nodes: []const DocumentNode,
+    /// Origin format identifier (e.g. "docx", "pptx", "html", "pdf").
+    ///
+    /// Allows renderers to apply format-aware heuristics when converting
+    /// the document tree to output formats.
     source_format: ?[]const u8,
+    /// Resolved relationships between nodes (footnote refs, citations, anchor links, etc.).
+    ///
+    /// Populated during derivation from the internal document representation.
+    /// Empty when no relationships are detected.
     relationships: []const DocumentRelationship,
+    /// Sorted, deduplicated list of node type names present in this document.
+    ///
+    /// Each value is the snake_case `node_type` tag of the corresponding
+    /// `NodeContent` variant (e.g. `"paragraph"`, `"heading"`, `"table"`, …).
+    ///
+    /// Computed from `nodes` via `DocumentStructure.finalize_node_types`.
+    /// Empty until that method is called (internal construction paths call it
+    /// at the end of derivation).
     node_types: []const []const u8,
 };
 
 /// A resolved relationship between two nodes in the document tree.
 pub const DocumentRelationship = struct {
+    /// Source node index (the referencing node).
     source: u32,
+    /// Target node index (the referenced node).
     target: u32,
+    /// Semantic kind of the relationship.
     kind: RelationshipKind,
 };
 
@@ -629,15 +1248,30 @@ pub const DocumentRelationship = struct {
 /// Each node has deterministic `id`, typed `content`, optional `parent`/`children`
 /// for tree structure, and metadata like page number, bounding box, and content layer.
 pub const DocumentNode = struct {
+    /// Deterministic identifier (hash of content + position).
     id: []const u8,
+    /// Node content — tagged enum, type-specific data only.
     content: NodeContent,
+    /// Parent node index (`null` = root-level node).
     parent: ?u32,
+    /// Child node indices in reading order.
     children: []const u32,
+    /// Content layer classification.
     content_layer: ContentLayer,
+    /// Page number where this node starts (1-indexed).
     page: ?u32,
+    /// Page number where this node ends (for multi-page tables/sections).
     page_end: ?u32,
+    /// Bounding box in document coordinates.
     bbox: ?[]const u8,
+    /// Inline annotations (formatting, links) on this node's text content.
+    ///
+    /// Only meaningful for text-carrying nodes; empty for containers.
     annotations: []const TextAnnotation,
+    /// Format-specific key-value attributes.
+    ///
+    /// Extensible bag for data that doesn't warrant a typed field: CSS classes,
+    /// LaTeX environment names, Excel cell formulas, slide layout names, etc.
     attributes: ?std.StringHashMap([]const u8),
 };
 
@@ -645,19 +1279,29 @@ pub const DocumentNode = struct {
 ///
 /// Stores row/column dimensions and a flat list of cells with position info.
 pub const TableGrid = struct {
+    /// Number of rows in the table.
     rows: u32,
+    /// Number of columns in the table.
     cols: u32,
+    /// All cells in row-major order.
     cells: []const GridCell,
 };
 
 /// Individual grid cell with position and span metadata.
 pub const GridCell = struct {
+    /// Cell text content.
     content: []const u8,
+    /// Zero-indexed row position.
     row: u32,
+    /// Zero-indexed column position.
     col: u32,
+    /// Number of rows this cell spans.
     row_span: u32,
+    /// Number of columns this cell spans.
     col_span: u32,
+    /// Whether this is a header cell.
     is_header: bool,
+    /// Bounding box for this cell (if available).
     bbox: ?[]const u8,
 };
 
@@ -666,8 +1310,11 @@ pub const GridCell = struct {
 /// Annotations reference byte offsets into the node's text content,
 /// enabling precise identification of formatted regions.
 pub const TextAnnotation = struct {
+    /// Start byte offset in the node's text content (inclusive).
     start: u32,
+    /// End byte offset in the node's text content (exclusive).
     end: u32,
+    /// Annotation type.
     kind: AnnotationKind,
 };
 
@@ -678,26 +1325,143 @@ pub const ExtractionResult = struct {
     content: []const u8,
     mime_type: []const u8,
     metadata: Metadata,
+    /// Extraction strategy used to produce the returned text.
+    ///
+    /// Populated when the extractor can reliably distinguish native text extraction,
+    /// OCR-only extraction, or mixed native/OCR output.
     extraction_method: ?ExtractionMethod,
     tables: []const Table,
     detected_languages: ?[]const []const u8,
+    /// Text chunks when chunking is enabled.
+    ///
+    /// When chunking configuration is provided, the content is split into
+    /// overlapping chunks for efficient processing. Each chunk contains the text,
+    /// optional embeddings (if enabled), and metadata about its position.
     chunks: ?[]const Chunk,
+    /// Extracted images from the document.
+    ///
+    /// When image extraction is enabled via `ImageExtractionConfig`, this field
+    /// contains all images found in the document with their raw data and metadata.
+    /// Each image may optionally contain a nested `ocr_result` if OCR was performed.
     images: ?[]const ExtractedImage,
+    /// Per-page content when page extraction is enabled.
+    ///
+    /// When page extraction is configured, the document is split into per-page content
+    /// with tables and images mapped to their respective pages.
     pages: ?[]const PageContent,
+    /// Semantic elements when element-based result format is enabled.
+    ///
+    /// When result_format is set to ElementBased, this field contains semantic
+    /// elements with type classification, unique identifiers, and metadata for
+    /// Unstructured-compatible element-based processing.
     elements: ?[]const Element,
+    /// Rich Djot content structure (when extracting Djot documents).
+    ///
+    /// When extracting Djot documents with structured extraction enabled,
+    /// this field contains the full semantic structure including:
+    /// - Block-level elements with nesting
+    /// - Inline formatting with attributes
+    /// - Links, images, footnotes
+    /// - Math expressions
+    /// - Complete attribute information
+    ///
+    /// The `content` field still contains plain text for backward compatibility.
+    ///
+    /// Always `null` for non-Djot documents.
     djot_content: ?DjotContent,
+    /// OCR elements with full spatial and confidence metadata.
+    ///
+    /// When OCR is performed with element extraction enabled, this field contains
+    /// the structured representation of detected text including:
+    /// - Bounding geometry (rectangles or quadrilaterals)
+    /// - Confidence scores (detection and recognition)
+    /// - Rotation information
+    /// - Hierarchical relationships (Tesseract only)
+    ///
+    /// This field preserves all metadata that would otherwise be lost when
+    /// converting to plain text or markdown output formats.
+    ///
+    /// Only populated when `OcrElementConfig.include_elements` is true.
     ocr_elements: ?[]const OcrElement,
+    /// Structured document tree (when document structure extraction is enabled).
+    ///
+    /// When `include_document_structure` is true in `ExtractionConfig`, this field
+    /// contains the full hierarchical representation of the document including:
+    /// - Heading-driven section nesting
+    /// - Table grids with cell-level metadata
+    /// - Content layer classification (body, header, footer, footnote)
+    /// - Inline text annotations (formatting, links)
+    /// - Bounding boxes and page numbers
+    ///
+    /// Independent of `result_format` — can be combined with Unified or ElementBased.
     document: ?DocumentStructure,
+    /// Extracted keywords when keyword extraction is enabled.
+    ///
+    /// When keyword extraction (RAKE or YAKE) is configured, this field contains
+    /// the extracted keywords with scores, algorithm info, and position data.
+    /// Previously stored in `metadata.additional["keywords"]`.
     extracted_keywords: ?[]const Keyword,
+    /// Document quality score from quality analysis.
+    ///
+    /// A value between 0.0 and 1.0 indicating the overall text quality.
+    /// Previously stored in `metadata.additional["quality_score"]`.
     quality_score: ?f64,
+    /// Non-fatal warnings collected during processing pipeline stages.
+    ///
+    /// Captures errors from optional pipeline features (embedding, chunking,
+    /// language detection, output formatting) that don't prevent extraction
+    /// but may indicate degraded results.
+    /// Previously stored as individual keys in `metadata.additional`.
     processing_warnings: []const ProcessingWarning,
+    /// PDF annotations extracted from the document.
+    ///
+    /// When annotation extraction is enabled via `PdfConfig.extract_annotations`,
+    /// this field contains text notes, highlights, links, stamps, and other
+    /// annotations found in PDF documents.
     annotations: ?[]const PdfAnnotation,
+    /// Nested extraction results from archive contents.
+    ///
+    /// When extracting archives, each processable file inside produces its own
+    /// full extraction result. Set to `null` for non-archive formats.
+    /// Use `max_archive_depth` in config to control recursion depth.
     children: ?[]const ArchiveEntry,
+    /// URIs/links discovered during document extraction.
+    ///
+    /// Contains hyperlinks, image references, citations, email addresses, and
+    /// other URI-like references found in the document. Always extracted when
+    /// present in the source document.
     uris: ?[]const Uri,
+    /// Structured extraction output from LLM-based JSON schema extraction.
+    ///
+    /// When `structured_extraction` is configured in `ExtractionConfig`, the
+    /// extracted document content is sent to a VLM with the provided JSON schema.
+    /// The response is parsed and stored here as a JSON value matching the schema.
     structured_output: ?[]const u8,
+    /// Code intelligence results from tree-sitter analysis.
+    ///
+    /// Populated when extracting source code files with the `tree-sitter` feature.
+    /// Contains metrics, structural analysis, imports/exports, comments,
+    /// docstrings, symbols, diagnostics, and optionally chunked code segments.
     code_intelligence: ?[]const u8,
+    /// LLM token usage and cost data for all LLM calls made during this extraction.
+    ///
+    /// Contains one entry per LLM call. Multiple entries are produced when
+    /// VLM OCR, structured extraction, and/or LLM embeddings all run during
+    /// the same extraction.
+    ///
+    /// `null` when no LLM was used.
     llm_usage: ?[]const LlmUsage,
+    /// Pre-rendered content in the requested output format.
+    ///
+    /// Populated during `derive_extraction_result` before tree derivation consumes
+    /// element data. `apply_output_format` swaps this into `content` at the end
+    /// of the pipeline, after post-processors have operated on plain text.
     formatted_content: ?[]const u8,
+    /// Structured hOCR document for the OCR+layout pipeline.
+    ///
+    /// When tesseract produces hOCR output, the parsed `InternalDocument` carries
+    /// paragraph structure with bounding boxes and confidence scores. The layout
+    /// classification step enriches these elements before final rendering.
     ocr_internal_document: ?[]const u8,
 };
 
@@ -706,8 +1470,11 @@ pub const ExtractionResult = struct {
 /// When archives (ZIP, TAR, 7Z, GZIP) are extracted with recursive extraction
 /// enabled, each processable file produces its own full `ExtractionResult`.
 pub const ArchiveEntry = struct {
+    /// Archive-relative file path (e.g. "folder/document.pdf").
     path: []const u8,
+    /// Detected MIME type of the file.
     mime_type: []const u8,
+    /// Full extraction result for this file.
     result: ExtractionResult,
 };
 
@@ -716,7 +1483,10 @@ pub const ArchiveEntry = struct {
 /// Captures errors from optional features that don't prevent extraction
 /// but may indicate degraded results.
 pub const ProcessingWarning = struct {
+    /// The pipeline stage or feature that produced this warning
+    /// (e.g., "embedding", "chunking", "language_detection", "output_format").
     source: []const u8,
+    /// Human-readable description of what went wrong.
     message: []const u8,
 };
 
@@ -726,12 +1496,20 @@ pub const ProcessingWarning = struct {
 /// are used. Multiple entries may be present when multiple LLM calls occur
 /// within one extraction (e.g. VLM OCR + structured extraction).
 pub const LlmUsage = struct {
+    /// The LLM model identifier (e.g. "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514").
     model: []const u8,
+    /// The pipeline stage that triggered this LLM call
+    /// (e.g. "vlm_ocr", "structured_extraction", "embeddings").
     source: []const u8,
+    /// Number of input/prompt tokens consumed.
     input_tokens: ?u64,
+    /// Number of output/completion tokens generated.
     output_tokens: ?u64,
+    /// Total tokens (input + output).
     total_tokens: ?u64,
+    /// Estimated cost in USD based on the provider's published pricing.
     estimated_cost: ?f64,
+    /// Why the model stopped generating (e.g. "stop", "length", "content_filter").
     finish_reason: ?[]const u8,
 };
 
@@ -741,9 +1519,19 @@ pub const LlmUsage = struct {
 /// contains the text content, optional embedding vector (if embedding generation
 /// is configured), and metadata about its position in the document.
 pub const Chunk = struct {
+    /// The text content of this chunk.
     content: []const u8,
+    /// Semantic structural classification of this chunk.
+    ///
+    /// Assigned by the heuristic classifier based on content patterns and
+    /// heading context. Defaults to `ChunkType.Unknown` when no rule matches.
     chunk_type: ChunkType,
+    /// Optional embedding vector for this chunk.
+    ///
+    /// Only populated when `EmbeddingConfig` is provided in chunking configuration.
+    /// The dimensionality depends on the chosen embedding model.
     embedding: ?[]const f32,
+    /// Metadata about this chunk's position and properties.
     metadata: ChunkMetadata,
 };
 
@@ -751,25 +1539,51 @@ pub const Chunk = struct {
 ///
 /// Contains the heading hierarchy from document root to this chunk's section.
 pub const HeadingContext = struct {
+    /// The heading hierarchy from document root to this chunk's section.
+    /// Index 0 is the outermost (h1), last element is the most specific.
     headings: []const HeadingLevel,
 };
 
 /// A single heading in the hierarchy.
 pub const HeadingLevel = struct {
+    /// Heading depth (1 = h1, 2 = h2, etc.)
     level: u8,
+    /// The text content of the heading.
     text: []const u8,
 };
 
 /// Metadata about a chunk's position in the original document.
 pub const ChunkMetadata = struct {
+    /// Byte offset where this chunk starts in the original text (UTF-8 valid boundary).
     byte_start: u64,
+    /// Byte offset where this chunk ends in the original text (UTF-8 valid boundary).
     byte_end: u64,
+    /// Number of tokens in this chunk (if available).
+    ///
+    /// This is calculated by the embedding model's tokenizer if embeddings are enabled.
     token_count: ?u64,
+    /// Zero-based index of this chunk in the document.
     chunk_index: u64,
+    /// Total number of chunks in the document.
     total_chunks: u64,
+    /// First page number this chunk spans (1-indexed).
+    ///
+    /// Only populated when page tracking is enabled in extraction configuration.
     first_page: ?u32,
+    /// Last page number this chunk spans (1-indexed, equal to first_page for single-page chunks).
+    ///
+    /// Only populated when page tracking is enabled in extraction configuration.
     last_page: ?u32,
+    /// Heading context when using Markdown chunker.
+    ///
+    /// Contains the heading hierarchy this chunk falls under.
+    /// Only populated when `ChunkerType.Markdown` is used.
     heading_context: ?HeadingContext,
+    /// Indices into `ExtractionResult.images` for images on pages covered by this chunk.
+    ///
+    /// Contains zero-based indices into the top-level `images` collection for every
+    /// image whose `page_number` falls within `[first_page, last_page]`.
+    /// Empty when image extraction is disabled or the chunk spans no pages with images.
     image_indices: []const u32,
 };
 
@@ -779,30 +1593,60 @@ pub const ChunkMetadata = struct {
 /// Raw bytes allow cross-language compatibility - users can convert to
 /// PIL.Image (Python), Sharp (Node.js), or other formats as needed.
 pub const ExtractedImage = struct {
+    /// Raw image data (PNG, JPEG, WebP, etc. bytes).
+    /// Uses `bytes.Bytes` for cheap cloning of large buffers.
     data: []const u8,
+    /// Image format (e.g., "jpeg", "png", "webp")
+    /// Uses Cow<'static, str> to avoid allocation for static literals.
     format: []const u8,
+    /// Zero-indexed position of this image in the document/page
     image_index: u32,
+    /// Page/slide number where image was found (1-indexed)
     page_number: ?u32,
+    /// Image width in pixels
     width: ?u32,
+    /// Image height in pixels
     height: ?u32,
+    /// Colorspace information (e.g., "RGB", "CMYK", "Gray")
     colorspace: ?[]const u8,
+    /// Bits per color component (e.g., 8, 16)
     bits_per_component: ?u32,
+    /// Whether this image is a mask image
     is_mask: bool,
+    /// Optional description of the image
     description: ?[]const u8,
+    /// Nested OCR extraction result (if image was OCRed)
+    ///
+    /// When OCR is performed on this image, the result is embedded here
+    /// rather than in a separate collection, making the relationship explicit.
     ocr_result: ?ExtractionResult,
+    /// Bounding box of the image on the page (PDF coordinates: x0=left, y0=bottom, x1=right, y1=top).
+    /// Only populated for PDF-extracted images when position data is available from the PDF extractor.
     bounding_box: ?[]const u8,
+    /// Original source path of the image within the document archive (e.g., "media/image1.png" in DOCX).
+    /// Used for rendering image references when the binary data is not extracted.
     source_path: ?[]const u8,
+    /// Heuristic classification of what this image likely depicts.
+    /// `null` if classification was disabled or inconclusive.
     image_kind: ?ImageKind,
+    /// Confidence score for `image_kind`, in the range 0.0 to 1.0.
     kind_confidence: ?f32,
+    /// Identifier shared across images that form a single logical figure
+    /// (e.g. all raster tiles of one technical drawing). `null` for singletons.
     cluster_id: ?u32,
 };
 
 /// Metadata for a semantic element.
 pub const ElementMetadata = struct {
+    /// Page number (1-indexed)
     page_number: ?u32,
+    /// Source filename or document name
     filename: ?[]const u8,
+    /// Bounding box coordinates if available
     coordinates: ?[]const u8,
+    /// Position index in the element sequence
     element_index: ?u64,
+    /// Additional custom metadata
     additional: std.StringHashMap([]const u8),
 };
 
@@ -811,9 +1655,13 @@ pub const ElementMetadata = struct {
 /// Represents a logical unit of content with semantic classification,
 /// unique identifier, and metadata for tracking origin and position.
 pub const Element = struct {
+    /// Unique element identifier
     element_id: []const u8,
+    /// Semantic type of this element
     element_type: ElementType,
+    /// Text content of the element
     text: []const u8,
+    /// Metadata about the element
     metadata: ElementMetadata,
 };
 
@@ -822,7 +1670,9 @@ pub const Element = struct {
 /// Contains all sheets from an Excel file (.xlsx, .xls, etc.) with
 /// extracted content and metadata.
 pub const ExcelWorkbook = struct {
+    /// All sheets in the workbook
     sheets: []const ExcelSheet,
+    /// Workbook-level metadata (author, creation date, etc.)
     metadata: std.StringHashMap([]const u8),
 };
 
@@ -831,11 +1681,19 @@ pub const ExcelWorkbook = struct {
 /// Represents one sheet from an Excel workbook with its content
 /// converted to Markdown format and dimensional statistics.
 pub const ExcelSheet = struct {
+    /// Sheet name as it appears in Excel
     name: []const u8,
+    /// Sheet content converted to Markdown tables
     markdown: []const u8,
+    /// Number of rows
     row_count: u64,
+    /// Number of columns
     col_count: u64,
+    /// Total number of non-empty cells
     cell_count: u64,
+    /// Pre-extracted table cells (2D vector of cell values)
+    /// Populated during markdown generation to avoid re-parsing markdown.
+    /// None for empty sheets.
     table_cells: ?[]const []const []const u8,
 };
 
@@ -844,8 +1702,11 @@ pub const ExcelSheet = struct {
 /// Contains extracted text content from XML files along with
 /// structural statistics about the XML document.
 pub const XmlExtractionResult = struct {
+    /// Extracted text content (XML structure filtered out)
     content: []const u8,
+    /// Total number of XML elements processed
     element_count: u64,
+    /// List of unique element names found (sorted)
     unique_elements: []const []const u8,
 };
 
@@ -854,12 +1715,19 @@ pub const XmlExtractionResult = struct {
 /// Contains the extracted text along with statistics and,
 /// for Markdown files, structural elements like headers and links.
 pub const TextExtractionResult = struct {
+    /// Extracted text content
     content: []const u8,
+    /// Number of lines
     line_count: u64,
+    /// Number of words
     word_count: u64,
+    /// Number of characters
     character_count: u64,
+    /// Markdown headers (text only, Markdown files only)
     headers: ?[]const []const u8,
+    /// Markdown links as (text, URL) tuples (Markdown files only)
     links: ?[]const []const u8,
+    /// Code blocks as (language, code) tuples (Markdown files only)
     code_blocks: ?[]const []const u8,
 };
 
@@ -867,16 +1735,30 @@ pub const TextExtractionResult = struct {
 ///
 /// Contains extracted slide content, metadata, and embedded images/tables.
 pub const PptxExtractionResult = struct {
+    /// Extracted text content from all slides
     content: []const u8,
+    /// Presentation metadata
     metadata: PptxMetadata,
+    /// Total number of slides
     slide_count: u64,
+    /// Total number of embedded images
     image_count: u64,
+    /// Total number of tables
     table_count: u64,
+    /// Extracted images from the presentation
     images: []const ExtractedImage,
+    /// Slide structure with boundaries (when page tracking is enabled)
     page_structure: ?PageStructure,
+    /// Per-slide content (when page tracking is enabled)
     page_contents: ?[]const PageContent,
+    /// Structured document representation
     document: ?DocumentStructure,
+    /// Hyperlinks discovered in slides as (url, optional_label) pairs.
     hyperlinks: []const []const u8,
+    /// Office metadata extracted from docProps/core.xml and docProps/app.xml.
+    ///
+    /// Contains keys like "title", "author", "created_by", "subject", "keywords",
+    /// "modified_by", "created_at", "modified_at", etc.
     office_metadata: std.StringHashMap([]const u8),
 };
 
@@ -885,17 +1767,29 @@ pub const PptxExtractionResult = struct {
 /// Complete representation of an extracted email message (.eml or .msg)
 /// including headers, body content, and attachments.
 pub const EmailExtractionResult = struct {
+    /// Email subject line
     subject: ?[]const u8,
+    /// Sender email address
     from_email: ?[]const u8,
+    /// Primary recipient email addresses
     to_emails: []const []const u8,
+    /// CC recipient email addresses
     cc_emails: []const []const u8,
+    /// BCC recipient email addresses
     bcc_emails: []const []const u8,
+    /// Email date/timestamp
     date: ?[]const u8,
+    /// Message-ID header value
     message_id: ?[]const u8,
+    /// Plain text version of the email body
     plain_text: ?[]const u8,
+    /// HTML version of the email body
     html_content: ?[]const u8,
+    /// Cleaned/processed text content. Aliased as `cleaned_text` for back-compat.
     content: []const u8,
+    /// List of email attachments
     attachments: []const EmailAttachment,
+    /// Additional email headers and metadata
     metadata: std.StringHashMap([]const u8),
 };
 
@@ -903,11 +1797,18 @@ pub const EmailExtractionResult = struct {
 ///
 /// Contains metadata and optionally the content of an email attachment.
 pub const EmailAttachment = struct {
+    /// Attachment name (from Content-Disposition header)
     name: ?[]const u8,
+    /// Filename of the attachment
     filename: ?[]const u8,
+    /// MIME type of the attachment
     mime_type: ?[]const u8,
+    /// Size in bytes
     size: ?u64,
+    /// Whether this attachment is an image
     is_image: bool,
+    /// Attachment data (if extracted).
+    /// Uses `bytes.Bytes` for cheap cloning of large buffers.
     data: ?[]const u8,
 };
 
@@ -916,11 +1817,20 @@ pub const EmailAttachment = struct {
 /// Result of performing OCR on an image or scanned document,
 /// including recognized text and detected tables.
 pub const OcrExtractionResult = struct {
+    /// Recognized text content
     content: []const u8,
+    /// Original MIME type of the processed image
     mime_type: []const u8,
+    /// OCR processing metadata (confidence scores, language, etc.)
     metadata: std.StringHashMap([]const u8),
+    /// Tables detected and extracted via OCR
     tables: []const OcrTable,
+    /// Structured OCR elements with bounding boxes and confidence scores.
+    /// Available when TSV output is requested or table detection is enabled.
     ocr_elements: ?[]const OcrElement,
+    /// Structured document produced from hOCR parsing.
+    /// Carries paragraph structure, bounding boxes, and confidence scores
+    /// that the flattened `content` string discards.
     internal_document: ?[]const u8,
 };
 
@@ -928,17 +1838,25 @@ pub const OcrExtractionResult = struct {
 ///
 /// Represents a table structure recognized during OCR processing.
 pub const OcrTable = struct {
+    /// Table cells as a 2D vector (rows × columns)
     cells: []const []const []const u8,
+    /// Markdown representation of the table
     markdown: []const u8,
+    /// Page number where the table was found (1-indexed)
     page_number: u32,
+    /// Bounding box of the table in pixel coordinates (from OCR word positions).
     bounding_box: ?OcrTableBoundingBox,
 };
 
 /// Bounding box for an OCR-detected table in pixel coordinates.
 pub const OcrTableBoundingBox = struct {
+    /// Left x-coordinate (pixels)
     left: u32,
+    /// Top y-coordinate (pixels)
     top: u32,
+    /// Right x-coordinate (pixels)
     right: u32,
+    /// Bottom y-coordinate (pixels)
     bottom: u32,
 };
 
@@ -948,12 +1866,19 @@ pub const OcrTableBoundingBox = struct {
 /// text recognition quality. Different preprocessing strategies work better
 /// for different document types.
 pub const ImagePreprocessingConfig = struct {
+    /// Target DPI for the image (300 is standard, 600 for small text).
     target_dpi: i32,
+    /// Auto-detect and correct image rotation.
     auto_rotate: bool,
+    /// Correct skew (tilted images).
     deskew: bool,
+    /// Remove noise from the image.
     denoise: bool,
+    /// Enhance contrast for better text visibility.
     contrast_enhance: bool,
+    /// Binarization method: "otsu", "sauvola", "adaptive".
     binarization_method: []const u8,
+    /// Invert colors (white text on black → black on white).
     invert_colors: bool,
 };
 
@@ -963,26 +1888,62 @@ pub const ImagePreprocessingConfig = struct {
 /// Most users can use the defaults, but these settings allow optimization
 /// for specific document types (invoices, handwriting, etc.).
 pub const TesseractConfig = struct {
+    /// Language code (e.g., "eng", "deu", "fra")
     language: []const u8,
+    /// Page Segmentation Mode (0-13).
+    ///
+    /// Common values:
+    /// - 3: Fully automatic page segmentation (native default)
+    /// - 6: Assume a single uniform block of text (WASM default — avoids layout-analysis hang)
+    /// - 11: Sparse text with no particular order
     psm: i32,
+    /// Output format ("text" or "markdown")
     output_format: []const u8,
+    /// OCR Engine Mode (0-3).
+    ///
+    /// - 0: Legacy engine only
+    /// - 1: Neural nets (LSTM) only (usually best)
+    /// - 2: Legacy + LSTM
+    /// - 3: Default (based on what's available)
     oem: i32,
+    /// Minimum confidence threshold (0.0-100.0).
+    ///
+    /// Words with confidence below this threshold may be rejected or flagged.
     min_confidence: f64,
+    /// Image preprocessing configuration.
+    ///
+    /// Controls how images are preprocessed before OCR. Can significantly
+    /// improve quality for scanned documents or low-quality images.
     preprocessing: ?ImagePreprocessingConfig,
+    /// Enable automatic table detection and reconstruction
     enable_table_detection: bool,
+    /// Minimum confidence threshold for table detection (0.0-1.0)
     table_min_confidence: f64,
+    /// Column threshold for table detection (pixels)
     table_column_threshold: i32,
+    /// Row threshold ratio for table detection (0.0-1.0)
     table_row_threshold_ratio: f64,
+    /// Enable OCR result caching
     use_cache: bool,
+    /// Use pre-adapted templates for character classification
     classify_use_pre_adapted_templates: bool,
+    /// Enable N-gram language model
     language_model_ngram_on: bool,
+    /// Don't reject good words during block-level processing
     tessedit_dont_blkrej_good_wds: bool,
+    /// Don't reject good words during row-level processing
     tessedit_dont_rowrej_good_wds: bool,
+    /// Enable dictionary correction
     tessedit_enable_dict_correction: bool,
+    /// Whitelist of allowed characters (empty = all allowed)
     tessedit_char_whitelist: []const u8,
+    /// Blacklist of forbidden characters (empty = none forbidden)
     tessedit_char_blacklist: []const u8,
+    /// Use primary language params model
     tessedit_use_primary_params_model: bool,
+    /// Variable-width space detection
     textord_space_size_is_variable: bool,
+    /// Use adaptive thresholding method
     thresholding_method: bool,
 };
 
@@ -991,17 +1952,29 @@ pub const TesseractConfig = struct {
 /// Tracks the transformations applied to an image during OCR preprocessing,
 /// including DPI normalization, resizing, and resampling.
 pub const ImagePreprocessingMetadata = struct {
+    /// Original image dimensions (width, height) in pixels
     original_dimensions: []const u64,
+    /// Original image DPI (horizontal, vertical)
     original_dpi: []const f64,
+    /// Target DPI from configuration
     target_dpi: i32,
+    /// Scaling factor applied to the image
     scale_factor: f64,
+    /// Whether DPI was auto-adjusted based on content
     auto_adjusted: bool,
+    /// Final DPI after processing
     final_dpi: i32,
+    /// New dimensions after resizing (if resized)
     new_dimensions: ?[]const u64,
+    /// Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.)
     resample_method: []const u8,
+    /// Whether dimensions were clamped to max_image_dimension
     dimension_clamped: bool,
+    /// Calculated optimal DPI (if auto_adjust_dpi enabled)
     calculated_dpi: ?i32,
+    /// Whether resize was skipped (dimensions already optimal)
     skipped_resize: bool,
+    /// Error message if resize failed
     resize_error: ?[]const u8,
 };
 
@@ -1010,27 +1983,65 @@ pub const ImagePreprocessingMetadata = struct {
 /// Contains common fields applicable to all formats, format-specific metadata
 /// via a discriminated union, and additional custom fields from postprocessors.
 pub const Metadata = struct {
+    /// Document title
     title: ?[]const u8,
+    /// Document subject or description
     subject: ?[]const u8,
+    /// Primary author(s) - always Vec for consistency
     authors: ?[]const []const u8,
+    /// Keywords/tags - always Vec for consistency
     keywords: ?[]const []const u8,
+    /// Primary language (ISO 639 code)
     language: ?[]const u8,
+    /// Creation timestamp (ISO 8601 format)
     created_at: ?[]const u8,
+    /// Last modification timestamp (ISO 8601 format)
     modified_at: ?[]const u8,
+    /// User who created the document
     created_by: ?[]const u8,
+    /// User who last modified the document
     modified_by: ?[]const u8,
+    /// Page/slide/sheet structure with boundaries
     pages: ?PageStructure,
+    /// Format-specific metadata (discriminated union)
+    ///
+    /// Contains detailed metadata specific to the document format.
+    /// Serialized as a nested `"format"` object with a `format_type` discriminator field.
     format: ?FormatMetadata,
+    /// Image preprocessing metadata (when OCR preprocessing was applied)
     image_preprocessing: ?ImagePreprocessingMetadata,
+    /// JSON schema (for structured data extraction)
     json_schema: ?[]const u8,
+    /// Error metadata (for batch operations)
     error_: ?ErrorMetadata,
+    /// Extraction duration in milliseconds (for benchmarking).
+    ///
+    /// This field is populated by batch extraction to provide per-file timing
+    /// information. It's `null` for single-file extraction (which uses external timing).
     extraction_duration_ms: ?u64,
+    /// Document category (from frontmatter or classification).
     category: ?[]const u8,
+    /// Document tags (from frontmatter).
     tags: ?[]const []const u8,
+    /// Document version string (from frontmatter).
     document_version: ?[]const u8,
+    /// Abstract or summary text (from frontmatter).
     abstract_text: ?[]const u8,
+    /// Output format identifier (e.g., "markdown", "html", "text").
+    ///
+    /// Set by the output format pipeline stage when format conversion is applied.
+    /// Previously stored in `metadata.additional["output_format"]`.
     output_format: ?[]const u8,
+    /// Whether OCR was used during extraction.
+    ///
+    /// Set to `true` whenever the extraction pipeline ran an OCR backend
+    /// (Tesseract, PaddleOCR, VLM, etc.) and used that output as the primary
+    /// or fallback text. `false` means native text extraction was used exclusively.
     ocr_used: bool,
+    /// Additional custom fields from postprocessors.
+    ///
+    /// Serialized as a nested `"additional"` object (not flattened at root level).
+    /// Uses `Cow<'static, str>` keys so static string keys avoid allocation.
     additional: std.StringHashMap([]const u8),
 };
 
@@ -1039,7 +2050,9 @@ pub const Metadata = struct {
 /// Identifies the document as a spreadsheet source via the `FormatMetadata.Excel`
 /// discriminant. Sheet count and sheet names are stored inside this struct.
 pub const ExcelMetadata = struct {
+    /// Number of sheets in the workbook.
     sheet_count: ?u32,
+    /// Names of all sheets in the workbook.
     sheet_names: ?[]const []const u8,
 };
 
@@ -1047,12 +2060,19 @@ pub const ExcelMetadata = struct {
 ///
 /// Includes sender/recipient information, message ID, and attachment list.
 pub const EmailMetadata = struct {
+    /// Sender's email address
     from_email: ?[]const u8,
+    /// Sender's display name
     from_name: ?[]const u8,
+    /// Primary recipients
     to_emails: []const []const u8,
+    /// CC recipients
     cc_emails: []const []const u8,
+    /// BCC recipients
     bcc_emails: []const []const u8,
+    /// Message-ID header value
     message_id: ?[]const u8,
+    /// List of attachment filenames
     attachments: []const []const u8,
 };
 
@@ -1060,10 +2080,15 @@ pub const EmailMetadata = struct {
 ///
 /// Extracted from compressed archive files containing file lists and size information.
 pub const ArchiveMetadata = struct {
+    /// Archive format ("ZIP", "TAR", "7Z", etc.)
     format: []const u8,
+    /// Total number of files in the archive
     file_count: u32,
+    /// List of file paths within the archive
     file_list: []const []const u8,
+    /// Total uncompressed size in bytes
     total_size: u64,
+    /// Compressed size in bytes (if available)
     compressed_size: ?u64,
 };
 
@@ -1071,9 +2096,13 @@ pub const ArchiveMetadata = struct {
 ///
 /// Includes dimensions, format, and EXIF data.
 pub const ImageMetadata = struct {
+    /// Image width in pixels
     width: u32,
+    /// Image height in pixels
     height: u32,
+    /// Image format (e.g., "PNG", "JPEG", "TIFF")
     format: []const u8,
+    /// EXIF metadata tags
     exif: std.StringHashMap([]const u8),
 };
 
@@ -1081,7 +2110,9 @@ pub const ImageMetadata = struct {
 ///
 /// Provides statistics about XML document structure.
 pub const XmlMetadata = struct {
+    /// Total number of XML elements processed
     element_count: u32,
+    /// List of unique element tag names (sorted)
     unique_elements: []const []const u8,
 };
 
@@ -1090,47 +2121,73 @@ pub const XmlMetadata = struct {
 /// Extracted from plain text and Markdown files. Includes word counts and,
 /// for Markdown, structural elements like headers and links.
 pub const TextMetadata = struct {
+    /// Number of lines in the document
     line_count: u32,
+    /// Number of words
     word_count: u32,
+    /// Number of characters
     character_count: u32,
+    /// Markdown headers (headings text only, for Markdown files)
     headers: ?[]const []const u8,
+    /// Markdown links as (text, url) tuples (for Markdown files)
     links: ?[]const []const u8,
+    /// Code blocks as (language, code) tuples (for Markdown files)
     code_blocks: ?[]const []const u8,
 };
 
 /// Header/heading element metadata.
 pub const HeaderMetadata = struct {
+    /// Header level: 1 (h1) through 6 (h6)
     level: u8,
+    /// Normalized text content of the header
     text: []const u8,
+    /// HTML id attribute if present
     id: ?[]const u8,
+    /// Document tree depth at the header element
     depth: u32,
+    /// Byte offset in original HTML document
     html_offset: u32,
 };
 
 /// Link element metadata.
 pub const LinkMetadata = struct {
+    /// The href URL value
     href: []const u8,
+    /// Link text content (normalized)
     text: []const u8,
+    /// Optional title attribute
     title: ?[]const u8,
+    /// Link type classification
     link_type: LinkType,
+    /// Rel attribute values
     rel: []const []const u8,
+    /// Additional attributes as key-value pairs
     attributes: []const []const u8,
 };
 
 /// Image element metadata.
 pub const ImageMetadataType = struct {
+    /// Image source (URL, data URI, or SVG content)
     src: []const u8,
+    /// Alternative text from alt attribute
     alt: ?[]const u8,
+    /// Title attribute
     title: ?[]const u8,
+    /// Image dimensions as (width, height) if available
     dimensions: ?[]const u32,
+    /// Image type classification
     image_type: ImageType,
+    /// Additional attributes as key-value pairs
     attributes: []const []const u8,
 };
 
 /// Structured data (Schema.org, microdata, RDFa) block.
 pub const StructuredData = struct {
+    /// Type of structured data
     data_type: StructuredDataType,
+    /// Raw JSON string representation
     raw_json: []const u8,
+    /// Schema type if detectable (e.g., "Article", "Event", "Product")
     schema_type: ?[]const u8,
 };
 
@@ -1139,20 +2196,38 @@ pub const StructuredData = struct {
 /// Includes document-level metadata, Open Graph data, Twitter Card metadata,
 /// and extracted structural elements (headers, links, images, structured data).
 pub const HtmlMetadata = struct {
+    /// Document title from `<title>` tag
     title: ?[]const u8,
+    /// Document description from `<meta name="description">` tag
     description: ?[]const u8,
+    /// Document keywords from `<meta name="keywords">` tag, split on commas
     keywords: []const []const u8,
+    /// Document author from `<meta name="author">` tag
     author: ?[]const u8,
+    /// Canonical URL from `<link rel="canonical">` tag
     canonical_url: ?[]const u8,
+    /// Base URL from `<base href="">` tag for resolving relative URLs
     base_href: ?[]const u8,
+    /// Document language from `lang` attribute
     language: ?[]const u8,
+    /// Document text direction from `dir` attribute
     text_direction: ?TextDirection,
+    /// Open Graph metadata (og:* properties) for social media
+    /// Keys like "title", "description", "image", "url", etc.
     open_graph: std.StringHashMap([]const u8),
+    /// Twitter Card metadata (twitter:* properties)
+    /// Keys like "card", "site", "creator", "title", "description", "image", etc.
     twitter_card: std.StringHashMap([]const u8),
+    /// Additional meta tags not covered by specific fields
+    /// Keys are meta name/property attributes, values are content
     meta_tags: std.StringHashMap([]const u8),
+    /// Extracted header elements with hierarchy
     headers: []const HeaderMetadata,
+    /// Extracted hyperlinks with type classification
     links: []const LinkMetadata,
+    /// Extracted images with source and dimensions
     images: []const ImageMetadataType,
+    /// Extracted structured data blocks
     structured_data: []const StructuredData,
 };
 
@@ -1160,9 +2235,13 @@ pub const HtmlMetadata = struct {
 ///
 /// Captures information about OCR processing configuration and results.
 pub const OcrMetadata = struct {
+    /// OCR language code(s) used
     language: []const u8,
+    /// Tesseract Page Segmentation Mode (PSM)
     psm: i32,
+    /// Output format (e.g., "text", "hocr")
     output_format: []const u8,
+    /// Number of tables detected
     table_count: u32,
     table_rows: ?u32,
     table_cols: ?u32,
@@ -1178,9 +2257,13 @@ pub const ErrorMetadata = struct {
 ///
 /// Extracted from PPTX files containing slide counts and presentation details.
 pub const PptxMetadata = struct {
+    /// Total number of slides in the presentation
     slide_count: u32,
+    /// Names of slides (if available)
     slide_names: []const []const u8,
+    /// Number of embedded images
     image_count: ?u32,
+    /// Number of tables
     table_count: ?u32,
 };
 
@@ -1189,8 +2272,20 @@ pub const PptxMetadata = struct {
 /// Extracted from DOCX files using shared Office Open XML metadata extraction.
 /// Integrates with `office_metadata` module for core/app/custom properties.
 pub const DocxMetadata = struct {
+    /// Core properties from docProps/core.xml (Dublin Core metadata)
+    ///
+    /// Contains title, creator, subject, keywords, dates, etc.
+    /// Shared format across DOCX/PPTX/XLSX documents.
     core_properties: ?[]const u8,
+    /// Application properties from docProps/app.xml (Word-specific statistics)
+    ///
+    /// Contains word count, page count, paragraph count, editing time, etc.
+    /// DOCX-specific variant of Office application properties.
     app_properties: ?[]const u8,
+    /// Custom properties from docProps/custom.xml (user-defined properties)
+    ///
+    /// Contains key-value pairs defined by users or applications.
+    /// Values can be strings, numbers, booleans, or dates.
     custom_properties: ?std.StringHashMap([]const u8),
 };
 
@@ -1205,6 +2300,7 @@ pub const CsvMetadata = struct {
 
 /// BibTeX bibliography metadata.
 pub const BibtexMetadata = struct {
+    /// Number of entries in the bibliography.
     entry_count: u64,
     citation_keys: []const []const u8,
     authors: []const []const u8,
@@ -1283,13 +2379,22 @@ pub const PstMetadata = struct {
 /// Separates detection confidence (how confident that text exists at this location)
 /// from recognition confidence (how confident about the actual text content).
 pub const OcrConfidence = struct {
+    /// Detection confidence: how confident the OCR engine is that text exists here.
+    ///
+    /// PaddleOCR provides this as `box_score`, Tesseract doesn't have a direct equivalent.
+    /// Range: 0.0 to 1.0 (or None if not available).
     detection: ?f64,
+    /// Recognition confidence: how confident about the text content.
+    ///
+    /// Range: 0.0 to 1.0.
     recognition: f64,
 };
 
 /// Rotation information for an OCR element.
 pub const OcrRotation = struct {
+    /// Rotation angle in degrees (0, 90, 180, 270 for PaddleOCR).
     angle_degrees: f64,
+    /// Confidence score for the rotation detection.
     confidence: ?f64,
 };
 
@@ -1298,13 +2403,23 @@ pub const OcrRotation = struct {
 /// This is the primary type for structured OCR output, preserving all information
 /// from both Tesseract and PaddleOCR backends.
 pub const OcrElement = struct {
+    /// The recognized text content.
     text: []const u8,
+    /// Bounding geometry (rectangle or quadrilateral).
     geometry: OcrBoundingGeometry,
+    /// Confidence scores for detection and recognition.
     confidence: OcrConfidence,
+    /// Hierarchical level (word, line, block, page).
     level: OcrElementLevel,
+    /// Rotation information (if detected).
     rotation: ?OcrRotation,
+    /// Page number (1-indexed).
     page_number: u32,
+    /// Parent element ID for hierarchical relationships.
+    ///
+    /// Only used for Tesseract output which has word -> line -> block hierarchy.
     parent_id: ?[]const u8,
+    /// Backend-specific metadata that doesn't fit the unified schema.
     backend_metadata: std.StringHashMap([]const u8),
 };
 
@@ -1312,9 +2427,22 @@ pub const OcrElement = struct {
 ///
 /// Controls how OCR elements are extracted and filtered.
 pub const OcrElementConfig = struct {
+    /// Whether to include OCR elements in the extraction result.
+    ///
+    /// When true, the `ocr_elements` field in `ExtractionResult` will be populated.
     include_elements: bool,
+    /// Minimum hierarchical level to include.
+    ///
+    /// Elements below this level (e.g., words when min_level is Line) will be excluded.
     min_level: OcrElementLevel,
+    /// Minimum recognition confidence threshold (0.0-1.0).
+    ///
+    /// Elements with confidence below this threshold will be filtered out.
     min_confidence: f64,
+    /// Whether to build hierarchical relationships between elements.
+    ///
+    /// When true, `parent_id` fields will be populated based on spatial containment.
+    /// Only meaningful for Tesseract output.
     build_hierarchy: bool,
 };
 
@@ -1323,9 +2451,16 @@ pub const OcrElementConfig = struct {
 /// Supports different page types (PDF pages, PPTX slides, Excel sheets)
 /// with character offset boundaries for chunk-to-page mapping.
 pub const PageStructure = struct {
+    /// Total number of pages/slides/sheets
     total_count: u32,
+    /// Type of paginated unit
     unit_type: PageUnitType,
+    /// Character offset boundaries for each page
+    ///
+    /// Maps character ranges in the extracted content to page numbers.
+    /// Used for chunk page range calculation.
     boundaries: ?[]const PageBoundary,
+    /// Detailed per-page metadata (optional, only when needed)
     pages: ?[]const PageInfo,
 };
 
@@ -1335,8 +2470,11 @@ pub const PageStructure = struct {
 /// enabling mapping from byte positions to page numbers. Offsets are guaranteed to be
 /// at valid UTF-8 character boundaries when using standard String methods (push_str, push, etc.).
 pub const PageBoundary = struct {
+    /// Byte offset where this page starts in the content string (UTF-8 valid boundary, inclusive)
     byte_start: u64,
+    /// Byte offset where this page ends in the content string (UTF-8 valid boundary, exclusive)
     byte_end: u64,
+    /// Page number (1-indexed)
     page_number: u32,
 };
 
@@ -1345,13 +2483,34 @@ pub const PageBoundary = struct {
 /// Captures per-page information including dimensions, content counts,
 /// and visibility state (for presentations).
 pub const PageInfo = struct {
+    /// Page number (1-indexed)
     number: u32,
+    /// Page title (usually for presentations)
     title: ?[]const u8,
+    /// Dimensions in points (PDF) or pixels (images): (width, height)
     dimensions: ?[]const f64,
+    /// Number of images on this page
     image_count: ?u32,
+    /// Number of tables on this page
     table_count: ?u32,
+    /// Whether this page is hidden (e.g., in presentations)
     hidden: ?bool,
+    /// Whether this page is blank (no meaningful text, no images, no tables)
+    ///
+    /// A page is considered blank if it has fewer than 3 non-whitespace characters
+    /// and contains no tables or images. This is useful for filtering out empty pages
+    /// in scanned documents or PDFs with blank separator pages.
     is_blank: ?bool,
+    /// Whether this page contains non-trivial vector graphics (paths, shapes, curves)
+    ///
+    /// Indicates the presence of vector-drawn content such as charts, diagrams,
+    /// or geometric shapes (e.g., from Adobe InDesign, LaTeX TikZ). These are
+    /// invisible to `ExtractionResult.images` since they are not embedded as raster
+    /// XObjects. Set to `true` when path count exceeds a heuristic threshold,
+    /// signaling that downstream consumers may want to rasterize the page to
+    /// capture this content.
+    ///
+    /// Only populated for PDFs; `null` for other document types.
     has_vector_graphics: bool,
 };
 
@@ -1370,12 +2529,34 @@ pub const PageInfo = struct {
 /// This reduces memory overhead for documents with shared tables/images
 /// by avoiding redundant copies during serialization.
 pub const PageContent = struct {
+    /// Page number (1-indexed)
     page_number: u32,
+    /// Text content for this page
     content: []const u8,
+    /// Tables found on this page (uses Arc for memory efficiency)
+    ///
+    /// Serializes as Vec<Table> for JSON compatibility while maintaining
+    /// Arc semantics in-memory for zero-copy sharing.
     tables: []const Table,
+    /// Indices into `ExtractionResult.images` for images found on this page.
+    ///
+    /// Each value is a zero-based index into the top-level `images` collection.
+    /// Only populated when `extract_images = true` in the extraction config.
     image_indices: []const u32,
+    /// Hierarchy information for the page (when hierarchy extraction is enabled)
+    ///
+    /// Contains text hierarchy levels (H1-H6) extracted from the page content.
     hierarchy: ?PageHierarchy,
+    /// Whether this page is blank (no meaningful text content)
+    ///
+    /// Determined during extraction based on text content analysis.
+    /// A page is blank if it has fewer than 3 non-whitespace characters
+    /// and contains no tables or images.
     is_blank: ?bool,
+    /// Layout detection regions for this page (when layout detection is enabled).
+    ///
+    /// Contains detected layout regions with class, confidence, bounding box,
+    /// and area fraction. Only populated when layout detection is configured.
     layout_regions: ?[]const LayoutRegion,
 };
 
@@ -1385,9 +2566,13 @@ pub const PageContent = struct {
 /// identifying different content types (text, pictures, tables, etc.)
 /// with confidence scores and spatial positions.
 pub const LayoutRegion = struct {
+    /// Layout class name (e.g. "picture", "table", "text", "section_header").
     class_name: []const u8,
+    /// Confidence score from the layout detection model (0.0 to 1.0).
     confidence: f64,
+    /// Bounding box in document coordinate space.
     bounding_box: []const u8,
+    /// Fraction of the page area covered by this region (0.0 to 1.0).
     area_fraction: f64,
 };
 
@@ -1396,7 +2581,9 @@ pub const LayoutRegion = struct {
 /// Used when PDF text hierarchy extraction is enabled. Contains hierarchical
 /// blocks with heading levels (H1-H6) for semantic document structure.
 pub const PageHierarchy = struct {
+    /// Number of hierarchy blocks on this page
     block_count: u32,
+    /// Hierarchical blocks with heading levels
     blocks: []const HierarchicalBlock,
 };
 
@@ -1405,9 +2592,24 @@ pub const PageHierarchy = struct {
 /// Represents a block of text with semantic heading information extracted from
 /// font size clustering and hierarchical analysis.
 pub const HierarchicalBlock = struct {
+    /// The text content of this block
     text: []const u8,
+    /// The font size of the text in this block
     font_size: f32,
+    /// The hierarchy level of this block (H1-H6 or Body)
+    ///
+    /// Levels correspond to HTML heading tags:
+    /// - "h1": Top-level heading
+    /// - "h2": Secondary heading
+    /// - "h3": Tertiary heading
+    /// - "h4": Quaternary heading
+    /// - "h5": Quinary heading
+    /// - "h6": Senary heading
+    /// - "body": Body text (no heading level)
     level: []const u8,
+    /// Bounding box information for the block
+    ///
+    /// Contains coordinates as (left, top, right, bottom) in PDF units.
     bbox: ?[]const f32,
 };
 
@@ -1416,9 +2618,14 @@ pub const HierarchicalBlock = struct {
 /// Represents a table detected and extracted from a document (PDF, image, etc.).
 /// Tables are converted to both structured cell data and Markdown format.
 pub const Table = struct {
+    /// Table cells as a 2D vector (rows × columns)
     cells: []const []const []const u8,
+    /// Markdown representation of the table
     markdown: []const u8,
+    /// Page number where the table was found (1-indexed)
     page_number: u32,
+    /// Bounding box of the table on the page (PDF coordinates: x0=left, y0=bottom, x1=right, y1=top).
+    /// Only populated for PDF-extracted tables when position data is available.
     bounding_box: ?[]const u8,
 };
 
@@ -1426,9 +2633,13 @@ pub const Table = struct {
 ///
 /// Future extension point for rich table support with cell-level metadata.
 pub const TableCell = struct {
+    /// Cell content as text
     content: []const u8,
+    /// Row span (number of rows this cell spans)
     row_span: u32,
+    /// Column span (number of columns this cell spans)
     col_span: u32,
+    /// Whether this is a header cell
     is_header: bool,
 };
 
@@ -1438,15 +2649,21 @@ pub const TableCell = struct {
 /// The `kind` field classifies the URI semantically, while `label` carries
 /// optional human-readable display text.
 pub const Uri = struct {
+    /// The URL or path string.
     url: []const u8,
+    /// Optional display text / label for the link.
     label: ?[]const u8,
+    /// Optional page number where the URI was found (1-indexed).
     page: ?u32,
+    /// Semantic classification of the URI.
     kind: UriKind,
 };
 
 /// MIME type detection response.
 pub const DetectResponse = struct {
+    /// Detected MIME type
     mime_type: []const u8,
+    /// Original filename (if provided)
     filename: ?[]const u8,
 };
 
@@ -1461,8 +2678,11 @@ pub const EmbeddingPreset = struct {
     name: []const u8,
     chunk_size: u64,
     overlap: u64,
+    /// HuggingFace repository name for the model.
     model_repo: []const u8,
+    /// Pooling strategy: "cls" or "mean".
     pooling: []const u8,
+    /// Path to the ONNX model file within the repo.
     model_file: []const u8,
     dimensions: u64,
     description: []const u8,
@@ -1470,31 +2690,56 @@ pub const EmbeddingPreset = struct {
 
 /// YAKE-specific parameters.
 pub const YakeParams = struct {
+    /// Window size for co-occurrence analysis (default: 2).
+    ///
+    /// Controls the context window for computing co-occurrence statistics.
     window_size: u64,
 };
 
 /// RAKE-specific parameters.
 pub const RakeParams = struct {
+    /// Minimum word length to consider (default: 1).
     min_word_length: u64,
+    /// Maximum words in a keyword phrase (default: 3).
     max_words_per_phrase: u64,
 };
 
 /// Keyword extraction configuration.
 pub const KeywordConfig = struct {
+    /// Algorithm to use for extraction.
     algorithm: KeywordAlgorithm,
+    /// Maximum number of keywords to extract (default: 10).
     max_keywords: u64,
+    /// Minimum score threshold (0.0-1.0, default: 0.0).
+    ///
+    /// Keywords with scores below this threshold are filtered out.
+    /// Note: Score ranges differ between algorithms.
     min_score: f32,
+    /// N-gram range for keyword extraction (min, max).
+    ///
+    /// (1, 1) = unigrams only
+    /// (1, 2) = unigrams and bigrams
+    /// (1, 3) = unigrams, bigrams, and trigrams (default)
     ngram_range: []const u64,
+    /// Language code for stopword filtering (e.g., "en", "de", "fr").
+    ///
+    /// If None, no stopword filtering is applied.
     language: ?[]const u8,
+    /// YAKE-specific tuning parameters.
     yake_params: ?YakeParams,
+    /// RAKE-specific tuning parameters.
     rake_params: ?RakeParams,
 };
 
 /// Extracted keyword with metadata.
 pub const Keyword = struct {
+    /// The keyword text.
     text: []const u8,
+    /// Relevance score (higher is better, algorithm-specific range).
     score: f32,
+    /// Algorithm that extracted this keyword.
     algorithm: KeywordAlgorithm,
+    /// Optional positions where keyword appears in text (character offsets).
     positions: ?[]const u64,
 };
 
@@ -1503,31 +2748,61 @@ pub const Keyword = struct {
 /// Configures PaddleOCR text detection and recognition with multi-language support.
 /// Uses a builder pattern for convenient configuration.
 pub const PaddleOcrConfig = struct {
+    /// Language code (e.g., "en", "ch", "jpn", "kor", "deu", "fra")
     language: []const u8,
+    /// Optional custom cache directory for model files
     cache_dir: ?[]const u8,
+    /// Enable angle classification for rotated text (default: false).
+    /// Can misfire on short text regions, rotating crops incorrectly before recognition.
     use_angle_cls: bool,
+    /// Enable table structure detection (default: false)
     enable_table_detection: bool,
+    /// Database threshold for text detection (default: 0.3)
+    /// Range: 0.0-1.0, higher values require more confident detections
     det_db_thresh: f32,
+    /// Box threshold for text bounding box refinement (default: 0.5)
+    /// Range: 0.0-1.0
     det_db_box_thresh: f32,
+    /// Unclip ratio for expanding text bounding boxes (default: 1.6)
+    /// Controls the expansion of detected text regions
     det_db_unclip_ratio: f32,
+    /// Maximum side length for detection image (default: 960)
+    /// Larger images may be resized to this limit for faster inference
     det_limit_side_len: u32,
+    /// Batch size for recognition inference (default: 6)
+    /// Number of text regions to process simultaneously
     rec_batch_num: u32,
+    /// Padding in pixels added around the image before detection (default: 10).
+    /// Large values can include surrounding content like table gridlines.
     padding: u32,
+    /// Minimum recognition confidence score for text lines (default: 0.5).
+    /// Text regions with recognition confidence below this threshold are discarded.
+    /// Matches PaddleOCR Python's `drop_score` parameter.
+    /// Range: 0.0-1.0
     drop_score: f32,
+    /// Model tier controlling detection/recognition model size and accuracy trade-off.
+    /// - `"mobile"` (default): Lightweight models (~4.5MB detection, ~16.5MB recognition), fast download and inference
+    /// - `"server"`: Large, high-accuracy models (~88MB detection, ~84MB recognition), best for GPU or complex documents
     model_tier: []const u8,
 };
 
 /// Combined paths to all models needed for OCR (backward compatibility).
 pub const ModelPaths = struct {
+    /// Path to the detection model directory.
     det_model: []const u8,
+    /// Path to the classification model directory.
     cls_model: []const u8,
+    /// Path to the recognition model directory.
     rec_model: []const u8,
+    /// Path to the character dictionary file.
     dict_file: []const u8,
 };
 
 /// Document orientation detection result.
 pub const OrientationResult = struct {
+    /// Detected orientation in degrees (0, 90, 180, or 270).
     degrees: u32,
+    /// Confidence score (0.0-1.0).
     confidence: f32,
 };
 
@@ -1553,8 +2828,11 @@ pub const LayoutDetection = struct {
 /// so that consumers who do not enable `layout-detection` (ORT) can still reference
 /// the type in their own code.
 pub const RecognizedTable = struct {
+    /// Detection bbox that this table corresponds to (for matching).
     detection_bbox: BBox,
+    /// Table cells as a 2D vector (rows × columns).
     cells: []const []const []const u8,
+    /// Rendered markdown table.
     markdown: []const u8,
 };
 
@@ -1567,8 +2845,11 @@ pub const DetectionResult = struct {
 
 /// Embedded file descriptor extracted from the PDF name tree.
 pub const EmbeddedFile = struct {
+    /// The filename as stored in the PDF name tree.
     name: []const u8,
+    /// Raw file bytes from the embedded stream.
     data: []const u8,
+    /// MIME type if specified in the filespec, otherwise `null`.
     mime_type: ?[]const u8,
 };
 
@@ -1578,11 +2859,17 @@ pub const EmbeddedFile = struct {
 /// `Metadata` structure. Common fields like title, authors, keywords, and dates
 /// are at the `Metadata` level.
 pub const PdfMetadata = struct {
+    /// PDF version (e.g., "1.7", "2.0")
     pdf_version: ?[]const u8,
+    /// PDF producer (application that created the PDF)
     producer: ?[]const u8,
+    /// Whether the PDF is encrypted/password-protected
     is_encrypted: ?bool,
+    /// First page width in points (1/72 inch)
     width: ?i64,
+    /// First page height in points (1/72 inch)
     height: ?i64,
+    /// Total number of pages in the PDF document
     page_count: ?u32,
 };
 
@@ -1591,10 +2878,15 @@ pub const PdfMetadata = struct {
 /// Determines which hardware backend is used for model inference.
 /// `Auto` (default) selects the best available provider per platform.
 pub const ExecutionProviderType = enum {
+    /// Auto-select: CoreML on macOS, CUDA on Linux, CPU elsewhere.
     auto,
+    /// CPU execution provider (always available).
     cpu,
+    /// Apple CoreML (macOS/iOS Neural Engine + GPU).
     core_ml,
+    /// NVIDIA CUDA GPU acceleration.
     cuda,
+    /// NVIDIA TensorRT (optimized CUDA inference).
     tensor_rt,
 };
 
@@ -1606,21 +2898,37 @@ pub const ExecutionProviderType = enum {
 /// `Structured` returns JSON with full OCR element data including bounding
 /// boxes and confidence scores.
 pub const OutputFormat = union(enum) {
+    /// Plain text content only (default)
     plain: void,
+    /// Markdown format
     markdown: void,
+    /// Djot markup format
     djot: void,
+    /// HTML format
     html: void,
+    /// JSON tree format with heading-driven sections.
     json: void,
+    /// Structured JSON format with full OCR element metadata.
     structured: void,
+    /// Custom renderer registered via the RendererRegistry.
+    /// The string is the renderer name (e.g., "docx", "latex").
     custom: []const u8,
 };
 
 /// Built-in HTML theme selection.
 pub const HtmlTheme = enum {
+    /// Sensible defaults: system font stack, neutral colours, readable line
+    /// measure. CSS custom properties (`--kb-*`) are all defined so user CSS
+    /// can override individual values.
     default,
+    /// GitHub Markdown-inspired palette and spacing.
     git_hub,
+    /// Dark background, light text.
     dark,
+    /// Minimal light theme with generous whitespace.
     light,
+    /// No built-in stylesheet emitted. CSS custom properties are still defined
+    /// on `:root` so user stylesheets can reference `var(--kb-*)` tokens.
     unstyled,
 };
 
@@ -1630,11 +2938,18 @@ pub const HtmlTheme = enum {
 /// table regions. Wire format is snake_case in all serializers (JSON, TOML,
 /// YAML).
 pub const TableModel = enum {
+    /// TATR (Table Transformer) -- default, 30MB, DETR-based row/column detection.
     tatr,
+    /// SLANeXT wired variant -- 365MB, optimized for bordered tables.
     slanet_wired,
+    /// SLANeXT wireless variant -- 365MB, optimized for borderless tables.
     slanet_wireless,
+    /// SLANet-plus -- 7.78MB, lightweight general-purpose.
     slanet_plus,
+    /// Classifier-routed SLANeXT: auto-select wired/wireless per table.
+    /// Uses PP-LCNet classifier (6.78MB) + both SLANeXT variants (730MB total).
     slanet_auto,
+    /// Disable table structure model inference entirely; use heuristic path only.
     disabled,
 };
 
@@ -1668,7 +2983,9 @@ pub const ChunkerType = enum {
 /// available on HuggingFace Hub can be used, including OpenAI-compatible tokenizers
 /// (e.g., `Xenova/gpt-4o`, `Xenova/cl100k_base`).
 pub const ChunkSizing = union(enum) {
+    /// Size measured in Unicode characters (default).
     characters: void,
+    /// Size measured in tokens from a HuggingFace tokenizer.
     tokenizer: struct {
         model: []const u8,
         cache_dir: ?[]const u8,
@@ -1677,12 +2994,37 @@ pub const ChunkSizing = union(enum) {
 
 /// Embedding model types supported by Kreuzberg.
 pub const EmbeddingModelType = union(enum) {
+    /// Use a preset model configuration (recommended)
     preset: []const u8,
+    /// Use a custom ONNX model from HuggingFace
     custom: struct {
         model_id: []const u8,
         dimensions: u64,
     },
+    /// Provider-hosted embedding model via liter-llm.
+    ///
+    /// Uses the model specified in the nested `LlmConfig` (e.g.,
+    /// `"openai/text-embedding-3-small"`).
     llm: LlmConfig,
+    /// In-process embedding backend registered via the plugin system.
+    ///
+    /// The caller registers an `EmbeddingBackend` once
+    /// (e.g. a wrapper around an already-loaded `llama-cpp-python`, `sentence-transformers`,
+    /// or tuned ONNX model), then references it by name in config. Kreuzberg calls back
+    /// into the registered backend during chunking and standalone embed requests —
+    /// no HuggingFace download, no ONNX Runtime requirement, no HTTP sidecar.
+    ///
+    /// When this variant is selected, only the following `EmbeddingConfig` fields
+    /// apply: `normalize` (post-call L2 normalization) and `max_embed_duration_secs`
+    /// (dispatcher timeout). Model-loading fields (`batch_size`, `cache_dir`,
+    /// `show_download_progress`, `acceleration`) are ignored — the host owns the
+    /// model lifecycle.
+    ///
+    /// Semantic chunking falls back to `ChunkingConfig.max_characters` when this variant
+    /// is used, since there is no preset to look a chunk-size ceiling up against — size your
+    /// context window via `max_characters` directly.
+    ///
+    /// See `register_embedding_backend`.
     plugin: []const u8,
 };
 
@@ -1691,16 +3033,23 @@ pub const EmbeddingModelType = union(enum) {
 /// Controls how extracted code content is represented in the `content` field
 /// of `ExtractionResult`.
 pub const CodeContentMode = enum {
+    /// Use TSLP semantic chunks as content (default).
     chunks,
+    /// Use raw source code as content.
     raw,
+    /// Emit function/class headings + docstrings (no code bodies).
     structure,
 };
 
 /// Type of list detection.
 pub const ListType = enum {
+    /// Bullet points (-, *, •, etc.)
     bullet,
+    /// Numbered lists (1., 2., etc.)
     numbered,
+    /// Lettered lists (a., b., A., B., etc.)
     lettered,
+    /// Indented items
     indented,
 };
 
@@ -1719,9 +3068,13 @@ pub const FracType = enum {
 
 /// OCR backend types.
 pub const OcrBackendType = enum {
+    /// Tesseract OCR (native Rust binding)
     tesseract,
+    /// EasyOCR (Python-based, via FFI)
     easy_ocr,
+    /// PaddleOCR (Python-based, via FFI)
     paddle_ocr,
+    /// Custom/third-party OCR backend
     custom,
 };
 
@@ -1730,8 +3083,29 @@ pub const OcrBackendType = enum {
 /// Post-processors are executed in stage order (Early → Middle → Late).
 /// Use stages to control the order of post-processing operations.
 pub const ProcessingStage = enum {
+    /// Early stage - foundational processing.
+    ///
+    /// Use for:
+    /// - Language detection
+    /// - Character encoding normalization
+    /// - Entity extraction (NER)
+    /// - Text quality scoring
     early,
+    /// Middle stage - content transformation.
+    ///
+    /// Use for:
+    /// - Keyword extraction
+    /// - Token reduction
+    /// - Text summarization
+    /// - Semantic analysis
     middle,
+    /// Late stage - final enrichment.
+    ///
+    /// Use for:
+    /// - Custom user hooks
+    /// - Analytics/logging
+    /// - Final validation
+    /// - Output formatting
     late,
 };
 
@@ -1745,12 +3119,19 @@ pub const ReductionLevel = enum {
 
 /// Type of PDF annotation.
 pub const PdfAnnotationType = enum {
+    /// Sticky note / text annotation
     text,
+    /// Highlighted text region
     highlight,
+    /// Hyperlink annotation
     link,
+    /// Rubber stamp annotation
     stamp,
+    /// Underline text markup
     underline,
+    /// Strikeout text markup
     strike_out,
+    /// Any other annotation type
     other,
 };
 
@@ -1796,12 +3177,19 @@ pub const InlineType = enum {
 
 /// Semantic kind of a relationship between document elements.
 pub const RelationshipKind = enum {
+    /// Footnote marker -> footnote definition.
     footnote_reference,
+    /// Citation marker -> bibliography entry.
     citation_reference,
+    /// Internal anchor link (`#id`) -> target heading/element.
     internal_link,
+    /// Caption paragraph -> figure/table it describes.
     caption,
+    /// Label -> labeled element (HTML `<label for>`, LaTeX `\label{}`).
     label,
+    /// TOC entry -> target section.
     toc_entry,
+    /// Cross-reference (LaTeX `\ref{}`, DOCX cross-reference field).
     cross_reference,
 };
 
@@ -1809,9 +3197,13 @@ pub const RelationshipKind = enum {
 ///
 /// Replaces separate body/furniture arrays with per-node granularity.
 pub const ContentLayer = enum {
+    /// Main document body content.
     body,
+    /// Page/section header (running header).
     header,
+    /// Page/section footer (running footer).
     footer,
+    /// Footnote content.
     footnote,
 };
 
@@ -1820,54 +3212,82 @@ pub const ContentLayer = enum {
 /// Uses `#[serde(tag = "node_type")]` to avoid "type" keyword collision in
 /// Go/Java/TypeScript bindings.
 pub const NodeContent = union(enum) {
+    /// Document title.
     title: []const u8,
+    /// Section heading with level (1-6).
     heading: struct {
         level: u8,
         text: []const u8,
     },
+    /// Body text paragraph.
     paragraph: []const u8,
+    /// List container — children are `ListItem` nodes.
     list: bool,
+    /// Individual list item.
     list_item: []const u8,
+    /// Table with structured cell grid.
     table: TableGrid,
+    /// Image reference.
     image: struct {
         description: ?[]const u8,
         image_index: ?u32,
         src: ?[]const u8,
     },
+    /// Code block.
     code: struct {
         text: []const u8,
         language: ?[]const u8,
     },
+    /// Block quote — container, children carry the quoted content.
     quote: void,
+    /// Mathematical formula / equation.
     formula: []const u8,
+    /// Footnote reference content.
     footnote: []const u8,
+    /// Logical grouping container (section, key-value area).
+    ///
+    /// `heading_level` + `heading_text` capture the section heading directly
+    /// rather than relying on a first-child positional convention.
     group: struct {
         label: ?[]const u8,
         heading_level: ?u8,
         heading_text: ?[]const u8,
     },
+    /// Page break marker.
     page_break: void,
+    /// Presentation slide container — children are the slide's content nodes.
     slide: struct {
         number: u32,
         title: ?[]const u8,
     },
+    /// Definition list container — children are `DefinitionItem` nodes.
     definition_list: void,
+    /// Individual definition list entry with term and definition.
     definition_item: struct {
         term: []const u8,
         definition: []const u8,
     },
+    /// Citation or bibliographic reference.
     citation: struct {
         key: []const u8,
         text: []const u8,
     },
+    /// Admonition / callout container (note, warning, tip, etc.).
+    ///
+    /// Children carry the admonition body content.
     admonition: struct {
         kind: []const u8,
         title: ?[]const u8,
     },
+    /// Raw block preserved verbatim from the source format.
+    ///
+    /// Used for content that cannot be mapped to a semantic node type
+    /// (e.g. JSX in MDX, raw LaTeX in markdown, embedded HTML).
     raw_block: struct {
         format: []const u8,
         content: []const u8,
     },
+    /// Structured metadata block (email headers, YAML frontmatter, etc.).
     metadata_block: []const []const u8,
 };
 
@@ -1884,9 +3304,13 @@ pub const AnnotationKind = union(enum) {
         url: []const u8,
         title: ?[]const u8,
     },
+    /// Highlighted text (PDF highlights, HTML `<mark>`).
     highlight: void,
+    /// Text color (CSS-compatible value, e.g. "#ff0000", "red").
     color: []const u8,
+    /// Font size with units (e.g. "12pt", "1.2em", "16px").
     font_size: []const u8,
+    /// Extensible annotation for format-specific styling.
     custom: struct {
         name: []const u8,
         value: ?[]const u8,
@@ -1906,33 +3330,57 @@ pub const ExtractionMethod = enum {
 /// Defaults to `Unknown` when no rule matches.
 /// Designed to be extended in future versions without breaking changes.
 pub const ChunkType = enum {
+    /// Section heading or document title.
     heading,
+    /// Party list: names, addresses, and signatories.
     party_list,
+    /// Definition clause ("X means…", "X shall mean…").
     definitions,
+    /// Operative clause containing legal/contractual action verbs.
     operative_clause,
+    /// Signature block with signatures, names, and dates.
     signature_block,
+    /// Schedule, annex, appendix, or exhibit section.
     schedule,
+    /// Table-like content with aligned columns or repeated patterns.
     table_like,
+    /// Mathematical formula or equation.
     formula,
+    /// Code block or preformatted content.
     code_block,
+    /// Embedded or referenced image content.
     image,
+    /// Organizational chart or hierarchy diagram.
     org_chart,
+    /// Diagram, figure, or visual illustration.
     diagram,
+    /// Unclassified or mixed content.
     unknown,
 };
 
 /// Heuristic classification of what an image likely depicts.
 pub const ImageKind = enum {
+    /// Photographic image (natural scene, photograph)
     photograph,
+    /// Technical or schematic diagram
     diagram,
+    /// Chart, graph, or plot
     chart,
+    /// Freehand or technical drawing
     drawing,
+    /// Text-heavy image (scanned text, document)
     text_block,
+    /// Decorative element or border
     decoration,
+    /// Logo or brand mark
     logo,
+    /// Small icon
     icon,
+    /// Fragment of a larger tiled image (tile of a technical drawing)
     tile_fragment,
+    /// Mask or transparency map
     mask,
+    /// Could not classify with reasonable confidence
     unknown,
 };
 
@@ -1942,7 +3390,9 @@ pub const ImageKind = enum {
 /// HTML, etc.). `ResultFormat` controls the *shape* of the result: a unified content
 /// blob vs. an element-based decomposition.
 pub const ResultFormat = enum {
+    /// Unified format with all content in `content` field
     unified,
+    /// Element-based format with semantic element extraction
     element_based,
 };
 
@@ -1951,16 +3401,27 @@ pub const ResultFormat = enum {
 /// Categorizes text content into semantic units for downstream processing.
 /// Supports the element types commonly found in Unstructured documents.
 pub const ElementType = enum {
+    /// Document title
     title,
+    /// Main narrative text body
     narrative_text,
+    /// Section heading
     heading,
+    /// List item (bullet, numbered, etc.)
     list_item,
+    /// Table element
     table,
+    /// Image element
     image,
+    /// Page break marker
     page_break,
+    /// Code block
     code_block,
+    /// Block quote
     block_quote,
+    /// Footer text
     footer,
+    /// Header text
     header,
 };
 
@@ -1993,33 +3454,49 @@ pub const FormatMetadata = union(enum) {
 
 /// Text direction enumeration for HTML documents.
 pub const TextDirection = enum {
+    /// Left-to-right text direction
     ltr,
+    /// Right-to-left text direction
     rtl,
+    /// Automatic text direction detection
     auto,
 };
 
 /// Link type classification.
 pub const LinkType = enum {
+    /// Anchor link (#section)
     anchor,
+    /// Internal link (same domain)
     internal,
+    /// External link (different domain)
     external,
+    /// Email link (mailto:)
     email,
+    /// Phone link (tel:)
     phone,
+    /// Other link type
     other,
 };
 
 /// Image type classification.
 pub const ImageType = enum {
-    data-uri,
-    inline-svg,
+    /// Data URI image
+    data_uri,
+    /// Inline SVG
+    inline_svg,
+    /// External image URL
     external,
+    /// Relative path image
     relative,
 };
 
 /// Structured data type classification.
 pub const StructuredDataType = enum {
-    json-ld,
+    /// JSON-LD structured data
+    json_ld,
+    /// Microdata
     microdata,
+    /// RDFa
     rdfa,
 };
 
@@ -2028,12 +3505,17 @@ pub const StructuredDataType = enum {
 /// Supports both axis-aligned rectangles (from Tesseract) and 4-point quadrilaterals
 /// (from PaddleOCR and rotated text detection).
 pub const OcrBoundingGeometry = union(enum) {
+    /// Axis-aligned bounding box (typical for Tesseract output).
     rectangle: struct {
         left: u32,
         top: u32,
         width: u32,
         height: u32,
     },
+    /// 4-point quadrilateral for rotated/skewed text (PaddleOCR).
+    ///
+    /// Points are in clockwise order starting from top-left:
+    /// `[top_left, top_right, bottom_right, bottom_left]`
     quadrilateral: []const u8,
 };
 
@@ -2042,9 +3524,13 @@ pub const OcrBoundingGeometry = union(enum) {
 /// Maps to Tesseract's page segmentation hierarchy and provides
 /// equivalent semantics for PaddleOCR.
 pub const OcrElementLevel = enum {
+    /// Individual word
     word,
+    /// Line of text (default for PaddleOCR)
     line,
+    /// Paragraph or text block
     block,
+    /// Page-level element
     page,
 };
 
@@ -2052,24 +3538,35 @@ pub const OcrElementLevel = enum {
 ///
 /// Distinguishes between different types of "pages" (PDF pages, presentation slides, spreadsheet sheets).
 pub const PageUnitType = enum {
+    /// Standard document pages (PDF, DOCX, images)
     page,
+    /// Presentation slides (PPTX, ODP)
     slide,
+    /// Spreadsheet sheets (XLSX, ODS)
     sheet,
 };
 
 /// Semantic classification of an extracted URI.
 pub const UriKind = enum {
+    /// A clickable hyperlink (web URL, file link).
     hyperlink,
+    /// An image or media resource reference.
     image,
+    /// An internal anchor or cross-reference target.
     anchor,
+    /// A citation or bibliographic reference (DOI, academic ref).
     citation,
+    /// A general reference (e.g. `\ref{}` in LaTeX, `:ref:` in RST).
     reference,
+    /// An email address (`mailto:` link or bare email).
     email,
 };
 
 /// Keyword algorithm selection.
 pub const KeywordAlgorithm = enum {
+    /// YAKE (Yet Another Keyword Extractor) - statistical approach
     yake,
+    /// RAKE (Rapid Automatic Keyword Extraction) - co-occurrence based
     rake,
 };
 
@@ -2092,21 +3589,37 @@ pub const PSMMode = enum {
 ///
 /// Maps user-friendly language codes to paddle-ocr-rs language identifiers.
 pub const PaddleLanguage = enum {
+    /// English
     english,
+    /// Simplified Chinese
     chinese,
+    /// Japanese
     japanese,
+    /// Korean
     korean,
+    /// German
     german,
+    /// French
     french,
+    /// Latin script (covers most European languages)
     latin,
+    /// Cyrillic (Russian and related)
     cyrillic,
+    /// Traditional Chinese
     traditional_chinese,
+    /// Thai
     thai,
+    /// Greek
     greek,
+    /// East Slavic (Russian, Ukrainian, Belarusian)
     east_slavic,
+    /// Arabic (Arabic, Persian, Urdu)
     arabic,
+    /// Devanagari (Hindi, Marathi, Sanskrit, Nepali)
     devanagari,
+    /// Tamil
     tamil,
+    /// Telugu
     telugu,
 };
 
@@ -2155,11 +3668,9 @@ pub const LayoutClass = enum {
 /// Returns `KreuzbergError.Validation` if MIME type is invalid.
 /// Returns `KreuzbergError.UnsupportedFormat` if MIME type is not supported.
 pub fn extract_bytes(content: []const u8, mime_type: []const u8, config: []const u8) KreuzbergError![]u8 {
-    const mime_type_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{mime_type}, 0);
+    const mime_type_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{mime_type}, 0);
     defer std.heap.c_allocator.free(mime_type_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_extract_bytes(content.ptr, content.len, mime_type_z, config_handle);
@@ -2174,8 +3685,7 @@ pub fn extract_bytes(content: []const u8, mime_type: []const u8, config: []const
         const slice = std.mem.sliceTo(_json_ptr, 0);
         const owned = try std.heap.c_allocator.dupe(u8, slice);
         break :blk owned;
-    }
-;
+    };
 }
 
 /// Extract content from a file.
@@ -2197,14 +3707,11 @@ pub fn extract_bytes(content: []const u8, mime_type: []const u8, config: []const
 /// Returns `KreuzbergError.Io` if the file doesn't exist (NotFound) or for other file I/O errors.
 /// Returns `KreuzbergError.UnsupportedFormat` if MIME type is not supported.
 pub fn extract_file(path: []const u8, mime_type: ?[]const u8, config: []const u8) KreuzbergError![]u8 {
-    const path_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{path}, 0);
+    const path_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{path}, 0);
     defer std.heap.c_allocator.free(path_z);
-    const mime_type_z: ?[:0]u8 = if (mime_type) |v| try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{v}, 0) else null;
+    const mime_type_z: ?[:0]u8 = if (mime_type) |v| try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{v}, 0) else null;
     defer if (mime_type_z) |z| std.heap.c_allocator.free(z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_extract_file(path_z, if (mime_type_z) |z| z.ptr else null, config_handle);
@@ -2219,8 +3726,7 @@ pub fn extract_file(path: []const u8, mime_type: ?[]const u8, config: []const u8
         const slice = std.mem.sliceTo(_json_ptr, 0);
         const owned = try std.heap.c_allocator.dupe(u8, slice);
         break :blk owned;
-    }
-;
+    };
 }
 
 /// Synchronous wrapper for `extract_file`.
@@ -2234,14 +3740,11 @@ pub fn extract_file(path: []const u8, mime_type: ?[]const u8, config: []const u8
 /// This function is only available with the `tokio-runtime` feature. For WASM targets,
 /// use a truly synchronous extraction approach instead.
 pub fn extract_file_sync(path: []const u8, mime_type: ?[]const u8, config: []const u8) KreuzbergError![]u8 {
-    const path_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{path}, 0);
+    const path_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{path}, 0);
     defer std.heap.c_allocator.free(path_z);
-    const mime_type_z: ?[:0]u8 = if (mime_type) |v| try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{v}, 0) else null;
+    const mime_type_z: ?[:0]u8 = if (mime_type) |v| try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{v}, 0) else null;
     defer if (mime_type_z) |z| std.heap.c_allocator.free(z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_extract_file_sync(path_z, if (mime_type_z) |z| z.ptr else null, config_handle);
@@ -2256,8 +3759,7 @@ pub fn extract_file_sync(path: []const u8, mime_type: ?[]const u8, config: []con
         const slice = std.mem.sliceTo(_json_ptr, 0);
         const owned = try std.heap.c_allocator.dupe(u8, slice);
         break :blk owned;
-    }
-;
+    };
 }
 
 /// Synchronous wrapper for `extract_bytes`.
@@ -2268,11 +3770,9 @@ pub fn extract_file_sync(path: []const u8, mime_type: ?[]const u8, config: []con
 /// With the `tokio-runtime` feature, this blocks the current thread using the global
 /// Tokio runtime. Without it (WASM), this calls a truly synchronous implementation.
 pub fn extract_bytes_sync(content: []const u8, mime_type: []const u8, config: []const u8) KreuzbergError![]u8 {
-    const mime_type_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{mime_type}, 0);
+    const mime_type_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{mime_type}, 0);
     defer std.heap.c_allocator.free(mime_type_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_extract_bytes_sync(content.ptr, content.len, mime_type_z, config_handle);
@@ -2287,8 +3787,7 @@ pub fn extract_bytes_sync(content: []const u8, mime_type: []const u8, config: []
         const slice = std.mem.sliceTo(_json_ptr, 0);
         const owned = try std.heap.c_allocator.dupe(u8, slice);
         break :blk owned;
-    }
-;
+    };
 }
 
 /// Synchronous wrapper for `batch_extract_files`.
@@ -2297,11 +3796,9 @@ pub fn extract_bytes_sync(content: []const u8, mime_type: []const u8, config: []
 /// Only available with `tokio-runtime` (WASM has no filesystem).
 pub fn batch_extract_files_sync(items: []const u8, config: []const u8) KreuzbergError![]u8 {
     // Vec/Map parameters are passed as JSON strings across the FFI boundary.
-    const items_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{items}, 0);
+    const items_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{items}, 0);
     defer std.heap.c_allocator.free(items_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_batch_extract_files_sync(items_z, config_handle);
@@ -2326,11 +3823,9 @@ pub fn batch_extract_files_sync(items: []const u8, config: []const u8) Kreuzberg
 /// that iterates through items and calls `extract_bytes_sync()`.
 pub fn batch_extract_bytes_sync(items: []const u8, config: []const u8) KreuzbergError![]u8 {
     // Vec/Map parameters are passed as JSON strings across the FFI boundary.
-    const items_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{items}, 0);
+    const items_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{items}, 0);
     defer std.heap.c_allocator.free(items_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_batch_extract_bytes_sync(items_z, config_handle);
@@ -2377,11 +3872,9 @@ pub fn batch_extract_bytes_sync(items: []const u8, config: []const u8) Kreuzberg
 /// Per-file configuration overrides:
 pub fn batch_extract_files(items: []const u8, config: []const u8) KreuzbergError![]u8 {
     // Vec/Map parameters are passed as JSON strings across the FFI boundary.
-    const items_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{items}, 0);
+    const items_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{items}, 0);
     defer std.heap.c_allocator.free(items_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_batch_extract_files(items_z, config_handle);
@@ -2422,11 +3915,9 @@ pub fn batch_extract_files(items: []const u8, config: []const u8) KreuzbergError
 /// Per-item configuration overrides:
 pub fn batch_extract_bytes(items: []const u8, config: []const u8) KreuzbergError![]u8 {
     // Vec/Map parameters are passed as JSON strings across the FFI boundary.
-    const items_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{items}, 0);
+    const items_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{items}, 0);
     defer std.heap.c_allocator.free(items_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_extraction_config_from_json(config_z);
     const _result = c.kreuzberg_batch_extract_bytes(items_z, config_handle);
@@ -2480,8 +3971,7 @@ pub fn detect_mime_type_from_bytes(content: []const u8) KreuzbergError![]u8 {
 ///
 /// A vector of file extensions (without leading dot) for the MIME type.
 pub fn get_extensions_for_mime(mime_type: []const u8) KreuzbergError![]u8 {
-    const mime_type_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{mime_type}, 0);
+    const mime_type_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{mime_type}, 0);
     defer std.heap.c_allocator.free(mime_type_z);
     const _result = c.kreuzberg_get_extensions_for_mime(mime_type_z);
     const _result_len = c.kreuzberg_get_extensions_for_mime_len(mime_type_z);
@@ -2622,11 +4112,9 @@ pub fn list_validators() KreuzbergError![]u8 {
 ///   or the blocking inference task panics
 pub fn embed_texts_async(texts: []const u8, config: []const u8) KreuzbergError![]u8 {
     // Vec/Map parameters are passed as JSON strings across the FFI boundary.
-    const texts_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{texts}, 0);
+    const texts_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{texts}, 0);
     defer std.heap.c_allocator.free(texts_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_embedding_config_from_json(config_z);
     const _result = c.kreuzberg_embed_texts_async(texts_z, config_handle);
@@ -2653,8 +4141,7 @@ pub fn embed_texts_async(texts: []const u8, config: []const u8) KreuzbergError![
 /// Returns `KreuzbergError.Parsing` if the PDF cannot be opened, authenticated,
 /// or rendered, or if `page_index` is out of range.
 pub fn render_pdf_page_to_png(pdf_bytes: []const u8, page_index: u64, dpi: ?i32, password: ?[]const u8) KreuzbergError![]u8 {
-    const password_z: ?[:0]u8 = if (password) |v| try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{v}, 0) else null;
+    const password_z: ?[:0]u8 = if (password) |v| try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{v}, 0) else null;
     defer if (password_z) |z| std.heap.c_allocator.free(z);
     var _out_ptr: [*c]u8 = undefined;
     var _out_len: usize = 0;
@@ -2673,8 +4160,7 @@ pub fn render_pdf_page_to_png(pdf_bytes: []const u8, page_index: u64, dpi: ?i32,
 /// Uses the file extension and optionally the file content to determine the MIME type.
 /// Set `check_exists` to `true` to verify the file exists before detection.
 pub fn detect_mime_type(path: []const u8, check_exists: bool) KreuzbergError![]u8 {
-    const path_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{path}, 0);
+    const path_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{path}, 0);
     defer std.heap.c_allocator.free(path_z);
     const _result = c.kreuzberg_detect_mime_type(path_z, check_exists);
     const _result_len = c.kreuzberg_detect_mime_type_len(path_z, check_exists);
@@ -2694,11 +4180,9 @@ pub fn detect_mime_type(path: []const u8, check_exists: bool) KreuzbergError![]u
 /// Returns a 2D vector where each inner vector is the embedding for the corresponding text.
 pub fn embed_texts(texts: []const u8, config: []const u8) KreuzbergError![]u8 {
     // Vec/Map parameters are passed as JSON strings across the FFI boundary.
-    const texts_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{texts}, 0);
+    const texts_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{texts}, 0);
     defer std.heap.c_allocator.free(texts_z);
-    const config_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{config}, 0);
+    const config_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{config}, 0);
     defer std.heap.c_allocator.free(config_z);
     const config_handle = c.kreuzberg_embedding_config_from_json(config_z);
     const _result = c.kreuzberg_embed_texts(texts_z, config_handle);
@@ -2720,8 +4204,7 @@ pub fn embed_texts(texts: []const u8, config: []const u8) KreuzbergError![]u8 {
 /// Returns `null` if no preset with the given name exists. Returns an owned
 /// clone so the value is safe to pass across FFI boundaries.
 pub fn get_embedding_preset(name: []const u8) error{OutOfMemory}!?[]u8 {
-    const name_z = try std.fmt.allocPrintSentinel(
-        std.heap.c_allocator, "{s}", .{name}, 0);
+    const name_z = try std.fmt.allocPrintSentinel(std.heap.c_allocator, "{s}", .{name}, 0);
     defer std.heap.c_allocator.free(name_z);
     const _result = c.kreuzberg_get_embedding_preset(name_z);
     return if (_result == null) null else blk: {
@@ -2731,8 +4214,7 @@ pub fn get_embedding_preset(name: []const u8) error{OutOfMemory}!?[]u8 {
         const slice = std.mem.sliceTo(_json_ptr, 0);
         const owned = try std.heap.c_allocator.dupe(u8, slice);
         break :blk owned;
-    }
-;
+    };
 }
 
 /// List the names of all available embedding presets.
@@ -2956,7 +4438,9 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
                 const self: *T = @ptrCast(@alignCast(ud));
                 const image_bytes_slice = image_bytes_ptr[0..image_bytes_len];
                 if (self.process_image(image_bytes_slice, config)) |value| {
-                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                    _ = value;
+                    _ = out_result;
+                    unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;
                     if (out_error) |ptr| ptr.* = null; // caller checks error code
@@ -2969,7 +4453,9 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
             fn thunk(ud: ?*anyopaque, path: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.process_image_file(path, config)) |value| {
-                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                    _ = value;
+                    _ = out_result;
+                    unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;
                     if (out_error) |ptr| ptr.* = null; // caller checks error code
@@ -3022,7 +4508,9 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
             fn thunk(ud: ?*anyopaque, _path: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.process_document(_path, _config)) |value| {
-                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                    _ = value;
+                    _ = out_result;
+                    unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;
                     if (out_error) |ptr| ptr.* = null; // caller checks error code
@@ -3642,7 +5130,9 @@ pub fn make_embedding_backend_vtable(comptime T: type, instance: *T) IEmbeddingB
             fn thunk(ud: ?*anyopaque, texts: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.embed(texts)) |value| {
-                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                    _ = value;
+                    _ = out_result;
+                    unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;
                     if (out_error) |ptr| ptr.* = null; // caller checks error code
@@ -3832,7 +5322,9 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
                 const self: *T = @ptrCast(@alignCast(ud));
                 const content_slice = content_ptr[0..content_len];
                 if (self.extract_bytes(content_slice, mime_type, config)) |value| {
-                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                    _ = value;
+                    _ = out_result;
+                    unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;
                     if (out_error) |ptr| ptr.* = null; // caller checks error code
@@ -3845,7 +5337,9 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
             fn thunk(ud: ?*anyopaque, path: [*c]const u8, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.extract_file(path, mime_type, config)) |value| {
-                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                    _ = value;
+                    _ = out_result;
+                    unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;
                     if (out_error) |ptr| ptr.* = null; // caller checks error code
@@ -3993,7 +5487,9 @@ pub fn make_renderer_vtable(comptime T: type, instance: *T) IRenderer {
             fn thunk(ud: ?*anyopaque, doc: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.render(doc)) |value| {
-                    _ = value; _ = out_result; unreachable; // complex return: implement manually
+                    _ = value;
+                    _ = out_result;
+                    unreachable; // complex return: implement manually
                 } else |err| {
                     _ = err;
                     if (out_error) |ptr| ptr.* = null; // caller checks error code

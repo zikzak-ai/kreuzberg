@@ -40,7 +40,6 @@ pub struct PdfMetadata {
     pub page_count: Option<u32>,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Complete PDF extraction metadata including common and PDF-specific fields.
 ///
 /// Combines common document fields (title, authors, dates) with PDF-specific
@@ -83,7 +82,6 @@ pub struct PdfExtractionMetadata {
     pub page_structure: Option<PageStructure>,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Common PDF metadata fields extracted from the document info dictionary.
 ///
 /// Used as an intermediate type during extraction before building `PdfExtractionMetadata`.

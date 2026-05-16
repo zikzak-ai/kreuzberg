@@ -1,5 +1,5 @@
 [workspace]
-alef_version = "0.16.16"
+alef_version = "0.16.23"
 languages = [
   "python",
   "node",
@@ -204,6 +204,11 @@ exclude_types = [
   "StreamReader",
   "PooledString",
 ]
+
+[crates.node.extra_dependencies]
+# Required by alef-emitted #[serde_with::serde_as] attribute on HashMap<_, Vec<u8>>
+# fields (e.g. binary cache maps). Not added by alef-backend-napi automatically.
+serde_with = "3"
 
 [crates.ruby]
 gem_name = "kreuzberg"
@@ -444,10 +449,7 @@ abis = ["arm64-v8a", "x86_64"]
 module_name = "Kreuzberg"
 package_name = "Kreuzberg"
 features = ["full"]
-exclude_fields = [
-  "ExtractionResult.ocr_internal_document",
-  "OcrExtractionResult.internal_document",
-]
+exclude_fields = ["ExtractionResult.ocr_internal_document", "OcrExtractionResult.internal_document"]
 exclude_functions = [
   # Returns Option<&'static EmbeddingPreset> but EmbeddingPreset: !Serialize — cannot JSON-bridge
   "get_preset",
@@ -486,7 +488,7 @@ zig = "packages/zig/src/"
 types = [
   # Fully-qualified path exclusions — cannot use source-level alef(skip) because the
   # simple name clashes with a public type that must remain in the IR.
-  "kreuzberg::extraction::image::ImageMetadata",    # internal; kreuzberg::types::ImageMetadata is the public API type
+  "kreuzberg::extraction::image::ImageMetadata", # internal; kreuzberg::types::ImageMetadata is the public API type
   "kreuzberg::core::config::formats::OutputFormat", # internal; kreuzberg::types::OutputFormat is the public API type
 
   # Generic types — alef(skip) source annotation not picked up for generic structs
@@ -713,10 +715,7 @@ e2e = "cd e2e/kotlin_android && gradle test --no-daemon"
 
 [crates.test.swift]
 precondition = "command -v swift >/dev/null 2>&1"
-before = [
-  "cargo build --release -p kreuzberg-swift",
-  "bash scripts/setup-swift-bridge.sh",
-]
+before = ["cargo build --release -p kreuzberg-swift", "bash scripts/setup-swift-bridge.sh"]
 command = "cd packages/swift && swift test"
 e2e = "cd e2e/swift && swift test"
 
@@ -1740,11 +1739,7 @@ description = "Extract text, tables, images, and metadata from 91+ file formats 
 package_manager = ["pip"]
 features = { ocr = true, async = true, plugin_system = true, embeddings = true, code_intelligence = true }
 ocr_backends = ["tesseract", "easyocr", "paddleocr"]
-optional_sections = [
-  "async_vs_sync_performance",
-  "ocr_backends",
-  "system_requirements",
-]
+optional_sections = ["async_vs_sync_performance", "ocr_backends", "system_requirements"]
 snippets = { basic_extraction = "getting-started/basic_usage.md", async_extraction = "getting-started/extract_file.md", batch_processing = "getting-started/extract_with_ocr.md", ocr_configuration = "getting-started/hello_world.md", table_extraction = "getting-started/read_content.md" }
 
 [crates.readme.languages.typescript]

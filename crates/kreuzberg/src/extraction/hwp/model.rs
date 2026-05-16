@@ -3,11 +3,11 @@
 /// Only the types needed to walk body-text sections and collect plain text.
 use super::error::Result;
 use super::parser::Record;
-#[cfg_attr(alef, alef(skip))]
 // ---------------------------------------------------------------------------
 // Document model
 // ---------------------------------------------------------------------------
 
+#[cfg_attr(alef, alef(skip))]
 /// An extracted HWP document, consisting of one or more body-text sections.
 #[derive(Debug, Default)]
 pub struct HwpDocument {
@@ -28,11 +28,11 @@ pub struct HwpDocument {
 pub struct Section {
     pub paragraphs: Vec<Paragraph>,
 }
-#[cfg_attr(alef, alef(skip))]
 // ---------------------------------------------------------------------------
 // Paragraph
 // ---------------------------------------------------------------------------
 
+#[cfg_attr(alef, alef(skip))]
 /// A single paragraph; may or may not carry a text payload.
 #[derive(Debug, Default)]
 pub struct Paragraph {
@@ -64,11 +64,11 @@ pub struct HwpImage {
     pub name: String,
     pub data: Vec<u8>,
 }
-#[cfg_attr(alef, alef(skip))]
 // ---------------------------------------------------------------------------
 // ParaText — decodes a TAG_PARA_TEXT (0x43) record
 // ---------------------------------------------------------------------------
 
+#[cfg_attr(alef, alef(skip))]
 /// Plain text content decoded from a ParaText record (tag 0x43).
 #[derive(Debug)]
 pub struct ParaText {

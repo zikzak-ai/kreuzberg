@@ -25,11 +25,11 @@ use super::metadata::Metadata;
 use super::ocr_elements::{OcrBoundingGeometry, OcrConfidence, OcrElementLevel, OcrRotation};
 use super::tables::Table;
 use crate::types::ExtractedImage;
-#[cfg_attr(alef, alef(skip))]
 // ============================================================================
 // ID Type
 // ============================================================================
 
+#[cfg_attr(alef, alef(skip))]
 /// Deterministic element identifier, generated via blake3 hashing.
 ///
 /// Format: `"ie-{12 hex chars}"` (48 bits from blake3, ~281 trillion address space).
@@ -115,11 +115,11 @@ impl AsRef<str> for InternalElementId {
         self.as_str()
     }
 }
-#[cfg_attr(alef, alef(skip))]
 // ============================================================================
 // Internal Document
 // ============================================================================
 
+#[cfg_attr(alef, alef(skip))]
 /// The internal flat document representation.
 ///
 /// All extractors output this structure. It is converted to the public

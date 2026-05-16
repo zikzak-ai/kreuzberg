@@ -25,7 +25,7 @@ response = http.request(request)
 if response.is_a?(Net::HTTPSuccess)
   result = JSON.parse(response.body)
   puts "Created #{result['chunk_count']} chunks"
-  
+
   result['chunks'].each do |chunk|
     preview = chunk['content'][0..49]
     puts "Chunk #{chunk['chunk_index']}: #{preview}..."

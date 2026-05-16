@@ -9,7 +9,36 @@ package dev.kreuzberg
  * Use stages to control the order of post-processing operations.
  */
 enum class ProcessingStage {
+    /**
+     * Early stage - foundational processing.
+     *
+     * Use for:
+     * - Language detection
+     * - Character encoding normalization
+     * - Entity extraction (NER)
+     * - Text quality scoring
+     */
     EARLY,
+
+    /**
+     * Middle stage - content transformation.
+     *
+     * Use for:
+     * - Keyword extraction
+     * - Token reduction
+     * - Text summarization
+     * - Semantic analysis
+     */
     MIDDLE,
+
+    /**
+     * Late stage - final enrichment.
+     *
+     * Use for:
+     * - Custom user hooks
+     * - Analytics/logging
+     * - Final validation
+     * - Output formatting
+     */
     LATE,
 }

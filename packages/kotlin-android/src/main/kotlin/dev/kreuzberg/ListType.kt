@@ -6,8 +6,23 @@ package dev.kreuzberg
  * Type of list detection.
  */
 enum class ListType {
+    /**
+     * Bullet points (-, *, •, etc.)
+     */
     BULLET,
+
+    /**
+     * Numbered lists (1., 2., etc.)
+     */
     NUMBERED,
+
+    /**
+     * Lettered lists (a., b., A., B., etc.)
+     */
     LETTERED,
+
+    /**
+     * Indented items
+     */
     INDENTED,
 }

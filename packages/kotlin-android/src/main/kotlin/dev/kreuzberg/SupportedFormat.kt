@@ -8,6 +8,12 @@ package dev.kreuzberg
  * Represents a file extension and its corresponding MIME type that Kreuzberg can process.
  */
 data class SupportedFormat(
+    /**
+     * File extension (without leading dot), e.g., "pdf", "docx"
+     */
     val extension: String,
+    /**
+     * MIME type string, e.g., "application/pdf"
+     */
     val mimeType: String,
 )

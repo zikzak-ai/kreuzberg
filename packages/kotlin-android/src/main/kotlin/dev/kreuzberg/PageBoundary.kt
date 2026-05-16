@@ -10,7 +10,16 @@ package dev.kreuzberg
  * at valid UTF-8 character boundaries when using standard String methods (push_str, push, etc.).
  */
 data class PageBoundary(
+    /**
+     * Byte offset where this page starts in the content string (UTF-8 valid boundary, inclusive)
+     */
     val byteStart: Long,
+    /**
+     * Byte offset where this page ends in the content string (UTF-8 valid boundary, exclusive)
+     */
     val byteEnd: Long,
+    /**
+     * Page number (1-indexed)
+     */
     val pageNumber: Int,
 )

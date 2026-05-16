@@ -2,16 +2,16 @@
 // This works around the limitation that #[napi(getter)] doesn't work on #[napi(object)]
 
 export function wrapFormatMetadata(fmt) {
-  if (!fmt || typeof fmt !== 'object') return fmt;
-  
+  if (!fmt || typeof fmt !== "object") return fmt;
+
   const tag = fmt.format_type;
-  const payload = fmt['0'];
-  
+  const payload = fmt["0"];
+
   if (!payload) return fmt;
-  
+
   try {
     const data = JSON.parse(payload);
-    
+
     // Add the typed variant property as a non-enumerable property
     Object.defineProperty(fmt, tag, {
       value: data,
@@ -22,6 +22,6 @@ export function wrapFormatMetadata(fmt) {
   } catch (e) {
     // Ignore JSON parse errors
   }
-  
+
   return fmt;
 }

@@ -8,14 +8,24 @@ This document describes the structure of `aggregated.json` produced by `benchmar
 {
   "schema_version": "2.4.0",
   "by_framework_mode": {
-    "<aggregate_key>": { /* FrameworkModeAggregation */ }
+    "<aggregate_key>": {
+      /* FrameworkModeAggregation */
+    }
   },
   "disk_sizes": {
-    "framework": { /* DiskSizeInfo */ }
+    "framework": {
+      /* DiskSizeInfo */
+    }
   },
-  "comparison": { /* ComparisonData */ },
-  "per_fixture_results": [ /* PerFixtureRow[] */ ],
-  "metadata": { /* ConsolidationMetadata */ }
+  "comparison": {
+    /* ComparisonData */
+  },
+  "per_fixture_results": [
+    /* PerFixtureRow[] */
+  ],
+  "metadata": {
+    /* ConsolidationMetadata */
+  }
 }
 ```
 
@@ -47,15 +57,21 @@ Each entry contains:
 
 ```json
 {
-  "framework": "string",                     // Framework name without mode suffix
-  "output_format": "markdown|plaintext",     // Output format used
-  "mode": "single|batch|...",                // Execution mode
-  "cold_start": { /* DurationPercentiles */ },  // Optional, if cold start data available
+  "framework": "string", // Framework name without mode suffix
+  "output_format": "markdown|plaintext", // Output format used
+  "mode": "single|batch|...", // Execution mode
+  "cold_start": {
+    /* DurationPercentiles */
+  }, // Optional, if cold start data available
   "by_file_type": {
     "pdf": {
       "file_type": "pdf",
-      "no_ocr": { /* PerformancePercentiles */ },
-      "with_ocr": { /* PerformancePercentiles */ }
+      "no_ocr": {
+        /* PerformancePercentiles */
+      },
+      "with_ocr": {
+        /* PerformancePercentiles */
+      }
     }
   }
 }
@@ -79,9 +95,11 @@ Contains p50, p95, p99 for all metrics:
   "duration": { "p50": 100.5, "p95": 150.2, "p99": 199.9 },
   "throughput": { "p50": 5.2, "p95": 4.8, "p99": 3.1 },
   "memory": { "p50": 150.0, "p95": 200.0, "p99": 250.0 },
-  "cpu": { "p50": 50.0, "p95": 75.0, "p99": 90.0 },  // Optional
-  "extraction_duration": { "p50": 80.0, "p95": 120.0, "p99": 160.0 },  // Optional
-  "quality": { /* QualityPercentiles */ },  // Optional, if quality data available
+  "cpu": { "p50": 50.0, "p95": 75.0, "p99": 90.0 }, // Optional
+  "extraction_duration": { "p50": 80.0, "p95": 120.0, "p99": 160.0 }, // Optional
+  "quality": {
+    /* QualityPercentiles */
+  }, // Optional, if quality data available
   "success_rate_percent": 84.0
 }
 ```
@@ -96,14 +114,14 @@ Includes p50, p95, p99 for all F1 metrics. Layout percentiles are `null` for pla
   "f1_text_p95": 0.88,
   "f1_text_p99": 0.75,
   "f1_numeric_p50": 0.85,
-  "f1_numeric_p95": 0.80,
-  "f1_numeric_p99": 0.70,
-  "f1_layout_p50": 0.78,       // null for plaintext output format
-  "f1_layout_p95": 0.72,       // null for plaintext output format
-  "f1_layout_p99": 0.65,       // null for plaintext output format
+  "f1_numeric_p95": 0.8,
+  "f1_numeric_p99": 0.7,
+  "f1_layout_p50": 0.78, // null for plaintext output format
+  "f1_layout_p95": 0.72, // null for plaintext output format
+  "f1_layout_p99": 0.65, // null for plaintext output format
   "quality_score_p50": 0.85,
-  "quality_score_p95": 0.80,
-  "quality_score_p99": 0.70
+  "quality_score_p95": 0.8,
+  "quality_score_p99": 0.7
 }
 ```
 
@@ -122,12 +140,12 @@ One row per unique combination of (framework, output_format, execution_mode, fix
   "duration_ms": 125.4,
   "peak_memory_mb": 180.5,
   "f1_text": 0.92,
-  "f1_layout": 0.78,     // null for plaintext mode
+  "f1_layout": 0.78, // null for plaintext mode
   "f1_numeric": 0.85,
   "quality_score": 0.85,
   "correct": true,
   "success": true,
-  "error_kind": null     // "FrameworkError", "HarnessError", "Timeout", etc. if !success
+  "error_kind": null // "FrameworkError", "HarnessError", "Timeout", etc. if !success
 }
 ```
 
@@ -137,17 +155,37 @@ Contains all cross-framework rankings split by output format for quality metrics
 
 ```json
 {
-  "performance_ranking": [ /* RankedFramework[] */ ],
-  "throughput_ranking": [ /* RankedFramework[] */ ],
-  "memory_ranking": [ /* RankedFramework[] */ ],
-  "cpu_ranking": [ /* RankedFramework[] */ ],
-  "quality_ranking": [ /* RankedFramework[] */ ],
-  "pdf_quality_ranking": [ /* RankedFramework[] */ ],
-  "pdf_tf1_ranking_markdown": [ /* RankedFramework[] — markdown-only */ ],
-  "pdf_tf1_ranking_plaintext": [ /* RankedFramework[] — plaintext-only */ ],
-  "pdf_sf1_ranking_markdown": [ /* RankedFramework[] — markdown-only, never plaintext */ ],
+  "performance_ranking": [
+    /* RankedFramework[] */
+  ],
+  "throughput_ranking": [
+    /* RankedFramework[] */
+  ],
+  "memory_ranking": [
+    /* RankedFramework[] */
+  ],
+  "cpu_ranking": [
+    /* RankedFramework[] */
+  ],
+  "quality_ranking": [
+    /* RankedFramework[] */
+  ],
+  "pdf_quality_ranking": [
+    /* RankedFramework[] */
+  ],
+  "pdf_tf1_ranking_markdown": [
+    /* RankedFramework[] — markdown-only */
+  ],
+  "pdf_tf1_ranking_plaintext": [
+    /* RankedFramework[] — plaintext-only */
+  ],
+  "pdf_sf1_ranking_markdown": [
+    /* RankedFramework[] — markdown-only, never plaintext */
+  ],
   "deltas_vs_baseline": {
-    "<aggregate_key>": { /* DeltaMetrics */ }
+    "<aggregate_key>": {
+      /* DeltaMetrics */
+    }
   }
 }
 ```
@@ -158,8 +196,8 @@ Contains all cross-framework rankings split by output format for quality metrics
 {
   "framework_mode": "kreuzberg-markdown-baseline:single",
   "rank": 1,
-  "value": 95.5,      // The metric value (duration, throughput, etc.)
-  "relative": 1.0     // Ratio relative to best (1.0 = best)
+  "value": 95.5, // The metric value (duration, throughput, etc.)
+  "relative": 1.0 // Ratio relative to best (1.0 = best)
 }
 ```
 
@@ -178,10 +216,10 @@ Language-binding frameworks (`kreuzberg-py`, `kreuzberg-node`, `kreuzberg-rb`, `
 `kreuzberg-java`, `kreuzberg-csharp`, `kreuzberg-elixir`, `kreuzberg-php`, `kreuzberg-rust`, etc.)
 have been removed. They are replaced by three native pipelines run directly via the kreuzberg CLI:
 
-| Pipeline | Markdown name | Plaintext name |
-|---|---|---|
-| Baseline | `kreuzberg-markdown-baseline` | `kreuzberg-plaintext-baseline` |
-| Layout | `kreuzberg-markdown-layout` | `kreuzberg-plaintext-layout` |
+| Pipeline  | Markdown name                   | Plaintext name                   |
+| --------- | ------------------------------- | -------------------------------- |
+| Baseline  | `kreuzberg-markdown-baseline`   | `kreuzberg-plaintext-baseline`   |
+| Layout    | `kreuzberg-markdown-layout`     | `kreuzberg-plaintext-layout`     |
 | PaddleOCR | `kreuzberg-markdown-paddle-ocr` | `kreuzberg-plaintext-paddle-ocr` |
 
 Batch variants append `-batch` to the framework name (e.g. `kreuzberg-markdown-baseline-batch`),

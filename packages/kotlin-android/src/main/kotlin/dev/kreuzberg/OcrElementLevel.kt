@@ -9,8 +9,23 @@ package dev.kreuzberg
  * equivalent semantics for PaddleOCR.
  */
 enum class OcrElementLevel {
+    /**
+     * Individual word
+     */
     WORD,
+
+    /**
+     * Line of text (default for PaddleOCR)
+     */
     LINE,
+
+    /**
+     * Paragraph or text block
+     */
     BLOCK,
+
+    /**
+     * Page-level element
+     */
     PAGE,
 }

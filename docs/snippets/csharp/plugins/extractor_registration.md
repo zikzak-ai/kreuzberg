@@ -19,7 +19,7 @@ public class JsonDocumentExtractor : IDocumentExtractor
     public ExtractionResult ExtractBytes(byte[] content, string mimeType, ExtractionConfig config)
     {
         var json = System.Text.Encoding.UTF8.GetString(content);
-        
+
         var result = new ExtractionResult
         {
             Content = json,

@@ -9,8 +9,23 @@ package dev.kreuzberg
  * with character offset boundaries for chunk-to-page mapping.
  */
 data class PageStructure(
+    /**
+     * Total number of pages/slides/sheets
+     */
     val totalCount: Int,
+    /**
+     * Type of paginated unit
+     */
     val unitType: PageUnitType,
+    /**
+     * Character offset boundaries for each page
+     *
+     * Maps character ranges in the extracted content to page numbers.
+     * Used for chunk page range calculation.
+     */
     val boundaries: List<PageBoundary>?,
+    /**
+     * Detailed per-page metadata (optional, only when needed)
+     */
     val pages: List<PageInfo>?,
 )

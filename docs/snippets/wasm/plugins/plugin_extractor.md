@@ -17,10 +17,10 @@ const customProcessor = {
       metadata: {
         ...result.metadata,
         enriched: true,
-        processorApplied: "customProcessor"
-      }
+        processorApplied: "customProcessor",
+      },
     };
-  }
+  },
 };
 
 registerPostProcessor(customProcessor);
@@ -30,20 +30,22 @@ async function extractWithPlugins(fileBytes, mimeType) {
   const config = {
     ocr: null,
     chunking: null,
-    enableQualityProcessing: false
+    enableQualityProcessing: false,
   };
-  
+
   // Extraction automatically applies registered post-processors
   const result = await extractBytes(fileBytes, mimeType, config);
-  
+
   console.log("Extraction complete");
   console.log("Plugins applied:", result.metadata?.enriched);
-  
+
   return result;
 }
 
 // Usage
-const pdfBytes = new Uint8Array([/* PDF content */]);
+const pdfBytes = new Uint8Array([
+  /* PDF content */
+]);
 const result = await extractWithPlugins(pdfBytes, "application/pdf");
 console.log("Final result:", result);
 ```

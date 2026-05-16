@@ -27,7 +27,7 @@ const config = {
   languageDetection: {
     enabled: true,
     minConfidence: 0.6,
-    detectMultiple: true,  // Enable detection of multiple languages
+    detectMultiple: true, // Enable detection of multiple languages
   },
 };
 
@@ -70,12 +70,15 @@ console.log(`Processing document in language: ${language}`);
 
 // Example: Apply language-specific rules
 const languageConfig: Record<string, { cleanWhitespace: boolean; normalizeText: boolean }> = {
-  'en': { cleanWhitespace: true, normalizeText: true },
-  'zh': { cleanWhitespace: false, normalizeText: true },  // Chinese: preserve whitespace patterns
-  'ja': { cleanWhitespace: false, normalizeText: false }, // Japanese: preserve as-is
-  'ar': { cleanWhitespace: true, normalizeText: true },   // Arabic
+  en: { cleanWhitespace: true, normalizeText: true },
+  zh: { cleanWhitespace: false, normalizeText: true }, // Chinese: preserve whitespace patterns
+  ja: { cleanWhitespace: false, normalizeText: false }, // Japanese: preserve as-is
+  ar: { cleanWhitespace: true, normalizeText: true }, // Arabic
 };
 
-const langConfig = languageConfig[language as string] || { cleanWhitespace: true, normalizeText: true };
+const langConfig = languageConfig[language as string] || {
+  cleanWhitespace: true,
+  normalizeText: true,
+};
 console.log(`Language config: ${JSON.stringify(langConfig)}`);
 ```

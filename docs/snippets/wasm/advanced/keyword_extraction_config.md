@@ -25,9 +25,9 @@ const keywords = new Set<string>();
 const words = result.content
   .toLowerCase()
   .split(/\s+/)
-  .filter(w => w.length > 4); // Simple heuristic: words > 4 chars
+  .filter((w) => w.length > 4); // Simple heuristic: words > 4 chars
 
-words.forEach(word => {
+words.forEach((word) => {
   keywords.add(word);
 });
 
@@ -48,9 +48,37 @@ const result = await extractBytes(bytes, "application/pdf", config);
 
 // Common stopwords to exclude
 const stopwords = new Set([
-  "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
-  "of", "with", "from", "by", "is", "are", "was", "were", "be", "been",
-  "have", "has", "had", "do", "does", "did", "will", "would", "could", "should"
+  "the",
+  "a",
+  "an",
+  "and",
+  "or",
+  "but",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "of",
+  "with",
+  "from",
+  "by",
+  "is",
+  "are",
+  "was",
+  "were",
+  "be",
+  "been",
+  "have",
+  "has",
+  "had",
+  "do",
+  "does",
+  "did",
+  "will",
+  "would",
+  "could",
+  "should",
 ]);
 
 // Extract and filter keywords
@@ -58,7 +86,7 @@ const text = result.content.toLowerCase();
 const words = text.split(/\s+/);
 const keywordCounts = new Map<string, number>();
 
-words.forEach(word => {
+words.forEach((word) => {
   const cleaned = word.replace(/[^\w]/g, "");
   if (cleaned.length > 4 && !stopwords.has(cleaned)) {
     keywordCounts.set(cleaned, (keywordCounts.get(cleaned) || 0) + 1);

@@ -8,12 +8,18 @@ package dev.kreuzberg
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = EmbeddingModelTypeDeserializer::class)
 @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = EmbeddingModelTypeSerializer::class)
 sealed class EmbeddingModelType {
+    /**
+     * Use a preset model configuration (recommended)
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Preset(
         val name: String,
     ) : EmbeddingModelType()
 
+    /**
+     * Use a custom ONNX model from HuggingFace
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Custom(
@@ -21,12 +27,39 @@ sealed class EmbeddingModelType {
         val dimensions: Long,
     ) : EmbeddingModelType()
 
+    /**
+     * Provider-hosted embedding model via liter-llm.
+     *
+     * Uses the model specified in the nested `LlmConfig` (e.g.,
+     * `"openai/text-embedding-3-small"`).
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Llm(
         val llm: LlmConfig,
     ) : EmbeddingModelType()
 
+    /**
+     * In-process embedding backend registered via the plugin system.
+     *
+     * The caller registers an `EmbeddingBackend` once
+     * (e.g. a wrapper around an already-loaded `llama-cpp-python`, `sentence-transformers`,
+     * or tuned ONNX model), then references it by name in config. Kreuzberg calls back
+     * into the registered backend during chunking and standalone embed requests —
+     * no HuggingFace download, no ONNX Runtime requirement, no HTTP sidecar.
+     *
+     * When this variant is selected, only the following `EmbeddingConfig` fields
+     * apply: `normalize` (post-call L2 normalization) and `max_embed_duration_secs`
+     * (dispatcher timeout). Model-loading fields (`batch_size`, `cache_dir`,
+     * `show_download_progress`, `acceleration`) are ignored — the host owns the
+     * model lifecycle.
+     *
+     * Semantic chunking falls back to `ChunkingConfig.max_characters` when this variant
+     * is used, since there is no preset to look a chunk-size ceiling up against — size your
+     * context window via `max_characters` directly.
+     *
+     * See `register_embedding_backend`.
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Plugin(

@@ -8,6 +8,12 @@ package dev.kreuzberg
  * Provides statistics about XML document structure.
  */
 data class XmlMetadata(
+    /**
+     * Total number of XML elements processed
+     */
     val elementCount: Int,
+    /**
+     * List of unique element tag names (sorted)
+     */
     val uniqueElements: List<String>,
 )

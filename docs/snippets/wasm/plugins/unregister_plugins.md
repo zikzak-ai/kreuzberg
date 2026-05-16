@@ -23,7 +23,7 @@ import init, {
   registerValidator,
   unregisterValidator,
   listValidators,
-  clearValidators
+  clearValidators,
 } from "kreuzberg-wasm";
 
 await init();
@@ -33,7 +33,7 @@ const extractor = {
   extractBytes: async (bytes, mimeType, config) => {
     return JSON.stringify({ text: "test", page_count: 1 });
   },
-  supportedMimeTypes: () => JSON.stringify(["application/x-test"])
+  supportedMimeTypes: () => JSON.stringify(["application/x-test"]),
 };
 
 registerDocumentExtractor(extractor);
@@ -64,7 +64,7 @@ console.log("After clearValidators:", listValidators());
 clearPostProcessors();
 const myProcessor = {
   processingStage: () => "post-extraction",
-  process: (result) => result // Pass-through
+  process: (result) => result, // Pass-through
 };
 registerPostProcessor(myProcessor);
 console.log("After selective re-register:", listPostProcessors());

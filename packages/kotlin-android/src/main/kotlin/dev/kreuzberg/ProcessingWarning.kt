@@ -9,6 +9,13 @@ package dev.kreuzberg
  * but may indicate degraded results.
  */
 data class ProcessingWarning(
+    /**
+     * The pipeline stage or feature that produced this warning
+     * (e.g., "embedding", "chunking", "language_detection", "output_format").
+     */
     val source: String,
+    /**
+     * Human-readable description of what went wrong.
+     */
     val message: String,
 )

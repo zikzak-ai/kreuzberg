@@ -16,7 +16,6 @@ use crate::layout::models::yolo::{YoloModel, YoloVariant};
 use crate::layout::postprocessing::heuristics;
 use crate::layout::types::DetectionResult;
 #[cfg_attr(alef, alef(skip))]
-
 /// Which underlying model architecture to use.
 #[derive(Debug, Clone)]
 pub enum ModelBackend {
@@ -28,7 +27,6 @@ pub enum ModelBackend {
     Custom { path: PathBuf, variant: CustomModelVariant },
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Variant selection for custom model paths.
 #[derive(Debug, Clone)]
 pub enum CustomModelVariant {
@@ -38,7 +36,6 @@ pub enum CustomModelVariant {
     Yolox { input_width: u32, input_height: u32 },
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Full configuration for the layout engine.
 ///
 /// Provides fine-grained control over model selection, thresholds, and

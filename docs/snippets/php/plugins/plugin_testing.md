@@ -41,7 +41,7 @@ class CustomPluginTest extends TestCase {
     public function testPluginProcessing(): void {
         // Test that plugin processes results
         $this->plugin->process($this->mockResult, $this->mockConfig);
-        
+
         $this->assertArrayHasKey('word_count', $this->mockResult->metadata);
         $this->assertGreaterThan(0, $this->mockResult->metadata['word_count']);
     }
@@ -49,7 +49,7 @@ class CustomPluginTest extends TestCase {
     public function testShouldProcess(): void {
         // Test shouldProcess logic
         $this->assertTrue($this->plugin->shouldProcess($this->mockResult, $this->mockConfig));
-        
+
         // Empty content should not process
         $emptyResult = (object)['content' => ''];
         $this->assertFalse($this->plugin->shouldProcess($emptyResult, $this->mockConfig));

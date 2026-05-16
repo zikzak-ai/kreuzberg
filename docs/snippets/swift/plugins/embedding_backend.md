@@ -5,20 +5,20 @@ import Kreuzberg
 // The Swift class must implement the EmbeddingBackend protocol.
 final class MyEmbedder: EmbeddingBackend {
     private let modelUrl: URL
-    
+
     init(modelUrl: URL) {
         self.modelUrl = modelUrl
     }
-    
+
     // Plugin trait hooks
     func name() -> String {
         "my-embedder"
     }
-    
+
     func version() -> String {
         "1.0.0"
     }
-    
+
     func initialize() -> String {  // Returns JSON-encoded Result
         do {
             // Warm-up logic here
@@ -27,17 +27,17 @@ final class MyEmbedder: EmbeddingBackend {
             return "{\"err\": \"Failed to initialize: \(error)\"}"
         }
     }
-    
+
     func shutdown() -> String {  // Returns JSON-encoded Result
         "{\"ok\": null}"
     }
-    
+
     // EmbeddingBackend hooks
     func dimensions() -> UInt {
         // Fixed dimensionality for this backend
         768
     }
-    
+
     func embed(texts: [String]) -> String {  // Returns JSON-encoded Vec<Vec<f32>>
         do {
             // Embed texts using your backend (e.g., CoreML inference)

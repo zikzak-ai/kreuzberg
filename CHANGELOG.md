@@ -221,7 +221,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inter-package `.package(path:)` references in a monorepo, so
   `e2e/swift/Package.swift` is a documentation-only stub with no buildable
   target. The previous setting failed with `error: The package does not
-  contain a buildable target.` on every `task swift:e2e` invocation.
+contain a buildable target.` on every `task swift:e2e` invocation.
 - **Java FFI compile error**: `readJsonList` now wraps the null-check and
   `checkLastError()` call inside try-catch, resolving an unreported `Throwable`
   exception that blocked Java e2e test compilation.

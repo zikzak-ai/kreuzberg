@@ -9,6 +9,12 @@ package dev.kreuzberg
  * for inference in layout detection and embedding generation.
  */
 data class AccelerationConfig(
+    /**
+     * Execution provider to use for ONNX inference.
+     */
     val provider: ExecutionProviderType,
+    /**
+     * GPU device ID (for CUDA/TensorRT). Ignored for CPU/CoreML/Auto.
+     */
     val deviceId: Int,
 )

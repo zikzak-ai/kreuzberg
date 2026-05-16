@@ -31,27 +31,27 @@ if ($htmlResult->metadata?->html) {
     if ($htmlMeta->description !== null) {
         echo "Description: " . $htmlMeta->description . "\n";
     }
-    
+
     // Access keywords array
     echo "Keywords: " . implode(", ", $htmlMeta->keywords ?? []) . "\n";
-    
+
     // Access canonical URL
     if ($htmlMeta->canonical_url !== null) {
         echo "Canonical: " . $htmlMeta->canonical_url . "\n";
     }
-    
+
     // Access Open Graph fields
     if (!empty($htmlMeta->open_graph)) {
         if (isset($htmlMeta->open_graph["image"])) {
             echo "OG Image: " . $htmlMeta->open_graph["image"] . "\n";
         }
     }
-    
+
     // Access language
     if ($htmlMeta->language !== null) {
         echo "Language: " . $htmlMeta->language . "\n";
     }
-    
+
     // Access headers
     if (!empty($htmlMeta->headers)) {
         foreach ($htmlMeta->headers as $header) {

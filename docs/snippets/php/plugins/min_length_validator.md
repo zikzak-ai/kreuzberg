@@ -28,7 +28,7 @@ class MinLengthValidator implements Validator {
 
     public function validate(object $result, object $config): void {
         $contentLength = strlen($result->content);
-        
+
         if ($contentLength < $this->minLength) {
             throw new Exception(
                 sprintf(

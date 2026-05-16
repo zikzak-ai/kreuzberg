@@ -9,15 +9,58 @@ package dev.kreuzberg
  * Supports the element types commonly found in Unstructured documents.
  */
 enum class ElementType {
+    /**
+     * Document title
+     */
     TITLE,
+
+    /**
+     * Main narrative text body
+     */
     NARRATIVE_TEXT,
+
+    /**
+     * Section heading
+     */
     HEADING,
+
+    /**
+     * List item (bullet, numbered, etc.)
+     */
     LIST_ITEM,
+
+    /**
+     * Table element
+     */
     TABLE,
+
+    /**
+     * Image element
+     */
     IMAGE,
+
+    /**
+     * Page break marker
+     */
     PAGE_BREAK,
+
+    /**
+     * Code block
+     */
     CODE_BLOCK,
+
+    /**
+     * Block quote
+     */
     BLOCK_QUOTE,
+
+    /**
+     * Footer text
+     */
     FOOTER,
+
+    /**
+     * Header text
+     */
     HEADER,
 }

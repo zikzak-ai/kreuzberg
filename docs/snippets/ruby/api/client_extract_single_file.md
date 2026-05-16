@@ -11,9 +11,9 @@ File.open('document.pdf', 'rb') do |file|
   body = file.read
   request['Content-Type'] = 'application/octet-stream'
   request.body = body
-  
+
   response = http.request(request)
-  
+
   if response.is_a?(Net::HTTPSuccess)
     data = JSON.parse(response.body)
     puts JSON.pretty_generate(data)

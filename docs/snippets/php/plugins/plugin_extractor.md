@@ -24,7 +24,7 @@ class CustomXmlExtractor implements DocumentExtractor {
         try {
             $xml = simplexml_load_string($content);
             $text = $this->extractTextFromXml($xml);
-            
+
             return (object)[
                 'content' => $text,
                 'mime_type' => 'application/xml',
@@ -56,7 +56,7 @@ class CustomXmlExtractor implements DocumentExtractor {
 
     private function extractTextFromXml($xml): string {
         $text = "";
-        
+
         // Extract text from all elements
         foreach ($xml->children() as $child) {
             $childText = (string)$child;
@@ -64,7 +64,7 @@ class CustomXmlExtractor implements DocumentExtractor {
                 $text .= trim($childText) . "\n";
             }
         }
-        
+
         return $text ?: (string)$xml;
     }
 }

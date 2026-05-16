@@ -23,6 +23,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOcrBackendTypeSendSyncPtr;
 
   CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_BoxFnDartFnFutureOptionSyncExtractorPtr =>
+      wire._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSyncPtr;
+
+  CrossPlatformFinalizerArg
   get rust_arc_decrement_strong_count_BoxFnDartFnFutureProcessingStagePtr => wire
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureProcessingStageSendSyncPtr;
 
@@ -109,6 +113,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   BoxFnDartFnFutureOcrBackendType
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOcrBackendTypeSendSync(
+    dynamic raw,
+  );
+
+  @protected
+  BoxFnDartFnFutureOptionSyncExtractor
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
     dynamic raw,
   );
 
@@ -259,6 +269,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  BoxFnDartFnFutureOptionSyncExtractor
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+    dynamic raw,
+  );
+
+  @protected
   BoxFnDartFnFutureProcessingStage
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureProcessingStageSendSync(
     dynamic raw,
@@ -391,9 +407,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AccelerationConfig dco_decode_acceleration_config(dynamic raw);
 
   @protected
-  AnchorProperties dco_decode_anchor_properties(dynamic raw);
-
-  @protected
   AnnotationKind dco_decode_annotation_kind(dynamic raw);
 
   @protected
@@ -442,9 +455,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ContentFilterConfig dco_decode_box_autoadd_content_filter_config(dynamic raw);
 
   @protected
-  CoreProperties dco_decode_box_autoadd_core_properties(dynamic raw);
-
-  @protected
   CsvMetadata dco_decode_box_autoadd_csv_metadata(dynamic raw);
 
   @protected
@@ -455,9 +465,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DocumentStructure dco_decode_box_autoadd_document_structure(dynamic raw);
-
-  @protected
-  DocxAppProperties dco_decode_box_autoadd_docx_app_properties(dynamic raw);
 
   @protected
   DocxMetadata dco_decode_box_autoadd_docx_metadata(dynamic raw);
@@ -655,25 +662,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   YearRange dco_decode_box_autoadd_year_range(dynamic raw);
 
   @protected
-  CacheWarmParams dco_decode_cache_warm_params(dynamic raw);
-
-  @protected
   Chunk dco_decode_chunk(dynamic raw);
 
   @protected
   ChunkMetadata dco_decode_chunk_metadata(dynamic raw);
 
   @protected
-  ChunkRequest dco_decode_chunk_request(dynamic raw);
-
-  @protected
-  ChunkResponse dco_decode_chunk_response(dynamic raw);
-
-  @protected
   ChunkSizing dco_decode_chunk_sizing(dynamic raw);
-
-  @protected
-  ChunkTextParams dco_decode_chunk_text_params(dynamic raw);
 
   @protected
   ChunkType dco_decode_chunk_type(dynamic raw);
@@ -683,9 +678,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ChunkingConfig dco_decode_chunking_config(dynamic raw);
-
-  @protected
-  ChunkingResult dco_decode_chunking_result(dynamic raw);
 
   @protected
   CitationMetadata dco_decode_citation_metadata(dynamic raw);
@@ -703,9 +695,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ContributorRole dco_decode_contributor_role(dynamic raw);
 
   @protected
-  CoreProperties dco_decode_core_properties(dynamic raw);
-
-  @protected
   CsvMetadata dco_decode_csv_metadata(dynamic raw);
 
   @protected
@@ -715,13 +704,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DbfMetadata dco_decode_dbf_metadata(dynamic raw);
 
   @protected
-  DetectMimeTypeParams dco_decode_detect_mime_type_params(dynamic raw);
-
-  @protected
   DetectResponse dco_decode_detect_response(dynamic raw);
-
-  @protected
-  DetectedBoundary dco_decode_detected_boundary(dynamic raw);
 
   @protected
   DetectionResult dco_decode_detection_result(dynamic raw);
@@ -736,9 +719,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DjotLink dco_decode_djot_link(dynamic raw);
 
   @protected
-  DoclingCompatResponse dco_decode_docling_compat_response(dynamic raw);
-
-  @protected
   DocumentNode dco_decode_document_node(dynamic raw);
 
   @protected
@@ -748,13 +728,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DocumentStructure dco_decode_document_structure(dynamic raw);
 
   @protected
-  DocxAppProperties dco_decode_docx_app_properties(dynamic raw);
-
-  @protected
   DocxMetadata dco_decode_docx_metadata(dynamic raw);
-
-  @protected
-  Drawing dco_decode_drawing(dynamic raw);
 
   @protected
   Element dco_decode_element(dynamic raw);
@@ -776,15 +750,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   EmailMetadata dco_decode_email_metadata(dynamic raw);
-
-  @protected
-  EmbedRequest dco_decode_embed_request(dynamic raw);
-
-  @protected
-  EmbedResponse dco_decode_embed_response(dynamic raw);
-
-  @protected
-  EmbedTextParams dco_decode_embed_text_params(dynamic raw);
 
   @protected
   EmbeddedFile dco_decode_embedded_file(dynamic raw);
@@ -817,13 +782,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ExecutionProviderType dco_decode_execution_provider_type(dynamic raw);
 
   @protected
-  ExtractStructuredParams dco_decode_extract_structured_params(dynamic raw);
-
-  @protected
   ExtractedImage dco_decode_extracted_image(dynamic raw);
-
-  @protected
-  ExtractedInlineImage dco_decode_extracted_inline_image(dynamic raw);
 
   @protected
   ExtractionConfig dco_decode_extraction_config(dynamic raw);
@@ -871,9 +830,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   HierarchyConfig dco_decode_hierarchy_config(dynamic raw);
 
   @protected
-  HtmlExtractionResult dco_decode_html_extraction_result(dynamic raw);
-
-  @protected
   HtmlMetadata dco_decode_html_metadata(dynamic raw);
 
   @protected
@@ -910,9 +866,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ImageType dco_decode_image_type(dynamic raw);
-
-  @protected
-  InfoResponse dco_decode_info_response(dynamic raw);
 
   @protected
   InlineElement dco_decode_inline_element(dynamic raw);
@@ -999,11 +952,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ExtractedImage> dco_decode_list_extracted_image(dynamic raw);
 
   @protected
-  List<ExtractedInlineImage> dco_decode_list_extracted_inline_image(
-    dynamic raw,
-  );
-
-  @protected
   List<ExtractionResult> dco_decode_list_extraction_result(dynamic raw);
 
   @protected
@@ -1050,11 +998,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LlmUsage> dco_decode_list_llm_usage(dynamic raw);
-
-  @protected
-  List<ManifestEntryResponse> dco_decode_list_manifest_entry_response(
-    dynamic raw,
-  );
 
   @protected
   List<OcrElement> dco_decode_list_ocr_element(dynamic raw);
@@ -1127,12 +1070,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LlmUsage dco_decode_llm_usage(dynamic raw);
 
   @protected
-  ManifestEntryResponse dco_decode_manifest_entry_response(dynamic raw);
-
-  @protected
-  ManifestResponse dco_decode_manifest_response(dynamic raw);
-
-  @protected
   Metadata dco_decode_metadata(dynamic raw);
 
   @protected
@@ -1184,9 +1121,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   OcrTableBoundingBox dco_decode_ocr_table_bounding_box(dynamic raw);
 
   @protected
-  OpenWebDocumentResponse dco_decode_open_web_document_response(dynamic raw);
-
-  @protected
   Map<String, String>? dco_decode_opt_Map_String_String_None(dynamic raw);
 
   @protected
@@ -1222,18 +1156,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  CoreProperties? dco_decode_opt_box_autoadd_core_properties(dynamic raw);
-
-  @protected
   DjotContent? dco_decode_opt_box_autoadd_djot_content(dynamic raw);
 
   @protected
   DocumentStructure? dco_decode_opt_box_autoadd_document_structure(dynamic raw);
-
-  @protected
-  DocxAppProperties? dco_decode_opt_box_autoadd_docx_app_properties(
-    dynamic raw,
-  );
 
   @protected
   EmailConfig? dco_decode_opt_box_autoadd_email_config(dynamic raw);
@@ -1485,9 +1411,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PostProcessorConfig dco_decode_post_processor_config(dynamic raw);
 
   @protected
-  PptxAppProperties dco_decode_pptx_app_properties(dynamic raw);
-
-  @protected
   PptxExtractionResult dco_decode_pptx_extraction_result(dynamic raw);
 
   @protected
@@ -1549,11 +1472,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  StructuredExtractionResponse dco_decode_structured_extraction_response(
-    dynamic raw,
-  );
-
-  @protected
   SupportedFormat dco_decode_supported_format(dynamic raw);
 
   @protected
@@ -1611,12 +1529,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt dco_decode_usize(dynamic raw);
 
   @protected
-  WarmResponse dco_decode_warm_response(dynamic raw);
-
-  @protected
-  XlsxAppProperties dco_decode_xlsx_app_properties(dynamic raw);
-
-  @protected
   XmlExtractionResult dco_decode_xml_extraction_result(dynamic raw);
 
   @protected
@@ -1631,6 +1543,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   BoxFnDartFnFutureOcrBackendType
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOcrBackendTypeSendSync(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BoxFnDartFnFutureOptionSyncExtractor
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
     SseDeserializer deserializer,
   );
 
@@ -1787,6 +1705,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  BoxFnDartFnFutureOptionSyncExtractor
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   BoxFnDartFnFutureProcessingStage
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureProcessingStageSendSync(
     SseDeserializer deserializer,
@@ -1921,9 +1845,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  AnchorProperties sse_decode_anchor_properties(SseDeserializer deserializer);
-
-  @protected
   AnnotationKind sse_decode_annotation_kind(SseDeserializer deserializer);
 
   @protected
@@ -1984,11 +1905,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  CoreProperties sse_decode_box_autoadd_core_properties(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   CsvMetadata sse_decode_box_autoadd_csv_metadata(SseDeserializer deserializer);
 
   @protected
@@ -1999,11 +1915,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   DocumentStructure sse_decode_box_autoadd_document_structure(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  DocxAppProperties sse_decode_box_autoadd_docx_app_properties(
     SseDeserializer deserializer,
   );
 
@@ -2271,25 +2182,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   YearRange sse_decode_box_autoadd_year_range(SseDeserializer deserializer);
 
   @protected
-  CacheWarmParams sse_decode_cache_warm_params(SseDeserializer deserializer);
-
-  @protected
   Chunk sse_decode_chunk(SseDeserializer deserializer);
 
   @protected
   ChunkMetadata sse_decode_chunk_metadata(SseDeserializer deserializer);
 
   @protected
-  ChunkRequest sse_decode_chunk_request(SseDeserializer deserializer);
-
-  @protected
-  ChunkResponse sse_decode_chunk_response(SseDeserializer deserializer);
-
-  @protected
   ChunkSizing sse_decode_chunk_sizing(SseDeserializer deserializer);
-
-  @protected
-  ChunkTextParams sse_decode_chunk_text_params(SseDeserializer deserializer);
 
   @protected
   ChunkType sse_decode_chunk_type(SseDeserializer deserializer);
@@ -2299,9 +2198,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ChunkingConfig sse_decode_chunking_config(SseDeserializer deserializer);
-
-  @protected
-  ChunkingResult sse_decode_chunking_result(SseDeserializer deserializer);
 
   @protected
   CitationMetadata sse_decode_citation_metadata(SseDeserializer deserializer);
@@ -2321,9 +2217,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ContributorRole sse_decode_contributor_role(SseDeserializer deserializer);
 
   @protected
-  CoreProperties sse_decode_core_properties(SseDeserializer deserializer);
-
-  @protected
   CsvMetadata sse_decode_csv_metadata(SseDeserializer deserializer);
 
   @protected
@@ -2333,15 +2226,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DbfMetadata sse_decode_dbf_metadata(SseDeserializer deserializer);
 
   @protected
-  DetectMimeTypeParams sse_decode_detect_mime_type_params(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   DetectResponse sse_decode_detect_response(SseDeserializer deserializer);
-
-  @protected
-  DetectedBoundary sse_decode_detected_boundary(SseDeserializer deserializer);
 
   @protected
   DetectionResult sse_decode_detection_result(SseDeserializer deserializer);
@@ -2356,11 +2241,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DjotLink sse_decode_djot_link(SseDeserializer deserializer);
 
   @protected
-  DoclingCompatResponse sse_decode_docling_compat_response(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   DocumentNode sse_decode_document_node(SseDeserializer deserializer);
 
   @protected
@@ -2372,15 +2252,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DocumentStructure sse_decode_document_structure(SseDeserializer deserializer);
 
   @protected
-  DocxAppProperties sse_decode_docx_app_properties(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   DocxMetadata sse_decode_docx_metadata(SseDeserializer deserializer);
-
-  @protected
-  Drawing sse_decode_drawing(SseDeserializer deserializer);
 
   @protected
   Element sse_decode_element(SseDeserializer deserializer);
@@ -2404,15 +2276,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   EmailMetadata sse_decode_email_metadata(SseDeserializer deserializer);
-
-  @protected
-  EmbedRequest sse_decode_embed_request(SseDeserializer deserializer);
-
-  @protected
-  EmbedResponse sse_decode_embed_response(SseDeserializer deserializer);
-
-  @protected
-  EmbedTextParams sse_decode_embed_text_params(SseDeserializer deserializer);
 
   @protected
   EmbeddedFile sse_decode_embedded_file(SseDeserializer deserializer);
@@ -2449,17 +2312,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  ExtractStructuredParams sse_decode_extract_structured_params(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   ExtractedImage sse_decode_extracted_image(SseDeserializer deserializer);
-
-  @protected
-  ExtractedInlineImage sse_decode_extracted_inline_image(
-    SseDeserializer deserializer,
-  );
 
   @protected
   ExtractionConfig sse_decode_extraction_config(SseDeserializer deserializer);
@@ -2511,11 +2364,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   HierarchyConfig sse_decode_hierarchy_config(SseDeserializer deserializer);
 
   @protected
-  HtmlExtractionResult sse_decode_html_extraction_result(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   HtmlMetadata sse_decode_html_metadata(SseDeserializer deserializer);
 
   @protected
@@ -2558,9 +2406,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ImageType sse_decode_image_type(SseDeserializer deserializer);
-
-  @protected
-  InfoResponse sse_decode_info_response(SseDeserializer deserializer);
 
   @protected
   InlineElement sse_decode_inline_element(SseDeserializer deserializer);
@@ -2669,11 +2514,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  List<ExtractedInlineImage> sse_decode_list_extracted_inline_image(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   List<ExtractionResult> sse_decode_list_extraction_result(
     SseDeserializer deserializer,
   );
@@ -2742,11 +2582,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<LlmUsage> sse_decode_list_llm_usage(SseDeserializer deserializer);
-
-  @protected
-  List<ManifestEntryResponse> sse_decode_list_manifest_entry_response(
-    SseDeserializer deserializer,
-  );
 
   @protected
   List<OcrElement> sse_decode_list_ocr_element(SseDeserializer deserializer);
@@ -2835,14 +2670,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LlmUsage sse_decode_llm_usage(SseDeserializer deserializer);
 
   @protected
-  ManifestEntryResponse sse_decode_manifest_entry_response(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  ManifestResponse sse_decode_manifest_response(SseDeserializer deserializer);
-
-  @protected
   Metadata sse_decode_metadata(SseDeserializer deserializer);
 
   @protected
@@ -2904,11 +2731,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  OpenWebDocumentResponse sse_decode_open_web_document_response(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   Map<String, String>? sse_decode_opt_Map_String_String_None(
     SseDeserializer deserializer,
   );
@@ -2950,22 +2772,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  CoreProperties? sse_decode_opt_box_autoadd_core_properties(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   DjotContent? sse_decode_opt_box_autoadd_djot_content(
     SseDeserializer deserializer,
   );
 
   @protected
   DocumentStructure? sse_decode_opt_box_autoadd_document_structure(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  DocxAppProperties? sse_decode_opt_box_autoadd_docx_app_properties(
     SseDeserializer deserializer,
   );
 
@@ -3305,11 +3117,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  PptxAppProperties sse_decode_pptx_app_properties(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   PptxExtractionResult sse_decode_pptx_extraction_result(
     SseDeserializer deserializer,
   );
@@ -3383,11 +3190,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  StructuredExtractionResponse sse_decode_structured_extraction_response(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   SupportedFormat sse_decode_supported_format(SseDeserializer deserializer);
 
   @protected
@@ -3453,14 +3255,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
-  WarmResponse sse_decode_warm_response(SseDeserializer deserializer);
-
-  @protected
-  XlsxAppProperties sse_decode_xlsx_app_properties(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   XmlExtractionResult sse_decode_xml_extraction_result(
     SseDeserializer deserializer,
   );
@@ -3478,6 +3272,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOcrBackendTypeSendSync(
     BoxFnDartFnFutureOcrBackendType self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+    BoxFnDartFnFutureOptionSyncExtractor self,
     SseSerializer serializer,
   );
 
@@ -3661,6 +3462,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+    BoxFnDartFnFutureOptionSyncExtractor self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureProcessingStageSendSync(
     BoxFnDartFnFutureProcessingStage self,
     SseSerializer serializer,
@@ -3816,12 +3624,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_anchor_properties(
-    AnchorProperties self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_annotation_kind(
     AnnotationKind self,
     SseSerializer serializer,
@@ -3900,12 +3702,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_box_autoadd_core_properties(
-    CoreProperties self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_box_autoadd_csv_metadata(
     CsvMetadata self,
     SseSerializer serializer,
@@ -3926,12 +3722,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_document_structure(
     DocumentStructure self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_docx_app_properties(
-    DocxAppProperties self,
     SseSerializer serializer,
   );
 
@@ -4287,31 +4077,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_cache_warm_params(
-    CacheWarmParams self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_chunk(Chunk self, SseSerializer serializer);
 
   @protected
   void sse_encode_chunk_metadata(ChunkMetadata self, SseSerializer serializer);
 
   @protected
-  void sse_encode_chunk_request(ChunkRequest self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_chunk_response(ChunkResponse self, SseSerializer serializer);
-
-  @protected
   void sse_encode_chunk_sizing(ChunkSizing self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_chunk_text_params(
-    ChunkTextParams self,
-    SseSerializer serializer,
-  );
 
   @protected
   void sse_encode_chunk_type(ChunkType self, SseSerializer serializer);
@@ -4322,12 +4094,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_chunking_config(
     ChunkingConfig self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_chunking_result(
-    ChunkingResult self,
     SseSerializer serializer,
   );
 
@@ -4359,12 +4125,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_core_properties(
-    CoreProperties self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_csv_metadata(CsvMetadata self, SseSerializer serializer);
 
   @protected
@@ -4374,20 +4134,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_dbf_metadata(DbfMetadata self, SseSerializer serializer);
 
   @protected
-  void sse_encode_detect_mime_type_params(
-    DetectMimeTypeParams self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_detect_response(
     DetectResponse self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_detected_boundary(
-    DetectedBoundary self,
     SseSerializer serializer,
   );
 
@@ -4407,12 +4155,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_djot_link(DjotLink self, SseSerializer serializer);
 
   @protected
-  void sse_encode_docling_compat_response(
-    DoclingCompatResponse self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_document_node(DocumentNode self, SseSerializer serializer);
 
   @protected
@@ -4428,16 +4170,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_docx_app_properties(
-    DocxAppProperties self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_docx_metadata(DocxMetadata self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_drawing(Drawing self, SseSerializer serializer);
 
   @protected
   void sse_encode_element(Element self, SseSerializer serializer);
@@ -4468,18 +4201,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_email_metadata(EmailMetadata self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_embed_request(EmbedRequest self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_embed_response(EmbedResponse self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_embed_text_params(
-    EmbedTextParams self,
-    SseSerializer serializer,
-  );
 
   @protected
   void sse_encode_embedded_file(EmbeddedFile self, SseSerializer serializer);
@@ -4524,20 +4245,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_extract_structured_params(
-    ExtractStructuredParams self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_extracted_image(
     ExtractedImage self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_extracted_inline_image(
-    ExtractedInlineImage self,
     SseSerializer serializer,
   );
 
@@ -4620,12 +4329,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_html_extraction_result(
-    HtmlExtractionResult self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_html_metadata(HtmlMetadata self, SseSerializer serializer);
 
   @protected
@@ -4675,9 +4378,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_image_type(ImageType self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_info_response(InfoResponse self, SseSerializer serializer);
 
   @protected
   void sse_encode_inline_element(InlineElement self, SseSerializer serializer);
@@ -4809,12 +4509,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_list_extracted_inline_image(
-    List<ExtractedInlineImage> self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_list_extraction_result(
     List<ExtractionResult> self,
     SseSerializer serializer,
@@ -4897,12 +4591,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_llm_usage(List<LlmUsage> self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_manifest_entry_response(
-    List<ManifestEntryResponse> self,
-    SseSerializer serializer,
-  );
 
   @protected
   void sse_encode_list_ocr_element(
@@ -5016,18 +4704,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_llm_usage(LlmUsage self, SseSerializer serializer);
 
   @protected
-  void sse_encode_manifest_entry_response(
-    ManifestEntryResponse self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_manifest_response(
-    ManifestResponse self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_metadata(Metadata self, SseSerializer serializer);
 
   @protected
@@ -5103,12 +4779,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_open_web_document_response(
-    OpenWebDocumentResponse self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_opt_Map_String_String_None(
     Map<String, String>? self,
     SseSerializer serializer,
@@ -5157,12 +4827,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_opt_box_autoadd_core_properties(
-    CoreProperties? self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_opt_box_autoadd_djot_content(
     DjotContent? self,
     SseSerializer serializer,
@@ -5171,12 +4835,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_document_structure(
     DocumentStructure? self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_opt_box_autoadd_docx_app_properties(
-    DocxAppProperties? self,
     SseSerializer serializer,
   );
 
@@ -5592,12 +5250,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_pptx_app_properties(
-    PptxAppProperties self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_pptx_extraction_result(
     PptxExtractionResult self,
     SseSerializer serializer,
@@ -5697,12 +5349,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_structured_extraction_response(
-    StructuredExtractionResponse self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_supported_format(
     SupportedFormat self,
     SseSerializer serializer,
@@ -5784,15 +5430,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_usize(BigInt self, SseSerializer serializer);
 
   @protected
-  void sse_encode_warm_response(WarmResponse self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_xlsx_app_properties(
-    XlsxAppProperties self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_xml_extraction_result(
     XmlExtractionResult self,
     SseSerializer serializer,
@@ -5854,6 +5491,40 @@ class RustLibWire implements BaseWire {
       );
   late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOcrBackendTypeSendSync =
       _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOcrBackendTypeSendSyncPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSyncPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_kreuzberg_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync',
+      );
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSyncPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSyncPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_kreuzberg_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync',
+      );
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSync =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBoxdynFnDartFnFutureOptionSyncExtractorSendSyncPtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   void

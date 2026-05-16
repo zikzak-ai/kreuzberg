@@ -9,13 +9,44 @@ package dev.kreuzberg
  * while still supporting legitimate documents.
  */
 data class SecurityLimits(
+    /**
+     * Maximum uncompressed size for archives (500 MB)
+     */
     val maxArchiveSize: Long,
+    /**
+     * Maximum compression ratio before flagging as potential bomb (100:1)
+     */
     val maxCompressionRatio: Long,
+    /**
+     * Maximum number of files in archive (10,000)
+     */
     val maxFilesInArchive: Long,
+    /**
+     * Maximum nesting depth for structures (100)
+     */
     val maxNestingDepth: Long,
+    /**
+     * Maximum length of any single XML entity / attribute / token (1 MiB).
+     * This is a per-token cap, NOT a cumulative cap — billion-laughs class
+     * attacks where a single entity expands to hundreds of MB are caught
+     * here, while normal long text content (a paragraph, a CDATA block) is
+     * caught by `max_content_size` instead.
+     */
     val maxEntityLength: Long,
+    /**
+     * Maximum string growth per document (100 MB)
+     */
     val maxContentSize: Long,
+    /**
+     * Maximum iterations per operation
+     */
     val maxIterations: Long,
+    /**
+     * Maximum XML depth (100 levels)
+     */
     val maxXmlDepth: Long,
+    /**
+     * Maximum cells per table (100,000)
+     */
     val maxTableCells: Long,
 )

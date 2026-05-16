@@ -16,7 +16,6 @@ use ort::session::Session;
 use ort::value::Value;
 use tokenizers::Tokenizer;
 #[cfg_attr(alef, alef(skip))]
-
 /// Pooling strategy for extracting a single vector from token embeddings.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Pooling {
@@ -26,7 +25,6 @@ pub enum Pooling {
     Mean,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Text embedding model with thread-safe inference.
 ///
 /// The `embed()` method takes `&self` instead of `&mut self`, allowing it to
@@ -234,7 +232,6 @@ pub(crate) fn normalize(v: &[f32]) -> Vec<f32> {
     }
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Embedding engine errors.
 #[derive(Debug)]
 pub enum EmbedError {

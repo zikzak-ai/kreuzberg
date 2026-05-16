@@ -16,12 +16,36 @@ package dev.kreuzberg
  * Available when the `djot` feature is enabled.
  */
 data class DjotContent(
+    /**
+     * Plain text representation for backwards compatibility
+     */
     val plainText: String,
+    /**
+     * Structured block-level content
+     */
     val blocks: List<FormattedBlock>,
+    /**
+     * Metadata from YAML frontmatter
+     */
     val metadata: Metadata,
+    /**
+     * Extracted tables as structured data
+     */
     val tables: List<Table>,
+    /**
+     * Extracted images with metadata
+     */
     val images: List<DjotImage>,
+    /**
+     * Extracted links with URLs
+     */
     val links: List<DjotLink>,
+    /**
+     * Footnote definitions
+     */
     val footnotes: List<Footnote>,
+    /**
+     * Attributes mapped by element identifier (if present)
+     */
     val attributes: List<String>,
 )

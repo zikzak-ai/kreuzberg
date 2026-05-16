@@ -8,47 +8,69 @@ object KreuzbergBridge {
         System.loadLibrary("kreuzberg_jni")
     }
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeExtractBytes(content: String, mimeType: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeExtractFile(path: String, mimeType: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeExtractFileSync(path: String, mimeType: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeExtractBytesSync(content: String, mimeType: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeBatchExtractFilesSync(items: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeBatchExtractBytesSync(items: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeBatchExtractFiles(items: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeBatchExtractBytes(items: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeDetectMimeTypeFromBytes(content: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeGetExtensionsForMime(mimeType: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeListEmbeddingBackends(): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeListDocumentExtractors(): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeListOcrBackends(): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeListPostProcessors(): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeListRenderers(): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeListValidators(): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeEmbedTextsAsync(texts: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeRenderPdfPageToPng(pdfBytes: String, pageIndex: Long, dpi: Int, password: String): ByteArray
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeDetectMimeType(path: String, checkExists: Boolean): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeEmbedTexts(texts: String, config: String): String
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeGetEmbeddingPreset(name: String): String?
 
+    @Throws(KreuzbergBridgeException::class)
     external fun nativeListEmbeddingPresets(): String
 }

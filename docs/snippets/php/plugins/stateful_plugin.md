@@ -27,16 +27,16 @@ class StatefulPlugin implements PostProcessor {
 
     public function process(object &$result, object $config): void {
         $this->callCount++;
-        
+
         // Cache the last MIME type
         $this->cache['last_mime'] = $result->mime_type;
         $this->cache['last_timestamp'] = time();
-        
+
         // Add cache info to metadata
         if (!isset($result->metadata)) {
             $result->metadata = [];
         }
-        
+
         if (is_array($result->metadata)) {
             $result->metadata['plugin_call_count'] = $this->callCount;
             $result->metadata['cached_mime'] = $this->cache['last_mime'] ?? 'none';

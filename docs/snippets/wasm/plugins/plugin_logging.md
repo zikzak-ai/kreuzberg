@@ -9,7 +9,7 @@ import init, {
   registerOcrBackend,
   listPostProcessors,
   listValidators,
-  listOcrBackends
+  listOcrBackends,
 } from "kreuzberg-wasm";
 
 await init();
@@ -18,7 +18,7 @@ await init();
 const pluginLog = {
   processors: [],
   validators: [],
-  ocrBackends: []
+  ocrBackends: [],
 };
 
 // Register a logging post-processor
@@ -27,10 +27,10 @@ const loggingProcessor = {
   process: (result) => {
     console.log("[POST-PROCESSOR] Processing extraction result", {
       textLength: result.text?.length,
-      hasMetadata: !!result.metadata
+      hasMetadata: !!result.metadata,
     });
     return result;
-  }
+  },
 };
 
 registerPostProcessor(loggingProcessor);
@@ -41,10 +41,10 @@ const loggingValidator = {
   validate: (result) => {
     console.log("[VALIDATOR] Validating extraction result", {
       textLength: result.text?.length,
-      isValid: true
+      isValid: true,
     });
     return { valid: true, error: null };
-  }
+  },
 };
 
 registerValidator(loggingValidator);
@@ -55,12 +55,12 @@ function logPluginStatus() {
   const processors = listPostProcessors();
   const validators = listValidators();
   const backends = listOcrBackends();
-  
+
   console.log("Plugin Registration Status:", {
     postProcessors: processors,
     validators: validators,
     ocrBackends: backends,
-    total: processors.length + validators.length + backends.length
+    total: processors.length + validators.length + backends.length,
   });
 }
 

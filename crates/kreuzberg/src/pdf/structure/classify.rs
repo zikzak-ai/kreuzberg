@@ -2381,16 +2381,13 @@ mod tests {
             !pages[0][0].is_page_furniture,
             "first occurrence of title on page 0 must be preserved (issue #917)"
         );
-        for i in 1..6 {
-            assert!(
-                pages[i][0].is_page_furniture,
-                "page {i} running header should be furniture"
-            );
+        for (i, page) in pages.iter().enumerate().take(6).skip(1) {
+            assert!(page[0].is_page_furniture, "page {i} running header should be furniture");
         }
         // Body text on every page must never be touched
-        for i in 0..6 {
+        for (i, page) in pages.iter().enumerate().take(6) {
             assert!(
-                !pages[i][1].is_page_furniture,
+                !page[1].is_page_furniture,
                 "body text on page {i} must not be furniture"
             );
         }
@@ -2411,9 +2408,9 @@ mod tests {
             !pages[0][0].is_page_furniture,
             "first occurrence of short repeating title must be preserved (issue #917)"
         );
-        for i in 1..5 {
+        for (i, page) in pages.iter().enumerate().take(5).skip(1) {
             assert!(
-                pages[i][0].is_page_furniture,
+                page[0].is_page_furniture,
                 "page {i} short repeating text should be furniture"
             );
         }

@@ -10,20 +10,77 @@ package dev.kreuzberg
  * PIL.Image (Python), Sharp (Node.js), or other formats as needed.
  */
 data class ExtractedImage(
+    /**
+     * Raw image data (PNG, JPEG, WebP, etc. bytes).
+     * Uses `bytes.Bytes` for cheap cloning of large buffers.
+     */
     val data: ByteArray,
+    /**
+     * Image format (e.g., "jpeg", "png", "webp")
+     * Uses Cow<'static, str> to avoid allocation for static literals.
+     */
     val format: String,
+    /**
+     * Zero-indexed position of this image in the document/page
+     */
     val imageIndex: Int,
+    /**
+     * Page/slide number where image was found (1-indexed)
+     */
     val pageNumber: Int?,
+    /**
+     * Image width in pixels
+     */
     val width: Int?,
+    /**
+     * Image height in pixels
+     */
     val height: Int?,
+    /**
+     * Colorspace information (e.g., "RGB", "CMYK", "Gray")
+     */
     val colorspace: String?,
+    /**
+     * Bits per color component (e.g., 8, 16)
+     */
     val bitsPerComponent: Int?,
+    /**
+     * Whether this image is a mask image
+     */
     val isMask: Boolean,
+    /**
+     * Optional description of the image
+     */
     val description: String?,
+    /**
+     * Nested OCR extraction result (if image was OCRed)
+     *
+     * When OCR is performed on this image, the result is embedded here
+     * rather than in a separate collection, making the relationship explicit.
+     */
     val ocrResult: ExtractionResult?,
+    /**
+     * Bounding box of the image on the page (PDF coordinates: x0=left, y0=bottom, x1=right, y1=top).
+     * Only populated for PDF-extracted images when position data is available from the PDF extractor.
+     */
     val boundingBox: String?,
+    /**
+     * Original source path of the image within the document archive (e.g., "media/image1.png" in DOCX).
+     * Used for rendering image references when the binary data is not extracted.
+     */
     val sourcePath: String?,
+    /**
+     * Heuristic classification of what this image likely depicts.
+     * `null` if classification was disabled or inconclusive.
+     */
     val imageKind: ImageKind?,
+    /**
+     * Confidence score for `image_kind`, in the range 0.0 to 1.0.
+     */
     val kindConfidence: Float?,
+    /**
+     * Identifier shared across images that form a single logical figure
+     * (e.g. all raster tiles of one technical drawing). `null` for singletons.
+     */
     val clusterId: Int?,
 )

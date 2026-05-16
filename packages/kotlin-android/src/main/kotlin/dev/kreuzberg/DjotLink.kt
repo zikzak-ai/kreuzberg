@@ -6,8 +6,20 @@ package dev.kreuzberg
  * Link element in Djot.
  */
 data class DjotLink(
+    /**
+     * Link URL
+     */
     val url: String,
+    /**
+     * Link text content
+     */
     val text: String,
+    /**
+     * Optional title
+     */
     val title: String?,
+    /**
+     * Element attributes
+     */
     val attributes: String?,
 )

@@ -11,6 +11,9 @@ package dev.kreuzberg
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = OcrBoundingGeometryDeserializer::class)
 @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = OcrBoundingGeometrySerializer::class)
 sealed class OcrBoundingGeometry {
+    /**
+     * Axis-aligned bounding box (typical for Tesseract output).
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Rectangle(
@@ -20,6 +23,12 @@ sealed class OcrBoundingGeometry {
         val height: Int,
     ) : OcrBoundingGeometry()
 
+    /**
+     * 4-point quadrilateral for rotated/skewed text (PaddleOCR).
+     *
+     * Points are in clockwise order starting from top-left:
+     * `[top_left, top_right, bottom_right, bottom_left]`
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Quadrilateral(

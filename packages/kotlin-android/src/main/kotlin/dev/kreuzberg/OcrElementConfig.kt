@@ -8,8 +8,29 @@ package dev.kreuzberg
  * Controls how OCR elements are extracted and filtered.
  */
 data class OcrElementConfig(
+    /**
+     * Whether to include OCR elements in the extraction result.
+     *
+     * When true, the `ocr_elements` field in `ExtractionResult` will be populated.
+     */
     val includeElements: Boolean,
+    /**
+     * Minimum hierarchical level to include.
+     *
+     * Elements below this level (e.g., words when min_level is Line) will be excluded.
+     */
     val minLevel: OcrElementLevel,
+    /**
+     * Minimum recognition confidence threshold (0.0-1.0).
+     *
+     * Elements with confidence below this threshold will be filtered out.
+     */
     val minConfidence: Double,
+    /**
+     * Whether to build hierarchical relationships between elements.
+     *
+     * When true, `parent_id` fields will be populated based on spatial containment.
+     * Only meaningful for Tesseract output.
+     */
     val buildHierarchy: Boolean,
 )

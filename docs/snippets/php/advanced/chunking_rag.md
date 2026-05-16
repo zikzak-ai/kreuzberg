@@ -27,7 +27,7 @@ if ($result->getChunks()) {
             echo "Chunk " . ($metadata->getChunkIndex() + 1) . "/" . $metadata->getTotalChunks() . "\n";
             echo "Position: " . $metadata->getByteStart() . "-" . $metadata->getByteEnd() . "\n";
             echo "Content: " . substr($chunk->getContent(), 0, 100) . "...\n";
-            
+
             if ($chunk->getEmbedding()) {
                 echo "Embedding: " . count($chunk->getEmbedding()) . " dimensions\n";
             }

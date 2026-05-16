@@ -9,12 +9,38 @@ package dev.kreuzberg
  * from both Tesseract and PaddleOCR backends.
  */
 data class OcrElement(
+    /**
+     * The recognized text content.
+     */
     val text: String,
+    /**
+     * Bounding geometry (rectangle or quadrilateral).
+     */
     val geometry: OcrBoundingGeometry,
+    /**
+     * Confidence scores for detection and recognition.
+     */
     val confidence: OcrConfidence,
+    /**
+     * Hierarchical level (word, line, block, page).
+     */
     val level: OcrElementLevel,
+    /**
+     * Rotation information (if detected).
+     */
     val rotation: OcrRotation?,
+    /**
+     * Page number (1-indexed).
+     */
     val pageNumber: Int,
+    /**
+     * Parent element ID for hierarchical relationships.
+     *
+     * Only used for Tesseract output which has word -> line -> block hierarchy.
+     */
     val parentId: String?,
+    /**
+     * Backend-specific metadata that doesn't fit the unified schema.
+     */
     val backendMetadata: Map<String, String>,
 )

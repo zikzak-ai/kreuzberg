@@ -6,8 +6,20 @@ package dev.kreuzberg
  * Extracted keyword with metadata.
  */
 data class Keyword(
+    /**
+     * The keyword text.
+     */
     val text: String,
+    /**
+     * Relevance score (higher is better, algorithm-specific range).
+     */
     val score: Float,
+    /**
+     * Algorithm that extracted this keyword.
+     */
     val algorithm: KeywordAlgorithm,
+    /**
+     * Optional positions where keyword appears in text (character offsets).
+     */
     val positions: List<Long>?,
 )

@@ -6,7 +6,18 @@ package dev.kreuzberg
  * Structured data type classification.
  */
 enum class StructuredDataType {
+    /**
+     * JSON-LD structured data
+     */
     JSON_LD,
+
+    /**
+     * Microdata
+     */
     MICRODATA,
+
+    /**
+     * RDFa
+     */
     R_D_FA,
 }

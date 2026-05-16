@@ -11,7 +11,6 @@ use crate::types::metadata::{DbfFieldInfo, DbfMetadata, FormatMetadata, Metadata
 use async_trait::async_trait;
 use std::io::Cursor;
 #[cfg_attr(alef, alef(skip))]
-
 /// Extractor for dBASE (.dbf) files.
 ///
 /// Reads all records and formats them as a markdown table with

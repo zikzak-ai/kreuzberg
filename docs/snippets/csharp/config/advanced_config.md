@@ -5,29 +5,29 @@ var config = new ExtractionConfig
 {
     UseCache = true,
     EnableQualityProcessing = true,
-    Ocr = new OcrConfig 
-    { 
-        Backend = "tesseract", 
-        Language = "eng+deu" 
+    Ocr = new OcrConfig
+    {
+        Backend = "tesseract",
+        Language = "eng+deu"
     },
-    Chunking = new ChunkingConfig 
-    { 
-        MaxCharacters = 1000, 
-        Overlap = 200 
+    Chunking = new ChunkingConfig
+    {
+        MaxCharacters = 1000,
+        Overlap = 200
     },
     LanguageDetection = new LanguageDetectionConfig
     {
         Enabled = true,
         DetectMultiple = true
     },
-    TokenReduction = new TokenReductionOptions 
-    { 
-        Mode = "moderate" 
+    TokenReduction = new TokenReductionOptions
+    {
+        Mode = "moderate"
     },
-    Keywords = new KeywordConfig 
-    { 
-        MaxKeywords = 10, 
-        MinScore = 0.1f 
+    Keywords = new KeywordConfig
+    {
+        MaxKeywords = 10,
+        MinScore = 0.1f
     }
 };
 

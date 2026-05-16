@@ -3,9 +3,7 @@ import init, { extractBytes } from "kreuzberg-wasm";
 
 await init();
 
-const documentData = await fetch("document.pdf").then((res) =>
-  res.arrayBuffer()
-);
+const documentData = await fetch("document.pdf").then((res) => res.arrayBuffer());
 
 const result = await extractBytes(documentData, "application/pdf", {
   images: {

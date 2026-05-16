@@ -18,7 +18,7 @@ const result = await extractBytes(fileBuffer, mimeType, config);
 
 if (result.detected_languages) {
   console.log("Detected languages:", result.detected_languages);
-  
+
   for (const language of result.detected_languages) {
     console.log(`Language: ${language}`);
   }

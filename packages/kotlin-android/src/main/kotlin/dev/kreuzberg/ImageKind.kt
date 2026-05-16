@@ -6,15 +6,58 @@ package dev.kreuzberg
  * Heuristic classification of what an image likely depicts.
  */
 enum class ImageKind {
+    /**
+     * Photographic image (natural scene, photograph)
+     */
     PHOTOGRAPH,
+
+    /**
+     * Technical or schematic diagram
+     */
     DIAGRAM,
+
+    /**
+     * Chart, graph, or plot
+     */
     CHART,
+
+    /**
+     * Freehand or technical drawing
+     */
     DRAWING,
+
+    /**
+     * Text-heavy image (scanned text, document)
+     */
     TEXT_BLOCK,
+
+    /**
+     * Decorative element or border
+     */
     DECORATION,
+
+    /**
+     * Logo or brand mark
+     */
     LOGO,
+
+    /**
+     * Small icon
+     */
     ICON,
+
+    /**
+     * Fragment of a larger tiled image (tile of a technical drawing)
+     */
     TILE_FRAGMENT,
+
+    /**
+     * Mask or transparency map
+     */
     MASK,
+
+    /**
+     * Could not classify with reasonable confidence
+     */
     UNKNOWN,
 }

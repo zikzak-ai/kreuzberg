@@ -6,10 +6,33 @@ package dev.kreuzberg
  * Semantic classification of an extracted URI.
  */
 enum class UriKind {
+    /**
+     * A clickable hyperlink (web URL, file link).
+     */
     HYPERLINK,
+
+    /**
+     * An image or media resource reference.
+     */
     IMAGE,
+
+    /**
+     * An internal anchor or cross-reference target.
+     */
     ANCHOR,
+
+    /**
+     * A citation or bibliographic reference (DOI, academic ref).
+     */
     CITATION,
+
+    /**
+     * A general reference (e.g. `\ref{}` in LaTeX, `:ref:` in RST).
+     */
     REFERENCE,
+
+    /**
+     * An email address (`mailto:` link or bare email).
+     */
     EMAIL,
 }

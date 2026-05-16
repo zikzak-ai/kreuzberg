@@ -13,19 +13,19 @@ const MIN_LENGTH = 10;
 const minLengthValidator = {
   validate: (extractionResult) => {
     const textLength = extractionResult.text?.length || 0;
-    
+
     if (textLength < MIN_LENGTH) {
       return {
         valid: false,
-        error: `Text too short: ${textLength} < ${MIN_LENGTH}`
+        error: `Text too short: ${textLength} < ${MIN_LENGTH}`,
       };
     }
-    
+
     return {
       valid: true,
-      error: null
+      error: null,
     };
-  }
+  },
 };
 
 try {
@@ -36,10 +36,12 @@ try {
 }
 
 // Now extract with validation enabled
-const pdfBytes = new Uint8Array([/* PDF content */]);
+const pdfBytes = new Uint8Array([
+  /* PDF content */
+]);
 const config = {
   ocr: null,
-  chunking: null
+  chunking: null,
 };
 
 const result = await extractBytes(pdfBytes, "application/pdf", config);

@@ -6,6 +6,12 @@ package dev.kreuzberg
  * MIME type detection response.
  */
 data class DetectResponse(
+    /**
+     * Detected MIME type
+     */
     val mimeType: String,
+    /**
+     * Original filename (if provided)
+     */
     val filename: String?,
 )

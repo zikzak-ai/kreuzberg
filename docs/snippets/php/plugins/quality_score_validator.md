@@ -24,7 +24,7 @@ class QualityScoreValidator implements Validator {
 
     public function validate(object $result, object $config): void {
         $qualityScore = $this->calculateQualityScore($result);
-        
+
         if ($qualityScore < $this->minQualityScore) {
             throw new Exception(
                 sprintf(
@@ -42,22 +42,22 @@ class QualityScoreValidator implements Validator {
 
     private function calculateQualityScore(object $result): float {
         $score = 1.0;
-        
+
         // Penalize if content is too short
         if (strlen($result->content) < 100) {
             $score *= 0.8;
         }
-        
+
         // Penalize if many detection warnings
         if (isset($result->processing_warnings) && count($result->processing_warnings) > 5) {
             $score *= 0.9;
         }
-        
+
         // Reward if language was detected
         if (isset($result->detected_languages) && !empty($result->detected_languages)) {
             $score *= 1.05;
         }
-        
+
         return min(1.0, $score);
     }
 }

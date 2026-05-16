@@ -10,176 +10,1457 @@
 #include <stdint.h>
 #include <stdlib.h>
 /* Opaque type forward declarations */
+/**
+ * Hardware acceleration configuration for ONNX Runtime models.
+ *
+ * Controls which execution provider (CPU, CoreML, CUDA, TensorRT) is used
+ * for inference in layout detection and embedding generation.
+ * \code
+ * use kreuzberg::AccelerationConfig;
+ *
+ * // Auto-select: CoreML on macOS, CUDA on Linux, CPU elsewhere
+ * let config = AccelerationConfig::default();
+ *
+ * // Force CPU only
+ * let config = AccelerationConfig {
+ *     provider: kreuzberg::ExecutionProviderType::Cpu,
+ *     ..Default::default()
+ * };
+ * \endcode
+ */
 typedef struct KREUZBERGAccelerationConfig KREUZBERGAccelerationConfig;
+/**
+ * Types of inline text annotations.
+ */
 typedef struct KREUZBERGAnnotationKind KREUZBERGAnnotationKind;
+/**
+ * A single file extracted from an archive.
+ *
+ * When archives (ZIP, TAR, 7Z, GZIP) are extracted with recursive extraction
+ * enabled, each processable file produces its own full `ExtractionResult`.
+ */
 typedef struct KREUZBERGArchiveEntry KREUZBERGArchiveEntry;
+/**
+ * Archive (ZIP/TAR/7Z) metadata.
+ *
+ * Extracted from compressed archive files containing file lists and size information.
+ */
 typedef struct KREUZBERGArchiveMetadata KREUZBERGArchiveMetadata;
+/**
+ * Bounding box in original image coordinates (x1, y1) top-left, (x2, y2) bottom-right.
+ */
 typedef struct KREUZBERGBBox KREUZBERGBBox;
+/**
+ * Batch item for byte array extraction.
+ *
+ * Used with `batch_extract_bytes` and `batch_extract_bytes_sync`
+ * to represent a single item in a batch extraction job.
+ */
 typedef struct KREUZBERGBatchBytesItem KREUZBERGBatchBytesItem;
+/**
+ * Batch item for file extraction.
+ *
+ * Used with `batch_extract_files` and `batch_extract_files_sync`
+ * to represent a single file in a batch extraction job.
+ */
 typedef struct KREUZBERGBatchFileItem KREUZBERGBatchFileItem;
+/**
+ * BibTeX bibliography metadata.
+ */
 typedef struct KREUZBERGBibtexMetadata KREUZBERGBibtexMetadata;
+/**
+ * Types of block-level elements in Djot.
+ */
 typedef struct KREUZBERGBlockType KREUZBERGBlockType;
+/**
+ * A text chunk with optional embedding and metadata.
+ *
+ * Chunks are created when chunking is enabled in `ExtractionConfig`. Each chunk
+ * contains the text content, optional embedding vector (if embedding generation
+ * is configured), and metadata about its position in the document.
+ */
 typedef struct KREUZBERGChunk KREUZBERGChunk;
+/**
+ * Metadata about a chunk's position in the original document.
+ */
 typedef struct KREUZBERGChunkMetadata KREUZBERGChunkMetadata;
+/**
+ * How chunk size is measured.
+ *
+ * Defaults to `Characters` (Unicode character count). When using token-based sizing,
+ * chunks are sized by token count according to the specified tokenizer.
+ *
+ * Token-based sizing uses HuggingFace tokenizers loaded at runtime. Any tokenizer
+ * available on HuggingFace Hub can be used, including OpenAI-compatible tokenizers
+ * (e.g., `Xenova/gpt-4o`, `Xenova/cl100k_base`).
+ */
 typedef struct KREUZBERGChunkSizing KREUZBERGChunkSizing;
+/**
+ * Semantic structural classification of a text chunk.
+ *
+ * Assigned by the heuristic classifier in `chunking::classifier`.
+ * Defaults to `Unknown` when no rule matches.
+ * Designed to be extended in future versions without breaking changes.
+ */
 typedef struct KREUZBERGChunkType KREUZBERGChunkType;
+/**
+ * Type of text chunker to use.
+ *
+ * # Variants
+ *
+ * * `Text` - Generic text splitter, splits on whitespace and punctuation
+ * * `Markdown` - Markdown-aware splitter, preserves formatting and structure
+ * * `Yaml` - YAML-aware splitter, creates one chunk per top-level key
+ * * `Semantic` - Topic-aware chunker. With an `EmbeddingConfig`, splits at
+ *   embedding-based topic shifts tuned by `topic_threshold` (default 0.75,
+ *   lower = more splits). Without an embedding, falls back to a
+ *   structural-boundary heuristic (ALL-CAPS headers, numbered sections,
+ *   blank-line paragraphs) and merges groups into chunks capped at
+ *   `max_characters` (default 1000). `topic_threshold` has no effect in the
+ *   fallback path. For best results, pair with an embedding model.
+ */
 typedef struct KREUZBERGChunkerType KREUZBERGChunkerType;
+/**
+ * Chunking configuration.
+ *
+ * Configures text chunking for document content, including chunk size,
+ * overlap, trimming behavior, and optional embeddings.
+ *
+ * Use `..Default::default()` when constructing to allow for future field additions:
+ * ```rust
+ * let config = ChunkingConfig {
+ *     max_characters: 500,
+ *     ..Default::default()
+ * };
+ * ```
+ */
 typedef struct KREUZBERGChunkingConfig KREUZBERGChunkingConfig;
+/**
+ * Citation file metadata (RIS, PubMed, EndNote).
+ */
 typedef struct KREUZBERGCitationMetadata KREUZBERGCitationMetadata;
+/**
+ * Content rendering mode for code extraction.
+ *
+ * Controls how extracted code content is represented in the `content` field
+ * of `ExtractionResult`.
+ */
 typedef struct KREUZBERGCodeContentMode KREUZBERGCodeContentMode;
+/**
+ * Cross-extractor content filtering configuration.
+ *
+ * Controls whether "furniture" content (headers, footers, page numbers,
+ * watermarks, repeating text) is included in or stripped from extraction
+ * results. Applies across all extractors (PDF, DOCX, RTF, ODT, HTML, etc.)
+ * with format-specific implementation.
+ *
+ * When `None` on `ExtractionConfig`, each extractor uses its current
+ * default behavior unchanged.
+ */
 typedef struct KREUZBERGContentFilterConfig KREUZBERGContentFilterConfig;
+/**
+ * Content layer classification for document nodes.
+ *
+ * Replaces separate body/furniture arrays with per-node granularity.
+ */
 typedef struct KREUZBERGContentLayer KREUZBERGContentLayer;
+/**
+ * JATS contributor with role.
+ */
 typedef struct KREUZBERGContributorRole KREUZBERGContributorRole;
+/**
+ * CSV/TSV file metadata.
+ */
 typedef struct KREUZBERGCsvMetadata KREUZBERGCsvMetadata;
+/**
+ * dBASE field information.
+ */
 typedef struct KREUZBERGDbfFieldInfo KREUZBERGDbfFieldInfo;
+/**
+ * dBASE (DBF) file metadata.
+ */
 typedef struct KREUZBERGDbfMetadata KREUZBERGDbfMetadata;
+/**
+ * MIME type detection response.
+ */
 typedef struct KREUZBERGDetectResponse KREUZBERGDetectResponse;
+/**
+ * Page-level detection result containing all detections and page metadata.
+ */
 typedef struct KREUZBERGDetectionResult KREUZBERGDetectionResult;
+/**
+ * Comprehensive Djot document structure with semantic preservation.
+ *
+ * This type captures the full richness of Djot markup, including:
+ * - Block-level structures (headings, lists, blockquotes, code blocks, etc.)
+ * - Inline formatting (emphasis, strong, highlight, subscript, superscript, etc.)
+ * - Attributes (classes, IDs, key-value pairs)
+ * - Links, images, footnotes
+ * - Math expressions (inline and display)
+ * - Tables with full structure
+ *
+ * Available when the `djot` feature is enabled.
+ */
 typedef struct KREUZBERGDjotContent KREUZBERGDjotContent;
+/**
+ * Image element in Djot.
+ */
 typedef struct KREUZBERGDjotImage KREUZBERGDjotImage;
+/**
+ * Link element in Djot.
+ */
 typedef struct KREUZBERGDjotLink KREUZBERGDjotLink;
+/**
+ * Trait for document extractor plugins.
+ *
+ * Implement this trait to add support for new document formats or to override
+ * built-in extraction behavior with custom logic.
+ *
+ * # Return Type
+ *
+ * Extractors return `InternalDocument`, a flat intermediate representation.
+ * The pipeline converts this into the public `ExtractionResult` via the
+ * derivation step.
+ *
+ * # Priority System
+ *
+ * When multiple extractors support the same MIME type, the registry selects
+ * the extractor with the highest priority value. Use this to:
+ * - Override built-in extractors (priority > 50)
+ * - Provide fallback extractors (priority < 50)
+ * - Implement specialized extractors for specific use cases
+ *
+ * Default priority is 50.
+ *
+ * # Thread Safety
+ *
+ * Extractors must be thread-safe (`Send + Sync`) to support concurrent extraction.
+ * \code
+ * use kreuzberg::plugins::{Plugin, DocumentExtractor};
+ * use kreuzberg::{Result, ExtractionConfig};
+ * use kreuzberg::types::internal::InternalDocument;
+ * use async_trait::async_trait;
+ * use std::path::Path;
+ *
+ * /// Custom PDF extractor with premium features
+ * struct PremiumPdfExtractor;
+ *
+ * impl Plugin for PremiumPdfExtractor {
+ *     fn name(&self) -> &str { "premium-pdf" }
+ *     fn version(&self) -> String { "2.0.0".to_string() }
+ *     fn initialize(&self) -> Result<()> { Ok(()) }
+ *     fn shutdown(&self) -> Result<()> { Ok(()) }
+ * }
+ *
+ * #[async_trait]
+ * impl DocumentExtractor for PremiumPdfExtractor {
+ *     async fn extract_bytes(&self, content: &[u8], mime_type: &str, config: &ExtractionConfig)
+ *         -> Result<InternalDocument> {
+ *         // Premium extraction logic with better accuracy
+ *         let mut doc = InternalDocument::new("pdf");
+ *         // ... populate doc.elements, doc.metadata, etc.
+ *         Ok(doc)
+ *     }
+ *
+ *     fn supported_mime_types(&self) -> &[&str] {
+ *         &["application/pdf"]
+ *     }
+ *
+ *     fn priority(&self) -> i32 {
+ *         100  // Higher than default (50) - will be preferred
+ *     }
+ * }
+ * \endcode
+ */
 typedef struct KREUZBERGDocumentExtractor KREUZBERGDocumentExtractor;
+/**
+ * A single node in the document tree.
+ *
+ * Each node has deterministic `id`, typed `content`, optional `parent`/`children`
+ * for tree structure, and metadata like page number, bounding box, and content layer.
+ */
 typedef struct KREUZBERGDocumentNode KREUZBERGDocumentNode;
+/**
+ * A resolved relationship between two nodes in the document tree.
+ */
 typedef struct KREUZBERGDocumentRelationship KREUZBERGDocumentRelationship;
+/**
+ * Top-level structured document representation.
+ *
+ * A flat array of nodes with index-based parent/child references forming a tree.
+ * Root-level nodes have `parent: None`. Use `body_roots()` and `furniture_roots()`
+ * to iterate over top-level content by layer.
+ *
+ * # Validation
+ *
+ * Call `validate()` after construction to verify all node indices are in bounds
+ * and parent-child relationships are bidirectionally consistent.
+ */
 typedef struct KREUZBERGDocumentStructure KREUZBERGDocumentStructure;
+/**
+ * Word document metadata.
+ *
+ * Extracted from DOCX files using shared Office Open XML metadata extraction.
+ * Integrates with `office_metadata` module for core/app/custom properties.
+ */
 typedef struct KREUZBERGDocxMetadata KREUZBERGDocxMetadata;
+/**
+ * Whether the drawing is inline or anchored.
+ */
 typedef struct KREUZBERGDrawingType KREUZBERGDrawingType;
+/**
+ * Semantic element extracted from document.
+ *
+ * Represents a logical unit of content with semantic classification,
+ * unique identifier, and metadata for tracking origin and position.
+ */
 typedef struct KREUZBERGElement KREUZBERGElement;
+/**
+ * Metadata for a semantic element.
+ */
 typedef struct KREUZBERGElementMetadata KREUZBERGElementMetadata;
+/**
+ * Semantic element type classification.
+ *
+ * Categorizes text content into semantic units for downstream processing.
+ * Supports the element types commonly found in Unstructured documents.
+ */
 typedef struct KREUZBERGElementType KREUZBERGElementType;
+/**
+ * Email attachment representation.
+ *
+ * Contains metadata and optionally the content of an email attachment.
+ */
 typedef struct KREUZBERGEmailAttachment KREUZBERGEmailAttachment;
+/**
+ * Configuration for email extraction.
+ */
 typedef struct KREUZBERGEmailConfig KREUZBERGEmailConfig;
+/**
+ * Email extraction result.
+ *
+ * Complete representation of an extracted email message (.eml or .msg)
+ * including headers, body content, and attachments.
+ */
 typedef struct KREUZBERGEmailExtractionResult KREUZBERGEmailExtractionResult;
+/**
+ * Email metadata extracted from .eml and .msg files.
+ *
+ * Includes sender/recipient information, message ID, and attachment list.
+ */
 typedef struct KREUZBERGEmailMetadata KREUZBERGEmailMetadata;
+/**
+ * Embedded file descriptor extracted from the PDF name tree.
+ */
 typedef struct KREUZBERGEmbeddedFile KREUZBERGEmbeddedFile;
+/**
+ * Trait for in-process embedding backend plugins.
+ *
+ * Async to match the convention used by `OcrBackend`,
+ * `DocumentExtractor`, and `PostProcessor`.
+ * Host-language bridges (PyO3, napi-rs, Rustler, extendr, magnus, ext-php-rs,
+ * C FFI, etc.) wrap their synchronous host callables in `spawn_blocking` or the
+ * equivalent to satisfy the async signature.
+ *
+ * # Thread safety
+ *
+ * Backends must be `Send + Sync + 'static`. They are stored in
+ * `Arc<dyn EmbeddingBackend>` and called concurrently from kreuzberg's chunking
+ * pipeline. If the backend's underlying model isn't thread-safe, the backend
+ * itself must serialize access internally (e.g. via `Mutex<Inner>`).
+ *
+ * # Contract
+ *
+ * - `embed(texts)` MUST return exactly `texts.len()` vectors, each of length
+ *   `self.dimensions()`. The dispatcher in `embed_texts`
+ *   validates this before returning to downstream consumers; a non-conforming
+ *   backend surfaces as a `KreuzbergError::Validation`, not a panic.
+ * - `embed` may be called from any thread. Its future must be `Send`
+ *   (enforced by `async_trait` when `#[async_trait]` is used on non-WASM targets).
+ * - `dimensions()` is called exactly once at registration, immediately after
+ *   `initialize()` succeeds. The returned value is cached by the registry and
+ *   used for all subsequent shape validation. Lazy-loading implementations can
+ *   defer model loading into `initialize()` and report the real dimension
+ *   afterwards. Later mutations of the backend's reported dimension are not
+ *   observed by kreuzberg â implementations that need to change dimension
+ *   must unregister and re-register.
+ * - `shutdown()` (inherited from `Plugin`) may be invoked
+ *   concurrently with an in-flight `embed()` call. Implementations must
+ *   tolerate this â e.g. by letting in-flight calls finish using resources
+ *   held via the `Arc<dyn EmbeddingBackend>` reference, and only releasing
+ *   shared state that isn't needed by `embed`.
+ *
+ * # Runtime
+ *
+ * The synchronous `embed_texts` entry uses
+ * [`tokio::task::block_in_place`] to await the trait's async `embed`, which
+ * requires a multi-thread tokio runtime. Callers running inside a
+ * `current_thread` runtime (e.g. `#[tokio::test]` without `flavor = "multi_thread"`,
+ * or `tokio::runtime::Builder::new_current_thread()`) must use
+ * `embed_texts_async` instead, which awaits directly without
+ * `block_in_place`.
+ */
 typedef struct KREUZBERGEmbeddingBackend KREUZBERGEmbeddingBackend;
+/**
+ * Embedding configuration for text chunks.
+ *
+ * Configures embedding generation using ONNX models via the vendored embedding engine.
+ * Requires the `embeddings` feature to be enabled.
+ */
 typedef struct KREUZBERGEmbeddingConfig KREUZBERGEmbeddingConfig;
+/**
+ * Embedding model types supported by Kreuzberg.
+ */
 typedef struct KREUZBERGEmbeddingModelType KREUZBERGEmbeddingModelType;
+/**
+ * Preset configurations for common RAG use cases.
+ *
+ * Each preset combines chunk size, overlap, and embedding model
+ * to provide an optimized configuration for specific scenarios.
+ *
+ * All string fields are owned `String` for FFI compatibility â instances
+ * are safe to clone and pass across language boundaries.
+ */
 typedef struct KREUZBERGEmbeddingPreset KREUZBERGEmbeddingPreset;
+/**
+ * EPUB metadata (Dublin Core extensions).
+ */
 typedef struct KREUZBERGEpubMetadata KREUZBERGEpubMetadata;
+/**
+ * Error metadata (for batch operations).
+ */
 typedef struct KREUZBERGErrorMetadata KREUZBERGErrorMetadata;
+/**
+ * Excel/spreadsheet format metadata.
+ *
+ * Identifies the document as a spreadsheet source via the `FormatMetadata::Excel`
+ * discriminant. Sheet count and sheet names are stored inside this struct.
+ */
 typedef struct KREUZBERGExcelMetadata KREUZBERGExcelMetadata;
+/**
+ * Single Excel worksheet.
+ *
+ * Represents one sheet from an Excel workbook with its content
+ * converted to Markdown format and dimensional statistics.
+ */
 typedef struct KREUZBERGExcelSheet KREUZBERGExcelSheet;
+/**
+ * Excel workbook representation.
+ *
+ * Contains all sheets from an Excel file (.xlsx, .xls, etc.) with
+ * extracted content and metadata.
+ */
 typedef struct KREUZBERGExcelWorkbook KREUZBERGExcelWorkbook;
+/**
+ * ONNX Runtime execution provider type.
+ *
+ * Determines which hardware backend is used for model inference.
+ * `Auto` (default) selects the best available provider per platform.
+ */
 typedef struct KREUZBERGExecutionProviderType KREUZBERGExecutionProviderType;
+/**
+ * Extracted image from a document.
+ *
+ * Contains raw image data, metadata, and optional nested OCR results.
+ * Raw bytes allow cross-language compatibility - users can convert to
+ * PIL.Image (Python), Sharp (Node.js), or other formats as needed.
+ */
 typedef struct KREUZBERGExtractedImage KREUZBERGExtractedImage;
+/**
+ * Main extraction configuration.
+ *
+ * This struct contains all configuration options for the extraction process.
+ * It can be loaded from TOML, YAML, or JSON files, or created programmatically.
+ * \code
+ * use kreuzberg::core::config::ExtractionConfig;
+ *
+ * // Create with defaults
+ * let config = ExtractionConfig::default();
+ *
+ * // Load from TOML file
+ * // let config = ExtractionConfig::from_toml_file("kreuzberg.toml")?;
+ * \endcode
+ */
 typedef struct KREUZBERGExtractionConfig KREUZBERGExtractionConfig;
+/**
+ * How the extracted text was produced.
+ */
 typedef struct KREUZBERGExtractionMethod KREUZBERGExtractionMethod;
+/**
+ * General extraction result used by the core extraction API.
+ *
+ * This is the main result type returned by all extraction functions.
+ */
 typedef struct KREUZBERGExtractionResult KREUZBERGExtractionResult;
+/**
+ * FictionBook (FB2) metadata.
+ */
 typedef struct KREUZBERGFictionBookMetadata KREUZBERGFictionBookMetadata;
+/**
+ * Per-file extraction configuration overrides for batch processing.
+ *
+ * All fields are `Option<T>` â `None` means "use the batch-level default."
+ * This type is used with `batch_extract_files` and
+ * `batch_extract_bytes` to allow heterogeneous
+ * extraction settings within a single batch.
+ *
+ * # Excluded Fields
+ *
+ * The following `ExtractionConfig` fields are batch-level only and
+ * cannot be overridden per file:
+ * - `max_concurrent_extractions` â controls batch parallelism
+ * - `use_cache` â global caching policy
+ * - `acceleration` â shared ONNX execution provider
+ * - `security_limits` â global archive security policy
+ * \code
+ * use kreuzberg::FileExtractionConfig;
+ *
+ * // Override just OCR forcing for a specific file
+ * let config = FileExtractionConfig {
+ *     force_ocr: Some(true),
+ *     ..Default::default()
+ * };
+ * \endcode
+ */
 typedef struct KREUZBERGFileExtractionConfig KREUZBERGFileExtractionConfig;
+/**
+ * Footnote in Djot.
+ */
 typedef struct KREUZBERGFootnote KREUZBERGFootnote;
+/**
+ * Format-specific metadata (discriminated union).
+ *
+ * Only one format type can exist per extraction result. This provides
+ * type-safe, clean metadata without nested optionals.
+ */
 typedef struct KREUZBERGFormatMetadata KREUZBERGFormatMetadata;
+/**
+ * Block-level element in a Djot document.
+ *
+ * Represents structural elements like headings, paragraphs, lists, code blocks, etc.
+ */
 typedef struct KREUZBERGFormattedBlock KREUZBERGFormattedBlock;
 typedef struct KREUZBERGFracType KREUZBERGFracType;
+/**
+ * Individual grid cell with position and span metadata.
+ */
 typedef struct KREUZBERGGridCell KREUZBERGGridCell;
+/**
+ * Header/heading element metadata.
+ */
 typedef struct KREUZBERGHeaderMetadata KREUZBERGHeaderMetadata;
+/**
+ * Heading context for a chunk within a Markdown document.
+ *
+ * Contains the heading hierarchy from document root to this chunk's section.
+ */
 typedef struct KREUZBERGHeadingContext KREUZBERGHeadingContext;
+/**
+ * A single heading in the hierarchy.
+ */
 typedef struct KREUZBERGHeadingLevel KREUZBERGHeadingLevel;
+/**
+ * A text block with hierarchy level assignment.
+ *
+ * Represents a block of text with semantic heading information extracted from
+ * font size clustering and hierarchical analysis.
+ */
 typedef struct KREUZBERGHierarchicalBlock KREUZBERGHierarchicalBlock;
+/**
+ * Hierarchy extraction configuration for PDF text structure analysis.
+ *
+ * Enables extraction of document hierarchy levels (H1-H6) based on font size
+ * clustering and semantic analysis. When enabled, hierarchical blocks are
+ * included in page content.
+ */
 typedef struct KREUZBERGHierarchyConfig KREUZBERGHierarchyConfig;
+/**
+ * HTML metadata extracted from HTML documents.
+ *
+ * Includes document-level metadata, Open Graph data, Twitter Card metadata,
+ * and extracted structural elements (headers, links, images, structured data).
+ */
 typedef struct KREUZBERGHtmlMetadata KREUZBERGHtmlMetadata;
+/**
+ * Configuration for styled HTML output.
+ *
+ * When set on [`ExtractionConfig::html_output`] alongside
+ * `output_format = OutputFormat::Html`, the pipeline builds a
+ * `StyledHtmlRenderer` (crate::rendering::StyledHtmlRenderer) instead of
+ * the plain comrak-based renderer.
+ * \code
+ * use kreuzberg::core::config::{HtmlOutputConfig, HtmlTheme};
+ *
+ * let config = HtmlOutputConfig {
+ *     theme: HtmlTheme::GitHub,
+ *     css: Some(".kb-p { font-size: 1.1rem; }".to_string()),
+ *     ..Default::default()
+ * };
+ * \endcode
+ */
 typedef struct KREUZBERGHtmlOutputConfig KREUZBERGHtmlOutputConfig;
+/**
+ * Built-in HTML theme selection.
+ */
 typedef struct KREUZBERGHtmlTheme KREUZBERGHtmlTheme;
+/**
+ * Image extraction configuration.
+ */
 typedef struct KREUZBERGImageExtractionConfig KREUZBERGImageExtractionConfig;
+/**
+ * Heuristic classification of what an image likely depicts.
+ */
 typedef struct KREUZBERGImageKind KREUZBERGImageKind;
+/**
+ * Image metadata extracted from image files.
+ *
+ * Includes dimensions, format, and EXIF data.
+ */
 typedef struct KREUZBERGImageMetadata KREUZBERGImageMetadata;
+/**
+ * Image element metadata.
+ */
 typedef struct KREUZBERGImageMetadataType KREUZBERGImageMetadataType;
+/**
+ * Image preprocessing configuration for OCR.
+ *
+ * These settings control how images are preprocessed before OCR to improve
+ * text recognition quality. Different preprocessing strategies work better
+ * for different document types.
+ */
 typedef struct KREUZBERGImagePreprocessingConfig KREUZBERGImagePreprocessingConfig;
+/**
+ * Image preprocessing metadata.
+ *
+ * Tracks the transformations applied to an image during OCR preprocessing,
+ * including DPI normalization, resizing, and resampling.
+ */
 typedef struct KREUZBERGImagePreprocessingMetadata KREUZBERGImagePreprocessingMetadata;
+/**
+ * Image type classification.
+ */
 typedef struct KREUZBERGImageType KREUZBERGImageType;
+/**
+ * Inline element within a block.
+ *
+ * Represents text with formatting, links, images, etc.
+ */
 typedef struct KREUZBERGInlineElement KREUZBERGInlineElement;
+/**
+ * Types of inline elements in Djot.
+ */
 typedef struct KREUZBERGInlineType KREUZBERGInlineType;
+/**
+ * JATS (Journal Article Tag Suite) metadata.
+ */
 typedef struct KREUZBERGJatsMetadata KREUZBERGJatsMetadata;
+/**
+ * Extracted keyword with metadata.
+ */
 typedef struct KREUZBERGKeyword KREUZBERGKeyword;
+/**
+ * Keyword algorithm selection.
+ */
 typedef struct KREUZBERGKeywordAlgorithm KREUZBERGKeywordAlgorithm;
+/**
+ * Keyword extraction configuration.
+ */
 typedef struct KREUZBERGKeywordConfig KREUZBERGKeywordConfig;
+/**
+ * Language detection configuration.
+ */
 typedef struct KREUZBERGLanguageDetectionConfig KREUZBERGLanguageDetectionConfig;
+/**
+ * The 17 canonical document layout classes.
+ *
+ * All model backends (RT-DETR, YOLO, etc.) map their native class IDs
+ * to this shared set. Models with fewer classes (DocLayNet: 11, PubLayNet: 5)
+ * map to the closest equivalent.
+ *
+ * Wire format is snake_case in all serializers (JSON, TOML, YAML).
+ */
 typedef struct KREUZBERGLayoutClass KREUZBERGLayoutClass;
+/**
+ * A single layout detection result.
+ */
 typedef struct KREUZBERGLayoutDetection KREUZBERGLayoutDetection;
+/**
+ * Layout detection configuration.
+ *
+ * Controls layout detection behavior in the extraction pipeline.
+ * When set on `ExtractionConfig` (super::ExtractionConfig), layout detection
+ * is enabled for PDF extraction.
+ */
 typedef struct KREUZBERGLayoutDetectionConfig KREUZBERGLayoutDetectionConfig;
+/**
+ * A detected layout region on a page.
+ *
+ * When layout detection is enabled, each page may have layout regions
+ * identifying different content types (text, pictures, tables, etc.)
+ * with confidence scores and spatial positions.
+ */
 typedef struct KREUZBERGLayoutRegion KREUZBERGLayoutRegion;
+/**
+ * Link element metadata.
+ */
 typedef struct KREUZBERGLinkMetadata KREUZBERGLinkMetadata;
+/**
+ * Link type classification.
+ */
 typedef struct KREUZBERGLinkType KREUZBERGLinkType;
+/**
+ * Type of list detection.
+ */
 typedef struct KREUZBERGListType KREUZBERGListType;
+/**
+ * Configuration for an LLM provider/model via liter-llm.
+ *
+ * Each feature (VLM OCR, VLM embeddings, structured extraction) carries
+ * its own `LlmConfig`, allowing different providers per feature.
+ * \code
+ * [structured_extraction.llm]
+ * model = "openai/gpt-4o"
+ * api_key = "sk-..."  # or use KREUZBERG_LLM_API_KEY env var
+ * \endcode
+ */
 typedef struct KREUZBERGLlmConfig KREUZBERGLlmConfig;
+/**
+ * Token usage and cost data for a single LLM call made during extraction.
+ *
+ * Populated when VLM OCR, structured extraction, or LLM-based embeddings
+ * are used. Multiple entries may be present when multiple LLM calls occur
+ * within one extraction (e.g. VLM OCR + structured extraction).
+ */
 typedef struct KREUZBERGLlmUsage KREUZBERGLlmUsage;
+/**
+ * Extraction result metadata.
+ *
+ * Contains common fields applicable to all formats, format-specific metadata
+ * via a discriminated union, and additional custom fields from postprocessors.
+ */
 typedef struct KREUZBERGMetadata KREUZBERGMetadata;
+/**
+ * Combined paths to all models needed for OCR (backward compatibility).
+ */
 typedef struct KREUZBERGModelPaths KREUZBERGModelPaths;
+/**
+ * Tagged enum for node content. Each variant carries only type-specific data.
+ *
+ * Uses `#[serde(tag = "node_type")]` to avoid "type" keyword collision in
+ * Go/Java/TypeScript bindings.
+ */
 typedef struct KREUZBERGNodeContent KREUZBERGNodeContent;
+/**
+ * Trait for OCR backend plugins.
+ *
+ * Implement this trait to add custom OCR capabilities. OCR backends can be:
+ * - Native Rust implementations (like Tesseract)
+ * - FFI bridges to Python libraries (like EasyOCR, PaddleOCR)
+ * - Cloud-based OCR services (Google Vision, AWS Textract, etc.)
+ *
+ * # Thread Safety
+ *
+ * OCR backends must be thread-safe (`Send + Sync`) to support concurrent processing.
+ * \code
+ * use kreuzberg::plugins::{Plugin, OcrBackend, OcrBackendType};
+ * use kreuzberg::{Result, OcrConfig};
+ * use async_trait::async_trait;
+ * use std::borrow::Cow;
+ * use std::path::Path;
+ * use kreuzberg::types::{ExtractionResult, Metadata};
+ *
+ * struct CustomOcrBackend;
+ *
+ * impl Plugin for CustomOcrBackend {
+ *     fn name(&self) -> &str { "custom-ocr" }
+ *     fn version(&self) -> String { "1.0.0".to_string() }
+ *     fn initialize(&self) -> Result<()> { Ok(()) }
+ *     fn shutdown(&self) -> Result<()> { Ok(()) }
+ * }
+ *
+ * #[async_trait]
+ * impl OcrBackend for CustomOcrBackend {
+ *     async fn process_image(&self, image_bytes: &[u8], config: &OcrConfig) -> Result<ExtractionResult> {
+ *         // Implement OCR logic here
+ *         Ok(ExtractionResult {
+ *             content: "Extracted text".to_string(),
+ *             mime_type: Cow::Borrowed("text/plain"),
+ *             ..Default::default()
+ *         })
+ *     }
+ *
+ *     async fn process_image_file(&self, path: &Path, config: &OcrConfig) -> Result<ExtractionResult> {
+ *         let bytes = std::fs::read(path)?;
+ *         self.process_image(&bytes, config).await
+ *     }
+ *
+ *     fn supports_language(&self, lang: &str) -> bool {
+ *         matches!(lang, "eng" | "deu" | "fra")
+ *     }
+ *
+ *     fn backend_type(&self) -> OcrBackendType {
+ *         OcrBackendType::Custom
+ *     }
+ * }
+ * \endcode
+ */
 typedef struct KREUZBERGOcrBackend KREUZBERGOcrBackend;
+/**
+ * OCR backend types.
+ */
 typedef struct KREUZBERGOcrBackendType KREUZBERGOcrBackendType;
+/**
+ * Bounding geometry for an OCR element.
+ *
+ * Supports both axis-aligned rectangles (from Tesseract) and 4-point quadrilaterals
+ * (from PaddleOCR and rotated text detection).
+ */
 typedef struct KREUZBERGOcrBoundingGeometry KREUZBERGOcrBoundingGeometry;
 typedef struct KREUZBERGOcrCacheStats KREUZBERGOcrCacheStats;
+/**
+ * Confidence scores for an OCR element.
+ *
+ * Separates detection confidence (how confident that text exists at this location)
+ * from recognition confidence (how confident about the actual text content).
+ */
 typedef struct KREUZBERGOcrConfidence KREUZBERGOcrConfidence;
+/**
+ * OCR configuration.
+ */
 typedef struct KREUZBERGOcrConfig KREUZBERGOcrConfig;
+/**
+ * A unified OCR element representing detected text with full metadata.
+ *
+ * This is the primary type for structured OCR output, preserving all information
+ * from both Tesseract and PaddleOCR backends.
+ */
 typedef struct KREUZBERGOcrElement KREUZBERGOcrElement;
+/**
+ * Configuration for OCR element extraction.
+ *
+ * Controls how OCR elements are extracted and filtered.
+ */
 typedef struct KREUZBERGOcrElementConfig KREUZBERGOcrElementConfig;
+/**
+ * Hierarchical level of an OCR element.
+ *
+ * Maps to Tesseract's page segmentation hierarchy and provides
+ * equivalent semantics for PaddleOCR.
+ */
 typedef struct KREUZBERGOcrElementLevel KREUZBERGOcrElementLevel;
+/**
+ * OCR extraction result.
+ *
+ * Result of performing OCR on an image or scanned document,
+ * including recognized text and detected tables.
+ */
 typedef struct KREUZBERGOcrExtractionResult KREUZBERGOcrExtractionResult;
+/**
+ * OCR processing metadata.
+ *
+ * Captures information about OCR processing configuration and results.
+ */
 typedef struct KREUZBERGOcrMetadata KREUZBERGOcrMetadata;
+/**
+ * Multi-backend OCR pipeline with quality-based fallback.
+ *
+ * Backends are tried in priority order (highest first). After each backend
+ * produces output, quality is evaluated. If it meets `quality_thresholds.pipeline_min_quality`,
+ * the result is accepted. Otherwise the next backend is tried.
+ */
 typedef struct KREUZBERGOcrPipelineConfig KREUZBERGOcrPipelineConfig;
+/**
+ * A single backend stage in the OCR pipeline.
+ */
 typedef struct KREUZBERGOcrPipelineStage KREUZBERGOcrPipelineStage;
+/**
+ * Quality thresholds for OCR fallback decisions and pipeline quality gating.
+ *
+ * All fields default to the values that match the previous hardcoded behavior,
+ * so `OcrQualityThresholds::default()` preserves existing semantics exactly.
+ */
 typedef struct KREUZBERGOcrQualityThresholds KREUZBERGOcrQualityThresholds;
+/**
+ * Rotation information for an OCR element.
+ */
 typedef struct KREUZBERGOcrRotation KREUZBERGOcrRotation;
+/**
+ * Table detected via OCR.
+ *
+ * Represents a table structure recognized during OCR processing.
+ */
 typedef struct KREUZBERGOcrTable KREUZBERGOcrTable;
+/**
+ * Bounding box for an OCR-detected table in pixel coordinates.
+ */
 typedef struct KREUZBERGOcrTableBoundingBox KREUZBERGOcrTableBoundingBox;
+/**
+ * Document orientation detection result.
+ */
 typedef struct KREUZBERGOrientationResult KREUZBERGOrientationResult;
+/**
+ * Output format for extraction results.
+ *
+ * Controls the format of the `content` field in `ExtractionResult`.
+ * When set to `Markdown`, `Djot`, or `Html`, the output will be formatted
+ * accordingly. `Plain` returns the raw extracted text.
+ * `Structured` returns JSON with full OCR element data including bounding
+ * boxes and confidence scores.
+ */
 typedef struct KREUZBERGOutputFormat KREUZBERGOutputFormat;
+/**
+ * Page Segmentation Mode for Tesseract OCR
+ */
 typedef struct KREUZBERGPSMMode KREUZBERGPSMMode;
+/**
+ * Supported languages in PaddleOCR.
+ *
+ * Maps user-friendly language codes to paddle-ocr-rs language identifiers.
+ */
 typedef struct KREUZBERGPaddleLanguage KREUZBERGPaddleLanguage;
+/**
+ * Configuration for PaddleOCR backend.
+ *
+ * Configures PaddleOCR text detection and recognition with multi-language support.
+ * Uses a builder pattern for convenient configuration.
+ * \code
+ * use kreuzberg::PaddleOcrConfig;
+ *
+ * // Create with default English configuration
+ * let config = PaddleOcrConfig::new("en");
+ *
+ * // Create with custom cache directory
+ * let config = PaddleOcrConfig::new("ch")
+ *     .with_cache_dir("/path/to/cache".into());
+ *
+ * // Enable table detection
+ * let config = PaddleOcrConfig::new("en")
+ *     .with_table_detection(true);
+ * \endcode
+ */
 typedef struct KREUZBERGPaddleOcrConfig KREUZBERGPaddleOcrConfig;
+/**
+ * Byte offset boundary for a page.
+ *
+ * Tracks where a specific page's content starts and ends in the main content string,
+ * enabling mapping from byte positions to page numbers. Offsets are guaranteed to be
+ * at valid UTF-8 character boundaries when using standard String methods (push_str, push, etc.).
+ */
 typedef struct KREUZBERGPageBoundary KREUZBERGPageBoundary;
+/**
+ * Page extraction and tracking configuration.
+ *
+ * Controls how pages are extracted, tracked, and represented in the extraction results.
+ * When `None`, page tracking is disabled.
+ *
+ * Page range tracking in chunk metadata (first_page/last_page) is automatically enabled
+ * when page boundaries are available and chunking is configured.
+ */
 typedef struct KREUZBERGPageConfig KREUZBERGPageConfig;
+/**
+ * Content for a single page/slide.
+ *
+ * When page extraction is enabled, documents are split into per-page content
+ * with associated tables and images mapped to each page.
+ *
+ * # Performance
+ *
+ * Uses Arc-wrapped tables and images for memory efficiency:
+ * - `Vec<Arc<Table>>` enables zero-copy sharing of table data
+ * - `Vec<Arc<ExtractedImage>>` enables zero-copy sharing of image data
+ * - Maintains exact JSON compatibility via custom Serialize/Deserialize
+ *
+ * This reduces memory overhead for documents with shared tables/images
+ * by avoiding redundant copies during serialization.
+ */
 typedef struct KREUZBERGPageContent KREUZBERGPageContent;
+/**
+ * Page hierarchy structure containing heading levels and block information.
+ *
+ * Used when PDF text hierarchy extraction is enabled. Contains hierarchical
+ * blocks with heading levels (H1-H6) for semantic document structure.
+ */
 typedef struct KREUZBERGPageHierarchy KREUZBERGPageHierarchy;
+/**
+ * Metadata for individual page/slide/sheet.
+ *
+ * Captures per-page information including dimensions, content counts,
+ * and visibility state (for presentations).
+ */
 typedef struct KREUZBERGPageInfo KREUZBERGPageInfo;
+/**
+ * Unified page structure for documents.
+ *
+ * Supports different page types (PDF pages, PPTX slides, Excel sheets)
+ * with character offset boundaries for chunk-to-page mapping.
+ */
 typedef struct KREUZBERGPageStructure KREUZBERGPageStructure;
+/**
+ * Type of paginated unit in a document.
+ *
+ * Distinguishes between different types of "pages" (PDF pages, presentation slides, spreadsheet
+ * sheets).
+ */
 typedef struct KREUZBERGPageUnitType KREUZBERGPageUnitType;
+/**
+ * A PDF annotation extracted from a document page.
+ */
 typedef struct KREUZBERGPdfAnnotation KREUZBERGPdfAnnotation;
+/**
+ * Type of PDF annotation.
+ */
 typedef struct KREUZBERGPdfAnnotationType KREUZBERGPdfAnnotationType;
+/**
+ * PDF-specific configuration.
+ */
 typedef struct KREUZBERGPdfConfig KREUZBERGPdfConfig;
+/**
+ * PDF-specific metadata.
+ *
+ * Contains metadata fields specific to PDF documents that are not in the common
+ * `Metadata` structure. Common fields like title, authors, keywords, and dates
+ * are at the `Metadata` level.
+ */
 typedef struct KREUZBERGPdfMetadata KREUZBERGPdfMetadata;
+/**
+ * Base trait that all plugins must implement.
+ *
+ * This trait provides common functionality for plugin lifecycle management,
+ * identification, and metadata.
+ *
+ * # Thread Safety
+ *
+ * All plugins must be `Send + Sync` to support concurrent usage across threads.
+ * \code
+ * use kreuzberg::plugins::Plugin;
+ * use kreuzberg::Result;
+ * use std::sync::atomic::{AtomicBool, Ordering};
+ *
+ * struct MyPlugin {
+ *     initialized: AtomicBool,
+ * }
+ *
+ * impl Plugin for MyPlugin {
+ *     fn name(&self) -> &str {
+ *         "my-plugin"
+ *     }
+ *
+ *     fn version(&self) -> String {
+ *         "1.0.0".to_string()
+ *     }
+ *
+ *     fn initialize(&self) -> Result<()> {
+ *         self.initialized.store(true, Ordering::Release);
+ *         println!("Plugin initialized!");
+ *         Ok(())
+ *     }
+ *
+ *     fn shutdown(&self) -> Result<()> {
+ *         self.initialized.store(false, Ordering::Release);
+ *         println!("Plugin shutdown!");
+ *         Ok(())
+ *     }
+ * }
+ * \endcode
+ */
 typedef struct KREUZBERGPlugin KREUZBERGPlugin;
+/**
+ * Trait for post-processor plugins.
+ *
+ * Post-processors transform or enrich extraction results after the initial
+ * extraction is complete. They can:
+ * - Clean and normalize text
+ * - Add metadata (language, keywords, entities)
+ * - Split content into chunks
+ * - Score quality
+ * - Apply custom transformations
+ *
+ * # Processing Order
+ *
+ * Post-processors are executed in stage order:
+ * 1. **Early** - Language detection, entity extraction
+ * 2. **Middle** - Keyword extraction, token reduction
+ * 3. **Late** - Custom hooks, final validation
+ *
+ * Within each stage, processors are executed in registration order.
+ *
+ * # Error Handling
+ *
+ * Post-processor errors are non-fatal by default - they're captured in metadata
+ * and execution continues. To make errors fatal, return an error from `process()`.
+ *
+ * # Thread Safety
+ *
+ * Post-processors must be thread-safe (`Send + Sync`).
+ * \code
+ * use kreuzberg::plugins::{Plugin, PostProcessor, ProcessingStage};
+ * use kreuzberg::{Result, ExtractionResult, ExtractionConfig};
+ * use async_trait::async_trait;
+ *
+ * /// Add word count metadata to extraction results
+ * struct WordCountProcessor;
+ *
+ * impl Plugin for WordCountProcessor {
+ *     fn name(&self) -> &str { "word-count" }
+ *     fn version(&self) -> String { "1.0.0".to_string() }
+ *     fn initialize(&self) -> Result<()> { Ok(()) }
+ *     fn shutdown(&self) -> Result<()> { Ok(()) }
+ * }
+ *
+ * #[async_trait]
+ * impl PostProcessor for WordCountProcessor {
+ *     async fn process(&self, result: &mut ExtractionResult, config: &ExtractionConfig)
+ *         -> Result<()> {
+ *         // Count words
+ *         let word_count = result.content.split_whitespace().count();
+ *
+ *         // Add to metadata
+ *         result.metadata.additional.insert("word_count".to_string().into(), serde_json::json!(word_count));
+ *
+ *         Ok(())
+ *     }
+ *
+ *     fn processing_stage(&self) -> ProcessingStage {
+ *         ProcessingStage::Early
+ *     }
+ * }
+ * \endcode
+ */
 typedef struct KREUZBERGPostProcessor KREUZBERGPostProcessor;
+/**
+ * Post-processor configuration.
+ */
 typedef struct KREUZBERGPostProcessorConfig KREUZBERGPostProcessorConfig;
+/**
+ * PowerPoint (PPTX) extraction result.
+ *
+ * Contains extracted slide content, metadata, and embedded images/tables.
+ */
 typedef struct KREUZBERGPptxExtractionResult KREUZBERGPptxExtractionResult;
+/**
+ * PowerPoint presentation metadata.
+ *
+ * Extracted from PPTX files containing slide counts and presentation details.
+ */
 typedef struct KREUZBERGPptxMetadata KREUZBERGPptxMetadata;
+/**
+ * Processing stages for post-processors.
+ *
+ * Post-processors are executed in stage order (Early â Middle â Late).
+ * Use stages to control the order of post-processing operations.
+ */
 typedef struct KREUZBERGProcessingStage KREUZBERGProcessingStage;
+/**
+ * A non-fatal warning from a processing pipeline stage.
+ *
+ * Captures errors from optional features that don't prevent extraction
+ * but may indicate degraded results.
+ */
 typedef struct KREUZBERGProcessingWarning KREUZBERGProcessingWarning;
+/**
+ * Outlook PST archive metadata.
+ */
 typedef struct KREUZBERGPstMetadata KREUZBERGPstMetadata;
+/**
+ * RAKE-specific parameters.
+ */
 typedef struct KREUZBERGRakeParams KREUZBERGRakeParams;
+/**
+ * Pre-computed table markdown for a table detection region.
+ *
+ * Produced by the TATR-based table structure recognizer and surfaced as part of
+ * layout-aware OCR results.  The struct lives here (under `layout-types`, pure-Rust)
+ * so that consumers who do not enable `layout-detection` (ORT) can still reference
+ * the type in their own code.
+ */
 typedef struct KREUZBERGRecognizedTable KREUZBERGRecognizedTable;
 typedef struct KREUZBERGReductionLevel KREUZBERGReductionLevel;
+/**
+ * Semantic kind of a relationship between document elements.
+ */
 typedef struct KREUZBERGRelationshipKind KREUZBERGRelationshipKind;
+/**
+ * Trait for document renderers that convert [`InternalDocument`] to output strings.
+ *
+ * Renderers are typically stateless converters that transform the internal
+ * document representation into a specific output format (Markdown, HTML,
+ * Djot, plain text, etc.). They participate in the standard [`Plugin`]
+ * lifecycle so custom renderers can be registered from any supported binding
+ * language.
+ *
+ * The format name is exposed via [`Plugin::name`]. For stateless renderers
+ * the [`Plugin`] lifecycle methods (`version`, `initialize`, `shutdown`) all
+ * take no-op defaults and need not be overridden.
+ *
+ * # Thread Safety
+ *
+ * Renderers must be `Send + Sync` (inherited from [`Plugin`]).
+ * \code
+ * use kreuzberg::plugins::{Plugin, Renderer};
+ * use kreuzberg::types::internal::InternalDocument;
+ * use kreuzberg::Result;
+ *
+ * struct CustomRenderer;
+ *
+ * impl Plugin for CustomRenderer {
+ *     fn name(&self) -> &str { "custom" }
+ * }
+ *
+ * impl Renderer for CustomRenderer {
+ *     fn render(&self, doc: &InternalDocument) -> Result<String> {
+ *         Ok(format!("Custom output with {} elements", doc.elements.len()))
+ *     }
+ * }
+ * \endcode
+ */
 typedef struct KREUZBERGRenderer KREUZBERGRenderer;
+/**
+ * Result-shape selection for extraction results.
+ *
+ * Distinct from `OutputFormat` (which controls rendering â Plain, Markdown,
+ * HTML, etc.). `ResultFormat` controls the *shape* of the result: a unified content
+ * blob vs. an element-based decomposition.
+ */
 typedef struct KREUZBERGResultFormat KREUZBERGResultFormat;
+/**
+ * Configuration for security limits across extractors.
+ *
+ * All limits are intentionally conservative to prevent DoS attacks
+ * while still supporting legitimate documents.
+ */
 typedef struct KREUZBERGSecurityLimits KREUZBERGSecurityLimits;
+/**
+ * API server configuration.
+ *
+ * This struct holds all configuration options for the Kreuzberg API server,
+ * including host/port settings, CORS configuration, and upload limits.
+ *
+ * # Defaults
+ *
+ * - `host`: "127.0.0.1" (localhost only)
+ * - `port`: 8000
+ * - `cors_origins`: empty vector (allows all origins)
+ * - `max_request_body_bytes`: 104_857_600 (100 MB)
+ * - `max_multipart_field_bytes`: 104_857_600 (100 MB)
+ */
 typedef struct KREUZBERGServerConfig KREUZBERGServerConfig;
+/**
+ * Structured data (Schema.org, microdata, RDFa) block.
+ */
 typedef struct KREUZBERGStructuredData KREUZBERGStructuredData;
 typedef struct KREUZBERGStructuredDataResult KREUZBERGStructuredDataResult;
+/**
+ * Structured data type classification.
+ */
 typedef struct KREUZBERGStructuredDataType KREUZBERGStructuredDataType;
+/**
+ * Configuration for LLM-based structured data extraction.
+ *
+ * Sends extracted document content to a VLM with a JSON schema,
+ * returning structured data that conforms to the schema.
+ * \code
+ * [structured_extraction]
+ * schema_name = "invoice_data"
+ * strict = true
+ *
+ * [structured_extraction.schema]
+ * type = "object"
+ * properties.vendor = { type = "string" }
+ * properties.total = { type = "number" }
+ * required = ["vendor", "total"]
+ *
+ * [structured_extraction.llm]
+ * model = "openai/gpt-4o"
+ * \endcode
+ */
 typedef struct KREUZBERGStructuredExtractionConfig KREUZBERGStructuredExtractionConfig;
+/**
+ * A supported document format entry.
+ *
+ * Represents a file extension and its corresponding MIME type that Kreuzberg can process.
+ */
 typedef struct KREUZBERGSupportedFormat KREUZBERGSupportedFormat;
+/**
+ * Extracted table structure.
+ *
+ * Represents a table detected and extracted from a document (PDF, image, etc.).
+ * Tables are converted to both structured cell data and Markdown format.
+ */
 typedef struct KREUZBERGTable KREUZBERGTable;
+/**
+ * Individual table cell with content and optional styling.
+ *
+ * Future extension point for rich table support with cell-level metadata.
+ */
 typedef struct KREUZBERGTableCell KREUZBERGTableCell;
+/**
+ * Structured table grid with cell-level metadata.
+ *
+ * Stores row/column dimensions and a flat list of cells with position info.
+ */
 typedef struct KREUZBERGTableGrid KREUZBERGTableGrid;
+/**
+ * Which table structure recognition model to use.
+ *
+ * Controls the model used for table cell detection within layout-detected
+ * table regions. Wire format is snake_case in all serializers (JSON, TOML,
+ * YAML).
+ */
 typedef struct KREUZBERGTableModel KREUZBERGTableModel;
+/**
+ * Tesseract OCR configuration.
+ *
+ * Provides fine-grained control over Tesseract OCR engine parameters.
+ * Most users can use the defaults, but these settings allow optimization
+ * for specific document types (invoices, handwriting, etc.).
+ */
 typedef struct KREUZBERGTesseractConfig KREUZBERGTesseractConfig;
+/**
+ * Inline text annotation â byte-range based formatting and links.
+ *
+ * Annotations reference byte offsets into the node's text content,
+ * enabling precise identification of formatted regions.
+ */
 typedef struct KREUZBERGTextAnnotation KREUZBERGTextAnnotation;
+/**
+ * Text direction enumeration for HTML documents.
+ */
 typedef struct KREUZBERGTextDirection KREUZBERGTextDirection;
+/**
+ * Plain text and Markdown extraction result.
+ *
+ * Contains the extracted text along with statistics and,
+ * for Markdown files, structural elements like headers and links.
+ */
 typedef struct KREUZBERGTextExtractionResult KREUZBERGTextExtractionResult;
+/**
+ * Text/Markdown metadata.
+ *
+ * Extracted from plain text and Markdown files. Includes word counts and,
+ * for Markdown, structural elements like headers and links.
+ */
 typedef struct KREUZBERGTextMetadata KREUZBERGTextMetadata;
 typedef struct KREUZBERGTokenReductionConfig KREUZBERGTokenReductionConfig;
+/**
+ * Token reduction configuration.
+ */
 typedef struct KREUZBERGTokenReductionOptions KREUZBERGTokenReductionOptions;
+/**
+ * Configuration for tree-sitter language pack integration.
+ *
+ * Controls grammar download behavior and code analysis options.
+ *
+ * # Example (TOML)
+ *
+ * ```toml
+ * [tree_sitter]
+ * languages = ["python", "rust"]
+ * groups = ["web"]
+ *
+ * [tree_sitter.process]
+ * structure = true
+ * comments = true
+ * docstrings = true
+ * ```
+ */
 typedef struct KREUZBERGTreeSitterConfig KREUZBERGTreeSitterConfig;
+/**
+ * Processing options for tree-sitter code analysis.
+ *
+ * Controls which analysis features are enabled when extracting code files.
+ */
 typedef struct KREUZBERGTreeSitterProcessConfig KREUZBERGTreeSitterProcessConfig;
+/**
+ * A URI extracted from a document.
+ *
+ * Represents any link, reference, or resource pointer found during extraction.
+ * The `kind` field classifies the URI semantically, while `label` carries
+ * optional human-readable display text.
+ */
 typedef struct KREUZBERGUri KREUZBERGUri;
+/**
+ * Semantic classification of an extracted URI.
+ */
 typedef struct KREUZBERGUriKind KREUZBERGUriKind;
+/**
+ * Trait for validator plugins.
+ *
+ * Validators check extraction results for quality, completeness, or correctness.
+ * Unlike post-processors, validator errors **fail fast** - if a validator returns
+ * an error, the extraction fails immediately.
+ *
+ * # Use Cases
+ *
+ * - **Quality Gates**: Ensure extracted content meets minimum quality standards
+ * - **Compliance**: Verify content meets regulatory requirements
+ * - **Content Filtering**: Reject documents containing unwanted content
+ * - **Format Validation**: Verify extracted content structure
+ * - **Security Checks**: Scan for malicious content
+ *
+ * # Error Handling
+ *
+ * Validator errors are **fatal** - they cause the extraction to fail and bubble up
+ * to the caller. Use validators for hard requirements that must be met.
+ *
+ * For non-fatal checks, use post-processors instead.
+ *
+ * # Thread Safety
+ *
+ * Validators must be thread-safe (`Send + Sync`).
+ * \code
+ * use kreuzberg::plugins::{Plugin, Validator};
+ * use kreuzberg::{Result, ExtractionResult, ExtractionConfig, KreuzbergError};
+ * use async_trait::async_trait;
+ *
+ * /// Validate that extracted content has minimum length
+ * struct MinimumLengthValidator {
+ *     min_length: usize,
+ * }
+ *
+ * impl Plugin for MinimumLengthValidator {
+ *     fn name(&self) -> &str { "min-length-validator" }
+ *     fn version(&self) -> String { "1.0.0".to_string() }
+ *     fn initialize(&self) -> Result<()> { Ok(()) }
+ *     fn shutdown(&self) -> Result<()> { Ok(()) }
+ * }
+ *
+ * #[async_trait]
+ * impl Validator for MinimumLengthValidator {
+ *     async fn validate(&self, result: &ExtractionResult, config: &ExtractionConfig)
+ *         -> Result<()> {
+ *         if result.content.len() < self.min_length {
+ *             return Err(KreuzbergError::validation(format!(
+ *                 "Content too short: {} < {} characters",
+ *                 result.content.len(),
+ *                 self.min_length
+ *             )));
+ *         }
+ *         Ok(())
+ *     }
+ * }
+ * \endcode
+ */
 typedef struct KREUZBERGValidator KREUZBERGValidator;
+/**
+ * XML extraction result.
+ *
+ * Contains extracted text content from XML files along with
+ * structural statistics about the XML document.
+ */
 typedef struct KREUZBERGXmlExtractionResult KREUZBERGXmlExtractionResult;
+/**
+ * XML metadata extracted during XML parsing.
+ *
+ * Provides statistics about XML document structure.
+ */
 typedef struct KREUZBERGXmlMetadata KREUZBERGXmlMetadata;
+/**
+ * YAKE-specific parameters.
+ */
 typedef struct KREUZBERGYakeParams KREUZBERGYakeParams;
+/**
+ * Year range for bibliographic metadata.
+ */
 typedef struct KREUZBERGYearRange KREUZBERGYearRange;
 
 
@@ -1098,9 +2379,8 @@ int32_t kreuzberg_content_filter_config_strip_repeating_text(const KREUZBERGCont
 int32_t kreuzberg_content_filter_config_include_watermarks(const KREUZBERGContentFilterConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGContentFilterConfig *kreuzberg_content_filter_config_default(void);
 
@@ -1375,9 +2655,8 @@ KREUZBERGTreeSitterConfig *kreuzberg_extraction_config_tree_sitter(const KREUZBE
 KREUZBERGStructuredExtractionConfig *kreuzberg_extraction_config_structured_extraction(const KREUZBERGExtractionConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGExtractionConfig *kreuzberg_extraction_config_default(void);
 
@@ -1393,9 +2672,8 @@ KREUZBERGExtractionConfig *kreuzberg_extraction_config_default(void);
  * For text-only extractions (no OCR, no image extraction), skipping image
  * decompression can improve CPU utilization by 5-10% by avoiding wasteful
  * image I/O and processing when results won't be used.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 int32_t kreuzberg_extraction_config_needs_image_processing(const KREUZBERGExtractionConfig *this_);
 
@@ -1738,9 +3016,8 @@ uint32_t kreuzberg_image_extraction_config_max_images_per_page(const KREUZBERGIm
 int32_t kreuzberg_image_extraction_config_classify(const KREUZBERGImageExtractionConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGImageExtractionConfig *kreuzberg_image_extraction_config_default(void);
 
@@ -1782,9 +3059,8 @@ char *kreuzberg_token_reduction_options_mode(const KREUZBERGTokenReductionOption
 int32_t kreuzberg_token_reduction_options_preserve_important_words(const KREUZBERGTokenReductionOptions *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGTokenReductionOptions *kreuzberg_token_reduction_options_default(void);
 
@@ -1833,9 +3109,8 @@ double kreuzberg_language_detection_config_min_confidence(const KREUZBERGLanguag
 int32_t kreuzberg_language_detection_config_detect_multiple(const KREUZBERGLanguageDetectionConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGLanguageDetectionConfig *kreuzberg_language_detection_config_default(void);
 
@@ -1898,9 +3173,8 @@ char *kreuzberg_html_output_config_class_prefix(const KREUZBERGHtmlOutputConfig 
 int32_t kreuzberg_html_output_config_embed_css(const KREUZBERGHtmlOutputConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGHtmlOutputConfig *kreuzberg_html_output_config_default(void);
 
@@ -1956,9 +3230,8 @@ KREUZBERGTableModel *kreuzberg_layout_detection_config_table_model(const KREUZBE
 KREUZBERGAccelerationConfig *kreuzberg_layout_detection_config_acceleration(const KREUZBERGLayoutDetectionConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGLayoutDetectionConfig *kreuzberg_layout_detection_config_default(void);
 
@@ -2235,9 +3508,8 @@ double kreuzberg_ocr_quality_thresholds_alnum_ws_ratio_threshold(const KREUZBERG
 double kreuzberg_ocr_quality_thresholds_pipeline_min_quality(const KREUZBERGOcrQualityThresholds *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGOcrQualityThresholds *kreuzberg_ocr_quality_thresholds_default(void);
 
@@ -2479,9 +3751,8 @@ KREUZBERGAccelerationConfig *kreuzberg_ocr_config_acceleration(const KREUZBERGOc
 char *kreuzberg_ocr_config_tessdata_bytes(const KREUZBERGOcrConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGOcrConfig *kreuzberg_ocr_config_default(void);
 
@@ -2530,9 +3801,8 @@ int32_t kreuzberg_page_config_insert_page_markers(const KREUZBERGPageConfig *ptr
 char *kreuzberg_page_config_marker_format(const KREUZBERGPageConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPageConfig *kreuzberg_page_config_default(void);
 
@@ -2630,9 +3900,8 @@ int32_t kreuzberg_pdf_config_allow_single_column_tables(const KREUZBERGPdfConfig
 int32_t kreuzberg_pdf_config_ocr_inline_images(const KREUZBERGPdfConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPdfConfig *kreuzberg_pdf_config_default(void);
 
@@ -2688,9 +3957,8 @@ int32_t kreuzberg_hierarchy_config_include_bbox(const KREUZBERGHierarchyConfig *
 float kreuzberg_hierarchy_config_ocr_coverage_threshold(const KREUZBERGHierarchyConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGHierarchyConfig *kreuzberg_hierarchy_config_default(void);
 
@@ -2739,9 +4007,8 @@ char *kreuzberg_post_processor_config_enabled_processors(const KREUZBERGPostProc
 char *kreuzberg_post_processor_config_disabled_processors(const KREUZBERGPostProcessorConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPostProcessorConfig *kreuzberg_post_processor_config_default(void);
 
@@ -2832,9 +4099,8 @@ int32_t kreuzberg_chunking_config_prepend_heading_context(const KREUZBERGChunkin
 float kreuzberg_chunking_config_topic_threshold(const KREUZBERGChunkingConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGChunkingConfig *kreuzberg_chunking_config_default(void);
 
@@ -2911,9 +4177,8 @@ KREUZBERGAccelerationConfig *kreuzberg_embedding_config_acceleration(const KREUZ
 uint64_t kreuzberg_embedding_config_max_embed_duration_secs(const KREUZBERGEmbeddingConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGEmbeddingConfig *kreuzberg_embedding_config_default(void);
 
@@ -2976,9 +4241,8 @@ char *kreuzberg_tree_sitter_config_groups(const KREUZBERGTreeSitterConfig *ptr);
 KREUZBERGTreeSitterProcessConfig *kreuzberg_tree_sitter_config_process(const KREUZBERGTreeSitterConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGTreeSitterConfig *kreuzberg_tree_sitter_config_default(void);
 
@@ -3069,9 +4333,8 @@ uintptr_t kreuzberg_tree_sitter_process_config_chunk_max_size(const KREUZBERGTre
 KREUZBERGCodeContentMode *kreuzberg_tree_sitter_process_config_content_mode(const KREUZBERGTreeSitterProcessConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGTreeSitterProcessConfig *kreuzberg_tree_sitter_process_config_default(void);
 
@@ -3171,26 +4434,21 @@ uintptr_t kreuzberg_server_config_max_request_body_bytes(const KREUZBERGServerCo
 uintptr_t kreuzberg_server_config_max_multipart_field_bytes(const KREUZBERGServerConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGServerConfig *kreuzberg_server_config_default(void);
 
 /**
  * Get the server listen address (host:port).
- *
- * # Example
- *
- * ```rust
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::ServerConfig;
  *
  * let config = ServerConfig::default();
  * assert_eq!(config.listen_addr(), "127.0.0.1:8000");
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_server_config_listen_addr(const KREUZBERGServerConfig *this_);
 
@@ -3199,10 +4457,9 @@ char *kreuzberg_server_config_listen_addr(const KREUZBERGServerConfig *this_);
  *
  * Returns `true` if the `cors_origins` vector is empty, meaning all origins
  * are allowed. Returns `false` if specific origins are configured.
- *
- * # Example
- *
- * ```rust
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::ServerConfig;
  *
  * let mut config = ServerConfig::default();
@@ -3210,10 +4467,7 @@ char *kreuzberg_server_config_listen_addr(const KREUZBERGServerConfig *this_);
  *
  * config.cors_origins.push("https://example.com".to_string());
  * assert!(!config.cors_allows_all());
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 int32_t kreuzberg_server_config_cors_allows_all(const KREUZBERGServerConfig *this_);
 
@@ -3223,14 +4477,10 @@ int32_t kreuzberg_server_config_cors_allows_all(const KREUZBERGServerConfig *thi
  * Returns `true` if:
  * - CORS allows all origins (empty origins list), or
  * - The given origin is in the allowed origins list
- *
- * # Arguments
- *
- * * `origin` - The origin to check (e.g., "https://example.com")
- *
- * # Example
- *
- * ```rust
+ * \param origin The origin to check (e.g., "https://example.com")
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::ServerConfig;
  *
  * let mut config = ServerConfig::default();
@@ -3239,45 +4489,34 @@ int32_t kreuzberg_server_config_cors_allows_all(const KREUZBERGServerConfig *thi
  * config.cors_origins.push("https://allowed.com".to_string());
  * assert!(config.is_origin_allowed("https://allowed.com"));
  * assert!(!config.is_origin_allowed("https://denied.com"));
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 int32_t kreuzberg_server_config_is_origin_allowed(const KREUZBERGServerConfig *this_,
                                                   const char *origin);
 
 /**
  * Get maximum request body size in megabytes (rounded up).
- *
- * # Example
- *
- * ```rust
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::ServerConfig;
  *
  * let mut config = ServerConfig::default();
  * assert_eq!(config.max_request_body_mb(), 100);
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 uintptr_t kreuzberg_server_config_max_request_body_mb(const KREUZBERGServerConfig *this_);
 
 /**
  * Get maximum multipart field size in megabytes (rounded up).
- *
- * # Example
- *
- * ```rust
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::ServerConfig;
  *
  * let mut config = ServerConfig::default();
  * assert_eq!(config.max_multipart_field_mb(), 100);
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 uintptr_t kreuzberg_server_config_max_multipart_field_mb(const KREUZBERGServerConfig *this_);
 
@@ -3412,9 +4651,8 @@ uintptr_t kreuzberg_security_limits_max_xml_depth(const KREUZBERGSecurityLimits 
 uintptr_t kreuzberg_security_limits_max_table_cells(const KREUZBERGSecurityLimits *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGSecurityLimits *kreuzberg_security_limits_default(void);
 
@@ -3519,9 +4757,8 @@ float kreuzberg_token_reduction_config_target_reduction(const KREUZBERGTokenRedu
 int32_t kreuzberg_token_reduction_config_enable_semantic_clustering(const KREUZBERGTokenReductionConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGTokenReductionConfig *kreuzberg_token_reduction_config_default(void);
 
@@ -3931,10 +5168,9 @@ char *kreuzberg_document_structure_node_types(const KREUZBERGDocumentStructure *
  *
  * Call this after all nodes have been added to the structure. Internal
  * construction paths (builder, derivation) call this automatically.
- *
- * # Examples
- *
- * ```rust
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::types::document_structure::{DocumentStructure, DocumentNode, NodeContent, NodeId};
  *
  * let mut structure = DocumentStructure {
@@ -3956,25 +5192,20 @@ char *kreuzberg_document_structure_node_types(const KREUZBERGDocumentStructure *
  * };
  * structure.finalize_node_types();
  * assert!(structure.node_types.contains(&"paragraph".to_string()));
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 void kreuzberg_document_structure_finalize_node_types(KREUZBERGDocumentStructure *this_);
 
 /**
  * Check if the document structure is empty.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 int32_t kreuzberg_document_structure_is_empty(const KREUZBERGDocumentStructure *this_);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGDocumentStructure *kreuzberg_document_structure_default(void);
 
@@ -4426,9 +5657,8 @@ char *kreuzberg_extraction_result_formatted_content(const KREUZBERGExtractionRes
 
 /**
  * Convert from an OCR result.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGExtractionResult *kreuzberg_extraction_result_from_ocr(const KREUZBERGOcrExtractionResult *ocr);
 
@@ -5694,9 +6924,8 @@ char *kreuzberg_image_preprocessing_config_binarization_method(const KREUZBERGIm
 int32_t kreuzberg_image_preprocessing_config_invert_colors(const KREUZBERGImagePreprocessingConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGImagePreprocessingConfig *kreuzberg_image_preprocessing_config_default(void);
 
@@ -5871,9 +7100,8 @@ int32_t kreuzberg_tesseract_config_textord_space_size_is_variable(const KREUZBER
 int32_t kreuzberg_tesseract_config_thresholding_method(const KREUZBERGTesseractConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGTesseractConfig *kreuzberg_tesseract_config_default(void);
 
@@ -6143,9 +7371,8 @@ char *kreuzberg_metadata_additional(const KREUZBERGMetadata *ptr);
 /**
  * Returns `true` when no metadata fields, format-specific metadata, or
  * additional postprocessor fields are populated.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 int32_t kreuzberg_metadata_is_empty(const KREUZBERGMetadata *this_);
 
@@ -6788,9 +8015,8 @@ char *kreuzberg_html_metadata_images(const KREUZBERGHtmlMetadata *ptr);
 char *kreuzberg_html_metadata_structured_data(const KREUZBERGHtmlMetadata *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGHtmlMetadata *kreuzberg_html_metadata_from(const KREUZBERGHtmlMetadata *metadata);
 
@@ -8371,9 +9597,8 @@ void kreuzberg_yake_params_free(KREUZBERGYakeParams *ptr);
 uintptr_t kreuzberg_yake_params_window_size(const KREUZBERGYakeParams *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGYakeParams *kreuzberg_yake_params_default(void);
 
@@ -8415,9 +9640,8 @@ uintptr_t kreuzberg_rake_params_min_word_length(const KREUZBERGRakeParams *ptr);
 uintptr_t kreuzberg_rake_params_max_words_per_phrase(const KREUZBERGRakeParams *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGRakeParams *kreuzberg_rake_params_default(void);
 
@@ -8487,9 +9711,8 @@ KREUZBERGYakeParams *kreuzberg_keyword_config_yake_params(const KREUZBERGKeyword
 KREUZBERGRakeParams *kreuzberg_keyword_config_rake_params(const KREUZBERGKeywordConfig *ptr);
 
 /**
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGKeywordConfig *kreuzberg_keyword_config_default(void);
 
@@ -8674,171 +9897,121 @@ char *kreuzberg_paddle_ocr_config_model_tier(const KREUZBERGPaddleOcrConfig *ptr
 
 /**
  * Sets a custom cache directory for model files.
- *
- * # Arguments
- *
- * * `path` - Path to cache directory
- *
- * # Examples
- *
- * ```no_run
+ * \param path Path to cache directory
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::PaddleOcrConfig;
  * use std::path::PathBuf;
  *
  * let config = PaddleOcrConfig::new("en")
  *     .with_cache_dir(PathBuf::from("/tmp/paddle-cache"));
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_cache_dir(KREUZBERGPaddleOcrConfig *this_,
                                                                      const char *path);
 
 /**
  * Enables or disables table structure detection.
- *
- * # Arguments
- *
- * * `enable` - Whether to enable table detection
- *
- * # Examples
- *
- * ```no_run
+ * \param enable Whether to enable table detection
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::PaddleOcrConfig;
  *
  * let config = PaddleOcrConfig::new("en")
  *     .with_table_detection(true);
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_table_detection(KREUZBERGPaddleOcrConfig *this_,
                                                                            int32_t enable);
 
 /**
  * Enables or disables angle classification for rotated text.
- *
- * # Arguments
- *
- * * `enable` - Whether to enable angle classification
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param enable Whether to enable angle classification
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_angle_cls(KREUZBERGPaddleOcrConfig *this_,
                                                                      int32_t enable);
 
 /**
  * Sets the database threshold for text detection.
- *
- * # Arguments
- *
- * * `threshold` - Detection threshold (0.0-1.0)
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param threshold Detection threshold (0.0-1.0)
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_db_thresh(KREUZBERGPaddleOcrConfig *this_,
                                                                          float threshold);
 
 /**
  * Sets the box threshold for text bounding box refinement.
- *
- * # Arguments
- *
- * * `threshold` - Box threshold (0.0-1.0)
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param threshold Box threshold (0.0-1.0)
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_db_box_thresh(KREUZBERGPaddleOcrConfig *this_,
                                                                              float threshold);
 
 /**
  * Sets the unclip ratio for expanding text bounding boxes.
- *
- * # Arguments
- *
- * * `ratio` - Unclip ratio (typically 1.5-2.0)
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param ratio Unclip ratio (typically 1.5-2.0)
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_db_unclip_ratio(KREUZBERGPaddleOcrConfig *this_,
                                                                                float ratio);
 
 /**
  * Sets the maximum side length for detection images.
- *
- * # Arguments
- *
- * * `length` - Maximum side length in pixels
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param length Maximum side length in pixels
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_det_limit_side_len(KREUZBERGPaddleOcrConfig *this_,
                                                                               uint32_t length);
 
 /**
  * Sets the batch size for recognition inference.
- *
- * # Arguments
- *
- * * `batch_size` - Number of text regions to process simultaneously
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param batch_size Number of text regions to process simultaneously
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_rec_batch_num(KREUZBERGPaddleOcrConfig *this_,
                                                                          uint32_t batch_size);
 
 /**
  * Sets the minimum recognition confidence threshold.
- *
- * # Arguments
- *
- * * `score` - Minimum confidence (0.0-1.0), text below this is dropped
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param score Minimum confidence (0.0-1.0), text below this is dropped
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_drop_score(KREUZBERGPaddleOcrConfig *this_,
                                                                       float score);
 
 /**
  * Sets padding in pixels added around images before detection.
- *
- * # Arguments
- *
- * * `padding` - Padding in pixels (0-100)
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param padding Padding in pixels (0-100)
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_padding(KREUZBERGPaddleOcrConfig *this_,
                                                                    uint32_t padding);
 
 /**
  * Sets the model tier controlling detection/recognition model size.
- *
- * # Arguments
- *
- * * `tier` - `"mobile"` (default, lightweight, faster) or `"server"` (high accuracy, GPU/complex documents)
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param tier `"mobile"` (default, lightweight, faster) or `"server"` (high accuracy, GPU/complex
+ * documents)
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_with_model_tier(KREUZBERGPaddleOcrConfig *this_,
                                                                       const char *tier);
 
 /**
  * Creates a default configuration with English language support.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGPaddleOcrConfig *kreuzberg_paddle_ocr_config_default(void);
 
@@ -10617,25 +11790,15 @@ char *kreuzberg_layout_class_to_string(const KREUZBERGLayoutClass *ptr);
  * 3. Select appropriate extractor from registry
  * 4. Extract content
  * 5. Run post-processing pipeline
- *
- * # Arguments
- *
- * * `content` - The byte array to extract
- * * `mime_type` - MIME type of the content
- * * `config` - Extraction configuration
- *
- * # Returns
- *
- * An `ExtractionResult` containing the extracted content and metadata.
- *
- * # Errors
- *
- * Returns `KreuzbergError::Validation` if MIME type is invalid.
+ * \param content The byte array to extract
+ * \param mime_type MIME type of the content
+ * \param config Extraction configuration
+ * \return An `ExtractionResult` containing the extracted content and metadata.
+ * \note Returns `KreuzbergError::Validation` if MIME type is invalid.
  * Returns `KreuzbergError::UnsupportedFormat` if MIME type is not supported.
- *
- * # Example
- *
- * ```rust,no_run
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::extractor::extract_bytes;
  * use kreuzberg::core::config::ExtractionConfig;
  *
@@ -10643,10 +11806,7 @@ char *kreuzberg_layout_class_to_string(const KREUZBERGLayoutClass *ptr);
  * let bytes = b"Hello, world!";
  * let result = extract_bytes(bytes, "text/plain", &config).await?;
  * println!("Content: {}", result.content);
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 KREUZBERGExtractionResult *kreuzberg_extract_bytes(const uint8_t *content,
                                                    uintptr_t content_len,
@@ -10663,35 +11823,23 @@ KREUZBERGExtractionResult *kreuzberg_extract_bytes(const uint8_t *content,
  * 4. Extract content
  * 5. Run post-processing pipeline
  * 6. Store result in cache (if caching enabled)
- *
- * # Arguments
- *
- * * `path` - Path to the file to extract
- * * `mime_type` - Optional MIME type override. If None, will be auto-detected
- * * `config` - Extraction configuration
- *
- * # Returns
- *
- * An `ExtractionResult` containing the extracted content and metadata.
- *
- * # Errors
- *
- * Returns `KreuzbergError::Io` if the file doesn't exist (NotFound) or for other file I/O errors.
+ * \param path Path to the file to extract
+ * \param mime_type Optional MIME type override. If None, will be auto-detected
+ * \param config Extraction configuration
+ * \return An `ExtractionResult` containing the extracted content and metadata.
+ * \note Returns `KreuzbergError::Io` if the file doesn't exist (NotFound) or for other file I/O
+ * errors.
  * Returns `KreuzbergError::UnsupportedFormat` if MIME type is not supported.
- *
- * # Example
- *
- * ```rust,no_run
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::extractor::extract_file;
  * use kreuzberg::core::config::ExtractionConfig;
  *
  * let config = ExtractionConfig::default();
  * let result = extract_file("document.pdf", None, &config).await?;
  * println!("Content: {}", result.content);
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 KREUZBERGExtractionResult *kreuzberg_extract_file(const char *path,
                                                   const char *mime_type,
@@ -10708,20 +11856,16 @@ KREUZBERGExtractionResult *kreuzberg_extract_file(const char *path,
  *
  * This function is only available with the `tokio-runtime` feature. For WASM targets,
  * use a truly synchronous extraction approach instead.
- *
- * # Example
- *
- * ```rust,no_run
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::extractor::extract_file_sync;
  * use kreuzberg::core::config::ExtractionConfig;
  *
  * let config = ExtractionConfig::default();
  * let result = extract_file_sync("document.pdf", None, &config)?;
  * println!("Content: {}", result.content);
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 KREUZBERGExtractionResult *kreuzberg_extract_file_sync(const char *path,
                                                        const char *mime_type,
@@ -10735,10 +11879,9 @@ KREUZBERGExtractionResult *kreuzberg_extract_file_sync(const char *path,
  *
  * With the `tokio-runtime` feature, this blocks the current thread using the global
  * Tokio runtime. Without it (WASM), this calls a truly synchronous implementation.
- *
- * # Example
- *
- * ```rust,no_run
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::extractor::extract_bytes_sync;
  * use kreuzberg::core::config::ExtractionConfig;
  *
@@ -10746,10 +11889,7 @@ KREUZBERGExtractionResult *kreuzberg_extract_file_sync(const char *path,
  * let bytes = b"Hello, world!";
  * let result = extract_bytes_sync(bytes, "text/plain", &config)?;
  * println!("Content: {}", result.content);
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 KREUZBERGExtractionResult *kreuzberg_extract_bytes_sync(const uint8_t *content,
                                                         uintptr_t content_len,
@@ -10761,10 +11901,9 @@ KREUZBERGExtractionResult *kreuzberg_extract_bytes_sync(const uint8_t *content,
  *
  * Uses the global Tokio runtime for optimal performance.
  * Only available with `tokio-runtime` (WASM has no filesystem).
- *
- * # Example
- *
- * ```rust,no_run
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::extractor::batch_extract_files_sync;
  * use kreuzberg::core::config::{ExtractionConfig, BatchFileItem, FileExtractionConfig};
  *
@@ -10777,22 +11916,17 @@ KREUZBERGExtractionResult *kreuzberg_extract_bytes_sync(const uint8_t *content,
  *     BatchFileItem { path: "doc2.pdf".into(), config: None },
  * ];
  * let results = batch_extract_files_sync(items, &config)?;
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_batch_extract_files_sync(const char *items,
                                          const KREUZBERGExtractionConfig *config);
 
 /**
- * Return the byte length of the C string that `kreuzberg_batch_extract_files_sync` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_batch_extract_files_sync`.
+ * Return the byte length of the C string that `kreuzberg_batch_extract_files_sync` would return for
+ * the same arguments, without allocating. Returns 0 when the underlying value is None or an error
+ * occurs. Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_batch_extract_files_sync`.
  */
 uintptr_t kreuzberg_batch_extract_files_sync_len(const char *items,
                                                  const KREUZBERGExtractionConfig *config);
@@ -10804,10 +11938,9 @@ uintptr_t kreuzberg_batch_extract_files_sync_len(const char *items,
  * With the `tokio-runtime` feature, this blocks the current thread using the global
  * Tokio runtime. Without it (WASM), this calls a truly synchronous implementation
  * that iterates through items and calls `extract_bytes_sync()`.
- *
- * # Example
- *
- * ```rust,no_run
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::extractor::batch_extract_bytes_sync;
  * use kreuzberg::core::config::{ExtractionConfig, BatchBytesItem, FileExtractionConfig};
  *
@@ -10821,22 +11954,17 @@ uintptr_t kreuzberg_batch_extract_files_sync_len(const char *items,
  *     },
  * ];
  * let results = batch_extract_bytes_sync(items, &config)?;
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_batch_extract_bytes_sync(const char *items,
                                          const KREUZBERGExtractionConfig *config);
 
 /**
- * Return the byte length of the C string that `kreuzberg_batch_extract_bytes_sync` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_batch_extract_bytes_sync`.
+ * Return the byte length of the C string that `kreuzberg_batch_extract_bytes_sync` would return for
+ * the same arguments, without allocating. Returns 0 when the underlying value is None or an error
+ * occurs. Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_batch_extract_bytes_sync`.
  */
 uintptr_t kreuzberg_batch_extract_bytes_sync_len(const char *items,
                                                  const KREUZBERGExtractionConfig *config);
@@ -10853,27 +11981,17 @@ uintptr_t kreuzberg_batch_extract_bytes_sync_len(const char *items,
  * fields from the batch-level `config`. Pass `None` for a file to use the batch defaults.
  * Batch-level settings like `max_concurrent_extractions` and `use_cache` are always
  * taken from the batch-level `config`.
- *
- * # Arguments
- *
- * * `items` - Vector of `BatchFileItem` structs, each containing a path and optional
- *   per-file configuration overrides.
- * * `config` - Batch-level extraction configuration (provides defaults and batch settings)
- *
- * # Returns
- *
- * A vector of `ExtractionResult` in the same order as the input items.
- *
- * # Errors
- *
- * Individual file errors are captured in the result metadata. System errors
+ * \param items Vector of `BatchFileItem` structs, each containing a path and optional per-file
+ * configuration overrides.
+ * \param config Batch-level extraction configuration (provides defaults and batch settings)
+ * \return A vector of `ExtractionResult` in the same order as the input items.
+ * \note Individual file errors are captured in the result metadata. System errors
  * (IO, RuntimeError equivalents) will bubble up and fail the entire batch.
- *
- * # Examples
- *
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * Simple usage with no per-file overrides:
  *
- * ```rust,no_run
  * use kreuzberg::core::extractor::batch_extract_files;
  * use kreuzberg::core::config::{ExtractionConfig, BatchFileItem};
  * use std::path::PathBuf;
@@ -10885,11 +12003,9 @@ uintptr_t kreuzberg_batch_extract_bytes_sync_len(const char *items,
  * ];
  * let results = batch_extract_files(items, &config).await?;
  * println!("Processed {} files", results.len());
- * ```
  *
  * Per-file configuration overrides:
  *
- * ```rust,no_run
  * use kreuzberg::core::extractor::batch_extract_files;
  * use kreuzberg::core::config::{ExtractionConfig, BatchFileItem, FileExtractionConfig};
  * use std::path::PathBuf;
@@ -10903,22 +12019,17 @@ uintptr_t kreuzberg_batch_extract_bytes_sync_len(const char *items,
  *     BatchFileItem { path: "notes.txt".into(), config: None },
  * ];
  * let results = batch_extract_files(items, &config).await?;
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_batch_extract_files(const char *items,
                                     const KREUZBERGExtractionConfig *config);
 
 /**
- * Return the byte length of the C string that `kreuzberg_batch_extract_files` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_batch_extract_files`.
+ * Return the byte length of the C string that `kreuzberg_batch_extract_files` would return for the
+ * same arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_batch_extract_files`.
  */
 uintptr_t kreuzberg_batch_extract_files_len(const char *items,
                                             const KREUZBERGExtractionConfig *config);
@@ -10934,22 +12045,15 @@ uintptr_t kreuzberg_batch_extract_files_len(const char *items,
  * Each item can optionally specify a [`FileExtractionConfig`] that overrides specific
  * fields from the batch-level `config`. Pass `None` as the config to use
  * the batch-level defaults for that item.
- *
- * # Arguments
- *
- * * `items` - Vector of `BatchBytesItem` structs, each containing content bytes,
- *   MIME type, and optional per-item configuration overrides.
- * * `config` - Batch-level extraction configuration
- *
- * # Returns
- *
- * A vector of `ExtractionResult` in the same order as the input items.
- *
- * # Examples
- *
+ * \param items Vector of `BatchBytesItem` structs, each containing content bytes, MIME type, and
+ * optional per-item configuration overrides.
+ * \param config Batch-level extraction configuration
+ * \return A vector of `ExtractionResult` in the same order as the input items.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * Simple usage with no per-item overrides:
  *
- * ```rust,no_run
  * use kreuzberg::core::extractor::batch_extract_bytes;
  * use kreuzberg::core::config::{ExtractionConfig, BatchBytesItem};
  *
@@ -10960,11 +12064,9 @@ uintptr_t kreuzberg_batch_extract_files_len(const char *items,
  * ];
  * let results = batch_extract_bytes(items, &config).await?;
  * println!("Processed {} items", results.len());
- * ```
  *
  * Per-item configuration overrides:
  *
- * ```rust,no_run
  * use kreuzberg::core::extractor::batch_extract_bytes;
  * use kreuzberg::core::config::{ExtractionConfig, BatchBytesItem, FileExtractionConfig};
  *
@@ -10978,22 +12080,17 @@ uintptr_t kreuzberg_batch_extract_files_len(const char *items,
  *     },
  * ];
  * let results = batch_extract_bytes(items, &config).await?;
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_batch_extract_bytes(const char *items,
                                     const KREUZBERGExtractionConfig *config);
 
 /**
- * Return the byte length of the C string that `kreuzberg_batch_extract_bytes` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_batch_extract_bytes`.
+ * Return the byte length of the C string that `kreuzberg_batch_extract_bytes` would return for the
+ * same arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_batch_extract_bytes`.
  */
 uintptr_t kreuzberg_batch_extract_bytes_len(const char *items,
                                             const KREUZBERGExtractionConfig *config);
@@ -11006,33 +12103,21 @@ uintptr_t kreuzberg_batch_extract_bytes_len(const char *items,
  *
  * For ZIP-based files, inspects contents to distinguish Office Open XML
  * formats (DOCX, XLSX, PPTX) from plain ZIP archives.
- *
- * # Arguments
- *
- * * `content` - Raw file bytes
- *
- * # Returns
- *
- * The detected MIME type string.
- *
- * # Errors
- *
- * Returns `KreuzbergError::UnsupportedFormat` if MIME type cannot be determined.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \param content Raw file bytes
+ * \return The detected MIME type string.
+ * \note Returns `KreuzbergError::UnsupportedFormat` if MIME type cannot be determined.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_detect_mime_type_from_bytes(const uint8_t *content,
                                             uintptr_t content_len);
 
 /**
- * Return the byte length of the C string that `kreuzberg_detect_mime_type_from_bytes` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_detect_mime_type_from_bytes`.
+ * Return the byte length of the C string that `kreuzberg_detect_mime_type_from_bytes` would return for
+ * the same arguments, without allocating. Returns 0 when the underlying value is None or an error
+ * occurs. Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_detect_mime_type_from_bytes`.
  */
 uintptr_t kreuzberg_detect_mime_type_from_bytes_len(const uint8_t *content,
                                                     uintptr_t content_len);
@@ -11041,18 +12126,11 @@ uintptr_t kreuzberg_detect_mime_type_from_bytes_len(const uint8_t *content,
  * Get file extensions for a given MIME type.
  *
  * Returns all known file extensions that map to the specified MIME type.
- *
- * # Arguments
- *
- * * `mime_type` - The MIME type to look up
- *
- * # Returns
- *
- * A vector of file extensions (without leading dot) for the MIME type.
- *
- * # Example
- *
- * ```
+ * \param mime_type The MIME type to look up
+ * \return A vector of file extensions (without leading dot) for the MIME type.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::core::mime::get_extensions_for_mime;
  *
  * let extensions = get_extensions_for_mime("application/pdf").unwrap();
@@ -11060,21 +12138,16 @@ uintptr_t kreuzberg_detect_mime_type_from_bytes_len(const uint8_t *content,
  *
  * let doc_extensions = get_extensions_for_mime("application/vnd.openxmlformats-officedocument.wordprocessingml.document").unwrap();
  * assert!(doc_extensions.contains(&"docx".to_string()));
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_get_extensions_for_mime(const char *mime_type);
 
 /**
- * Return the byte length of the C string that `kreuzberg_get_extensions_for_mime` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_get_extensions_for_mime`.
+ * Return the byte length of the C string that `kreuzberg_get_extensions_for_mime` would return for the
+ * same arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_get_extensions_for_mime`.
  */
 uintptr_t kreuzberg_get_extensions_for_mime_len(const char *mime_type);
 
@@ -11083,39 +12156,33 @@ uintptr_t kreuzberg_get_extensions_for_mime_len(const char *mime_type);
  *
  * Used by `kreuzberg-cli` and the api/mcp endpoints; excluded from the
  * language bindings via `alef.toml [exclude].functions`.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_list_embedding_backends(void);
 
 /**
- * Return the byte length of the C string that `kreuzberg_list_embedding_backends` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_list_embedding_backends`.
+ * Return the byte length of the C string that `kreuzberg_list_embedding_backends` would return for the
+ * same arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_list_embedding_backends`.
  */
 uintptr_t kreuzberg_list_embedding_backends_len(void);
 
 /**
  * List names of all registered document extractors.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_list_document_extractors(void);
 
 /**
- * Return the byte length of the C string that `kreuzberg_list_document_extractors` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_list_document_extractors`.
+ * Return the byte length of the C string that `kreuzberg_list_document_extractors` would return for
+ * the same arguments, without allocating. Returns 0 when the underlying value is None or an error
+ * occurs. Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_list_document_extractors`.
  */
 uintptr_t kreuzberg_list_document_extractors_len(void);
 
@@ -11123,35 +12190,25 @@ uintptr_t kreuzberg_list_document_extractors_len(void);
  * List all registered OCR backends.
  *
  * Returns the names of all OCR backends currently registered in the global registry.
- *
- * # Returns
- *
- * A vector of OCR backend names.
- *
- * # Example
- *
- * ```rust
+ * \return A vector of OCR backend names.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::plugins::list_ocr_backends;
  *
  * let backends = list_ocr_backends()?;
  * for name in backends {
  *     println!("Registered OCR backend: {}", name);
  * }
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_list_ocr_backends(void);
 
 /**
- * Return the byte length of the C string that `kreuzberg_list_ocr_backends` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_list_ocr_backends`.
+ * Return the byte length of the C string that `kreuzberg_list_ocr_backends` would return for the same
+ * arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as `kreuzberg_list_ocr_backends`.
  */
 uintptr_t kreuzberg_list_ocr_backends_len(void);
 
@@ -11160,78 +12217,58 @@ uintptr_t kreuzberg_list_ocr_backends_len(void);
  *
  * Returns a vector of all post-processor names currently registered in the
  * global registry.
- *
- * # Returns
- *
- * - `Ok(Vec<String>)` - Vector of post-processor names
+ * \return - `Ok(Vec<String>)` - Vector of post-processor names
  * - `Err(...)` if the registry lock is poisoned
- *
- * # Example
- *
- * ```rust
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::plugins::list_post_processors;
  *
  * let processors = list_post_processors()?;
  * for name in processors {
  *     println!("Registered post-processor: {}", name);
  * }
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_list_post_processors(void);
 
 /**
- * Return the byte length of the C string that `kreuzberg_list_post_processors` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_list_post_processors`.
+ * Return the byte length of the C string that `kreuzberg_list_post_processors` would return for the
+ * same arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_list_post_processors`.
  */
 uintptr_t kreuzberg_list_post_processors_len(void);
 
 /**
  * List names of all registered renderers.
- *
- * # Errors
- *
- * Returns an error if the registry lock is poisoned.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note Returns an error if the registry lock is poisoned.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_list_renderers(void);
 
 /**
- * Return the byte length of the C string that `kreuzberg_list_renderers` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_list_renderers`.
+ * Return the byte length of the C string that `kreuzberg_list_renderers` would return for the same
+ * arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as `kreuzberg_list_renderers`.
  */
 uintptr_t kreuzberg_list_renderers_len(void);
 
 /**
  * List names of all registered validators.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_list_validators(void);
 
 /**
- * Return the byte length of the C string that `kreuzberg_list_validators` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_list_validators`.
+ * Return the byte length of the C string that `kreuzberg_list_validators` would return for the same
+ * arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as `kreuzberg_list_validators`.
  */
 uintptr_t kreuzberg_list_validators_len(void);
 
@@ -11243,43 +12280,30 @@ uintptr_t kreuzberg_list_validators_len(void);
  * `spawn_blocking`, keeping the async executor free.
  *
  * Returns one embedding vector per input text in the same order.
- *
- * # Arguments
- *
- * * `texts` - Vec of strings to embed (owned, sent to blocking thread)
- * * `config` - Embedding configuration specifying model, batch size, and normalization
- *
- * # Errors
- *
- * - `KreuzbergError::MissingDependency` if ONNX Runtime is not installed
+ * \param texts Vec of strings to embed (owned, sent to blocking thread)
+ * \param config Embedding configuration specifying model, batch size, and normalization
+ * \note - `KreuzbergError::MissingDependency` if ONNX Runtime is not installed
  * - `KreuzbergError::Embedding` if the preset name is unknown, model download fails,
  *   or the blocking inference task panics
- *
- * # Example
- *
- * ```rust,ignore
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
+ * \code
  * use kreuzberg::{embed_texts_async, EmbeddingConfig};
  *
  * let embeddings = embed_texts_async(
  *     vec!["Hello!".to_string()],
  *     &EmbeddingConfig::default(),
  * ).await?;
- * ```
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \endcode
  */
 char *kreuzberg_embed_texts_async(const char *texts,
                                   const KREUZBERGEmbeddingConfig *config);
 
 /**
- * Return the byte length of the C string that `kreuzberg_embed_texts_async` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_embed_texts_async`.
+ * Return the byte length of the C string that `kreuzberg_embed_texts_async` would return for the same
+ * arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as `kreuzberg_embed_texts_async`.
  */
 uintptr_t kreuzberg_embed_texts_async_len(const char *texts,
                                           const KREUZBERGEmbeddingConfig *config);
@@ -11289,21 +12313,14 @@ uintptr_t kreuzberg_embed_texts_async_len(const char *texts,
  *
  * Returns raw PNG-encoded bytes for the specified page at the given DPI.
  * Uses pdf_oxide with tiny-skia for pure-Rust rendering.
- *
- * # Arguments
- *
- * * `pdf_bytes` - Raw PDF file bytes
- * * `page_index` - Zero-based page index
- * * `dpi` - Resolution in dots per inch (default: 150)
- * * `password` - Optional password for encrypted PDFs
- *
- * # Errors
- *
- * Returns `KreuzbergError::Parsing` if the PDF cannot be opened, authenticated,
+ * \param pdf_bytes Raw PDF file bytes
+ * \param page_index Zero-based page index
+ * \param dpi Resolution in dots per inch (default: 150)
+ * \param password Optional password for encrypted PDFs
+ * \note Returns `KreuzbergError::Parsing` if the PDF cannot be opened, authenticated,
  * or rendered, or if `page_index` is out of range.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 int32_t kreuzberg_render_pdf_page_to_png(const uint8_t *pdf_bytes,
                                          uintptr_t pdf_bytes_len,
@@ -11319,21 +12336,17 @@ int32_t kreuzberg_render_pdf_page_to_png(const uint8_t *pdf_bytes,
  *
  * Uses the file extension and optionally the file content to determine the MIME type.
  * Set `check_exists` to `true` to verify the file exists before detection.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_detect_mime_type(const char *path,
                                  int32_t check_exists);
 
 /**
- * Return the byte length of the C string that `kreuzberg_detect_mime_type` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_detect_mime_type`.
+ * Return the byte length of the C string that `kreuzberg_detect_mime_type` would return for the same
+ * arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as `kreuzberg_detect_mime_type`.
  */
 uintptr_t kreuzberg_detect_mime_type_len(const char *path,
                                          int32_t check_exists);
@@ -11342,21 +12355,17 @@ uintptr_t kreuzberg_detect_mime_type_len(const char *path,
  * Embed a list of texts using the configured embedding model.
  *
  * Returns a 2D vector where each inner vector is the embedding for the corresponding text.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_embed_texts(const char *texts,
                             const KREUZBERGEmbeddingConfig *config);
 
 /**
- * Return the byte length of the C string that `kreuzberg_embed_texts` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_embed_texts`.
+ * Return the byte length of the C string that `kreuzberg_embed_texts` would return for the same
+ * arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as `kreuzberg_embed_texts`.
  */
 uintptr_t kreuzberg_embed_texts_len(const char *texts,
                                     const KREUZBERGEmbeddingConfig *config);
@@ -11366,9 +12375,8 @@ uintptr_t kreuzberg_embed_texts_len(const char *texts,
  *
  * Returns `None` if no preset with the given name exists. Returns an owned
  * clone so the value is safe to pass across FFI boundaries.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 KREUZBERGEmbeddingPreset *kreuzberg_get_embedding_preset(const char *name);
 
@@ -11376,20 +12384,17 @@ KREUZBERGEmbeddingPreset *kreuzberg_get_embedding_preset(const char *name);
  * List the names of all available embedding presets.
  *
  * Returns owned `String`s so the values are safe to pass across FFI boundaries.
- * # Safety
- * Caller must ensure all pointer arguments are valid or null.
- * Returned pointers must be freed with the appropriate free function.
+ * \note SAFETY: Caller must ensure all pointer arguments are valid or null. Returned pointers must be
+ * freed with the appropriate free function.
  */
 char *kreuzberg_list_embedding_presets(void);
 
 /**
- * Return the byte length of the C string that `kreuzberg_list_embedding_presets` would return
- * for the same arguments, without allocating.  Returns 0 when the underlying value is
- * None or an error occurs.  Enables safe slice construction in Zig and Java FFM Panama
- * without a NUL-scan.
- *
- * # Safety
- * All pointer parameters obey the same validity rules as `kreuzberg_list_embedding_presets`.
+ * Return the byte length of the C string that `kreuzberg_list_embedding_presets` would return for the
+ * same arguments, without allocating. Returns 0 when the underlying value is None or an error occurs.
+ * Enables safe slice construction in Zig and Java FFM Panama without a NUL-scan.
+ * \note SAFETY: All pointer parameters obey the same validity rules as
+ * `kreuzberg_list_embedding_presets`.
  */
 uintptr_t kreuzberg_list_embedding_presets_len(void);
 

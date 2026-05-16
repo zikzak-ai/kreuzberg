@@ -19,12 +19,12 @@ public class WordCountProcessor : IPostProcessor
     public void Process(ExtractionResult result, ExtractionConfig config)
     {
         var wordCount = CountWords(result.Content);
-        
+
         if (result.Metadata == null)
         {
             result.Metadata = new Metadata();
         }
-        
+
         Console.WriteLine($"Document contains {wordCount} words");
     }
 
@@ -52,7 +52,7 @@ public class WordCountProcessor : IPostProcessor
     {
         if (string.IsNullOrWhiteSpace(content))
             return 0;
-        
+
         return content.Split(new[] { ' ', '\t', '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries).Length;
     }
 }

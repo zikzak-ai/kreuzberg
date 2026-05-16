@@ -5,8 +5,4 @@ package dev.kreuzberg
 /**
  * A single layout detection result.
  */
-data class LayoutDetection(
-    val className: LayoutClass,
-    val confidence: Float,
-    val bbox: BBox,
-)
+data class LayoutDetection(val className: LayoutClass, val confidence: Float, val bbox: BBox)

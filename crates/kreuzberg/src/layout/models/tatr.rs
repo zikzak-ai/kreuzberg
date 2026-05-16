@@ -72,11 +72,11 @@ const NMS_IOB_THRESHOLD_COLS: f32 = 0.3;
 /// are removed as noise. Prevents spurious thin column detections from
 /// splitting the grid incorrectly.
 const MIN_COL_WIDTH_FRAC: f32 = 0.01;
-#[cfg_attr(alef, alef(skip))]
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+#[cfg_attr(alef, alef(skip))]
 /// TATR object detection class labels.
 ///
 /// The 7 classes output by the Table Transformer model. `NoObject` (class 6)
@@ -114,7 +114,6 @@ impl TatrClass {
     }
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// A single TATR detection result.
 #[derive(Debug, Clone)]
 pub struct TatrDetection {
@@ -126,7 +125,6 @@ pub struct TatrDetection {
     pub class_name: TatrClass,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Aggregated TATR recognition result with detections separated by class.
 #[derive(Debug, Clone)]
 pub struct TatrResult {
@@ -140,7 +138,6 @@ pub struct TatrResult {
     pub spanning: Vec<TatrDetection>,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// A cell bounding box within the reconstructed table grid.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CellBBox {

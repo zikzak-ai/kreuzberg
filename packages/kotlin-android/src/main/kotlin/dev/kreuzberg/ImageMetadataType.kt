@@ -6,10 +6,28 @@ package dev.kreuzberg
  * Image element metadata.
  */
 data class ImageMetadataType(
+    /**
+     * Image source (URL, data URI, or SVG content)
+     */
     val src: String,
+    /**
+     * Alternative text from alt attribute
+     */
     val alt: String?,
+    /**
+     * Title attribute
+     */
     val title: String?,
+    /**
+     * Image dimensions as (width, height) if available
+     */
     val dimensions: List<Int>?,
+    /**
+     * Image type classification
+     */
     val imageType: ImageType,
+    /**
+     * Additional attributes as key-value pairs
+     */
     val attributes: List<String>,
 )

@@ -37,7 +37,7 @@ config_json = Jason.encode!(%{
 
 if result.chunks do
   IO.puts("Generated #{length(result.chunks)} chunks with prepended headings")
-  
+
   Enum.each(result.chunks, fn chunk ->
     IO.puts("Chunk preview: #{String.slice(chunk["content"], 0..80)}...")
   end)

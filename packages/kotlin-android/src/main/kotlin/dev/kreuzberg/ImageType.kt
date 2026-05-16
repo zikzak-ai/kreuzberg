@@ -6,8 +6,23 @@ package dev.kreuzberg
  * Image type classification.
  */
 enum class ImageType {
+    /**
+     * Data URI image
+     */
     DATA_URI,
+
+    /**
+     * Inline SVG
+     */
     INLINE_SVG,
+
+    /**
+     * External image URL
+     */
     EXTERNAL,
+
+    /**
+     * Relative path image
+     */
     RELATIVE,
 }

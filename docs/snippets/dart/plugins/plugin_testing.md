@@ -1,4 +1,5 @@
 <!-- snippet:skip reason="Testing Dart plugins via package:test is not practical because test closure capture varies by test framework; test via integration after registration or via Rust unit tests." -->
+
 ```dart title="Dart"
 import 'package:kreuzberg/kreuzberg.dart';
 

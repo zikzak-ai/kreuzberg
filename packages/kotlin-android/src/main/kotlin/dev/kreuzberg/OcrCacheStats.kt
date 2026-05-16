@@ -2,7 +2,4 @@
 
 package dev.kreuzberg
 
-data class OcrCacheStats(
-    val totalFiles: Long,
-    val totalSizeMb: Double,
-)
+data class OcrCacheStats(val totalFiles: Long, val totalSizeMb: Double)

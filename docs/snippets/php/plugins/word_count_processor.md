@@ -22,12 +22,12 @@ class WordCountProcessor implements PostProcessor {
 
     public function process(object &$result, object $config): void {
         $wordCount = count(preg_split('/\s+/', trim($result->content), -1, PREG_SPLIT_NO_EMPTY));
-        
+
         // Add word count to metadata
         if (!isset($result->metadata)) {
             $result->metadata = [];
         }
-        
+
         if (is_array($result->metadata)) {
             $result->metadata['word_count'] = $wordCount;
         } else {

@@ -20,26 +20,100 @@ package dev.kreuzberg
  * - `security_limits` — global archive security policy
  */
 data class FileExtractionConfig(
+    /**
+     * Override quality post-processing for this file.
+     */
     val enableQualityProcessing: Boolean?,
+    /**
+     * Override OCR configuration for this file (None in the Option = use batch default).
+     */
     val ocr: OcrConfig?,
+    /**
+     * Override force OCR for this file.
+     */
     val forceOcr: Boolean?,
+    /**
+     * Override force OCR pages for this file (1-indexed page numbers).
+     */
     val forceOcrPages: List<Int>?,
+    /**
+     * Override disable OCR for this file.
+     */
     val disableOcr: Boolean?,
+    /**
+     * Override chunking configuration for this file.
+     */
     val chunking: ChunkingConfig?,
+    /**
+     * Override content filtering configuration for this file.
+     */
     val contentFilter: ContentFilterConfig?,
+    /**
+     * Override image extraction configuration for this file.
+     */
     val images: ImageExtractionConfig?,
+    /**
+     * Override PDF options for this file.
+     */
     val pdfOptions: PdfConfig?,
+    /**
+     * Override token reduction for this file.
+     */
     val tokenReduction: TokenReductionOptions?,
+    /**
+     * Override language detection for this file.
+     */
     val languageDetection: LanguageDetectionConfig?,
+    /**
+     * Override page extraction for this file.
+     */
     val pages: PageConfig?,
+    /**
+     * Override keyword extraction for this file.
+     */
     val keywords: KeywordConfig?,
+    /**
+     * Override post-processor for this file.
+     */
     val postprocessor: PostProcessorConfig?,
+    /**
+     * Override HTML conversion options for this file.
+     */
     val htmlOptions: String?,
+    /**
+     * Override result format for this file.
+     */
     val resultFormat: ResultFormat?,
+    /**
+     * Override output content format for this file.
+     */
     val outputFormat: OutputFormat?,
+    /**
+     * Override document structure output for this file.
+     */
     val includeDocumentStructure: Boolean?,
+    /**
+     * Override layout detection for this file.
+     */
     val layout: LayoutDetectionConfig?,
+    /**
+     * Override per-file extraction timeout in seconds.
+     *
+     * When set, the extraction for this file will be canceled after the
+     * specified duration. A timed-out file produces an error result without
+     * affecting other files in the batch.
+     */
     val timeoutSecs: Long?,
+    /**
+     * Override tree-sitter configuration for this file.
+     */
     val treeSitter: TreeSitterConfig?,
+    /**
+     * Override structured extraction configuration for this file.
+     *
+     * When set, enables LLM-based structured extraction with a JSON schema
+     * for this specific file. The extracted content is sent to a VLM/LLM
+     * and the response is parsed according to the provided schema.
+     */
     val structuredExtraction: StructuredExtractionConfig?,
 )

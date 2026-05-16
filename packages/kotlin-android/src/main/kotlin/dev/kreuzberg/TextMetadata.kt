@@ -9,10 +9,28 @@ package dev.kreuzberg
  * for Markdown, structural elements like headers and links.
  */
 data class TextMetadata(
+    /**
+     * Number of lines in the document
+     */
     val lineCount: Int,
+    /**
+     * Number of words
+     */
     val wordCount: Int,
+    /**
+     * Number of characters
+     */
     val characterCount: Int,
+    /**
+     * Markdown headers (headings text only, for Markdown files)
+     */
     val headers: List<String>?,
+    /**
+     * Markdown links as (text, url) tuples (for Markdown files)
+     */
     val links: List<String>?,
+    /**
+     * Code blocks as (language, code) tuples (for Markdown files)
+     */
     val codeBlocks: List<String>?,
 )

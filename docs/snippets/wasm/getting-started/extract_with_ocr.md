@@ -10,8 +10,8 @@ const config = {
   force_ocr: true,
   ocr: {
     backend: "tesseract",
-    language: "eng"
-  }
+    language: "eng",
+  },
 };
 
 const result = await extractBytes(data, "application/pdf", config);

@@ -151,7 +151,7 @@ Complete architecture coverage across all language bindings:
 | Kotlin   |      ✅      |      ✅       |     ✅      |     ✅      |
 | C#       |      ✅      |      ✅       |     ✅      |     ✅      |
 | PHP      |      ✅      |      ✅       |     ✅      |     ✅      |
-| Swift    |      -       |      -        |     ✅      |      -      |
+| Swift    |      -       |       -       |     ✅      |      -      |
 | Dart     |      ✅      |      ✅       |     ✅      |     ✅      |
 | Zig      |      ✅      |      ✅       |     ✅      |     ✅      |
 | Rust     |      ✅      |      ✅       |     ✅      |     ✅      |
@@ -163,13 +163,13 @@ Complete architecture coverage across all language bindings:
 
 ### Mobile (iOS, Android)
 
-| Target                                            | ORT-dependent features* |
-| ------------------------------------------------- | :---------------------: |
-| iOS (`aarch64-apple-ios`, `aarch64-apple-ios-sim`) |           ✅            |
-| Android arm64 (`aarch64-linux-android`)            |           ✅            |
-| Android x86_64 emulator (`x86_64-linux-android`)   |           ❌            |
+| Target                                             | ORT-dependent features\* |
+| -------------------------------------------------- | :----------------------: |
+| iOS (`aarch64-apple-ios`, `aarch64-apple-ios-sim`) |            ✅            |
+| Android arm64 (`aarch64-linux-android`)            |            ✅            |
+| Android x86_64 emulator (`x86_64-linux-android`)   |            ❌            |
 
-*ORT-dependent features: PaddleOCR, layout detection, embeddings, auto-rotate.
+\*ORT-dependent features: PaddleOCR, layout detection, embeddings, auto-rotate.
 All non-ORT capabilities (Tesseract OCR, every document format, chunking, language detection, keywords, tree-sitter code intelligence, API/MCP, LLM) are available on all four mobile targets.
 
 The `x86_64-linux-android` emulator triple lacks an ORT prebuilt upstream; kreuzberg's `kreuzberg` crate exposes an `android-target` aggregate feature that selects the same no-ORT feature set as WASM. The `kreuzberg-ffi` and `kreuzberg-dart` crates auto-select that aggregate for the emulator via target-conditional dependencies — host and arm64 phones get full features automatically.

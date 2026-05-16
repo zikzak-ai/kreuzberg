@@ -12,7 +12,17 @@ package dev.kreuzberg
  * when page boundaries are available and chunking is configured.
  */
 data class PageConfig(
+    /**
+     * Extract pages as separate array (ExtractionResult.pages)
+     */
     val extractPages: Boolean,
+    /**
+     * Insert page markers in main content string
+     */
     val insertPageMarkers: Boolean,
+    /**
+     * Page marker format (use {page_num} placeholder)
+     * Default: "\n\n<!-- PAGE {page_num} -->\n\n"
+     */
     val markerFormat: String,
 )

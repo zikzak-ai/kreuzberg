@@ -10,11 +10,33 @@ package dev.kreuzberg
  * within one extraction (e.g. VLM OCR + structured extraction).
  */
 data class LlmUsage(
+    /**
+     * The LLM model identifier (e.g. "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514").
+     */
     val model: String,
+    /**
+     * The pipeline stage that triggered this LLM call
+     * (e.g. "vlm_ocr", "structured_extraction", "embeddings").
+     */
     val source: String,
+    /**
+     * Number of input/prompt tokens consumed.
+     */
     val inputTokens: Long?,
+    /**
+     * Number of output/completion tokens generated.
+     */
     val outputTokens: Long?,
+    /**
+     * Total tokens (input + output).
+     */
     val totalTokens: Long?,
+    /**
+     * Estimated cost in USD based on the provider's published pricing.
+     */
     val estimatedCost: Double?,
+    /**
+     * Why the model stopped generating (e.g. "stop", "length", "content_filter").
+     */
     val finishReason: String?,
 )

@@ -5,7 +5,6 @@ use crate::{KreuzbergError, Result};
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 #[cfg_attr(alef, alef(skip))]
-
 /// Registry for document extractor plugins.
 ///
 /// Manages extractors with MIME type and priority-based selection.

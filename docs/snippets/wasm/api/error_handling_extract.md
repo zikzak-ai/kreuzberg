@@ -17,7 +17,7 @@ const extractionPromises = Array.from(fileList).map(async (file) => {
     return {
       file: file.name,
       success: false,
-      error: err instanceof Error ? err.message : String(err)
+      error: err instanceof Error ? err.message : String(err),
     };
   }
 });

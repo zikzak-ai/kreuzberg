@@ -6,10 +6,28 @@ package dev.kreuzberg
  * Link element metadata.
  */
 data class LinkMetadata(
+    /**
+     * The href URL value
+     */
     val href: String,
+    /**
+     * Link text content (normalized)
+     */
     val text: String,
+    /**
+     * Optional title attribute
+     */
     val title: String?,
+    /**
+     * Link type classification
+     */
     val linkType: LinkType,
+    /**
+     * Rel attribute values
+     */
     val rel: List<String>,
+    /**
+     * Additional attributes as key-value pairs
+     */
     val attributes: List<String>,
 )

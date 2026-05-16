@@ -14,7 +14,6 @@ use std::borrow::Cow;
 #[cfg(feature = "tokio-runtime")]
 use std::path::Path;
 #[cfg_attr(alef, alef(skip))]
-
 /// Email message extractor.
 ///
 /// Supports: .eml, .msg

@@ -582,7 +582,6 @@ pub enum ResultFormat {
     ElementBased,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Unique identifier for semantic elements.
 ///
 /// Wraps a string identifier that is deterministically generated
@@ -651,7 +650,6 @@ pub enum ElementType {
     Header,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Bounding box coordinates for element positioning.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "api", derive(utoipa::ToSchema))]

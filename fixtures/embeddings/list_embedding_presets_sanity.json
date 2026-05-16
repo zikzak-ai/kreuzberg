@@ -10,8 +10,6 @@
     }
   ],
   "skip": {
-    "languages": [
-      "wasm"
-    ]
+    "languages": ["wasm"]
   }
 }

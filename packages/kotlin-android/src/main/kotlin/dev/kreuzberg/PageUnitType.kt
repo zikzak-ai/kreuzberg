@@ -8,7 +8,18 @@ package dev.kreuzberg
  * Distinguishes between different types of "pages" (PDF pages, presentation slides, spreadsheet sheets).
  */
 enum class PageUnitType {
+    /**
+     * Standard document pages (PDF, DOCX, images)
+     */
     PAGE,
+
+    /**
+     * Presentation slides (PPTX, ODP)
+     */
     SLIDE,
+
+    /**
+     * Spreadsheet sheets (XLSX, ODS)
+     */
     SHEET,
 }

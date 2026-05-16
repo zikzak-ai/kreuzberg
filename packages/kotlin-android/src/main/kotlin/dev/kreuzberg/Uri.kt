@@ -10,8 +10,20 @@ package dev.kreuzberg
  * optional human-readable display text.
  */
 data class Uri(
+    /**
+     * The URL or path string.
+     */
     val url: String,
+    /**
+     * Optional display text / label for the link.
+     */
     val label: String?,
+    /**
+     * Optional page number where the URI was found (1-indexed).
+     */
     val page: Int?,
+    /**
+     * Semantic classification of the URI.
+     */
     val kind: UriKind,
 )

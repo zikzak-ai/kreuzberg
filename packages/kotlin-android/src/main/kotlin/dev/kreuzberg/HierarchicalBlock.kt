@@ -9,8 +9,31 @@ package dev.kreuzberg
  * font size clustering and hierarchical analysis.
  */
 data class HierarchicalBlock(
+    /**
+     * The text content of this block
+     */
     val text: String,
+    /**
+     * The font size of the text in this block
+     */
     val fontSize: Float,
+    /**
+     * The hierarchy level of this block (H1-H6 or Body)
+     *
+     * Levels correspond to HTML heading tags:
+     * - "h1": Top-level heading
+     * - "h2": Secondary heading
+     * - "h3": Tertiary heading
+     * - "h4": Quaternary heading
+     * - "h5": Quinary heading
+     * - "h6": Senary heading
+     * - "body": Body text (no heading level)
+     */
     val level: String,
+    /**
+     * Bounding box information for the block
+     *
+     * Contains coordinates as (left, top, right, bottom) in PDF units.
+     */
     val bbox: List<Float>?,
 )

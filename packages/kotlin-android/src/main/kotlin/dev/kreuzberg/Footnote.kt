@@ -6,6 +6,12 @@ package dev.kreuzberg
  * Footnote in Djot.
  */
 data class Footnote(
+    /**
+     * Footnote label
+     */
     val label: String,
+    /**
+     * Footnote content blocks
+     */
     val content: List<FormattedBlock>,
 )

@@ -3,7 +3,7 @@ import init, { extractBytes } from "kreuzberg-wasm";
 
 await init();
 
-const data = new Uint8Array(await fetch("document.pdf").then(r => r.arrayBuffer()));
+const data = new Uint8Array(await fetch("document.pdf").then((r) => r.arrayBuffer()));
 
 const config = {
   pdf_options: {

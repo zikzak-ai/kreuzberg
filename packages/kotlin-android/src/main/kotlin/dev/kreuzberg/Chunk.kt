@@ -10,8 +10,26 @@ package dev.kreuzberg
  * is configured), and metadata about its position in the document.
  */
 data class Chunk(
+    /**
+     * The text content of this chunk.
+     */
     val content: String,
+    /**
+     * Semantic structural classification of this chunk.
+     *
+     * Assigned by the heuristic classifier based on content patterns and
+     * heading context. Defaults to `ChunkType.Unknown` when no rule matches.
+     */
     val chunkType: ChunkType,
+    /**
+     * Optional embedding vector for this chunk.
+     *
+     * Only populated when `EmbeddingConfig` is provided in chunking configuration.
+     * The dimensionality depends on the chosen embedding model.
+     */
     val embedding: List<Float>?,
+    /**
+     * Metadata about this chunk's position and properties.
+     */
     val metadata: ChunkMetadata,
 )

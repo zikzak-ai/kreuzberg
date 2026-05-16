@@ -5,7 +5,4 @@ package dev.kreuzberg
 /**
  * dBASE field information.
  */
-data class DbfFieldInfo(
-    val name: String,
-    val fieldType: String,
-)
+data class DbfFieldInfo(val name: String, val fieldType: String)

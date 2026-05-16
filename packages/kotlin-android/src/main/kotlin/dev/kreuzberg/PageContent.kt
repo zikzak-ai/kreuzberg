@@ -19,11 +19,47 @@ package dev.kreuzberg
  * by avoiding redundant copies during serialization.
  */
 data class PageContent(
+    /**
+     * Page number (1-indexed)
+     */
     val pageNumber: Int,
+    /**
+     * Text content for this page
+     */
     val content: String,
+    /**
+     * Tables found on this page (uses Arc for memory efficiency)
+     *
+     * Serializes as Vec<Table> for JSON compatibility while maintaining
+     * Arc semantics in-memory for zero-copy sharing.
+     */
     val tables: List<Table>,
+    /**
+     * Indices into `ExtractionResult.images` for images found on this page.
+     *
+     * Each value is a zero-based index into the top-level `images` collection.
+     * Only populated when `extract_images = true` in the extraction config.
+     */
     val imageIndices: List<Int>,
+    /**
+     * Hierarchy information for the page (when hierarchy extraction is enabled)
+     *
+     * Contains text hierarchy levels (H1-H6) extracted from the page content.
+     */
     val hierarchy: PageHierarchy?,
+    /**
+     * Whether this page is blank (no meaningful text content)
+     *
+     * Determined during extraction based on text content analysis.
+     * A page is blank if it has fewer than 3 non-whitespace characters
+     * and contains no tables or images.
+     */
     val isBlank: Boolean?,
+    /**
+     * Layout detection regions for this page (when layout detection is enabled).
+     *
+     * Contains detected layout regions with class, confidence, bounding box,
+     * and area fraction. Only populated when layout detection is configured.
+     */
     val layoutRegions: List<LayoutRegion>?,
 )

@@ -6,7 +6,16 @@ package dev.kreuzberg
  * Structured data (Schema.org, microdata, RDFa) block.
  */
 data class StructuredData(
+    /**
+     * Type of structured data
+     */
     val dataType: StructuredDataType,
+    /**
+     * Raw JSON string representation
+     */
     val rawJson: String,
+    /**
+     * Schema type if detectable (e.g., "Article", "Event", "Product")
+     */
     val schemaType: String?,
 )

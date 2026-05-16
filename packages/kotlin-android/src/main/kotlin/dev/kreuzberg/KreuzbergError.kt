@@ -24,9 +24,7 @@ package dev.kreuzberg
  * - `Other` - Catch-all for uncommon errors
  */
 sealed class KreuzbergError(message: String) : Exception(message) {
-    data class Io(
-        val field0: String,
-    ) : KreuzbergError("IO error: $field0")
+    data class Io(val field0: String) : KreuzbergError("IO error: $field0")
 
     data class Parsing(
         override val message: String,
@@ -67,9 +65,7 @@ sealed class KreuzbergError(message: String) : Exception(message) {
         val pluginName: String,
     ) : KreuzbergError("Plugin error in '{plugin_name}': {message}")
 
-    data class LockPoisoned(
-        val field0: String,
-    ) : KreuzbergError("Lock poisoned: $field0")
+    data class LockPoisoned(val field0: String) : KreuzbergError("Lock poisoned: $field0")
 
     data class UnsupportedFormat(
         val field0: String,
@@ -92,7 +88,5 @@ sealed class KreuzbergError(message: String) : Exception(message) {
         val source: String?,
     ) : KreuzbergError("Security violation: {message}")
 
-    data class Other(
-        val field0: String,
-    ) : KreuzbergError("$field0")
+    data class Other(val field0: String) : KreuzbergError("$field0")
 }

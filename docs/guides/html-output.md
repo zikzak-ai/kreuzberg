@@ -120,13 +120,13 @@ See [HtmlOutputConfig](../reference/configuration.md#htmloutputconfig) for detai
 
 ## CLI Flags
 
-| Flag | Description |
-|------|-------------|
-| `--html-theme <THEME>` | Built-in theme: `default`, `github`, `dark`, `light`, `unstyled`. Implies `--content-format html`. |
-| `--html-css <CSS>` | Inline CSS string appended after the theme stylesheet. |
-| `--html-css-file <PATH>` | Path to CSS file loaded at render time (max 1 MiB). |
-| `--html-class-prefix <PREFIX>` | CSS class prefix; default: `"kb-"`. Alphanumeric, hyphens, underscores only. |
-| `--html-no-embed-css` | Suppress the `<style>` block; use external stylesheet instead. |
+| Flag                           | Description                                                                                        |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `--html-theme <THEME>`         | Built-in theme: `default`, `github`, `dark`, `light`, `unstyled`. Implies `--content-format html`. |
+| `--html-css <CSS>`             | Inline CSS string appended after the theme stylesheet.                                             |
+| `--html-css-file <PATH>`       | Path to CSS file loaded at render time (max 1 MiB).                                                |
+| `--html-class-prefix <PREFIX>` | CSS class prefix; default: `"kb-"`. Alphanumeric, hyphens, underscores only.                       |
+| `--html-no-embed-css`          | Suppress the `<style>` block; use external stylesheet instead.                                     |
 
 ## CSS Customization
 

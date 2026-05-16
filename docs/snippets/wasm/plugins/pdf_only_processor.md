@@ -12,30 +12,31 @@ const pdfOnlyProcessor = {
   processingStage: () => "post-extraction",
   process: (extractionResult) => {
     // Check if this is a PDF extraction
-    const isPdf = extractionResult.metadata?.mimeType === "application/pdf" ||
-                  extractionResult.metadata?.source?.endsWith(".pdf");
-    
+    const isPdf =
+      extractionResult.metadata?.mimeType === "application/pdf" ||
+      extractionResult.metadata?.source?.endsWith(".pdf");
+
     if (!isPdf) {
       // Skip processing for non-PDF documents
       return extractionResult;
     }
-    
+
     // Apply PDF-specific processing
     const processed = {
       ...extractionResult,
       metadata: {
         ...extractionResult.metadata,
         pdfProcessed: true,
-        pageCount: extractionResult.metadata?.pageCount || 1
+        pageCount: extractionResult.metadata?.pageCount || 1,
       },
       // Normalize text for PDFs
       text: (extractionResult.text || "")
-        .replace(/\n{3,}/g, "\n\n")  // Remove excessive line breaks
-        .trim()
+        .replace(/\n{3,}/g, "\n\n") // Remove excessive line breaks
+        .trim(),
     };
-    
+
     return processed;
-  }
+  },
 };
 
 try {
@@ -47,8 +48,18 @@ try {
 
 // Test with various documents
 const testDocs = [
-  { bytes: new Uint8Array([/* PDF */]), type: "application/pdf" },
-  { bytes: new Uint8Array([/* HTML */]), type: "text/html" }
+  {
+    bytes: new Uint8Array([
+      /* PDF */
+    ]),
+    type: "application/pdf",
+  },
+  {
+    bytes: new Uint8Array([
+      /* HTML */
+    ]),
+    type: "text/html",
+  },
 ];
 
 for (const doc of testDocs) {

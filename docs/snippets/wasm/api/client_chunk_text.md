@@ -14,10 +14,10 @@ const response = await fetch("http://localhost:8000/chunk", {
       chunking: {
         strategy: "semantic",
         max_chunk_size: 512,
-        overlap: 50
-      }
-    }
-  })
+        overlap: 50,
+      },
+    },
+  }),
 });
 
 const result = await response.json();

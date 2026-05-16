@@ -44,11 +44,11 @@ Open the SVG in any browser; the flamegraph is interactive (click to zoom, searc
 
 ### Pipeline + format choices
 
-| Pipeline     | Use it for                                             |
-| ------------ | ------------------------------------------------------ |
+| Pipeline     | Use it for                                               |
+| ------------ | -------------------------------------------------------- |
 | `baseline`   | Pure PDF text path — no layout, no OCR. Cleanest signal. |
-| `layout`     | RT-DETR + layout-for-markdown overhead.                |
-| `paddle-ocr` | Full OCR path including PaddleOCR.                     |
+| `layout`     | RT-DETR + layout-for-markdown overhead.                  |
+| `paddle-ocr` | Full OCR path including PaddleOCR.                       |
 
 `OUTPUT_FORMAT=plaintext` skips the markdown classify/assembly pass (`use_layout_for_markdown=false`, no font-clustering hierarchy). Use it as the most stripped-down benchmark — what's hot here is the floor of "raw extraction" cost.
 
@@ -58,7 +58,7 @@ Open the SVG in any browser; the flamegraph is interactive (click to zoom, searc
 
 ## Reading flamegraphs
 
-- **Width = total time** (self + children). Wide functions at the bottom of a stack are not necessarily hotspots — they're often just the entry point. Look at *self time* (the visible non-child width).
+- **Width = total time** (self + children). Wide functions at the bottom of a stack are not necessarily hotspots — they're often just the entry point. Look at _self time_ (the visible non-child width).
 - **Tall stacks** mean deep call chains; they're not problems unless the leaf is hot.
 - **Repeated narrow towers** in different stacks are good candidates — the same function called from many places, each contributing a thin slice.
 - Filter out `pdf_oxide`, `image`, `tokio`, and system libraries (`libc`, `libpthread`) — those are dependencies. Focus on `kreuzberg::*` symbols.
@@ -102,12 +102,12 @@ The protocol below is enforced for every perf candidate. Skipping a step has cos
 7. `cargo test -p kreuzberg` — green.
 8. Re-run the harness:
 
-    ```bash
-    target/release/benchmark-harness compare \
-      --fixtures tools/benchmark-harness/fixtures \
-      --pipelines baseline \
-      --json-output bench/iter-N.json
-    ```
+   ```bash
+   target/release/benchmark-harness compare \
+     --fixtures tools/benchmark-harness/fixtures \
+     --pipelines baseline \
+     --json-output bench/iter-N.json
+   ```
 
 9. Compare `bench/iter-N.json` vs the most recent committed baseline JSON in `bench/`:
    - **SF1 must NOT regress** (any drop > 0.1pt → revert).
@@ -126,4 +126,4 @@ The protocol below is enforced for every perf candidate. Skipping a step has cos
 
 - **Don't trust subagent ACCEPT verdicts without measuring.** A `performance-engineer` agent has previously declared an optimization accepted with a correctness regression baked in. Always rerun the test suite locally after the agent reports done.
 - **Behavior probes catch what F1 doesn't.** F1 metrics aggregate; a small regression on a corner case can wash out. When the optimization touches text-shape code (whitespace, escape, punctuation), write a 4-input mini-test asserting exact byte equality vs the unoptimized version.
-- **Cache invalidation.** When you change the Kreuzberg crate, rebuild *both* `kreuzberg-cli` and `benchmark-harness` (the harness links the crate in-process for `compare`). A build that "finished in 1.10s" without recompiling the Kreuzberg crate is a sign the change wasn't picked up.
+- **Cache invalidation.** When you change the Kreuzberg crate, rebuild _both_ `kreuzberg-cli` and `benchmark-harness` (the harness links the crate in-process for `compare`). A build that "finished in 1.10s" without recompiling the Kreuzberg crate is a sign the change wasn't picked up.

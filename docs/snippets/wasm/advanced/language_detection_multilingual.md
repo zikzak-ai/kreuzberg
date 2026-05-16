@@ -26,30 +26,31 @@ interface MultilingualChunk {
 }
 
 // Detect language for each chunk
-const multilingualChunks: MultilingualChunk[] = result.chunks?.map((chunk, idx) => {
-  // Simple language detection based on character ranges
-  const text = chunk.content;
-  let detectedLang = result.metadata?.language || "en";
-  let confidence = result.metadata?.languageConfidence || 0.5;
-  
-  // Check for specific character patterns
-  if (/[一-鿿]/.test(text)) detectedLang = "zh";  // Chinese
-  if (/[぀-ゟ゠-ヿ]/.test(text)) detectedLang = "ja";  // Japanese
-  if (/[가-힯]/.test(text)) detectedLang = "ko";  // Korean
-  if (/[؀-ۿ]/.test(text)) detectedLang = "ar";  // Arabic
-  if (/[Ѐ-ӿ]/.test(text)) detectedLang = "ru";  // Russian
-  
-  return {
-    index: idx,
-    text: text.substring(0, 50),
-    language: detectedLang,
-    confidence: confidence,
-  };
-}) || [];
+const multilingualChunks: MultilingualChunk[] =
+  result.chunks?.map((chunk, idx) => {
+    // Simple language detection based on character ranges
+    const text = chunk.content;
+    let detectedLang = result.metadata?.language || "en";
+    let confidence = result.metadata?.languageConfidence || 0.5;
+
+    // Check for specific character patterns
+    if (/[一-鿿]/.test(text)) detectedLang = "zh"; // Chinese
+    if (/[぀-ゟ゠-ヿ]/.test(text)) detectedLang = "ja"; // Japanese
+    if (/[가-힯]/.test(text)) detectedLang = "ko"; // Korean
+    if (/[؀-ۿ]/.test(text)) detectedLang = "ar"; // Arabic
+    if (/[Ѐ-ӿ]/.test(text)) detectedLang = "ru"; // Russian
+
+    return {
+      index: idx,
+      text: text.substring(0, 50),
+      language: detectedLang,
+      confidence: confidence,
+    };
+  }) || [];
 
 // Group chunks by language
 const chunksByLanguage = new Map<string, MultilingualChunk[]>();
-multilingualChunks.forEach(chunk => {
+multilingualChunks.forEach((chunk) => {
   if (!chunksByLanguage.has(chunk.language)) {
     chunksByLanguage.set(chunk.language, []);
   }
@@ -59,7 +60,7 @@ multilingualChunks.forEach(chunk => {
 console.log("Chunks by detected language:");
 chunksByLanguage.forEach((chunks, lang) => {
   console.log(`  ${lang}: ${chunks.length} chunks`);
-  chunks.slice(0, 2).forEach(c => {
+  chunks.slice(0, 2).forEach((c) => {
     console.log(`    Chunk ${c.index}: "${c.text}..."`);
   });
 });
@@ -88,26 +89,26 @@ interface LanguageProcessor {
 }
 
 const processors: Record<string, LanguageProcessor> = {
-  'en': {
-    normalize: (t) => t.replace(/\s+/g, ' ').trim(),
-    splitSentences: (t) => t.split(/[.!?]+/).filter(s => s.length > 0),
+  en: {
+    normalize: (t) => t.replace(/\s+/g, " ").trim(),
+    splitSentences: (t) => t.split(/[.!?]+/).filter((s) => s.length > 0),
   },
-  'zh': {
-    normalize: (t) => t.replace(/\s+/g, '').trim(),  // CJK: no word spacing
-    splitSentences: (t) => t.split(/[。！？]+/).filter(s => s.length > 0),
+  zh: {
+    normalize: (t) => t.replace(/\s+/g, "").trim(), // CJK: no word spacing
+    splitSentences: (t) => t.split(/[。！？]+/).filter((s) => s.length > 0),
   },
-  'ja': {
-    normalize: (t) => t.replace(/\s+/g, '').trim(),
-    splitSentences: (t) => t.split(/[。！？]+/).filter(s => s.length > 0),
+  ja: {
+    normalize: (t) => t.replace(/\s+/g, "").trim(),
+    splitSentences: (t) => t.split(/[。！？]+/).filter((s) => s.length > 0),
   },
-  'ar': {
-    normalize: (t) => t.replace(/\s+/g, ' ').trim(),
-    splitSentences: (t) => t.split(/[.!?،؟]+/).filter(s => s.length > 0),
+  ar: {
+    normalize: (t) => t.replace(/\s+/g, " ").trim(),
+    splitSentences: (t) => t.split(/[.!?،؟]+/).filter((s) => s.length > 0),
   },
 };
 
-const language = result.metadata?.language || 'en';
-const processor = processors[language] || processors['en'];
+const language = result.metadata?.language || "en";
+const processor = processors[language] || processors["en"];
 
 const normalized = processor.normalize(result.content);
 const sentences = processor.splitSentences(result.content);
@@ -132,11 +133,11 @@ interface LanguageChunkConfig {
 
 // Different chunking strategies per language
 const chunkConfigByLanguage: Record<string, LanguageChunkConfig> = {
-  'en': { maxChars: 512, overlap: 128 },      // English: word-based chunking
-  'zh': { maxChars: 256, overlap: 64 },       // Chinese: smaller chunks due to character density
-  'ja': { maxChars: 300, overlap: 75 },       // Japanese: medium chunks
-  'ar': { maxChars: 400, overlap: 100 },      // Arabic: larger chunks for context
-  'default': { maxChars: 512, overlap: 128 },
+  en: { maxChars: 512, overlap: 128 }, // English: word-based chunking
+  zh: { maxChars: 256, overlap: 64 }, // Chinese: smaller chunks due to character density
+  ja: { maxChars: 300, overlap: 75 }, // Japanese: medium chunks
+  ar: { maxChars: 400, overlap: 100 }, // Arabic: larger chunks for context
+  default: { maxChars: 512, overlap: 128 },
 };
 
 // Detect language first
@@ -149,10 +150,10 @@ const languageDetectConfig = {
 
 const bytes = new Uint8Array(buffer);
 const langResult = await extractBytes(bytes, "text/plain", languageDetectConfig);
-const detectedLang = langResult.metadata?.language || 'en';
+const detectedLang = langResult.metadata?.language || "en";
 
 // Re-extract with language-specific chunking
-const chunkConfig = chunkConfigByLanguage[detectedLang] || chunkConfigByLanguage['default'];
+const chunkConfig = chunkConfigByLanguage[detectedLang] || chunkConfigByLanguage["default"];
 const finalConfig = {
   languageDetection: {
     enabled: true,

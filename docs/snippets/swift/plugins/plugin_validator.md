@@ -5,15 +5,15 @@ final class MinLengthValidator: Validator {
     func name() -> String {
         "min_length"
     }
-    
+
     func version() -> String {
         "1.0.0"
     }
-    
+
     func priority() -> Int32 {
         50
     }
-    
+
     func validate(result: ExtractionResult, config: ExtractionConfig) -> String {
         let contentLength = result.content().count
         if contentLength < 50 {
@@ -22,15 +22,15 @@ final class MinLengthValidator: Validator {
         }
         return "{\"ok\": null}"
     }
-    
+
     func shouldValidate(result: ExtractionResult, config: ExtractionConfig) -> Bool {
         true
     }
-    
+
     func initialize() -> String {
         "{\"ok\": null}"
     }
-    
+
     func shutdown() -> String {
         "{\"ok\": null}"
     }

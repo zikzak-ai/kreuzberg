@@ -1065,7 +1065,35 @@ public typealias OcrExtractionResult = RustBridge.OcrExtractionResult
 public typealias OcrTable = RustBridge.OcrTable
 
 /// Bounding box for an OCR-detected table in pixel coordinates.
-public typealias OcrTableBoundingBox = RustBridge.OcrTableBoundingBox
+public struct OcrTableBoundingBox: Codable, Sendable, Hashable {
+  /// Left x-coordinate (pixels)
+  public let left: UInt32
+  /// Top y-coordinate (pixels)
+  public let top: UInt32
+  /// Right x-coordinate (pixels)
+  public let right: UInt32
+  /// Bottom y-coordinate (pixels)
+  public let bottom: UInt32
+  public init(left: UInt32, top: UInt32, right: UInt32, bottom: UInt32) {
+    self.left = left
+    self.top = top
+    self.right = right
+    self.bottom = bottom
+  }
+}
+
+// MARK: - Internal FFI conversions for OcrTableBoundingBox
+extension OcrTableBoundingBox {
+  init(_ rb: RustBridge.OcrTableBoundingBox) throws {
+    self.left = rb.left()
+    self.top = rb.top()
+    self.right = rb.right()
+    self.bottom = rb.bottom()
+  }
+  func intoRust() throws -> RustBridge.OcrTableBoundingBox {
+    return RustBridge.OcrTableBoundingBox(self.left, self.top, self.right, self.bottom)
+  }
+}
 
 /// Image preprocessing configuration for OCR.
 ///
@@ -1387,7 +1415,31 @@ extension OcrConfidence {
 }
 
 /// Rotation information for an OCR element.
-public typealias OcrRotation = RustBridge.OcrRotation
+public struct OcrRotation: Codable, Sendable, Hashable {
+  /// Rotation angle in degrees (0, 90, 180, 270 for PaddleOCR).
+  public let angleDegrees: Double
+  /// Confidence score for the rotation detection.
+  public let confidence: Double?
+  public init(angleDegrees: Double, confidence: Double? = nil) {
+    self.angleDegrees = angleDegrees
+    self.confidence = confidence
+  }
+  private enum CodingKeys: String, CodingKey {
+    case angleDegrees = "angle_degrees"
+    case confidence = "confidence"
+  }
+}
+
+// MARK: - Internal FFI conversions for OcrRotation
+extension OcrRotation {
+  init(_ rb: RustBridge.OcrRotation) throws {
+    self.angleDegrees = rb.angle_degrees()
+    self.confidence = rb.confidence()
+  }
+  func intoRust() throws -> RustBridge.OcrRotation {
+    return RustBridge.OcrRotation(self.angleDegrees, self.confidence)
+  }
+}
 
 /// A unified OCR element representing detected text with full metadata.
 ///
@@ -1411,7 +1463,36 @@ public typealias PageStructure = RustBridge.PageStructure
 /// Tracks where a specific page's content starts and ends in the main content string,
 /// enabling mapping from byte positions to page numbers. Offsets are guaranteed to be
 /// at valid UTF-8 character boundaries when using standard String methods (push_str, push, etc.).
-public typealias PageBoundary = RustBridge.PageBoundary
+public struct PageBoundary: Codable, Sendable, Hashable {
+  /// Byte offset where this page starts in the content string (UTF-8 valid boundary, inclusive)
+  public let byteStart: UInt
+  /// Byte offset where this page ends in the content string (UTF-8 valid boundary, exclusive)
+  public let byteEnd: UInt
+  /// Page number (1-indexed)
+  public let pageNumber: UInt32
+  public init(byteStart: UInt, byteEnd: UInt, pageNumber: UInt32) {
+    self.byteStart = byteStart
+    self.byteEnd = byteEnd
+    self.pageNumber = pageNumber
+  }
+  private enum CodingKeys: String, CodingKey {
+    case byteStart = "byte_start"
+    case byteEnd = "byte_end"
+    case pageNumber = "page_number"
+  }
+}
+
+// MARK: - Internal FFI conversions for PageBoundary
+extension PageBoundary {
+  init(_ rb: RustBridge.PageBoundary) throws {
+    self.byteStart = rb.byte_start()
+    self.byteEnd = rb.byte_end()
+    self.pageNumber = rb.page_number()
+  }
+  func intoRust() throws -> RustBridge.PageBoundary {
+    return RustBridge.PageBoundary(self.byteStart, self.byteEnd, self.pageNumber)
+  }
+}
 
 /// Metadata for individual page/slide/sheet.
 ///
@@ -1639,10 +1720,54 @@ public typealias PaddleOcrConfig = RustBridge.PaddleOcrConfig
 public typealias ModelPaths = RustBridge.ModelPaths
 
 /// Document orientation detection result.
-public typealias OrientationResult = RustBridge.OrientationResult
+public struct OrientationResult: Codable, Sendable, Hashable {
+  /// Detected orientation in degrees (0, 90, 180, or 270).
+  public let degrees: UInt32
+  /// Confidence score (0.0-1.0).
+  public let confidence: Float
+  public init(degrees: UInt32, confidence: Float) {
+    self.degrees = degrees
+    self.confidence = confidence
+  }
+}
+
+// MARK: - Internal FFI conversions for OrientationResult
+extension OrientationResult {
+  init(_ rb: RustBridge.OrientationResult) throws {
+    self.degrees = rb.degrees()
+    self.confidence = rb.confidence()
+  }
+  func intoRust() throws -> RustBridge.OrientationResult {
+    return RustBridge.OrientationResult(self.degrees, self.confidence)
+  }
+}
 
 /// Bounding box in original image coordinates (x1, y1) top-left, (x2, y2) bottom-right.
-public typealias BBox = RustBridge.BBox
+public struct BBox: Codable, Sendable, Hashable {
+  public let x1: Float
+  public let y1: Float
+  public let x2: Float
+  public let y2: Float
+  public init(x1: Float, y1: Float, x2: Float, y2: Float) {
+    self.x1 = x1
+    self.y1 = y1
+    self.x2 = x2
+    self.y2 = y2
+  }
+}
+
+// MARK: - Internal FFI conversions for BBox
+extension BBox {
+  init(_ rb: RustBridge.BBox) throws {
+    self.x1 = rb.x1()
+    self.y1 = rb.y1()
+    self.x2 = rb.x2()
+    self.y2 = rb.y2()
+  }
+  func intoRust() throws -> RustBridge.BBox {
+    return RustBridge.BBox(self.x1, self.y1, self.x2, self.y2)
+  }
+}
 
 /// A single layout detection result.
 public typealias LayoutDetection = RustBridge.LayoutDetection
@@ -1829,7 +1954,7 @@ public enum ChunkSizing {
   /// Size measured in Unicode characters (default).
   case characters
   /// Size measured in tokens from a HuggingFace tokenizer.
-  case tokenizer(model: String, cacheDir: URL)
+  case tokenizer(model: String, cacheDir: URL?)
 }
 
 /// Embedding model types supported by Kreuzberg.
@@ -2048,9 +2173,9 @@ public enum NodeContent {
   /// Table with structured cell grid.
   case table(grid: TableGrid)
   /// Image reference.
-  case image(description: String, imageIndex: UInt32, src: String)
+  case image(description: String?, imageIndex: UInt32?, src: String?)
   /// Code block.
-  case code(text: String, language: String)
+  case code(text: String, language: String?)
   /// Block quote — container, children carry the quoted content.
   case quote
   /// Mathematical formula / equation.
@@ -2061,11 +2186,11 @@ public enum NodeContent {
   ///
   /// `heading_level` + `heading_text` capture the section heading directly
   /// rather than relying on a first-child positional convention.
-  case group(label: String, headingLevel: UInt8, headingText: String)
+  case group(label: String?, headingLevel: UInt8?, headingText: String?)
   /// Page break marker.
   case pageBreak
   /// Presentation slide container — children are the slide's content nodes.
-  case slide(number: UInt32, title: String)
+  case slide(number: UInt32, title: String?)
   /// Definition list container — children are `DefinitionItem` nodes.
   case definitionList
   /// Individual definition list entry with term and definition.
@@ -2075,7 +2200,7 @@ public enum NodeContent {
   /// Admonition / callout container (note, warning, tip, etc.).
   ///
   /// Children carry the admonition body content.
-  case admonition(kind: String, title: String)
+  case admonition(kind: String, title: String?)
   /// Raw block preserved verbatim from the source format.
   ///
   /// Used for content that cannot be mapped to a semantic node type
@@ -2094,7 +2219,7 @@ public enum AnnotationKind {
   case code
   case `subscript`
   case superscript
-  case link(url: String, title: String)
+  case link(url: String, title: String?)
   /// Highlighted text (PDF highlights, HTML `<mark>`).
   case highlight
   /// Text color (CSS-compatible value, e.g. "#ff0000", "red").
@@ -2102,7 +2227,7 @@ public enum AnnotationKind {
   /// Font size with units (e.g. "12pt", "1.2em", "16px").
   case fontSize(value: String)
   /// Extensible annotation for format-specific styling.
-  case custom(name: String, value: String)
+  case custom(name: String, value: String?)
 }
 
 /// How the extracted text was produced.
@@ -2454,20 +2579,20 @@ public enum LayoutClass {
 /// - `Other` - Catch-all for uncommon errors
 public enum KreuzbergError: Swift.Error {
   case io(message: String, field0: String)
-  case parsing(message: String, source: String)
-  case ocr(message: String, source: String)
-  case validation(message: String, source: String)
-  case cache(message: String, source: String)
-  case imageProcessing(message: String, source: String)
-  case serialization(message: String, source: String)
+  case parsing(message: String, source: String?)
+  case ocr(message: String, source: String?)
+  case validation(message: String, source: String?)
+  case cache(message: String, source: String?)
+  case imageProcessing(message: String, source: String?)
+  case serialization(message: String, source: String?)
   case missingDependency(message: String, field0: String)
   case plugin(message: String, pluginName: String)
   case lockPoisoned(message: String, field0: String)
   case unsupportedFormat(message: String, field0: String)
-  case embedding(message: String, source: String)
+  case embedding(message: String, source: String?)
   case timeout(message: String, elapsedMs: UInt64, limitMs: UInt64)
   case cancelled
-  case security(message: String, source: String)
+  case security(message: String, source: String?)
   case other(message: String, field0: String)
 }
 

@@ -9,12 +9,6 @@ keywords = ["document", "extraction", "pdf", "ocr", "text"]
 categories = ["text-processing"]
 repository = "https://github.com/kreuzberg-dev/kreuzberg"
 
-[package.metadata.cargo-machete]
-# tokio is pulled in for its runtime/macros at link time and futures-util for
-# stream helpers, but the generated FFI source may not `use` them directly
-# — cargo-machete would otherwise flag them.
-ignored = ["tokio", "futures-util"]
-
 [lib]
 crate-type = ["cdylib", "staticlib"]
 
@@ -23,7 +17,6 @@ default = []
 
 [dependencies]
 async-trait = "0.1"
-futures-util = "0.3"
 kreuzberg = { path = "../kreuzberg", features = [
   "full",
   "pdf",

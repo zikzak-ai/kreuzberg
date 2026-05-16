@@ -108,7 +108,7 @@ kreuzberg extract-structured invoice.pdf \
 | `<PATH>` (positional)   | Document file path. Required.                                                                        |
 | `--schema <PATH>`       | Path to a JSON schema file describing the desired output. Required.                                  |
 | `--model <MODEL>`       | LLM model identifier, for example `openai/gpt-4o` or `anthropic/claude-sonnet-4-20250514`. Required. |
-| `--api-key <KEY>`       | LLM provider API key. Falls back to `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and so on.                      |
+| `--api-key <KEY>`       | LLM provider API key. Falls back to `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and so on.                |
 | `--prompt <TEMPLATE>`   | Custom Jinja2 prompt template overriding the built-in one.                                           |
 | `--schema-name <NAME>`  | Schema identifier passed to the LLM. Default: `extraction`.                                          |
 | `--strict`              | Enable OpenAI strict mode for exact schema matching.                                                 |
@@ -181,11 +181,11 @@ kreuzberg extract document.pdf --force-ocr true
 
 `--ocr-language` is backend-agnostic and overrides config-file or default settings.
 
-| Backend | Code format | Examples |
-| --- | --- | --- |
-| Tesseract | ISO 639-3 (three-letter) | `eng`, `fra`, `deu`, `spa`, `jpn` |
+| Backend   | Code format                  | Examples                                           |
+| --------- | ---------------------------- | -------------------------------------------------- |
+| Tesseract | ISO 639-3 (three-letter)     | `eng`, `fra`, `deu`, `spa`, `jpn`                  |
 | PaddleOCR | short codes / language names | `en`, `ch`, `french`, `korean`, `thai`, `cyrillic` |
-| EasyOCR | similar to PaddleOCR | — |
+| EasyOCR   | similar to PaddleOCR         | —                                                  |
 
 ```bash title="Terminal"
 # French OCR with Tesseract (default backend)

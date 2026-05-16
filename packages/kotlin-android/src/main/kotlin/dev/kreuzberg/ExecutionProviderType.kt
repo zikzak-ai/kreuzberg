@@ -9,9 +9,28 @@ package dev.kreuzberg
  * `Auto` (default) selects the best available provider per platform.
  */
 enum class ExecutionProviderType {
+    /**
+     * Auto-select: CoreML on macOS, CUDA on Linux, CPU elsewhere.
+     */
     AUTO,
+
+    /**
+     * CPU execution provider (always available).
+     */
     CPU,
+
+    /**
+     * Apple CoreML (macOS/iOS Neural Engine + GPU).
+     */
     CORE_ML,
+
+    /**
+     * NVIDIA CUDA GPU acceleration.
+     */
     CUDA,
+
+    /**
+     * NVIDIA TensorRT (optimized CUDA inference).
+     */
     TENSOR_RT,
 }

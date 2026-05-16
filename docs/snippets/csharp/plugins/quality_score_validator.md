@@ -21,7 +21,7 @@ public class QualityScoreValidator : IValidator
     public void Validate(ExtractionResult result, ExtractionConfig config)
     {
         var qualityScore = CalculateQualityScore(result);
-        
+
         if (qualityScore < MinimumQuality)
         {
             throw new KreuzbergException(
@@ -45,7 +45,7 @@ public class QualityScoreValidator : IValidator
     {
         var contentLength = result.Content.Length;
         var hasMetadata = result.Metadata != null;
-        
+
         var score = (contentLength > 100 ? 0.8f : 0.5f) + (hasMetadata ? 0.2f : 0.0f);
         return Math.Min(score, 1.0f);
     }

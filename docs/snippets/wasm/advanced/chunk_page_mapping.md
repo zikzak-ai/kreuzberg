@@ -20,7 +20,7 @@ const chunkPageMap = new Map<number, number[]>();
 result.chunks?.forEach((chunk, chunkIndex) => {
   const firstPage = chunk.metadata?.firstPage;
   const lastPage = chunk.metadata?.lastPage;
-  
+
   if (firstPage !== undefined && lastPage !== undefined) {
     for (let page = firstPage; page <= lastPage; page++) {
       if (!chunkPageMap.has(page)) {
@@ -34,7 +34,7 @@ result.chunks?.forEach((chunk, chunkIndex) => {
 // Use the mapping for source attribution
 chunkPageMap.forEach((chunkIndices, pageNum) => {
   console.log(`Page ${pageNum}: Chunks ${chunkIndices.join(", ")}`);
-  chunkIndices.forEach(idx => {
+  chunkIndices.forEach((idx) => {
     const chunk = result.chunks![idx];
     console.log(`  Content: "${chunk.content.substring(0, 60)}..."`);
   });

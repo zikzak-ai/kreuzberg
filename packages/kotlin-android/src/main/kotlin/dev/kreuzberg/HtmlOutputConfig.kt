@@ -13,9 +13,33 @@ import java.nio.file.Path
  * the plain comrak-based renderer.
  */
 data class HtmlOutputConfig(
+    /**
+     * Inline CSS string injected into the output after the theme stylesheet.
+     * Concatenated after `css_file` content when both are set.
+     */
     val css: String?,
+    /**
+     * Path to a CSS file loaded once at renderer construction time.
+     * Concatenated before `css` when both are set.
+     */
     val cssFile: Path?,
+    /**
+     * Built-in colour/typography theme. Default: `HtmlTheme.Unstyled`.
+     */
     val theme: HtmlTheme,
+    /**
+     * CSS class prefix applied to every emitted class name.
+     *
+     * Default: `"kb-"`. Change this if your host application already uses
+     * classes that start with `kb-`.
+     */
     val classPrefix: String,
+    /**
+     * When `true` (default), write the resolved CSS into a `<style>` block
+     * immediately after the opening `<div class="{prefix}doc">`.
+     *
+     * Set to `false` to emit only the structural markup and wire up your
+     * own stylesheet targeting the `kb-*` class names.
+     */
     val embedCss: Boolean,
 )

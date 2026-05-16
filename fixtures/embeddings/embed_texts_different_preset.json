@@ -4,10 +4,7 @@
   "description": "embed_texts: multilingual preset",
   "call": "embed_texts",
   "input": {
-    "texts": [
-      "Hello world",
-      "Test"
-    ],
+    "texts": ["Hello world", "Test"],
     "config": {
       "model": {
         "type": "preset",
@@ -26,8 +23,6 @@
     }
   ],
   "skip": {
-    "languages": [
-      "wasm"
-    ]
+    "languages": ["wasm"]
   }
 }

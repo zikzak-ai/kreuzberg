@@ -8,8 +8,20 @@ package dev.kreuzberg
  * Extracted from PPTX files containing slide counts and presentation details.
  */
 data class PptxMetadata(
+    /**
+     * Total number of slides in the presentation
+     */
     val slideCount: Int,
+    /**
+     * Names of slides (if available)
+     */
     val slideNames: List<String>,
+    /**
+     * Number of embedded images
+     */
     val imageCount: Int?,
+    /**
+     * Number of tables
+     */
     val tableCount: Int?,
 )

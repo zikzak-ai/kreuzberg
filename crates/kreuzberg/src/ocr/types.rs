@@ -181,7 +181,6 @@ pub struct Table {
     pub page_number: i32,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Batch item result for processing multiple files
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BatchItemResult {

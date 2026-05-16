@@ -8,44 +8,44 @@ final class MyPlugin: PostProcessor {
     func name() -> String {
         "my-plugin"
     }
-    
+
     func version() -> String {
         "1.0.0"
     }
-    
+
     func initialize() -> String {
         logger.info("Initializing plugin: my-plugin")
         return "{\"ok\": null}"
     }
-    
+
     func shutdown() -> String {
         logger.info("Shutting down plugin: my-plugin")
         return "{\"ok\": null}"
     }
-    
+
     func process(result: ExtractionResult, config: ExtractionConfig) -> String {
         let contentLen = result.content().count
         logger.info("Processing \(result.mimeType()) (\(contentLen) bytes)")
-        
+
         if contentLen == 0 {
             logger.warning("Processing resulted in empty content")
         }
-        
+
         return "{\"ok\": null}"
     }
-    
+
     func shouldProcess(result: ExtractionResult, config: ExtractionConfig) -> Bool {
         true
     }
-    
+
     func processingStage() -> String {
         "early"
     }
-    
+
     func priority() -> Int32 {
         50
     }
-    
+
     func estimatedDurationMs(result: ExtractionResult) -> UInt64 {
         10
     }

@@ -7,7 +7,7 @@ import init, {
   listDocumentExtractors,
   listOcrBackends,
   listPostProcessors,
-  listValidators
+  listValidators,
 } from "kreuzberg-wasm";
 
 await init();

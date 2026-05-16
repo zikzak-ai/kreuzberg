@@ -249,19 +249,19 @@ kreuzberg = { version = "4.0", features = ["pdf", "excel", "ocr"] }
 
 ### Available Features
 
-| Feature              | Description               | Binary Size |
-| -------------------- | ------------------------- | ----------- |
-| `pdf`                | PDF extraction (pure Rust) | +2MB       |
-| `excel`              | Excel/spreadsheet parsing | +3MB        |
-| `office`             | DOCX, PPTX extraction     | +1MB        |
-| `email`              | EML, MSG extraction       | +500KB      |
-| `html`               | HTML to markdown          | +1MB        |
-| `xml`                | XML streaming parser      | +500KB      |
-| `archives`           | ZIP, TAR, 7Z extraction   | +2MB        |
-| `ocr`                | OCR with Tesseract        | +5MB        |
-| `language-detection` | Language detection        | +100KB      |
-| `chunking`           | Text chunking             | +200KB      |
-| `quality`            | Text quality processing   | +500KB      |
+| Feature              | Description                | Binary Size |
+| -------------------- | -------------------------- | ----------- |
+| `pdf`                | PDF extraction (pure Rust) | +2MB        |
+| `excel`              | Excel/spreadsheet parsing  | +3MB        |
+| `office`             | DOCX, PPTX extraction      | +1MB        |
+| `email`              | EML, MSG extraction        | +500KB      |
+| `html`               | HTML to markdown           | +1MB        |
+| `xml`                | XML streaming parser       | +500KB      |
+| `archives`           | ZIP, TAR, 7Z extraction    | +2MB        |
+| `ocr`                | OCR with Tesseract         | +5MB        |
+| `language-detection` | Language detection         | +100KB      |
+| `chunking`           | Text chunking              | +200KB      |
+| `quality`            | Text quality processing    | +500KB      |
 
 ### Feature Bundles
 

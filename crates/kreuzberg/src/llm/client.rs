@@ -96,12 +96,14 @@ mod tests {
 
         let client = create_client(&config).unwrap();
 
-        let mut request = liter_llm::ChatCompletionRequest::default();
-        request.model = config.model.clone();
-        request.messages = vec![liter_llm::Message::User(liter_llm::UserMessage {
-            content: liter_llm::UserContent::Text("test".to_string()),
+        let request = liter_llm::ChatCompletionRequest {
+            model: config.model.clone(),
+            messages: vec![liter_llm::Message::User(liter_llm::UserMessage {
+                content: liter_llm::UserContent::Text("test".to_string()),
+                ..Default::default()
+            })],
             ..Default::default()
-        })];
+        };
 
         let _ = client.chat(request).await.expect("Request failed");
 

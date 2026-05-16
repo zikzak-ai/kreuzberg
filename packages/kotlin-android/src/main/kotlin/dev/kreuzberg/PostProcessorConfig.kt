@@ -6,9 +6,24 @@ package dev.kreuzberg
  * Post-processor configuration.
  */
 data class PostProcessorConfig(
+    /**
+     * Enable post-processors
+     */
     val enabled: Boolean,
+    /**
+     * Whitelist of processor names to run (None = all enabled)
+     */
     val enabledProcessors: List<String>?,
+    /**
+     * Blacklist of processor names to skip (None = none disabled)
+     */
     val disabledProcessors: List<String>?,
+    /**
+     * Pre-computed AHashSet for O(1) enabled processor lookup
+     */
     val enabledSet: String?,
+    /**
+     * Pre-computed AHashSet for O(1) disabled processor lookup
+     */
     val disabledSet: String?,
 )

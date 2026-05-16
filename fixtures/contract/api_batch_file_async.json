@@ -1,11 +1,7 @@
 {
   "id": "api_batch_file_async",
   "description": "Tests async batch file extraction API (batch_extract_file)",
-  "tags": [
-    "contract",
-    "api",
-    "batch"
-  ],
+  "tags": ["contract", "api", "batch"],
   "call": "extract_file",
   "input": {
     "path": "pdf/fake_memo.pdf"
@@ -24,16 +20,11 @@
     {
       "type": "contains_any",
       "field": "content",
-      "values": [
-        "May 5, 2023",
-        "Mallori"
-      ]
+      "values": ["May 5, 2023", "Mallori"]
     }
   ],
   "skip": {
-    "skip_languages": [
-      "wasm"
-    ],
+    "skip_languages": ["wasm"],
     "reason": "WASM uses synchronous-only API; async extraction is not available on the wasm target"
   }
 }

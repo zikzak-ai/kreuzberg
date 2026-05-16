@@ -16,7 +16,6 @@ use async_trait::async_trait;
 #[cfg(feature = "office")]
 use biblib::{CitationParser, EndNoteXmlParser, PubMedParser, RisParser};
 #[cfg_attr(alef, alef(skip))]
-
 /// Citation format extractor for RIS, PubMed/MEDLINE, and EndNote XML formats.
 ///
 /// Parses citation files and extracts structured bibliography data including

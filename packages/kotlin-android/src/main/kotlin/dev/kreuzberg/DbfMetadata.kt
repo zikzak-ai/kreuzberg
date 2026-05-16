@@ -5,8 +5,4 @@ package dev.kreuzberg
 /**
  * dBASE (DBF) file metadata.
  */
-data class DbfMetadata(
-    val recordCount: Long,
-    val fieldCount: Long,
-    val fields: List<DbfFieldInfo>,
-)
+data class DbfMetadata(val recordCount: Long, val fieldCount: Long, val fields: List<DbfFieldInfo>)

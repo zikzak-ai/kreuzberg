@@ -20,7 +20,6 @@ use crate::plugins::Plugin;
 use crate::types::internal::InternalDocument;
 use crate::types::metadata::{FormatMetadata, Metadata};
 #[cfg_attr(alef, alef(skip))]
-
 /// Source code extractor using tree-sitter language pack.
 ///
 /// Detects the programming language from the file extension or shebang line,

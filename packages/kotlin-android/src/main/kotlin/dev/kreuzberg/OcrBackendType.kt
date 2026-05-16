@@ -6,8 +6,23 @@ package dev.kreuzberg
  * OCR backend types.
  */
 enum class OcrBackendType {
+    /**
+     * Tesseract OCR (native Rust binding)
+     */
     TESSERACT,
+
+    /**
+     * EasyOCR (Python-based, via FFI)
+     */
     EASY_O_C_R,
+
+    /**
+     * PaddleOCR (Python-based, via FFI)
+     */
     PADDLE_O_C_R,
+
+    /**
+     * Custom/third-party OCR backend
+     */
     CUSTOM,
 }

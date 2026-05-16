@@ -44,8 +44,8 @@ const quality: ExtractionQuality = {
     ? result.qualityScore > 0.8
       ? "high"
       : result.qualityScore > 0.5
-      ? "medium"
-      : "low"
+        ? "medium"
+        : "low"
     : "unknown",
 };
 
@@ -55,7 +55,9 @@ console.log(`  Quality score: ${quality.qualityScore?.toFixed(3) || "N/A"}`);
 console.log(`  Assessment: ${quality.assessedAs}`);
 
 if (quality.assessedAs === "low") {
-  console.log("  Recommendation: Review raw text for encoding issues or consider alternative extraction");
+  console.log(
+    "  Recommendation: Review raw text for encoding issues or consider alternative extraction",
+  );
 }
 ```
 
@@ -66,7 +68,7 @@ await init();
 
 async function extractWithQualityCheck(
   bytes: Uint8Array,
-  mimeType: string
+  mimeType: string,
 ): Promise<{ content: string; quality: number | null; method: string }> {
   const config = {
     enableQualityProcessing: true,

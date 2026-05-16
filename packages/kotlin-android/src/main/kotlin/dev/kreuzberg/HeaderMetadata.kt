@@ -6,9 +6,24 @@ package dev.kreuzberg
  * Header/heading element metadata.
  */
 data class HeaderMetadata(
+    /**
+     * Header level: 1 (h1) through 6 (h6)
+     */
     val level: Byte,
+    /**
+     * Normalized text content of the header
+     */
     val text: String,
+    /**
+     * HTML id attribute if present
+     */
     val id: String?,
+    /**
+     * Document tree depth at the header element
+     */
     val depth: Int,
+    /**
+     * Byte offset in original HTML document
+     */
     val htmlOffset: Int,
 )

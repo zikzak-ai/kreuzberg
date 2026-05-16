@@ -8,8 +8,20 @@ package dev.kreuzberg
  * Represents text with formatting, links, images, etc.
  */
 data class InlineElement(
+    /**
+     * Type of inline element
+     */
     val elementType: InlineType,
+    /**
+     * Text content
+     */
     val content: String,
+    /**
+     * Element attributes
+     */
     val attributes: String?,
+    /**
+     * Additional metadata (e.g., href for links, src/alt for images)
+     */
     val metadata: Map<String, String>?,
 )

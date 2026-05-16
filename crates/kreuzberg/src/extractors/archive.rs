@@ -177,7 +177,6 @@ async fn build_archive_doc(
     )
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// ZIP archive extractor.
 ///
 /// Extracts file lists and text content from ZIP archives.
@@ -292,7 +291,6 @@ impl SyncExtractor for ZipExtractor {
     }
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// TAR archive extractor.
 ///
 /// Extracts file lists and text content from TAR archives.
@@ -394,7 +392,6 @@ impl SyncExtractor for TarExtractor {
     }
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// 7z archive extractor.
 ///
 /// Extracts file lists and text content from 7z archives.
@@ -491,7 +488,6 @@ impl SyncExtractor for SevenZExtractor {
     }
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Gzip archive extractor.
 ///
 /// Decompresses gzip files and extracts text content from the compressed data.

@@ -954,7 +954,11 @@ class ChunkSizing_Tokenizer extends ChunkSizing {
   const ChunkSizing_Tokenizer({required this.model, required this.cacheDir}): super._();
   
 
+/// HuggingFace model ID or path, e.g. "Xenova/gpt-4o", "bert-base-uncased".
  final  String model;
+/// Optional cache directory override for tokenizer files.
+/// Defaults to hf-hub's standard cache (`~/.cache/huggingface/`).
+/// Can also be set via `KREUZBERG_TOKENIZER_CACHE_DIR` environment variable.
  final  String cacheDir;
 
 /// Create a copy of ChunkSizing
@@ -1456,22 +1460,22 @@ as String,
 /// @nodoc
 mixin _$FormatMetadata {
 
-
+ Object get field0;
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata&&const DeepCollectionEquality().equals(other.field0, field0));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(field0));
 
 @override
 String toString() {
-  return 'FormatMetadata()';
+  return 'FormatMetadata(field0: $field0)';
 }
 
 
@@ -1615,29 +1619,29 @@ return code(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( PdfMetadata metadata)?  pdf,TResult Function( DocxMetadata metadata)?  docx,TResult Function( ExcelMetadata metadata)?  excel,TResult Function( EmailMetadata metadata)?  email,TResult Function( PptxMetadata metadata)?  pptx,TResult Function( ArchiveMetadata metadata)?  archive,TResult Function( ImageMetadata metadata)?  image,TResult Function( XmlMetadata metadata)?  xml,TResult Function( TextMetadata metadata)?  text,TResult Function( HtmlMetadata metadata)?  html,TResult Function( OcrMetadata metadata)?  ocr,TResult Function( CsvMetadata metadata)?  csv,TResult Function( BibtexMetadata metadata)?  bibtex,TResult Function( CitationMetadata metadata)?  citation,TResult Function( FictionBookMetadata metadata)?  fictionBook,TResult Function( DbfMetadata metadata)?  dbf,TResult Function( JatsMetadata metadata)?  jats,TResult Function( EpubMetadata metadata)?  epub,TResult Function( PstMetadata metadata)?  pst,TResult Function( String value)?  code,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( PdfMetadata field0)?  pdf,TResult Function( DocxMetadata field0)?  docx,TResult Function( ExcelMetadata field0)?  excel,TResult Function( EmailMetadata field0)?  email,TResult Function( PptxMetadata field0)?  pptx,TResult Function( ArchiveMetadata field0)?  archive,TResult Function( ImageMetadata field0)?  image,TResult Function( XmlMetadata field0)?  xml,TResult Function( TextMetadata field0)?  text,TResult Function( HtmlMetadata field0)?  html,TResult Function( OcrMetadata field0)?  ocr,TResult Function( CsvMetadata field0)?  csv,TResult Function( BibtexMetadata field0)?  bibtex,TResult Function( CitationMetadata field0)?  citation,TResult Function( FictionBookMetadata field0)?  fictionBook,TResult Function( DbfMetadata field0)?  dbf,TResult Function( JatsMetadata field0)?  jats,TResult Function( EpubMetadata field0)?  epub,TResult Function( PstMetadata field0)?  pst,TResult Function( String field0)?  code,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case FormatMetadata_Pdf() when pdf != null:
-return pdf(_that.metadata);case FormatMetadata_Docx() when docx != null:
-return docx(_that.metadata);case FormatMetadata_Excel() when excel != null:
-return excel(_that.metadata);case FormatMetadata_Email() when email != null:
-return email(_that.metadata);case FormatMetadata_Pptx() when pptx != null:
-return pptx(_that.metadata);case FormatMetadata_Archive() when archive != null:
-return archive(_that.metadata);case FormatMetadata_Image() when image != null:
-return image(_that.metadata);case FormatMetadata_Xml() when xml != null:
-return xml(_that.metadata);case FormatMetadata_Text() when text != null:
-return text(_that.metadata);case FormatMetadata_Html() when html != null:
-return html(_that.metadata);case FormatMetadata_Ocr() when ocr != null:
-return ocr(_that.metadata);case FormatMetadata_Csv() when csv != null:
-return csv(_that.metadata);case FormatMetadata_Bibtex() when bibtex != null:
-return bibtex(_that.metadata);case FormatMetadata_Citation() when citation != null:
-return citation(_that.metadata);case FormatMetadata_FictionBook() when fictionBook != null:
-return fictionBook(_that.metadata);case FormatMetadata_Dbf() when dbf != null:
-return dbf(_that.metadata);case FormatMetadata_Jats() when jats != null:
-return jats(_that.metadata);case FormatMetadata_Epub() when epub != null:
-return epub(_that.metadata);case FormatMetadata_Pst() when pst != null:
-return pst(_that.metadata);case FormatMetadata_Code() when code != null:
-return code(_that.value);case _:
+return pdf(_that.field0);case FormatMetadata_Docx() when docx != null:
+return docx(_that.field0);case FormatMetadata_Excel() when excel != null:
+return excel(_that.field0);case FormatMetadata_Email() when email != null:
+return email(_that.field0);case FormatMetadata_Pptx() when pptx != null:
+return pptx(_that.field0);case FormatMetadata_Archive() when archive != null:
+return archive(_that.field0);case FormatMetadata_Image() when image != null:
+return image(_that.field0);case FormatMetadata_Xml() when xml != null:
+return xml(_that.field0);case FormatMetadata_Text() when text != null:
+return text(_that.field0);case FormatMetadata_Html() when html != null:
+return html(_that.field0);case FormatMetadata_Ocr() when ocr != null:
+return ocr(_that.field0);case FormatMetadata_Csv() when csv != null:
+return csv(_that.field0);case FormatMetadata_Bibtex() when bibtex != null:
+return bibtex(_that.field0);case FormatMetadata_Citation() when citation != null:
+return citation(_that.field0);case FormatMetadata_FictionBook() when fictionBook != null:
+return fictionBook(_that.field0);case FormatMetadata_Dbf() when dbf != null:
+return dbf(_that.field0);case FormatMetadata_Jats() when jats != null:
+return jats(_that.field0);case FormatMetadata_Epub() when epub != null:
+return epub(_that.field0);case FormatMetadata_Pst() when pst != null:
+return pst(_that.field0);case FormatMetadata_Code() when code != null:
+return code(_that.field0);case _:
   return orElse();
 
 }
@@ -1655,29 +1659,29 @@ return code(_that.value);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( PdfMetadata metadata)  pdf,required TResult Function( DocxMetadata metadata)  docx,required TResult Function( ExcelMetadata metadata)  excel,required TResult Function( EmailMetadata metadata)  email,required TResult Function( PptxMetadata metadata)  pptx,required TResult Function( ArchiveMetadata metadata)  archive,required TResult Function( ImageMetadata metadata)  image,required TResult Function( XmlMetadata metadata)  xml,required TResult Function( TextMetadata metadata)  text,required TResult Function( HtmlMetadata metadata)  html,required TResult Function( OcrMetadata metadata)  ocr,required TResult Function( CsvMetadata metadata)  csv,required TResult Function( BibtexMetadata metadata)  bibtex,required TResult Function( CitationMetadata metadata)  citation,required TResult Function( FictionBookMetadata metadata)  fictionBook,required TResult Function( DbfMetadata metadata)  dbf,required TResult Function( JatsMetadata metadata)  jats,required TResult Function( EpubMetadata metadata)  epub,required TResult Function( PstMetadata metadata)  pst,required TResult Function( String value)  code,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( PdfMetadata field0)  pdf,required TResult Function( DocxMetadata field0)  docx,required TResult Function( ExcelMetadata field0)  excel,required TResult Function( EmailMetadata field0)  email,required TResult Function( PptxMetadata field0)  pptx,required TResult Function( ArchiveMetadata field0)  archive,required TResult Function( ImageMetadata field0)  image,required TResult Function( XmlMetadata field0)  xml,required TResult Function( TextMetadata field0)  text,required TResult Function( HtmlMetadata field0)  html,required TResult Function( OcrMetadata field0)  ocr,required TResult Function( CsvMetadata field0)  csv,required TResult Function( BibtexMetadata field0)  bibtex,required TResult Function( CitationMetadata field0)  citation,required TResult Function( FictionBookMetadata field0)  fictionBook,required TResult Function( DbfMetadata field0)  dbf,required TResult Function( JatsMetadata field0)  jats,required TResult Function( EpubMetadata field0)  epub,required TResult Function( PstMetadata field0)  pst,required TResult Function( String field0)  code,}) {final _that = this;
 switch (_that) {
 case FormatMetadata_Pdf():
-return pdf(_that.metadata);case FormatMetadata_Docx():
-return docx(_that.metadata);case FormatMetadata_Excel():
-return excel(_that.metadata);case FormatMetadata_Email():
-return email(_that.metadata);case FormatMetadata_Pptx():
-return pptx(_that.metadata);case FormatMetadata_Archive():
-return archive(_that.metadata);case FormatMetadata_Image():
-return image(_that.metadata);case FormatMetadata_Xml():
-return xml(_that.metadata);case FormatMetadata_Text():
-return text(_that.metadata);case FormatMetadata_Html():
-return html(_that.metadata);case FormatMetadata_Ocr():
-return ocr(_that.metadata);case FormatMetadata_Csv():
-return csv(_that.metadata);case FormatMetadata_Bibtex():
-return bibtex(_that.metadata);case FormatMetadata_Citation():
-return citation(_that.metadata);case FormatMetadata_FictionBook():
-return fictionBook(_that.metadata);case FormatMetadata_Dbf():
-return dbf(_that.metadata);case FormatMetadata_Jats():
-return jats(_that.metadata);case FormatMetadata_Epub():
-return epub(_that.metadata);case FormatMetadata_Pst():
-return pst(_that.metadata);case FormatMetadata_Code():
-return code(_that.value);}
+return pdf(_that.field0);case FormatMetadata_Docx():
+return docx(_that.field0);case FormatMetadata_Excel():
+return excel(_that.field0);case FormatMetadata_Email():
+return email(_that.field0);case FormatMetadata_Pptx():
+return pptx(_that.field0);case FormatMetadata_Archive():
+return archive(_that.field0);case FormatMetadata_Image():
+return image(_that.field0);case FormatMetadata_Xml():
+return xml(_that.field0);case FormatMetadata_Text():
+return text(_that.field0);case FormatMetadata_Html():
+return html(_that.field0);case FormatMetadata_Ocr():
+return ocr(_that.field0);case FormatMetadata_Csv():
+return csv(_that.field0);case FormatMetadata_Bibtex():
+return bibtex(_that.field0);case FormatMetadata_Citation():
+return citation(_that.field0);case FormatMetadata_FictionBook():
+return fictionBook(_that.field0);case FormatMetadata_Dbf():
+return dbf(_that.field0);case FormatMetadata_Jats():
+return jats(_that.field0);case FormatMetadata_Epub():
+return epub(_that.field0);case FormatMetadata_Pst():
+return pst(_that.field0);case FormatMetadata_Code():
+return code(_that.field0);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -1691,29 +1695,29 @@ return code(_that.value);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( PdfMetadata metadata)?  pdf,TResult? Function( DocxMetadata metadata)?  docx,TResult? Function( ExcelMetadata metadata)?  excel,TResult? Function( EmailMetadata metadata)?  email,TResult? Function( PptxMetadata metadata)?  pptx,TResult? Function( ArchiveMetadata metadata)?  archive,TResult? Function( ImageMetadata metadata)?  image,TResult? Function( XmlMetadata metadata)?  xml,TResult? Function( TextMetadata metadata)?  text,TResult? Function( HtmlMetadata metadata)?  html,TResult? Function( OcrMetadata metadata)?  ocr,TResult? Function( CsvMetadata metadata)?  csv,TResult? Function( BibtexMetadata metadata)?  bibtex,TResult? Function( CitationMetadata metadata)?  citation,TResult? Function( FictionBookMetadata metadata)?  fictionBook,TResult? Function( DbfMetadata metadata)?  dbf,TResult? Function( JatsMetadata metadata)?  jats,TResult? Function( EpubMetadata metadata)?  epub,TResult? Function( PstMetadata metadata)?  pst,TResult? Function( String value)?  code,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( PdfMetadata field0)?  pdf,TResult? Function( DocxMetadata field0)?  docx,TResult? Function( ExcelMetadata field0)?  excel,TResult? Function( EmailMetadata field0)?  email,TResult? Function( PptxMetadata field0)?  pptx,TResult? Function( ArchiveMetadata field0)?  archive,TResult? Function( ImageMetadata field0)?  image,TResult? Function( XmlMetadata field0)?  xml,TResult? Function( TextMetadata field0)?  text,TResult? Function( HtmlMetadata field0)?  html,TResult? Function( OcrMetadata field0)?  ocr,TResult? Function( CsvMetadata field0)?  csv,TResult? Function( BibtexMetadata field0)?  bibtex,TResult? Function( CitationMetadata field0)?  citation,TResult? Function( FictionBookMetadata field0)?  fictionBook,TResult? Function( DbfMetadata field0)?  dbf,TResult? Function( JatsMetadata field0)?  jats,TResult? Function( EpubMetadata field0)?  epub,TResult? Function( PstMetadata field0)?  pst,TResult? Function( String field0)?  code,}) {final _that = this;
 switch (_that) {
 case FormatMetadata_Pdf() when pdf != null:
-return pdf(_that.metadata);case FormatMetadata_Docx() when docx != null:
-return docx(_that.metadata);case FormatMetadata_Excel() when excel != null:
-return excel(_that.metadata);case FormatMetadata_Email() when email != null:
-return email(_that.metadata);case FormatMetadata_Pptx() when pptx != null:
-return pptx(_that.metadata);case FormatMetadata_Archive() when archive != null:
-return archive(_that.metadata);case FormatMetadata_Image() when image != null:
-return image(_that.metadata);case FormatMetadata_Xml() when xml != null:
-return xml(_that.metadata);case FormatMetadata_Text() when text != null:
-return text(_that.metadata);case FormatMetadata_Html() when html != null:
-return html(_that.metadata);case FormatMetadata_Ocr() when ocr != null:
-return ocr(_that.metadata);case FormatMetadata_Csv() when csv != null:
-return csv(_that.metadata);case FormatMetadata_Bibtex() when bibtex != null:
-return bibtex(_that.metadata);case FormatMetadata_Citation() when citation != null:
-return citation(_that.metadata);case FormatMetadata_FictionBook() when fictionBook != null:
-return fictionBook(_that.metadata);case FormatMetadata_Dbf() when dbf != null:
-return dbf(_that.metadata);case FormatMetadata_Jats() when jats != null:
-return jats(_that.metadata);case FormatMetadata_Epub() when epub != null:
-return epub(_that.metadata);case FormatMetadata_Pst() when pst != null:
-return pst(_that.metadata);case FormatMetadata_Code() when code != null:
-return code(_that.value);case _:
+return pdf(_that.field0);case FormatMetadata_Docx() when docx != null:
+return docx(_that.field0);case FormatMetadata_Excel() when excel != null:
+return excel(_that.field0);case FormatMetadata_Email() when email != null:
+return email(_that.field0);case FormatMetadata_Pptx() when pptx != null:
+return pptx(_that.field0);case FormatMetadata_Archive() when archive != null:
+return archive(_that.field0);case FormatMetadata_Image() when image != null:
+return image(_that.field0);case FormatMetadata_Xml() when xml != null:
+return xml(_that.field0);case FormatMetadata_Text() when text != null:
+return text(_that.field0);case FormatMetadata_Html() when html != null:
+return html(_that.field0);case FormatMetadata_Ocr() when ocr != null:
+return ocr(_that.field0);case FormatMetadata_Csv() when csv != null:
+return csv(_that.field0);case FormatMetadata_Bibtex() when bibtex != null:
+return bibtex(_that.field0);case FormatMetadata_Citation() when citation != null:
+return citation(_that.field0);case FormatMetadata_FictionBook() when fictionBook != null:
+return fictionBook(_that.field0);case FormatMetadata_Dbf() when dbf != null:
+return dbf(_that.field0);case FormatMetadata_Jats() when jats != null:
+return jats(_that.field0);case FormatMetadata_Epub() when epub != null:
+return epub(_that.field0);case FormatMetadata_Pst() when pst != null:
+return pst(_that.field0);case FormatMetadata_Code() when code != null:
+return code(_that.field0);case _:
   return null;
 
 }
@@ -1725,10 +1729,10 @@ return code(_that.value);case _:
 
 
 class FormatMetadata_Pdf extends FormatMetadata {
-  const FormatMetadata_Pdf({required this.metadata}): super._();
+  const FormatMetadata_Pdf({required this.field0}): super._();
   
 
- final  PdfMetadata metadata;
+@override final  PdfMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -1740,16 +1744,16 @@ $FormatMetadata_PdfCopyWith<FormatMetadata_Pdf> get copyWith => _$FormatMetadata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Pdf&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Pdf&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.pdf(metadata: $metadata)';
+  return 'FormatMetadata.pdf(field0: $field0)';
 }
 
 
@@ -1760,7 +1764,7 @@ abstract mixin class $FormatMetadata_PdfCopyWith<$Res> implements $FormatMetadat
   factory $FormatMetadata_PdfCopyWith(FormatMetadata_Pdf value, $Res Function(FormatMetadata_Pdf) _then) = _$FormatMetadata_PdfCopyWithImpl;
 @useResult
 $Res call({
- PdfMetadata metadata
+ PdfMetadata field0
 });
 
 
@@ -1777,9 +1781,9 @@ class _$FormatMetadata_PdfCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Pdf(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as PdfMetadata,
   ));
 }
@@ -1791,10 +1795,10 @@ as PdfMetadata,
 
 
 class FormatMetadata_Docx extends FormatMetadata {
-  const FormatMetadata_Docx({required this.metadata}): super._();
+  const FormatMetadata_Docx({required this.field0}): super._();
   
 
- final  DocxMetadata metadata;
+@override final  DocxMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -1806,16 +1810,16 @@ $FormatMetadata_DocxCopyWith<FormatMetadata_Docx> get copyWith => _$FormatMetada
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Docx&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Docx&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.docx(metadata: $metadata)';
+  return 'FormatMetadata.docx(field0: $field0)';
 }
 
 
@@ -1826,7 +1830,7 @@ abstract mixin class $FormatMetadata_DocxCopyWith<$Res> implements $FormatMetada
   factory $FormatMetadata_DocxCopyWith(FormatMetadata_Docx value, $Res Function(FormatMetadata_Docx) _then) = _$FormatMetadata_DocxCopyWithImpl;
 @useResult
 $Res call({
- DocxMetadata metadata
+ DocxMetadata field0
 });
 
 
@@ -1843,9 +1847,9 @@ class _$FormatMetadata_DocxCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Docx(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as DocxMetadata,
   ));
 }
@@ -1857,10 +1861,10 @@ as DocxMetadata,
 
 
 class FormatMetadata_Excel extends FormatMetadata {
-  const FormatMetadata_Excel({required this.metadata}): super._();
+  const FormatMetadata_Excel({required this.field0}): super._();
   
 
- final  ExcelMetadata metadata;
+@override final  ExcelMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -1872,16 +1876,16 @@ $FormatMetadata_ExcelCopyWith<FormatMetadata_Excel> get copyWith => _$FormatMeta
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Excel&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Excel&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.excel(metadata: $metadata)';
+  return 'FormatMetadata.excel(field0: $field0)';
 }
 
 
@@ -1892,7 +1896,7 @@ abstract mixin class $FormatMetadata_ExcelCopyWith<$Res> implements $FormatMetad
   factory $FormatMetadata_ExcelCopyWith(FormatMetadata_Excel value, $Res Function(FormatMetadata_Excel) _then) = _$FormatMetadata_ExcelCopyWithImpl;
 @useResult
 $Res call({
- ExcelMetadata metadata
+ ExcelMetadata field0
 });
 
 
@@ -1909,9 +1913,9 @@ class _$FormatMetadata_ExcelCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Excel(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as ExcelMetadata,
   ));
 }
@@ -1923,10 +1927,10 @@ as ExcelMetadata,
 
 
 class FormatMetadata_Email extends FormatMetadata {
-  const FormatMetadata_Email({required this.metadata}): super._();
+  const FormatMetadata_Email({required this.field0}): super._();
   
 
- final  EmailMetadata metadata;
+@override final  EmailMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -1938,16 +1942,16 @@ $FormatMetadata_EmailCopyWith<FormatMetadata_Email> get copyWith => _$FormatMeta
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Email&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Email&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.email(metadata: $metadata)';
+  return 'FormatMetadata.email(field0: $field0)';
 }
 
 
@@ -1958,7 +1962,7 @@ abstract mixin class $FormatMetadata_EmailCopyWith<$Res> implements $FormatMetad
   factory $FormatMetadata_EmailCopyWith(FormatMetadata_Email value, $Res Function(FormatMetadata_Email) _then) = _$FormatMetadata_EmailCopyWithImpl;
 @useResult
 $Res call({
- EmailMetadata metadata
+ EmailMetadata field0
 });
 
 
@@ -1975,9 +1979,9 @@ class _$FormatMetadata_EmailCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Email(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as EmailMetadata,
   ));
 }
@@ -1989,10 +1993,10 @@ as EmailMetadata,
 
 
 class FormatMetadata_Pptx extends FormatMetadata {
-  const FormatMetadata_Pptx({required this.metadata}): super._();
+  const FormatMetadata_Pptx({required this.field0}): super._();
   
 
- final  PptxMetadata metadata;
+@override final  PptxMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2004,16 +2008,16 @@ $FormatMetadata_PptxCopyWith<FormatMetadata_Pptx> get copyWith => _$FormatMetada
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Pptx&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Pptx&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.pptx(metadata: $metadata)';
+  return 'FormatMetadata.pptx(field0: $field0)';
 }
 
 
@@ -2024,7 +2028,7 @@ abstract mixin class $FormatMetadata_PptxCopyWith<$Res> implements $FormatMetada
   factory $FormatMetadata_PptxCopyWith(FormatMetadata_Pptx value, $Res Function(FormatMetadata_Pptx) _then) = _$FormatMetadata_PptxCopyWithImpl;
 @useResult
 $Res call({
- PptxMetadata metadata
+ PptxMetadata field0
 });
 
 
@@ -2041,9 +2045,9 @@ class _$FormatMetadata_PptxCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Pptx(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as PptxMetadata,
   ));
 }
@@ -2055,10 +2059,10 @@ as PptxMetadata,
 
 
 class FormatMetadata_Archive extends FormatMetadata {
-  const FormatMetadata_Archive({required this.metadata}): super._();
+  const FormatMetadata_Archive({required this.field0}): super._();
   
 
- final  ArchiveMetadata metadata;
+@override final  ArchiveMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2070,16 +2074,16 @@ $FormatMetadata_ArchiveCopyWith<FormatMetadata_Archive> get copyWith => _$Format
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Archive&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Archive&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.archive(metadata: $metadata)';
+  return 'FormatMetadata.archive(field0: $field0)';
 }
 
 
@@ -2090,7 +2094,7 @@ abstract mixin class $FormatMetadata_ArchiveCopyWith<$Res> implements $FormatMet
   factory $FormatMetadata_ArchiveCopyWith(FormatMetadata_Archive value, $Res Function(FormatMetadata_Archive) _then) = _$FormatMetadata_ArchiveCopyWithImpl;
 @useResult
 $Res call({
- ArchiveMetadata metadata
+ ArchiveMetadata field0
 });
 
 
@@ -2107,9 +2111,9 @@ class _$FormatMetadata_ArchiveCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Archive(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as ArchiveMetadata,
   ));
 }
@@ -2121,10 +2125,10 @@ as ArchiveMetadata,
 
 
 class FormatMetadata_Image extends FormatMetadata {
-  const FormatMetadata_Image({required this.metadata}): super._();
+  const FormatMetadata_Image({required this.field0}): super._();
   
 
- final  ImageMetadata metadata;
+@override final  ImageMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2136,16 +2140,16 @@ $FormatMetadata_ImageCopyWith<FormatMetadata_Image> get copyWith => _$FormatMeta
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Image&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Image&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.image(metadata: $metadata)';
+  return 'FormatMetadata.image(field0: $field0)';
 }
 
 
@@ -2156,7 +2160,7 @@ abstract mixin class $FormatMetadata_ImageCopyWith<$Res> implements $FormatMetad
   factory $FormatMetadata_ImageCopyWith(FormatMetadata_Image value, $Res Function(FormatMetadata_Image) _then) = _$FormatMetadata_ImageCopyWithImpl;
 @useResult
 $Res call({
- ImageMetadata metadata
+ ImageMetadata field0
 });
 
 
@@ -2173,9 +2177,9 @@ class _$FormatMetadata_ImageCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Image(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as ImageMetadata,
   ));
 }
@@ -2187,10 +2191,10 @@ as ImageMetadata,
 
 
 class FormatMetadata_Xml extends FormatMetadata {
-  const FormatMetadata_Xml({required this.metadata}): super._();
+  const FormatMetadata_Xml({required this.field0}): super._();
   
 
- final  XmlMetadata metadata;
+@override final  XmlMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2202,16 +2206,16 @@ $FormatMetadata_XmlCopyWith<FormatMetadata_Xml> get copyWith => _$FormatMetadata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Xml&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Xml&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.xml(metadata: $metadata)';
+  return 'FormatMetadata.xml(field0: $field0)';
 }
 
 
@@ -2222,7 +2226,7 @@ abstract mixin class $FormatMetadata_XmlCopyWith<$Res> implements $FormatMetadat
   factory $FormatMetadata_XmlCopyWith(FormatMetadata_Xml value, $Res Function(FormatMetadata_Xml) _then) = _$FormatMetadata_XmlCopyWithImpl;
 @useResult
 $Res call({
- XmlMetadata metadata
+ XmlMetadata field0
 });
 
 
@@ -2239,9 +2243,9 @@ class _$FormatMetadata_XmlCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Xml(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as XmlMetadata,
   ));
 }
@@ -2253,10 +2257,10 @@ as XmlMetadata,
 
 
 class FormatMetadata_Text extends FormatMetadata {
-  const FormatMetadata_Text({required this.metadata}): super._();
+  const FormatMetadata_Text({required this.field0}): super._();
   
 
- final  TextMetadata metadata;
+@override final  TextMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2268,16 +2272,16 @@ $FormatMetadata_TextCopyWith<FormatMetadata_Text> get copyWith => _$FormatMetada
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Text&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Text&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.text(metadata: $metadata)';
+  return 'FormatMetadata.text(field0: $field0)';
 }
 
 
@@ -2288,7 +2292,7 @@ abstract mixin class $FormatMetadata_TextCopyWith<$Res> implements $FormatMetada
   factory $FormatMetadata_TextCopyWith(FormatMetadata_Text value, $Res Function(FormatMetadata_Text) _then) = _$FormatMetadata_TextCopyWithImpl;
 @useResult
 $Res call({
- TextMetadata metadata
+ TextMetadata field0
 });
 
 
@@ -2305,9 +2309,9 @@ class _$FormatMetadata_TextCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Text(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as TextMetadata,
   ));
 }
@@ -2319,10 +2323,10 @@ as TextMetadata,
 
 
 class FormatMetadata_Html extends FormatMetadata {
-  const FormatMetadata_Html({required this.metadata}): super._();
+  const FormatMetadata_Html({required this.field0}): super._();
   
 
- final  HtmlMetadata metadata;
+@override final  HtmlMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2334,16 +2338,16 @@ $FormatMetadata_HtmlCopyWith<FormatMetadata_Html> get copyWith => _$FormatMetada
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Html&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Html&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.html(metadata: $metadata)';
+  return 'FormatMetadata.html(field0: $field0)';
 }
 
 
@@ -2354,7 +2358,7 @@ abstract mixin class $FormatMetadata_HtmlCopyWith<$Res> implements $FormatMetada
   factory $FormatMetadata_HtmlCopyWith(FormatMetadata_Html value, $Res Function(FormatMetadata_Html) _then) = _$FormatMetadata_HtmlCopyWithImpl;
 @useResult
 $Res call({
- HtmlMetadata metadata
+ HtmlMetadata field0
 });
 
 
@@ -2371,9 +2375,9 @@ class _$FormatMetadata_HtmlCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Html(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as HtmlMetadata,
   ));
 }
@@ -2385,10 +2389,10 @@ as HtmlMetadata,
 
 
 class FormatMetadata_Ocr extends FormatMetadata {
-  const FormatMetadata_Ocr({required this.metadata}): super._();
+  const FormatMetadata_Ocr({required this.field0}): super._();
   
 
- final  OcrMetadata metadata;
+@override final  OcrMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2400,16 +2404,16 @@ $FormatMetadata_OcrCopyWith<FormatMetadata_Ocr> get copyWith => _$FormatMetadata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Ocr&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Ocr&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.ocr(metadata: $metadata)';
+  return 'FormatMetadata.ocr(field0: $field0)';
 }
 
 
@@ -2420,7 +2424,7 @@ abstract mixin class $FormatMetadata_OcrCopyWith<$Res> implements $FormatMetadat
   factory $FormatMetadata_OcrCopyWith(FormatMetadata_Ocr value, $Res Function(FormatMetadata_Ocr) _then) = _$FormatMetadata_OcrCopyWithImpl;
 @useResult
 $Res call({
- OcrMetadata metadata
+ OcrMetadata field0
 });
 
 
@@ -2437,9 +2441,9 @@ class _$FormatMetadata_OcrCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Ocr(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as OcrMetadata,
   ));
 }
@@ -2451,10 +2455,10 @@ as OcrMetadata,
 
 
 class FormatMetadata_Csv extends FormatMetadata {
-  const FormatMetadata_Csv({required this.metadata}): super._();
+  const FormatMetadata_Csv({required this.field0}): super._();
   
 
- final  CsvMetadata metadata;
+@override final  CsvMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2466,16 +2470,16 @@ $FormatMetadata_CsvCopyWith<FormatMetadata_Csv> get copyWith => _$FormatMetadata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Csv&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Csv&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.csv(metadata: $metadata)';
+  return 'FormatMetadata.csv(field0: $field0)';
 }
 
 
@@ -2486,7 +2490,7 @@ abstract mixin class $FormatMetadata_CsvCopyWith<$Res> implements $FormatMetadat
   factory $FormatMetadata_CsvCopyWith(FormatMetadata_Csv value, $Res Function(FormatMetadata_Csv) _then) = _$FormatMetadata_CsvCopyWithImpl;
 @useResult
 $Res call({
- CsvMetadata metadata
+ CsvMetadata field0
 });
 
 
@@ -2503,9 +2507,9 @@ class _$FormatMetadata_CsvCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Csv(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as CsvMetadata,
   ));
 }
@@ -2517,10 +2521,10 @@ as CsvMetadata,
 
 
 class FormatMetadata_Bibtex extends FormatMetadata {
-  const FormatMetadata_Bibtex({required this.metadata}): super._();
+  const FormatMetadata_Bibtex({required this.field0}): super._();
   
 
- final  BibtexMetadata metadata;
+@override final  BibtexMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2532,16 +2536,16 @@ $FormatMetadata_BibtexCopyWith<FormatMetadata_Bibtex> get copyWith => _$FormatMe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Bibtex&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Bibtex&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.bibtex(metadata: $metadata)';
+  return 'FormatMetadata.bibtex(field0: $field0)';
 }
 
 
@@ -2552,7 +2556,7 @@ abstract mixin class $FormatMetadata_BibtexCopyWith<$Res> implements $FormatMeta
   factory $FormatMetadata_BibtexCopyWith(FormatMetadata_Bibtex value, $Res Function(FormatMetadata_Bibtex) _then) = _$FormatMetadata_BibtexCopyWithImpl;
 @useResult
 $Res call({
- BibtexMetadata metadata
+ BibtexMetadata field0
 });
 
 
@@ -2569,9 +2573,9 @@ class _$FormatMetadata_BibtexCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Bibtex(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as BibtexMetadata,
   ));
 }
@@ -2583,10 +2587,10 @@ as BibtexMetadata,
 
 
 class FormatMetadata_Citation extends FormatMetadata {
-  const FormatMetadata_Citation({required this.metadata}): super._();
+  const FormatMetadata_Citation({required this.field0}): super._();
   
 
- final  CitationMetadata metadata;
+@override final  CitationMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2598,16 +2602,16 @@ $FormatMetadata_CitationCopyWith<FormatMetadata_Citation> get copyWith => _$Form
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Citation&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Citation&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.citation(metadata: $metadata)';
+  return 'FormatMetadata.citation(field0: $field0)';
 }
 
 
@@ -2618,7 +2622,7 @@ abstract mixin class $FormatMetadata_CitationCopyWith<$Res> implements $FormatMe
   factory $FormatMetadata_CitationCopyWith(FormatMetadata_Citation value, $Res Function(FormatMetadata_Citation) _then) = _$FormatMetadata_CitationCopyWithImpl;
 @useResult
 $Res call({
- CitationMetadata metadata
+ CitationMetadata field0
 });
 
 
@@ -2635,9 +2639,9 @@ class _$FormatMetadata_CitationCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Citation(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as CitationMetadata,
   ));
 }
@@ -2649,10 +2653,10 @@ as CitationMetadata,
 
 
 class FormatMetadata_FictionBook extends FormatMetadata {
-  const FormatMetadata_FictionBook({required this.metadata}): super._();
+  const FormatMetadata_FictionBook({required this.field0}): super._();
   
 
- final  FictionBookMetadata metadata;
+@override final  FictionBookMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2664,16 +2668,16 @@ $FormatMetadata_FictionBookCopyWith<FormatMetadata_FictionBook> get copyWith => 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_FictionBook&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_FictionBook&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.fictionBook(metadata: $metadata)';
+  return 'FormatMetadata.fictionBook(field0: $field0)';
 }
 
 
@@ -2684,7 +2688,7 @@ abstract mixin class $FormatMetadata_FictionBookCopyWith<$Res> implements $Forma
   factory $FormatMetadata_FictionBookCopyWith(FormatMetadata_FictionBook value, $Res Function(FormatMetadata_FictionBook) _then) = _$FormatMetadata_FictionBookCopyWithImpl;
 @useResult
 $Res call({
- FictionBookMetadata metadata
+ FictionBookMetadata field0
 });
 
 
@@ -2701,9 +2705,9 @@ class _$FormatMetadata_FictionBookCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_FictionBook(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as FictionBookMetadata,
   ));
 }
@@ -2715,10 +2719,10 @@ as FictionBookMetadata,
 
 
 class FormatMetadata_Dbf extends FormatMetadata {
-  const FormatMetadata_Dbf({required this.metadata}): super._();
+  const FormatMetadata_Dbf({required this.field0}): super._();
   
 
- final  DbfMetadata metadata;
+@override final  DbfMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2730,16 +2734,16 @@ $FormatMetadata_DbfCopyWith<FormatMetadata_Dbf> get copyWith => _$FormatMetadata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Dbf&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Dbf&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.dbf(metadata: $metadata)';
+  return 'FormatMetadata.dbf(field0: $field0)';
 }
 
 
@@ -2750,7 +2754,7 @@ abstract mixin class $FormatMetadata_DbfCopyWith<$Res> implements $FormatMetadat
   factory $FormatMetadata_DbfCopyWith(FormatMetadata_Dbf value, $Res Function(FormatMetadata_Dbf) _then) = _$FormatMetadata_DbfCopyWithImpl;
 @useResult
 $Res call({
- DbfMetadata metadata
+ DbfMetadata field0
 });
 
 
@@ -2767,9 +2771,9 @@ class _$FormatMetadata_DbfCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Dbf(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as DbfMetadata,
   ));
 }
@@ -2781,10 +2785,10 @@ as DbfMetadata,
 
 
 class FormatMetadata_Jats extends FormatMetadata {
-  const FormatMetadata_Jats({required this.metadata}): super._();
+  const FormatMetadata_Jats({required this.field0}): super._();
   
 
- final  JatsMetadata metadata;
+@override final  JatsMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2796,16 +2800,16 @@ $FormatMetadata_JatsCopyWith<FormatMetadata_Jats> get copyWith => _$FormatMetada
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Jats&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Jats&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.jats(metadata: $metadata)';
+  return 'FormatMetadata.jats(field0: $field0)';
 }
 
 
@@ -2816,7 +2820,7 @@ abstract mixin class $FormatMetadata_JatsCopyWith<$Res> implements $FormatMetada
   factory $FormatMetadata_JatsCopyWith(FormatMetadata_Jats value, $Res Function(FormatMetadata_Jats) _then) = _$FormatMetadata_JatsCopyWithImpl;
 @useResult
 $Res call({
- JatsMetadata metadata
+ JatsMetadata field0
 });
 
 
@@ -2833,9 +2837,9 @@ class _$FormatMetadata_JatsCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Jats(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as JatsMetadata,
   ));
 }
@@ -2847,10 +2851,10 @@ as JatsMetadata,
 
 
 class FormatMetadata_Epub extends FormatMetadata {
-  const FormatMetadata_Epub({required this.metadata}): super._();
+  const FormatMetadata_Epub({required this.field0}): super._();
   
 
- final  EpubMetadata metadata;
+@override final  EpubMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2862,16 +2866,16 @@ $FormatMetadata_EpubCopyWith<FormatMetadata_Epub> get copyWith => _$FormatMetada
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Epub&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Epub&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.epub(metadata: $metadata)';
+  return 'FormatMetadata.epub(field0: $field0)';
 }
 
 
@@ -2882,7 +2886,7 @@ abstract mixin class $FormatMetadata_EpubCopyWith<$Res> implements $FormatMetada
   factory $FormatMetadata_EpubCopyWith(FormatMetadata_Epub value, $Res Function(FormatMetadata_Epub) _then) = _$FormatMetadata_EpubCopyWithImpl;
 @useResult
 $Res call({
- EpubMetadata metadata
+ EpubMetadata field0
 });
 
 
@@ -2899,9 +2903,9 @@ class _$FormatMetadata_EpubCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Epub(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as EpubMetadata,
   ));
 }
@@ -2913,10 +2917,10 @@ as EpubMetadata,
 
 
 class FormatMetadata_Pst extends FormatMetadata {
-  const FormatMetadata_Pst({required this.metadata}): super._();
+  const FormatMetadata_Pst({required this.field0}): super._();
   
 
- final  PstMetadata metadata;
+@override final  PstMetadata field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2928,16 +2932,16 @@ $FormatMetadata_PstCopyWith<FormatMetadata_Pst> get copyWith => _$FormatMetadata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Pst&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Pst&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,metadata);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.pst(metadata: $metadata)';
+  return 'FormatMetadata.pst(field0: $field0)';
 }
 
 
@@ -2948,7 +2952,7 @@ abstract mixin class $FormatMetadata_PstCopyWith<$Res> implements $FormatMetadat
   factory $FormatMetadata_PstCopyWith(FormatMetadata_Pst value, $Res Function(FormatMetadata_Pst) _then) = _$FormatMetadata_PstCopyWithImpl;
 @useResult
 $Res call({
- PstMetadata metadata
+ PstMetadata field0
 });
 
 
@@ -2965,9 +2969,9 @@ class _$FormatMetadata_PstCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Pst(
-metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as PstMetadata,
   ));
 }
@@ -2979,10 +2983,10 @@ as PstMetadata,
 
 
 class FormatMetadata_Code extends FormatMetadata {
-  const FormatMetadata_Code({required this.value}): super._();
+  const FormatMetadata_Code({required this.field0}): super._();
   
 
- final  String value;
+@override final  String field0;
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
@@ -2994,16 +2998,16 @@ $FormatMetadata_CodeCopyWith<FormatMetadata_Code> get copyWith => _$FormatMetada
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Code&&(identical(other.value, value) || other.value == value));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FormatMetadata_Code&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,value);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'FormatMetadata.code(value: $value)';
+  return 'FormatMetadata.code(field0: $field0)';
 }
 
 
@@ -3014,7 +3018,7 @@ abstract mixin class $FormatMetadata_CodeCopyWith<$Res> implements $FormatMetada
   factory $FormatMetadata_CodeCopyWith(FormatMetadata_Code value, $Res Function(FormatMetadata_Code) _then) = _$FormatMetadata_CodeCopyWithImpl;
 @useResult
 $Res call({
- String value
+ String field0
 });
 
 
@@ -3031,9 +3035,9 @@ class _$FormatMetadata_CodeCopyWithImpl<$Res>
 
 /// Create a copy of FormatMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? value = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(FormatMetadata_Code(
-value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -3716,6 +3720,7 @@ class NodeContent_Image extends NodeContent {
 
  final  String description;
  final  PlatformInt64 imageIndex;
+/// Source URL or path of the image (from `<img src="...">` or `![](src)`).
  final  String src;
 
 /// Create a copy of NodeContent
@@ -4118,6 +4123,7 @@ class NodeContent_Slide extends NodeContent {
   const NodeContent_Slide({required this.number, required this.title}): super._();
   
 
+/// 1-indexed slide number.
  final  PlatformInt64 number;
  final  String title;
 
@@ -4354,6 +4360,7 @@ class NodeContent_Admonition extends NodeContent {
   const NodeContent_Admonition({required this.kind, required this.title}): super._();
   
 
+/// Kind of admonition (e.g. "note", "warning", "tip", "danger").
  final  String kind;
  final  String title;
 
@@ -4422,6 +4429,7 @@ class NodeContent_RawBlock extends NodeContent {
   const NodeContent_RawBlock({required this.format, required this.content}): super._();
   
 
+/// Source format identifier (e.g. "html", "latex", "jsx").
  final  String format;
  final  String content;
 
@@ -4722,9 +4730,13 @@ class OcrBoundingGeometry_Rectangle extends OcrBoundingGeometry {
   const OcrBoundingGeometry_Rectangle({required this.left, required this.top, required this.width, required this.height}): super._();
   
 
+/// Left x-coordinate in pixels
  final  PlatformInt64 left;
+/// Top y-coordinate in pixels
  final  PlatformInt64 top;
+/// Width in pixels
  final  PlatformInt64 width;
+/// Height in pixels
  final  PlatformInt64 height;
 
 /// Create a copy of OcrBoundingGeometry
@@ -4794,6 +4806,7 @@ class OcrBoundingGeometry_Quadrilateral extends OcrBoundingGeometry {
   const OcrBoundingGeometry_Quadrilateral({required this.points}): super._();
   
 
+/// Four corner points as `[(x, y), ...]` in clockwise order
  final  String points;
 
 /// Create a copy of OcrBoundingGeometry
@@ -4976,7 +4989,7 @@ return custom(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  plain,TResult Function()?  markdown,TResult Function()?  djot,TResult Function()?  html,TResult Function()?  json,TResult Function()?  structured,TResult Function( String value)?  custom,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  plain,TResult Function()?  markdown,TResult Function()?  djot,TResult Function()?  html,TResult Function()?  json,TResult Function()?  structured,TResult Function( String field0)?  custom,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case OutputFormat_Plain() when plain != null:
 return plain();case OutputFormat_Markdown() when markdown != null:
@@ -4985,7 +4998,7 @@ return djot();case OutputFormat_Html() when html != null:
 return html();case OutputFormat_Json() when json != null:
 return json();case OutputFormat_Structured() when structured != null:
 return structured();case OutputFormat_Custom() when custom != null:
-return custom(_that.value);case _:
+return custom(_that.field0);case _:
   return orElse();
 
 }
@@ -5003,7 +5016,7 @@ return custom(_that.value);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  plain,required TResult Function()  markdown,required TResult Function()  djot,required TResult Function()  html,required TResult Function()  json,required TResult Function()  structured,required TResult Function( String value)  custom,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  plain,required TResult Function()  markdown,required TResult Function()  djot,required TResult Function()  html,required TResult Function()  json,required TResult Function()  structured,required TResult Function( String field0)  custom,}) {final _that = this;
 switch (_that) {
 case OutputFormat_Plain():
 return plain();case OutputFormat_Markdown():
@@ -5012,7 +5025,7 @@ return djot();case OutputFormat_Html():
 return html();case OutputFormat_Json():
 return json();case OutputFormat_Structured():
 return structured();case OutputFormat_Custom():
-return custom(_that.value);}
+return custom(_that.field0);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -5026,7 +5039,7 @@ return custom(_that.value);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  plain,TResult? Function()?  markdown,TResult? Function()?  djot,TResult? Function()?  html,TResult? Function()?  json,TResult? Function()?  structured,TResult? Function( String value)?  custom,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  plain,TResult? Function()?  markdown,TResult? Function()?  djot,TResult? Function()?  html,TResult? Function()?  json,TResult? Function()?  structured,TResult? Function( String field0)?  custom,}) {final _that = this;
 switch (_that) {
 case OutputFormat_Plain() when plain != null:
 return plain();case OutputFormat_Markdown() when markdown != null:
@@ -5035,7 +5048,7 @@ return djot();case OutputFormat_Html() when html != null:
 return html();case OutputFormat_Json() when json != null:
 return json();case OutputFormat_Structured() when structured != null:
 return structured();case OutputFormat_Custom() when custom != null:
-return custom(_that.value);case _:
+return custom(_that.field0);case _:
   return null;
 
 }
@@ -5239,10 +5252,10 @@ String toString() {
 
 
 class OutputFormat_Custom extends OutputFormat {
-  const OutputFormat_Custom({required this.value}): super._();
+  const OutputFormat_Custom({required this.field0}): super._();
   
 
- final  String value;
+ final  String field0;
 
 /// Create a copy of OutputFormat
 /// with the given fields replaced by the non-null parameter values.
@@ -5254,16 +5267,16 @@ $OutputFormat_CustomCopyWith<OutputFormat_Custom> get copyWith => _$OutputFormat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OutputFormat_Custom&&(identical(other.value, value) || other.value == value));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OutputFormat_Custom&&(identical(other.field0, field0) || other.field0 == field0));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,value);
+int get hashCode => Object.hash(runtimeType,field0);
 
 @override
 String toString() {
-  return 'OutputFormat.custom(value: $value)';
+  return 'OutputFormat.custom(field0: $field0)';
 }
 
 
@@ -5274,7 +5287,7 @@ abstract mixin class $OutputFormat_CustomCopyWith<$Res> implements $OutputFormat
   factory $OutputFormat_CustomCopyWith(OutputFormat_Custom value, $Res Function(OutputFormat_Custom) _then) = _$OutputFormat_CustomCopyWithImpl;
 @useResult
 $Res call({
- String value
+ String field0
 });
 
 
@@ -5291,9 +5304,9 @@ class _$OutputFormat_CustomCopyWithImpl<$Res>
 
 /// Create a copy of OutputFormat
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? value = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
   return _then(OutputFormat_Custom(
-value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
+field0: null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

@@ -1,10 +1,7 @@
 {
   "id": "api_extract_bytes_async",
   "description": "Tests async bytes extraction API (extract_bytes)",
-  "tags": [
-    "contract",
-    "api"
-  ],
+  "tags": ["contract", "api"],
   "call": "extract_file",
   "input": {
     "path": "pdf/fake_memo.pdf"
@@ -23,16 +20,11 @@
     {
       "type": "contains_any",
       "field": "content",
-      "values": [
-        "May 5, 2023",
-        "Mallori"
-      ]
+      "values": ["May 5, 2023", "Mallori"]
     }
   ],
   "skip": {
-    "skip_languages": [
-      "wasm"
-    ],
+    "skip_languages": ["wasm"],
     "reason": "WASM uses synchronous-only API; async extraction is not available on the wasm target"
   }
 }

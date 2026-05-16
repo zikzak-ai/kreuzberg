@@ -24,7 +24,7 @@ $result = Kreuzberg::extractFileSync('document.pdf', null, $config);
 if ($result->getChunks()) {
     foreach ($result->getChunks() as $chunk) {
         echo "Chunk content: " . substr($chunk->getContent(), 0, 100) . "...\n";
-        
+
         $embedding = $chunk->getEmbedding();
         if ($embedding) {
             echo "Embedding dimension: " . count($embedding) . "\n";

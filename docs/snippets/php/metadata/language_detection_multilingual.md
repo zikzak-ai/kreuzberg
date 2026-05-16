@@ -20,7 +20,7 @@ $result = Kreuzberg::extract_file_sync("multilingual_document.pdf", null, $confi
 // Iterate through all detected languages
 if (!empty($result->languages)) {
     echo "Detected " . count($result->languages) . " language(s):\n";
-    
+
     foreach ($result->languages as $lang) {
         echo "Language: " . $lang->code . "\n";
         if ($lang->confidence !== null) {

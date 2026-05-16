@@ -9,7 +9,7 @@ public class CustomValidatorTests
     {
         var validator = new TestValidator();
         ValidatorRegistry.Register(validator);
-        
+
         var validators = KreuzbergLib.ListValidators();
         Assert.Contains("test-validator", validators);
     }
@@ -22,10 +22,10 @@ public class CustomValidatorTests
             Content = "Test content with some length",
             MimeType = "text/plain"
         };
-        
+
         var config = new ExtractionConfig();
         var validator = new TestValidator();
-        
+
         validator.Initialize();
         Assert.True(validator.ShouldValidate(result, config));
         validator.Validate(result, config);

@@ -35,9 +35,7 @@ interface TokenReductionResult {
   preview: string;
 }
 
-async function compareTokenReductionModes(
-  bytes: Uint8Array
-): Promise<TokenReductionResult[]> {
+async function compareTokenReductionModes(bytes: Uint8Array): Promise<TokenReductionResult[]> {
   const modes = ["conservative", "balanced", "aggressive"];
   const results: TokenReductionResult[] = [];
 
@@ -69,7 +67,7 @@ const bytes = new Uint8Array(buffer);
 const modeComparison = await compareTokenReductionModes(bytes);
 
 console.log("Token Reduction Mode Comparison:");
-modeComparison.forEach(r => {
+modeComparison.forEach((r) => {
   console.log(`  ${r.mode}:`);
   console.log(`    Original: ${r.originalSize} chars`);
   console.log(`    Reduction: ${(r.reductionRatio * 100).toFixed(1)}%`);

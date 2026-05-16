@@ -6,6 +6,13 @@ package dev.kreuzberg
  * Keyword algorithm selection.
  */
 enum class KeywordAlgorithm {
+    /**
+     * YAKE (Yet Another Keyword Extractor) - statistical approach
+     */
     YAKE,
+
+    /**
+     * RAKE (Rapid Automatic Keyword Extraction) - co-occurrence based
+     */
     RAKE,
 }

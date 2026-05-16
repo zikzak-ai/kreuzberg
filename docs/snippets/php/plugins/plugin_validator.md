@@ -25,13 +25,13 @@ class ContentQualityValidator implements Validator {
 
     public function validate(object $result, object $config): void {
         $contentLength = strlen($result->content);
-        
+
         if ($contentLength < $this->minLength) {
             throw new Exception(
                 "Content too short: $contentLength < {$this->minLength} characters"
             );
         }
-        
+
         if ($contentLength > $this->maxLength) {
             throw new Exception(
                 "Content too long: $contentLength > {$this->maxLength} characters"

@@ -17,18 +17,18 @@ const result = await extractBytes(fileBuffer, mimeType, config);
 
 if (result.pages) {
   console.log(`Total pages extracted: ${result.pages.length}`);
-  
+
   result.pages.forEach((page) => {
     console.log(`Page ${page.pageNumber}:`);
     console.log(`  Content length: ${page.content.length} chars`);
     console.log(`  Tables: ${page.tables.length}`);
     console.log(`  Images: ${page.images.length}`);
-    
+
     // Check if page is blank
     if (page.isBlank) {
       console.log("  This page is blank");
     }
-    
+
     // Access page hierarchy if available
     if (page.hierarchy) {
       console.log(`  Hierarchy level: ${page.hierarchy}`);

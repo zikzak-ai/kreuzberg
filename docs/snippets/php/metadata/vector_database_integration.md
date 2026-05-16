@@ -38,10 +38,10 @@ if ($result->chunks !== null) {
                 "chunk_id" => $chunk->chunk_id ?? null,
             ]
         ];
-        
+
         // Insert into vector DB (e.g., Pinecone, Weaviate, Milvus)
         // storeInVectorDB($vectorRecord);
-        
+
         echo "Chunk: " . substr($chunk->text, 0, 50) . "...\n";
         echo "Embedding dimensions: " . count($chunk->embedding ?? []) . "\n";
     }

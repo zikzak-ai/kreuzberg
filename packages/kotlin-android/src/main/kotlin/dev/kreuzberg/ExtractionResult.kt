@@ -11,25 +11,180 @@ data class ExtractionResult(
     val content: String,
     val mimeType: String,
     val metadata: Metadata,
+    /**
+     * Extraction strategy used to produce the returned text.
+     *
+     * Populated when the extractor can reliably distinguish native text extraction,
+     * OCR-only extraction, or mixed native/OCR output.
+     */
     val extractionMethod: ExtractionMethod?,
     val tables: List<Table>,
     val detectedLanguages: List<String>?,
+    /**
+     * Text chunks when chunking is enabled.
+     *
+     * When chunking configuration is provided, the content is split into
+     * overlapping chunks for efficient processing. Each chunk contains the text,
+     * optional embeddings (if enabled), and metadata about its position.
+     */
     val chunks: List<Chunk>?,
+    /**
+     * Extracted images from the document.
+     *
+     * When image extraction is enabled via `ImageExtractionConfig`, this field
+     * contains all images found in the document with their raw data and metadata.
+     * Each image may optionally contain a nested `ocr_result` if OCR was performed.
+     */
     val images: List<ExtractedImage>?,
+    /**
+     * Per-page content when page extraction is enabled.
+     *
+     * When page extraction is configured, the document is split into per-page content
+     * with tables and images mapped to their respective pages.
+     */
     val pages: List<PageContent>?,
+    /**
+     * Semantic elements when element-based result format is enabled.
+     *
+     * When result_format is set to ElementBased, this field contains semantic
+     * elements with type classification, unique identifiers, and metadata for
+     * Unstructured-compatible element-based processing.
+     */
     val elements: List<Element>?,
+    /**
+     * Rich Djot content structure (when extracting Djot documents).
+     *
+     * When extracting Djot documents with structured extraction enabled,
+     * this field contains the full semantic structure including:
+     * - Block-level elements with nesting
+     * - Inline formatting with attributes
+     * - Links, images, footnotes
+     * - Math expressions
+     * - Complete attribute information
+     *
+     * The `content` field still contains plain text for backward compatibility.
+     *
+     * Always `null` for non-Djot documents.
+     */
     val djotContent: DjotContent?,
+    /**
+     * OCR elements with full spatial and confidence metadata.
+     *
+     * When OCR is performed with element extraction enabled, this field contains
+     * the structured representation of detected text including:
+     * - Bounding geometry (rectangles or quadrilaterals)
+     * - Confidence scores (detection and recognition)
+     * - Rotation information
+     * - Hierarchical relationships (Tesseract only)
+     *
+     * This field preserves all metadata that would otherwise be lost when
+     * converting to plain text or markdown output formats.
+     *
+     * Only populated when `OcrElementConfig.include_elements` is true.
+     */
     val ocrElements: List<OcrElement>?,
+    /**
+     * Structured document tree (when document structure extraction is enabled).
+     *
+     * When `include_document_structure` is true in `ExtractionConfig`, this field
+     * contains the full hierarchical representation of the document including:
+     * - Heading-driven section nesting
+     * - Table grids with cell-level metadata
+     * - Content layer classification (body, header, footer, footnote)
+     * - Inline text annotations (formatting, links)
+     * - Bounding boxes and page numbers
+     *
+     * Independent of `result_format` — can be combined with Unified or ElementBased.
+     */
     val document: DocumentStructure?,
+    /**
+     * Extracted keywords when keyword extraction is enabled.
+     *
+     * When keyword extraction (RAKE or YAKE) is configured, this field contains
+     * the extracted keywords with scores, algorithm info, and position data.
+     * Previously stored in `metadata.additional["keywords"]`.
+     */
     val extractedKeywords: List<Keyword>?,
+    /**
+     * Document quality score from quality analysis.
+     *
+     * A value between 0.0 and 1.0 indicating the overall text quality.
+     * Previously stored in `metadata.additional["quality_score"]`.
+     */
     val qualityScore: Double?,
+    /**
+     * Non-fatal warnings collected during processing pipeline stages.
+     *
+     * Captures errors from optional pipeline features (embedding, chunking,
+     * language detection, output formatting) that don't prevent extraction
+     * but may indicate degraded results.
+     * Previously stored as individual keys in `metadata.additional`.
+     */
     val processingWarnings: List<ProcessingWarning>,
+    /**
+     * PDF annotations extracted from the document.
+     *
+     * When annotation extraction is enabled via `PdfConfig.extract_annotations`,
+     * this field contains text notes, highlights, links, stamps, and other
+     * annotations found in PDF documents.
+     */
     val annotations: List<PdfAnnotation>?,
+    /**
+     * Nested extraction results from archive contents.
+     *
+     * When extracting archives, each processable file inside produces its own
+     * full extraction result. Set to `null` for non-archive formats.
+     * Use `max_archive_depth` in config to control recursion depth.
+     */
     val children: List<ArchiveEntry>?,
+    /**
+     * URIs/links discovered during document extraction.
+     *
+     * Contains hyperlinks, image references, citations, email addresses, and
+     * other URI-like references found in the document. Always extracted when
+     * present in the source document.
+     */
     val uris: List<Uri>?,
+    /**
+     * Structured extraction output from LLM-based JSON schema extraction.
+     *
+     * When `structured_extraction` is configured in `ExtractionConfig`, the
+     * extracted document content is sent to a VLM with the provided JSON schema.
+     * The response is parsed and stored here as a JSON value matching the schema.
+     */
     val structuredOutput: String?,
+    /**
+     * Code intelligence results from tree-sitter analysis.
+     *
+     * Populated when extracting source code files with the `tree-sitter` feature.
+     * Contains metrics, structural analysis, imports/exports, comments,
+     * docstrings, symbols, diagnostics, and optionally chunked code segments.
+     */
     val codeIntelligence: String?,
+    /**
+     * LLM token usage and cost data for all LLM calls made during this extraction.
+     *
+     * Contains one entry per LLM call. Multiple entries are produced when
+     * VLM OCR, structured extraction, and/or LLM embeddings all run during
+     * the same extraction.
+     *
+     * `null` when no LLM was used.
+     */
     val llmUsage: List<LlmUsage>?,
+    /**
+     * Pre-rendered content in the requested output format.
+     *
+     * Populated during `derive_extraction_result` before tree derivation consumes
+     * element data. `apply_output_format` swaps this into `content` at the end
+     * of the pipeline, after post-processors have operated on plain text.
+     */
     val formattedContent: String?,
+    /**
+     * Structured hOCR document for the OCR+layout pipeline.
+     *
+     * When tesseract produces hOCR output, the parsed `InternalDocument` carries
+     * paragraph structure with bounding boxes and confidence scores. The layout
+     * classification step enriches these elements before final rendering.
+     */
     val ocrInternalDocument: String?,
 )

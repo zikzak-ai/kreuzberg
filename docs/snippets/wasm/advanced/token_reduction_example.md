@@ -27,13 +27,13 @@ interface PricingEstimate {
 }
 
 const tokenCount = estimateTokenCount(result.content);
-const inputPricePerToken = 0.00001;  // $0.01/1K tokens
+const inputPricePerToken = 0.00001; // $0.01/1K tokens
 const outputPricePerToken = 0.00003; // $0.03/1K tokens
 
 const costEstimate: PricingEstimate = {
   tokenCount,
   inputCost: tokenCount * inputPricePerToken,
-  outputCostEstimate: tokenCount * outputPricePerToken * 0.5,  // Assume output is ~50% of input
+  outputCostEstimate: tokenCount * outputPricePerToken * 0.5, // Assume output is ~50% of input
   totalEstimate: tokenCount * inputPricePerToken + tokenCount * outputPricePerToken * 0.5,
 };
 
@@ -58,7 +58,7 @@ interface ContextWindowFit {
 
 function checkContextWindowFit(
   content: string,
-  contextWindowSize: number = 4096
+  contextWindowSize: number = 4096,
 ): ContextWindowFit {
   const estimatedTokens = Math.ceil(content.length / 4);
   const fitsInWindow = estimatedTokens < contextWindowSize;
@@ -74,7 +74,7 @@ function checkContextWindowFit(
 
 const config = {
   tokenReduction: {
-    mode: "aggressive",  // Use aggressive mode for large documents
+    mode: "aggressive", // Use aggressive mode for large documents
     preserveImportantWords: true,
   },
 };
@@ -121,9 +121,10 @@ function extractImportantTerms(content: string, threshold: number = 3): Importan
   const words = content.toLowerCase().split(/\s+/);
   const frequencyMap = new Map<string, number>();
 
-  words.forEach(word => {
+  words.forEach((word) => {
     const cleaned = word.replace(/[^\w]/g, "");
-    if (cleaned.length > 5) {  // Only consider longer words
+    if (cleaned.length > 5) {
+      // Only consider longer words
       frequencyMap.set(cleaned, (frequencyMap.get(cleaned) || 0) + 1);
     }
   });
@@ -142,7 +143,7 @@ function extractImportantTerms(content: string, threshold: number = 3): Importan
 const importantTerms = extractImportantTerms(result.content);
 
 console.log("Important Terms (likely preserved by token reduction):");
-importantTerms.forEach(t => {
+importantTerms.forEach((t) => {
   console.log(`  "${t.term}": ${t.frequency} occurrences (importance: ${t.importance.toFixed(2)})`);
 });
 ```

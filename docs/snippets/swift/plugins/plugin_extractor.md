@@ -1,4 +1,5 @@
 <!-- snippet:skip reason="swift-bridge 0.1.59 does not expose SwiftDocumentExtractorBox constructor or protocol definition in generated Swift code. Custom extractors must be implemented in Rust and registered via FFI shim." -->
+
 ```swift title="Swift"
 import Kreuzberg
 

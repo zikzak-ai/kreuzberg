@@ -6,11 +6,32 @@ package dev.kreuzberg
  * Individual grid cell with position and span metadata.
  */
 data class GridCell(
+    /**
+     * Cell text content.
+     */
     val content: String,
+    /**
+     * Zero-indexed row position.
+     */
     val row: Int,
+    /**
+     * Zero-indexed column position.
+     */
     val col: Int,
+    /**
+     * Number of rows this cell spans.
+     */
     val rowSpan: Int,
+    /**
+     * Number of columns this cell spans.
+     */
     val colSpan: Int,
+    /**
+     * Whether this is a header cell.
+     */
     val isHeader: Boolean,
+    /**
+     * Bounding box for this cell (if available).
+     */
     val bbox: String?,
 )

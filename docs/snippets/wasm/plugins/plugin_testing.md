@@ -13,17 +13,17 @@ const sampleResult = {
   metadata: {
     mimeType: "application/pdf",
     source: "test.pdf",
-    pageCount: 1
-  }
+    pageCount: 1,
+  },
 };
 
 // Test post-processor registration
 function testPostProcessorRegistration() {
   const processor = {
     processingStage: () => "post-extraction",
-    process: (result) => result
+    process: (result) => result,
   };
-  
+
   try {
     registerPostProcessor(processor);
     console.log("✓ Post-processor registered successfully");
@@ -37,10 +37,10 @@ function testValidatorRegistration() {
   const validator = {
     validate: (result) => ({
       valid: !!result.text,
-      error: result.text ? null : "No text extracted"
-    })
+      error: result.text ? null : "No text extracted",
+    }),
   };
-  
+
   try {
     registerValidator(validator);
     console.log("✓ Validator registered successfully");
@@ -54,9 +54,9 @@ function testInterfaceValidation() {
   // Missing required method should fail
   const invalidProcessor = {
     // Missing processingStage() method
-    process: (result) => result
+    process: (result) => result,
   };
-  
+
   try {
     registerPostProcessor(invalidProcessor);
     console.error("✗ Should have rejected processor with missing methods");

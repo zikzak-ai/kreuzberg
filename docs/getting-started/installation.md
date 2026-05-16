@@ -62,180 +62,180 @@ No SDK, no code — just your terminal.
 
 - :fontawesome-brands-python:{ .lg .middle } **Python**
 
-    ***
+  ***
 
-    ```bash
-    pip install kreuzberg
-    ```
+  ```bash
+  pip install kreuzberg
+  ```
 
-    [API Reference](../reference/api-python.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-python.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-node-js:{ .lg .middle } **TypeScript (Node.js / Bun)**
 
-    ***
+  ***
 
-    ```bash
-    npm install @kreuzberg/node
-    ```
+  ```bash
+  npm install @kreuzberg/node
+  ```
 
-    [API Reference](../reference/api-typescript.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#typescript){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-typescript.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#typescript){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-js:{ .lg .middle } **TypeScript (Browser / Edge)**
 
-    ***
+  ***
 
-    ```bash
-    npm install @kreuzberg/wasm
-    ```
+  ```bash
+  npm install @kreuzberg/wasm
+  ```
 
-    [API Reference](../reference/api-wasm.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#typescript){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-wasm.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#typescript){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-rust:{ .lg .middle } **Rust**
 
-    ***
+  ***
 
-    ```bash
-    cargo add kreuzberg
-    ```
+  ```bash
+  cargo add kreuzberg
+  ```
 
-    [API Reference](../reference/api-rust.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-rust.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-golang:{ .lg .middle } **Go**
 
-    ***
+  ***
 
-    ```bash
-    go get github.com/kreuzberg-dev/kreuzberg/v5@latest
-    ```
+  ```bash
+  go get github.com/kreuzberg-dev/kreuzberg/v5@latest
+  ```
 
-    [API Reference](../reference/api-go.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-go.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-java:{ .lg .middle } **Java**
 
-    ***
+  ***
 
-    ```gradle
-    implementation 'dev.kreuzberg:kreuzberg:5.0.0-rc.1'
-    ```
+  ```gradle
+  implementation 'dev.kreuzberg:kreuzberg:5.0.0-rc.1'
+  ```
 
-    [API Reference](../reference/api-java.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#java){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-java.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#java){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-kotlin:{ .lg .middle } **Kotlin**
 
-    ***
+  ***
 
-    ```kotlin
-    implementation("dev.kreuzberg:kreuzberg-kotlin:5.0.0-rc.1")
-    ```
+  ```kotlin
+  implementation("dev.kreuzberg:kreuzberg-kotlin:5.0.0-rc.1")
+  ```
 
-    [API Reference](../reference/api-kotlin.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#kotlin){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-kotlin.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#kotlin){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :material-language-ruby:{ .lg .middle } **Ruby**
 
-    ***
+  ***
 
-    ```bash
-    gem install kreuzberg
-    ```
+  ```bash
+  gem install kreuzberg
+  ```
 
-    [API Reference](../reference/api-ruby.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-ruby.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-swift:{ .lg .middle } **Swift**
 
-    ***
+  ***
 
-    ```swift
-    .package(url: "https://github.com/kreuzberg-dev/kreuzberg.git", from: "5.0.0-rc.1")
-    ```
+  ```swift
+  .package(url: "https://github.com/kreuzberg-dev/kreuzberg.git", from: "5.0.0-rc.1")
+  ```
 
-    [API Reference](../reference/api-swift.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#swift){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-swift.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#swift){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :material-language-csharp:{ .lg .middle } **C# / .NET**
 
-    ***
+  ***
 
-    ```bash
-    dotnet add package Kreuzberg
-    ```
+  ```bash
+  dotnet add package Kreuzberg
+  ```
 
-    [API Reference](../reference/api-csharp.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](../reference/api-csharp.md){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-csharp.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](../reference/api-csharp.md){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :fontawesome-brands-php:{ .lg .middle } **PHP**
 
-    ***
+  ***
 
-    ```bash
-    composer require kreuzberg/kreuzberg
-    ```
+  ```bash
+  composer require kreuzberg/kreuzberg
+  ```
 
-    [API Reference](../reference/api-php.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-php.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :simple-elixir:{ .lg .middle } **Elixir**
 
-    ***
+  ***
 
-    ```elixir
-    {:kreuzberg, "~> 5.0.0-rc.1"}
-    ```
+  ```elixir
+  {:kreuzberg, "~> 5.0.0-rc.1"}
+  ```
 
-    [API Reference](../reference/api-elixir.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#elixir){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-elixir.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#elixir){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :simple-r:{ .lg .middle } **R**
 
-    ***
+  ***
 
-    ```r
-    install.packages("kreuzberg",
-      repos = "https://kreuzberg-dev.r-universe.dev")
-    ```
+  ```r
+  install.packages("kreuzberg",
+    repos = "https://kreuzberg-dev.r-universe.dev")
+  ```
 
-    [API Reference](../reference/api-r.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-r.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](quickstart.md){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :simple-cplusplus:{ .lg .middle } **C / C++**
 
-    ***
+  ***
 
-    ```bash
-    cargo build -p kreuzberg-ffi
-    ```
+  ```bash
+  cargo build -p kreuzberg-ffi
+  ```
 
-    [API Reference](../reference/api-c.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#c-c){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-c.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#c-c){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :material-language-dart:{ .lg .middle } **Dart / Flutter**
 
-    ***
+  ***
 
-    ```bash
-    dart pub add kreuzberg
-    ```
+  ```bash
+  dart pub add kreuzberg
+  ```
 
-    [API Reference](../reference/api-dart.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#dart){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-dart.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#dart){ .install-btn .install-btn--solid .install-btn--sm }
 
 - :material-language-zig:{ .lg .middle } **Zig**
 
-    ***
+  ***
 
-    ```bash
-    zig fetch --save https://github.com/kreuzberg-dev/kreuzberg/archive/refs/tags/v5.0.0-rc.1.tar.gz
-    ```
+  ```bash
+  zig fetch --save https://github.com/kreuzberg-dev/kreuzberg/archive/refs/tags/v5.0.0-rc.1.tar.gz
+  ```
 
-    [API Reference](../reference/api-zig.md){ .install-api-link }
-    [:material-lightning-bolt: Quick Start](#zig){ .install-btn .install-btn--solid .install-btn--sm }
+  [API Reference](../reference/api-zig.md){ .install-api-link }
+  [:material-lightning-bolt: Quick Start](#zig){ .install-btn .install-btn--solid .install-btn--sm }
 
 </div>
 

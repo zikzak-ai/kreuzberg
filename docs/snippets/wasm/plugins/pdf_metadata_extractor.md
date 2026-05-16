@@ -18,12 +18,12 @@ const pdfMetadataProcessor = {
         ...extractionResult.metadata,
         processorName: "pdf-metadata",
         processedAt: new Date().toISOString(),
-        wordCount: (extractionResult.text || "").split(/\s+/).length
-      }
+        wordCount: (extractionResult.text || "").split(/\s+/).length,
+      },
     };
-    
+
     return enriched;
-  }
+  },
 };
 
 try {
@@ -34,10 +34,12 @@ try {
 }
 
 // Extract with post-processing
-const pdfBytes = new Uint8Array([/* PDF content */]);
+const pdfBytes = new Uint8Array([
+  /* PDF content */
+]);
 const config = {
   ocr: null,
-  chunking: null
+  chunking: null,
 };
 
 const result = await extractBytes(pdfBytes, "application/pdf", config);

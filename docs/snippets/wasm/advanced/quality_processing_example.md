@@ -14,7 +14,7 @@ interface TextQualityMetrics {
 
 function assessTextQuality(content: string): TextQualityMetrics {
   const lines = content.split(/\n+/);
-  const nonEmptyLines = lines.filter(l => l.trim().length > 0);
+  const nonEmptyLines = lines.filter((l) => l.trim().length > 0);
   const totalChars = content.length;
   const specialChars = (content.match(/[^\w\s.,:;!?\n]/g) || []).length;
 
@@ -28,9 +28,10 @@ function assessTextQuality(content: string): TextQualityMetrics {
   return {
     contentLength: totalChars,
     lineCount: lines.length,
-    averageLineLength: nonEmptyLines.length > 0 
-      ? nonEmptyLines.reduce((sum, l) => sum + l.length, 0) / nonEmptyLines.length
-      : 0,
+    averageLineLength:
+      nonEmptyLines.length > 0
+        ? nonEmptyLines.reduce((sum, l) => sum + l.length, 0) / nonEmptyLines.length
+        : 0,
     emptyLineRatio: (lines.length - nonEmptyLines.length) / lines.length,
     specialCharRatio: specialChars / totalChars,
     estimatedLanguages: detectedLangs,
@@ -48,7 +49,9 @@ const metrics = assessTextQuality(result.content);
 
 console.log("Text Quality Assessment:");
 console.log(`  Length: ${metrics.contentLength} characters`);
-console.log(`  Lines: ${metrics.lineCount} total, avg ${metrics.averageLineLength.toFixed(1)} chars/line`);
+console.log(
+  `  Lines: ${metrics.lineCount} total, avg ${metrics.averageLineLength.toFixed(1)} chars/line`,
+);
 console.log(`  Empty lines: ${(metrics.emptyLineRatio * 100).toFixed(1)}%`);
 console.log(`  Special chars: ${(metrics.specialCharRatio * 100).toFixed(2)}%`);
 console.log(`  Languages: ${metrics.estimatedLanguages.join(", ") || "unknown"}`);
@@ -80,28 +83,30 @@ interface QualityFilteredChunk {
 }
 
 // Filter chunks based on quality heuristics
-const qualityThreshold = 0.3;  // Min ratio of visible/non-whitespace content
-const filteredChunks: QualityFilteredChunk[] = result.chunks?.map((chunk, idx) => {
-  const nonWhitespaceRatio = chunk.content.replace(/\s/g, "").length / chunk.content.length;
-  const hasNumbers = /\d/.test(chunk.content);
-  const hasPunctuation = /[.!?,;:]/g.test(chunk.content);
-  
-  // Quality score based on content characteristics
-  const contentQuality = (nonWhitespaceRatio + (hasNumbers ? 0.2 : 0) + (hasPunctuation ? 0.1 : 0)) / 2;
-  const kept = contentQuality >= qualityThreshold;
-  
-  return {
-    index: idx,
-    content: chunk.content.substring(0, 50),
-    quality: contentQuality,
-    kept,
-  };
-}) || [];
+const qualityThreshold = 0.3; // Min ratio of visible/non-whitespace content
+const filteredChunks: QualityFilteredChunk[] =
+  result.chunks?.map((chunk, idx) => {
+    const nonWhitespaceRatio = chunk.content.replace(/\s/g, "").length / chunk.content.length;
+    const hasNumbers = /\d/.test(chunk.content);
+    const hasPunctuation = /[.!?,;:]/g.test(chunk.content);
 
-const keptChunks = filteredChunks.filter(c => c.kept);
+    // Quality score based on content characteristics
+    const contentQuality =
+      (nonWhitespaceRatio + (hasNumbers ? 0.2 : 0) + (hasPunctuation ? 0.1 : 0)) / 2;
+    const kept = contentQuality >= qualityThreshold;
+
+    return {
+      index: idx,
+      content: chunk.content.substring(0, 50),
+      quality: contentQuality,
+      kept,
+    };
+  }) || [];
+
+const keptChunks = filteredChunks.filter((c) => c.kept);
 console.log(`Quality-filtered chunks: ${keptChunks.length}/${filteredChunks.length}`);
 
-keptChunks.slice(0, 3).forEach(c => {
+keptChunks.slice(0, 3).forEach((c) => {
   console.log(`  Chunk ${c.index}: quality=${c.quality.toFixed(2)}, "${c.content}..."`);
 });
 ```
@@ -149,6 +154,8 @@ console.log("Content Encoding Validation:");
 console.log(`  Estimated encoding: ${validation.estimatedEncoding}`);
 console.log(`  Invalid characters: ${validation.invalidCharCount}`);
 console.log(`  Replacement ratio: ${(validation.replacementRatio * 100).toFixed(4)}%`);
-console.log(`  Status: ${validation.hasInvalidChars ? "DEGRADED - encoding issues detected" : "OK"}`);
+console.log(
+  `  Status: ${validation.hasInvalidChars ? "DEGRADED - encoding issues detected" : "OK"}`,
+);
 console.log(`  Quality score: ${result.qualityScore?.toFixed(3) || "N/A"}`);
 ```

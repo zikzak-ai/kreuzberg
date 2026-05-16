@@ -40,7 +40,9 @@ const result = await extractBytes(bytes, "text/markdown", config);
 result.chunks?.forEach((chunk) => {
   // Content already includes heading context prepended
   console.log(chunk.content.substring(0, 80));
-  console.log(`  Heading path: ${chunk.metadata?.headingContext?.headings?.map(h => `${"#".repeat(h.level)} ${h.text}`).join(" > ")}`);
+  console.log(
+    `  Heading path: ${chunk.metadata?.headingContext?.headings?.map((h) => `${"#".repeat(h.level)} ${h.text}`).join(" > ")}`,
+  );
 });
 ```
 
@@ -53,7 +55,7 @@ const config = {
   chunking: {
     chunkerType: "semantic",
     maxChars: 1000,
-    topicThreshold: 0.5,  // Boundary detection at 50% topic change
+    topicThreshold: 0.5, // Boundary detection at 50% topic change
     chunkOverlap: 100,
   },
 };
@@ -62,7 +64,7 @@ const bytes = new Uint8Array(buffer);
 const result = await extractBytes(bytes, "text/markdown", config);
 
 console.log(`Generated ${result.chunks?.length} semantic chunks`);
-result.chunks?.forEach(chunk => {
+result.chunks?.forEach((chunk) => {
   console.log(`Chunk ${chunk.metadata?.chunkIndex}: ${chunk.content.length} chars`);
 });
 ```

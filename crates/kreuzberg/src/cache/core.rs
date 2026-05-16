@@ -46,7 +46,6 @@ pub(super) struct CacheScanResult {
     pub(super) entries: Vec<CacheEntry>,
 }
 #[cfg_attr(alef, alef(skip))]
-
 pub struct GenericCache {
     cache_dir: PathBuf,
     #[cfg(test)]

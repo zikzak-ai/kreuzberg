@@ -10,6 +10,12 @@ package dev.kreuzberg
  * the result is accepted. Otherwise the next backend is tried.
  */
 data class OcrPipelineConfig(
+    /**
+     * Ordered list of backends to try. Sorted by priority (descending) at runtime.
+     */
     val stages: List<OcrPipelineStage>,
+    /**
+     * Quality thresholds for deciding whether to accept a result or try the next backend.
+     */
     val qualityThresholds: OcrQualityThresholds,
 )

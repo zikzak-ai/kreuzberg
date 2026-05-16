@@ -996,6 +996,8 @@ mod ffi {
 
     extern "Rust" {
         type OcrTableBoundingBox;
+        #[swift_bridge(init)]
+        fn new(left: u32, top: u32, right: u32, bottom: u32) -> OcrTableBoundingBox;
         fn left(&self) -> u32;
         fn top(&self) -> u32;
         fn right(&self) -> u32;
@@ -1485,6 +1487,8 @@ mod ffi {
 
     extern "Rust" {
         type OcrRotation;
+        #[swift_bridge(init)]
+        fn new(angle_degrees: f64, confidence: Option<f64>) -> OcrRotation;
         fn angle_degrees(&self) -> f64;
         fn confidence(&self) -> Option<f64>;
     }
@@ -1537,6 +1541,8 @@ mod ffi {
 
     extern "Rust" {
         type PageBoundary;
+        #[swift_bridge(init)]
+        fn new(byte_start: usize, byte_end: usize, page_number: u32) -> PageBoundary;
         fn byte_start(&self) -> usize;
         fn byte_end(&self) -> usize;
         fn page_number(&self) -> u32;
@@ -1728,12 +1734,16 @@ mod ffi {
 
     extern "Rust" {
         type OrientationResult;
+        #[swift_bridge(init)]
+        fn new(degrees: u32, confidence: f32) -> OrientationResult;
         fn degrees(&self) -> u32;
         fn confidence(&self) -> f32;
     }
 
     extern "Rust" {
         type BBox;
+        #[swift_bridge(init)]
+        fn new(x1: f32, y1: f32, x2: f32, y2: f32) -> BBox;
         fn x1(&self) -> f32;
         fn y1(&self) -> f32;
         fn x2(&self) -> f32;
@@ -2261,6 +2271,121 @@ mod ffi {
         #[swift_bridge(swift_name = "htmlMetadataFromJson")]
         fn html_metadata_from_json(json: String) -> Result<HtmlMetadata, String>;
     }
+    extern "Rust" {
+
+        #[swift_bridge(swift_name = "structuredExtractionConfigFromJson")]
+        fn structured_extraction_config_from_json(json: String) -> Result<StructuredExtractionConfig, String>;
+        #[swift_bridge(swift_name = "ocrPipelineStageFromJson")]
+        fn ocr_pipeline_stage_from_json(json: String) -> Result<OcrPipelineStage, String>;
+        #[swift_bridge(swift_name = "ocrPipelineConfigFromJson")]
+        fn ocr_pipeline_config_from_json(json: String) -> Result<OcrPipelineConfig, String>;
+        #[swift_bridge(swift_name = "supportedFormatFromJson")]
+        fn supported_format_from_json(json: String) -> Result<SupportedFormat, String>;
+        #[swift_bridge(swift_name = "structuredDataResultFromJson")]
+        fn structured_data_result_from_json(json: String) -> Result<StructuredDataResult, String>;
+        #[swift_bridge(swift_name = "pdfAnnotationFromJson")]
+        fn pdf_annotation_from_json(json: String) -> Result<PdfAnnotation, String>;
+        #[swift_bridge(swift_name = "djotContentFromJson")]
+        fn djot_content_from_json(json: String) -> Result<DjotContent, String>;
+        #[swift_bridge(swift_name = "formattedBlockFromJson")]
+        fn formatted_block_from_json(json: String) -> Result<FormattedBlock, String>;
+        #[swift_bridge(swift_name = "inlineElementFromJson")]
+        fn inline_element_from_json(json: String) -> Result<InlineElement, String>;
+        #[swift_bridge(swift_name = "djotImageFromJson")]
+        fn djot_image_from_json(json: String) -> Result<DjotImage, String>;
+        #[swift_bridge(swift_name = "djotLinkFromJson")]
+        fn djot_link_from_json(json: String) -> Result<DjotLink, String>;
+        #[swift_bridge(swift_name = "footnoteFromJson")]
+        fn footnote_from_json(json: String) -> Result<Footnote, String>;
+        #[swift_bridge(swift_name = "documentRelationshipFromJson")]
+        fn document_relationship_from_json(json: String) -> Result<DocumentRelationship, String>;
+        #[swift_bridge(swift_name = "documentNodeFromJson")]
+        fn document_node_from_json(json: String) -> Result<DocumentNode, String>;
+        #[swift_bridge(swift_name = "gridCellFromJson")]
+        fn grid_cell_from_json(json: String) -> Result<GridCell, String>;
+        #[swift_bridge(swift_name = "textAnnotationFromJson")]
+        fn text_annotation_from_json(json: String) -> Result<TextAnnotation, String>;
+        #[swift_bridge(swift_name = "archiveEntryFromJson")]
+        fn archive_entry_from_json(json: String) -> Result<ArchiveEntry, String>;
+        #[swift_bridge(swift_name = "processingWarningFromJson")]
+        fn processing_warning_from_json(json: String) -> Result<ProcessingWarning, String>;
+        #[swift_bridge(swift_name = "chunkFromJson")]
+        fn chunk_from_json(json: String) -> Result<Chunk, String>;
+        #[swift_bridge(swift_name = "headingContextFromJson")]
+        fn heading_context_from_json(json: String) -> Result<HeadingContext, String>;
+        #[swift_bridge(swift_name = "headingLevelFromJson")]
+        fn heading_level_from_json(json: String) -> Result<HeadingLevel, String>;
+        #[swift_bridge(swift_name = "chunkMetadataFromJson")]
+        fn chunk_metadata_from_json(json: String) -> Result<ChunkMetadata, String>;
+        #[swift_bridge(swift_name = "extractedImageFromJson")]
+        fn extracted_image_from_json(json: String) -> Result<ExtractedImage, String>;
+        #[swift_bridge(swift_name = "elementMetadataFromJson")]
+        fn element_metadata_from_json(json: String) -> Result<ElementMetadata, String>;
+        #[swift_bridge(swift_name = "elementFromJson")]
+        fn element_from_json(json: String) -> Result<Element, String>;
+        #[swift_bridge(swift_name = "excelWorkbookFromJson")]
+        fn excel_workbook_from_json(json: String) -> Result<ExcelWorkbook, String>;
+        #[swift_bridge(swift_name = "excelSheetFromJson")]
+        fn excel_sheet_from_json(json: String) -> Result<ExcelSheet, String>;
+        #[swift_bridge(swift_name = "xmlExtractionResultFromJson")]
+        fn xml_extraction_result_from_json(json: String) -> Result<XmlExtractionResult, String>;
+        #[swift_bridge(swift_name = "textExtractionResultFromJson")]
+        fn text_extraction_result_from_json(json: String) -> Result<TextExtractionResult, String>;
+        #[swift_bridge(swift_name = "pptxExtractionResultFromJson")]
+        fn pptx_extraction_result_from_json(json: String) -> Result<PptxExtractionResult, String>;
+        #[swift_bridge(swift_name = "emailExtractionResultFromJson")]
+        fn email_extraction_result_from_json(json: String) -> Result<EmailExtractionResult, String>;
+        #[swift_bridge(swift_name = "emailAttachmentFromJson")]
+        fn email_attachment_from_json(json: String) -> Result<EmailAttachment, String>;
+        #[swift_bridge(swift_name = "ocrTableFromJson")]
+        fn ocr_table_from_json(json: String) -> Result<OcrTable, String>;
+        #[swift_bridge(swift_name = "imagePreprocessingMetadataFromJson")]
+        fn image_preprocessing_metadata_from_json(json: String) -> Result<ImagePreprocessingMetadata, String>;
+        #[swift_bridge(swift_name = "headerMetadataFromJson")]
+        fn header_metadata_from_json(json: String) -> Result<HeaderMetadata, String>;
+        #[swift_bridge(swift_name = "linkMetadataFromJson")]
+        fn link_metadata_from_json(json: String) -> Result<LinkMetadata, String>;
+        #[swift_bridge(swift_name = "imageMetadataTypeFromJson")]
+        fn image_metadata_type_from_json(json: String) -> Result<ImageMetadataType, String>;
+        #[swift_bridge(swift_name = "structuredDataFromJson")]
+        fn structured_data_from_json(json: String) -> Result<StructuredData, String>;
+        #[swift_bridge(swift_name = "errorMetadataFromJson")]
+        fn error_metadata_from_json(json: String) -> Result<ErrorMetadata, String>;
+        #[swift_bridge(swift_name = "yearRangeFromJson")]
+        fn year_range_from_json(json: String) -> Result<YearRange, String>;
+        #[swift_bridge(swift_name = "dbfFieldInfoFromJson")]
+        fn dbf_field_info_from_json(json: String) -> Result<DbfFieldInfo, String>;
+        #[swift_bridge(swift_name = "contributorRoleFromJson")]
+        fn contributor_role_from_json(json: String) -> Result<ContributorRole, String>;
+        #[swift_bridge(swift_name = "pageStructureFromJson")]
+        fn page_structure_from_json(json: String) -> Result<PageStructure, String>;
+        #[swift_bridge(swift_name = "pageInfoFromJson")]
+        fn page_info_from_json(json: String) -> Result<PageInfo, String>;
+        #[swift_bridge(swift_name = "pageContentFromJson")]
+        fn page_content_from_json(json: String) -> Result<PageContent, String>;
+        #[swift_bridge(swift_name = "pageHierarchyFromJson")]
+        fn page_hierarchy_from_json(json: String) -> Result<PageHierarchy, String>;
+        #[swift_bridge(swift_name = "hierarchicalBlockFromJson")]
+        fn hierarchical_block_from_json(json: String) -> Result<HierarchicalBlock, String>;
+        #[swift_bridge(swift_name = "uriFromJson")]
+        fn uri_from_json(json: String) -> Result<Uri, String>;
+        #[swift_bridge(swift_name = "detectResponseFromJson")]
+        fn detect_response_from_json(json: String) -> Result<DetectResponse, String>;
+        #[swift_bridge(swift_name = "embeddingPresetFromJson")]
+        fn embedding_preset_from_json(json: String) -> Result<EmbeddingPreset, String>;
+        #[swift_bridge(swift_name = "keywordFromJson")]
+        fn keyword_from_json(json: String) -> Result<Keyword, String>;
+        #[swift_bridge(swift_name = "modelPathsFromJson")]
+        fn model_paths_from_json(json: String) -> Result<ModelPaths, String>;
+        #[swift_bridge(swift_name = "layoutDetectionFromJson")]
+        fn layout_detection_from_json(json: String) -> Result<LayoutDetection, String>;
+        #[swift_bridge(swift_name = "recognizedTableFromJson")]
+        fn recognized_table_from_json(json: String) -> Result<RecognizedTable, String>;
+        #[swift_bridge(swift_name = "detectionResultFromJson")]
+        fn detection_result_from_json(json: String) -> Result<DetectionResult, String>;
+        #[swift_bridge(swift_name = "embeddedFileFromJson")]
+        fn embedded_file_from_json(json: String) -> Result<EmbeddedFile, String>;
+    }
 }
 
 pub struct AccelerationConfig(pub kreuzberg::AccelerationConfig);
@@ -2290,12 +2415,12 @@ impl ContentFilterConfig {
         strip_repeating_text: bool,
         include_watermarks: bool,
     ) -> ContentFilterConfig {
-        let mut __target: kreuzberg::ContentFilterConfig = ::std::default::Default::default();
-        __target.include_headers = include_headers;
-        __target.include_footers = include_footers;
-        __target.strip_repeating_text = strip_repeating_text;
-        __target.include_watermarks = include_watermarks;
-        ContentFilterConfig(__target)
+        ContentFilterConfig(kreuzberg::ContentFilterConfig {
+            include_headers,
+            include_footers,
+            strip_repeating_text,
+            include_watermarks,
+        })
     }
     pub fn include_headers(&self) -> bool {
         ::serde_json::to_value(&self.0.include_headers)
@@ -2326,9 +2451,7 @@ impl ContentFilterConfig {
 pub struct EmailConfig(pub kreuzberg::EmailConfig);
 impl EmailConfig {
     pub fn new(msg_fallback_codepage: Option<u32>) -> EmailConfig {
-        let mut __target: kreuzberg::EmailConfig = ::std::default::Default::default();
-        __target.msg_fallback_codepage = msg_fallback_codepage;
-        EmailConfig(__target)
+        EmailConfig(kreuzberg::EmailConfig { msg_fallback_codepage })
     }
     pub fn msg_fallback_codepage(&self) -> Option<u32> {
         self.0.msg_fallback_codepage.as_ref().and_then(|v| {
@@ -2832,17 +2955,17 @@ impl ImageExtractionConfig {
         max_images_per_page: Option<u32>,
         classify: bool,
     ) -> ImageExtractionConfig {
-        let mut __target: kreuzberg::ImageExtractionConfig = ::std::default::Default::default();
-        __target.extract_images = extract_images;
-        __target.target_dpi = target_dpi;
-        __target.max_image_dimension = max_image_dimension;
-        __target.inject_placeholders = inject_placeholders;
-        __target.auto_adjust_dpi = auto_adjust_dpi;
-        __target.min_dpi = min_dpi;
-        __target.max_dpi = max_dpi;
-        __target.max_images_per_page = max_images_per_page;
-        __target.classify = classify;
-        ImageExtractionConfig(__target)
+        ImageExtractionConfig(kreuzberg::ImageExtractionConfig {
+            extract_images,
+            target_dpi,
+            max_image_dimension,
+            inject_placeholders,
+            auto_adjust_dpi,
+            min_dpi,
+            max_dpi,
+            max_images_per_page,
+            classify,
+        })
     }
     pub fn extract_images(&self) -> bool {
         ::serde_json::to_value(&self.0.extract_images)
@@ -2927,11 +3050,11 @@ impl TokenReductionOptions {
 pub struct LanguageDetectionConfig(pub kreuzberg::LanguageDetectionConfig);
 impl LanguageDetectionConfig {
     pub fn new(enabled: bool, min_confidence: f64, detect_multiple: bool) -> LanguageDetectionConfig {
-        let mut __target: kreuzberg::LanguageDetectionConfig = ::std::default::Default::default();
-        __target.enabled = enabled;
-        __target.min_confidence = min_confidence;
-        __target.detect_multiple = detect_multiple;
-        LanguageDetectionConfig(__target)
+        LanguageDetectionConfig(kreuzberg::LanguageDetectionConfig {
+            enabled,
+            min_confidence,
+            detect_multiple,
+        })
     }
     pub fn enabled(&self) -> bool {
         ::serde_json::to_value(&self.0.enabled)
@@ -3165,24 +3288,24 @@ impl OcrQualityThresholds {
         alnum_ws_ratio_threshold: f64,
         pipeline_min_quality: f64,
     ) -> OcrQualityThresholds {
-        let mut __target: kreuzberg::OcrQualityThresholds = ::std::default::Default::default();
-        __target.min_total_non_whitespace = min_total_non_whitespace;
-        __target.min_non_whitespace_per_page = min_non_whitespace_per_page;
-        __target.min_meaningful_word_len = min_meaningful_word_len;
-        __target.min_meaningful_words = min_meaningful_words;
-        __target.min_alnum_ratio = min_alnum_ratio;
-        __target.min_garbage_chars = min_garbage_chars;
-        __target.max_fragmented_word_ratio = max_fragmented_word_ratio;
-        __target.critical_fragmented_word_ratio = critical_fragmented_word_ratio;
-        __target.min_avg_word_length = min_avg_word_length;
-        __target.min_words_for_avg_length_check = min_words_for_avg_length_check;
-        __target.min_consecutive_repeat_ratio = min_consecutive_repeat_ratio;
-        __target.min_words_for_repeat_check = min_words_for_repeat_check;
-        __target.substantive_min_chars = substantive_min_chars;
-        __target.non_text_min_chars = non_text_min_chars;
-        __target.alnum_ws_ratio_threshold = alnum_ws_ratio_threshold;
-        __target.pipeline_min_quality = pipeline_min_quality;
-        OcrQualityThresholds(__target)
+        OcrQualityThresholds(kreuzberg::OcrQualityThresholds {
+            min_total_non_whitespace,
+            min_non_whitespace_per_page,
+            min_meaningful_word_len,
+            min_meaningful_words,
+            min_alnum_ratio,
+            min_garbage_chars,
+            max_fragmented_word_ratio,
+            critical_fragmented_word_ratio,
+            min_avg_word_length,
+            min_words_for_avg_length_check,
+            min_consecutive_repeat_ratio,
+            min_words_for_repeat_check,
+            substantive_min_chars,
+            non_text_min_chars,
+            alnum_ws_ratio_threshold,
+            pipeline_min_quality,
+        })
     }
     pub fn min_total_non_whitespace(&self) -> usize {
         ::serde_json::to_value(&self.0.min_total_non_whitespace)
@@ -3601,12 +3724,12 @@ impl HierarchyConfig {
         include_bbox: bool,
         ocr_coverage_threshold: Option<f32>,
     ) -> HierarchyConfig {
-        let mut __target: kreuzberg::HierarchyConfig = ::std::default::Default::default();
-        __target.enabled = enabled;
-        __target.k_clusters = k_clusters;
-        __target.include_bbox = include_bbox;
-        __target.ocr_coverage_threshold = ocr_coverage_threshold;
-        HierarchyConfig(__target)
+        HierarchyConfig(kreuzberg::HierarchyConfig {
+            enabled,
+            k_clusters,
+            include_bbox,
+            ocr_coverage_threshold,
+        })
     }
     pub fn enabled(&self) -> bool {
         ::serde_json::to_value(&self.0.enabled)
@@ -4077,17 +4200,17 @@ impl SecurityLimits {
         max_xml_depth: usize,
         max_table_cells: usize,
     ) -> SecurityLimits {
-        let mut __target: kreuzberg::SecurityLimits = ::std::default::Default::default();
-        __target.max_archive_size = max_archive_size;
-        __target.max_compression_ratio = max_compression_ratio;
-        __target.max_files_in_archive = max_files_in_archive;
-        __target.max_nesting_depth = max_nesting_depth;
-        __target.max_entity_length = max_entity_length;
-        __target.max_content_size = max_content_size;
-        __target.max_iterations = max_iterations;
-        __target.max_xml_depth = max_xml_depth;
-        __target.max_table_cells = max_table_cells;
-        SecurityLimits(__target)
+        SecurityLimits(kreuzberg::SecurityLimits {
+            max_archive_size,
+            max_compression_ratio,
+            max_files_in_archive,
+            max_nesting_depth,
+            max_entity_length,
+            max_content_size,
+            max_iterations,
+            max_xml_depth,
+            max_table_cells,
+        })
     }
     pub fn max_archive_size(&self) -> usize {
         ::serde_json::to_value(&self.0.max_archive_size)
@@ -5409,6 +5532,14 @@ impl OcrTable {
 
 pub struct OcrTableBoundingBox(pub kreuzberg::OcrTableBoundingBox);
 impl OcrTableBoundingBox {
+    pub fn new(left: u32, top: u32, right: u32, bottom: u32) -> OcrTableBoundingBox {
+        OcrTableBoundingBox(kreuzberg::OcrTableBoundingBox {
+            left,
+            top,
+            right,
+            bottom,
+        })
+    }
     pub fn left(&self) -> u32 {
         ::serde_json::to_value(&self.0.left)
             .ok()
@@ -7098,9 +7229,7 @@ impl EpubMetadata {
 pub struct PstMetadata(pub kreuzberg::PstMetadata);
 impl PstMetadata {
     pub fn new(message_count: usize) -> PstMetadata {
-        let mut __target: kreuzberg::PstMetadata = ::std::default::Default::default();
-        __target.message_count = message_count;
-        PstMetadata(__target)
+        PstMetadata(kreuzberg::PstMetadata { message_count })
     }
     pub fn message_count(&self) -> usize {
         ::serde_json::to_value(&self.0.message_count)
@@ -7113,10 +7242,7 @@ impl PstMetadata {
 pub struct OcrConfidence(pub kreuzberg::OcrConfidence);
 impl OcrConfidence {
     pub fn new(detection: Option<f64>, recognition: f64) -> OcrConfidence {
-        let mut __target: kreuzberg::OcrConfidence = ::std::default::Default::default();
-        __target.detection = detection;
-        __target.recognition = recognition;
-        OcrConfidence(__target)
+        OcrConfidence(kreuzberg::OcrConfidence { detection, recognition })
     }
     pub fn detection(&self) -> Option<f64> {
         self.0.detection.as_ref().and_then(|v| {
@@ -7135,6 +7261,12 @@ impl OcrConfidence {
 
 pub struct OcrRotation(pub kreuzberg::OcrRotation);
 impl OcrRotation {
+    pub fn new(angle_degrees: f64, confidence: Option<f64>) -> OcrRotation {
+        OcrRotation(kreuzberg::OcrRotation {
+            angle_degrees,
+            confidence,
+        })
+    }
     pub fn angle_degrees(&self) -> f64 {
         ::serde_json::to_value(&self.0.angle_degrees)
             .ok()
@@ -7283,6 +7415,13 @@ impl PageStructure {
 
 pub struct PageBoundary(pub kreuzberg::PageBoundary);
 impl PageBoundary {
+    pub fn new(byte_start: usize, byte_end: usize, page_number: u32) -> PageBoundary {
+        PageBoundary(kreuzberg::PageBoundary {
+            byte_start,
+            byte_end,
+            page_number,
+        })
+    }
     pub fn byte_start(&self) -> usize {
         ::serde_json::to_value(&self.0.byte_start)
             .ok()
@@ -7621,9 +7760,7 @@ impl EmbeddingPreset {
 pub struct YakeParams(pub kreuzberg::YakeParams);
 impl YakeParams {
     pub fn new(window_size: usize) -> YakeParams {
-        let mut __target: kreuzberg::YakeParams = ::std::default::Default::default();
-        __target.window_size = window_size;
-        YakeParams(__target)
+        YakeParams(kreuzberg::YakeParams { window_size })
     }
     pub fn window_size(&self) -> usize {
         ::serde_json::to_value(&self.0.window_size)
@@ -7636,10 +7773,10 @@ impl YakeParams {
 pub struct RakeParams(pub kreuzberg::RakeParams);
 impl RakeParams {
     pub fn new(min_word_length: usize, max_words_per_phrase: usize) -> RakeParams {
-        let mut __target: kreuzberg::RakeParams = ::std::default::Default::default();
-        __target.min_word_length = min_word_length;
-        __target.max_words_per_phrase = max_words_per_phrase;
-        RakeParams(__target)
+        RakeParams(kreuzberg::RakeParams {
+            min_word_length,
+            max_words_per_phrase,
+        })
     }
     pub fn min_word_length(&self) -> usize {
         ::serde_json::to_value(&self.0.min_word_length)
@@ -7889,6 +8026,9 @@ impl ModelPaths {
 
 pub struct OrientationResult(pub kreuzberg::OrientationResult);
 impl OrientationResult {
+    pub fn new(degrees: u32, confidence: f32) -> OrientationResult {
+        OrientationResult(kreuzberg::OrientationResult { degrees, confidence })
+    }
     pub fn degrees(&self) -> u32 {
         ::serde_json::to_value(&self.0.degrees)
             .ok()
@@ -7905,6 +8045,9 @@ impl OrientationResult {
 
 pub struct BBox(pub kreuzberg::BBox);
 impl BBox {
+    pub fn new(x1: f32, y1: f32, x2: f32, y2: f32) -> BBox {
+        BBox(kreuzberg::BBox { x1, y1, x2, y2 })
+    }
     pub fn x1(&self) -> f32 {
         ::serde_json::to_value(&self.0.x1)
             .ok()
@@ -10376,5 +10519,341 @@ pub fn ocr_extraction_result_from_json(json: String) -> Result<OcrExtractionResu
 pub fn html_metadata_from_json(json: String) -> Result<HtmlMetadata, String> {
     serde_json::from_str::<kreuzberg::HtmlMetadata>(&json)
         .map(HtmlMetadata)
+        .map_err(|e| e.to_string())
+}
+
+pub fn structured_extraction_config_from_json(json: String) -> Result<StructuredExtractionConfig, String> {
+    serde_json::from_str::<kreuzberg::StructuredExtractionConfig>(&json)
+        .map(StructuredExtractionConfig)
+        .map_err(|e| e.to_string())
+}
+
+pub fn ocr_pipeline_stage_from_json(json: String) -> Result<OcrPipelineStage, String> {
+    serde_json::from_str::<kreuzberg::OcrPipelineStage>(&json)
+        .map(OcrPipelineStage)
+        .map_err(|e| e.to_string())
+}
+
+pub fn ocr_pipeline_config_from_json(json: String) -> Result<OcrPipelineConfig, String> {
+    serde_json::from_str::<kreuzberg::OcrPipelineConfig>(&json)
+        .map(OcrPipelineConfig)
+        .map_err(|e| e.to_string())
+}
+
+pub fn supported_format_from_json(json: String) -> Result<SupportedFormat, String> {
+    serde_json::from_str::<kreuzberg::SupportedFormat>(&json)
+        .map(SupportedFormat)
+        .map_err(|e| e.to_string())
+}
+
+pub fn structured_data_result_from_json(json: String) -> Result<StructuredDataResult, String> {
+    serde_json::from_str::<kreuzberg::extraction::structured::StructuredDataResult>(&json)
+        .map(StructuredDataResult)
+        .map_err(|e| e.to_string())
+}
+
+pub fn pdf_annotation_from_json(json: String) -> Result<PdfAnnotation, String> {
+    serde_json::from_str::<kreuzberg::PdfAnnotation>(&json)
+        .map(PdfAnnotation)
+        .map_err(|e| e.to_string())
+}
+
+pub fn djot_content_from_json(json: String) -> Result<DjotContent, String> {
+    serde_json::from_str::<kreuzberg::DjotContent>(&json)
+        .map(DjotContent)
+        .map_err(|e| e.to_string())
+}
+
+pub fn formatted_block_from_json(json: String) -> Result<FormattedBlock, String> {
+    serde_json::from_str::<kreuzberg::FormattedBlock>(&json)
+        .map(FormattedBlock)
+        .map_err(|e| e.to_string())
+}
+
+pub fn inline_element_from_json(json: String) -> Result<InlineElement, String> {
+    serde_json::from_str::<kreuzberg::InlineElement>(&json)
+        .map(InlineElement)
+        .map_err(|e| e.to_string())
+}
+
+pub fn djot_image_from_json(json: String) -> Result<DjotImage, String> {
+    serde_json::from_str::<kreuzberg::DjotImage>(&json)
+        .map(DjotImage)
+        .map_err(|e| e.to_string())
+}
+
+pub fn djot_link_from_json(json: String) -> Result<DjotLink, String> {
+    serde_json::from_str::<kreuzberg::DjotLink>(&json)
+        .map(DjotLink)
+        .map_err(|e| e.to_string())
+}
+
+pub fn footnote_from_json(json: String) -> Result<Footnote, String> {
+    serde_json::from_str::<kreuzberg::Footnote>(&json)
+        .map(Footnote)
+        .map_err(|e| e.to_string())
+}
+
+pub fn document_relationship_from_json(json: String) -> Result<DocumentRelationship, String> {
+    serde_json::from_str::<kreuzberg::DocumentRelationship>(&json)
+        .map(DocumentRelationship)
+        .map_err(|e| e.to_string())
+}
+
+pub fn document_node_from_json(json: String) -> Result<DocumentNode, String> {
+    serde_json::from_str::<kreuzberg::DocumentNode>(&json)
+        .map(DocumentNode)
+        .map_err(|e| e.to_string())
+}
+
+pub fn grid_cell_from_json(json: String) -> Result<GridCell, String> {
+    serde_json::from_str::<kreuzberg::GridCell>(&json)
+        .map(GridCell)
+        .map_err(|e| e.to_string())
+}
+
+pub fn text_annotation_from_json(json: String) -> Result<TextAnnotation, String> {
+    serde_json::from_str::<kreuzberg::TextAnnotation>(&json)
+        .map(TextAnnotation)
+        .map_err(|e| e.to_string())
+}
+
+pub fn archive_entry_from_json(json: String) -> Result<ArchiveEntry, String> {
+    serde_json::from_str::<kreuzberg::ArchiveEntry>(&json)
+        .map(ArchiveEntry)
+        .map_err(|e| e.to_string())
+}
+
+pub fn processing_warning_from_json(json: String) -> Result<ProcessingWarning, String> {
+    serde_json::from_str::<kreuzberg::ProcessingWarning>(&json)
+        .map(ProcessingWarning)
+        .map_err(|e| e.to_string())
+}
+
+pub fn chunk_from_json(json: String) -> Result<Chunk, String> {
+    serde_json::from_str::<kreuzberg::Chunk>(&json)
+        .map(Chunk)
+        .map_err(|e| e.to_string())
+}
+
+pub fn heading_context_from_json(json: String) -> Result<HeadingContext, String> {
+    serde_json::from_str::<kreuzberg::HeadingContext>(&json)
+        .map(HeadingContext)
+        .map_err(|e| e.to_string())
+}
+
+pub fn heading_level_from_json(json: String) -> Result<HeadingLevel, String> {
+    serde_json::from_str::<kreuzberg::HeadingLevel>(&json)
+        .map(HeadingLevel)
+        .map_err(|e| e.to_string())
+}
+
+pub fn chunk_metadata_from_json(json: String) -> Result<ChunkMetadata, String> {
+    serde_json::from_str::<kreuzberg::ChunkMetadata>(&json)
+        .map(ChunkMetadata)
+        .map_err(|e| e.to_string())
+}
+
+pub fn extracted_image_from_json(json: String) -> Result<ExtractedImage, String> {
+    serde_json::from_str::<kreuzberg::ExtractedImage>(&json)
+        .map(ExtractedImage)
+        .map_err(|e| e.to_string())
+}
+
+pub fn element_metadata_from_json(json: String) -> Result<ElementMetadata, String> {
+    serde_json::from_str::<kreuzberg::ElementMetadata>(&json)
+        .map(ElementMetadata)
+        .map_err(|e| e.to_string())
+}
+
+pub fn element_from_json(json: String) -> Result<Element, String> {
+    serde_json::from_str::<kreuzberg::Element>(&json)
+        .map(Element)
+        .map_err(|e| e.to_string())
+}
+
+pub fn excel_workbook_from_json(json: String) -> Result<ExcelWorkbook, String> {
+    serde_json::from_str::<kreuzberg::ExcelWorkbook>(&json)
+        .map(ExcelWorkbook)
+        .map_err(|e| e.to_string())
+}
+
+pub fn excel_sheet_from_json(json: String) -> Result<ExcelSheet, String> {
+    serde_json::from_str::<kreuzberg::ExcelSheet>(&json)
+        .map(ExcelSheet)
+        .map_err(|e| e.to_string())
+}
+
+pub fn xml_extraction_result_from_json(json: String) -> Result<XmlExtractionResult, String> {
+    serde_json::from_str::<kreuzberg::XmlExtractionResult>(&json)
+        .map(XmlExtractionResult)
+        .map_err(|e| e.to_string())
+}
+
+pub fn text_extraction_result_from_json(json: String) -> Result<TextExtractionResult, String> {
+    serde_json::from_str::<kreuzberg::TextExtractionResult>(&json)
+        .map(TextExtractionResult)
+        .map_err(|e| e.to_string())
+}
+
+pub fn pptx_extraction_result_from_json(json: String) -> Result<PptxExtractionResult, String> {
+    serde_json::from_str::<kreuzberg::PptxExtractionResult>(&json)
+        .map(PptxExtractionResult)
+        .map_err(|e| e.to_string())
+}
+
+pub fn email_extraction_result_from_json(json: String) -> Result<EmailExtractionResult, String> {
+    serde_json::from_str::<kreuzberg::EmailExtractionResult>(&json)
+        .map(EmailExtractionResult)
+        .map_err(|e| e.to_string())
+}
+
+pub fn email_attachment_from_json(json: String) -> Result<EmailAttachment, String> {
+    serde_json::from_str::<kreuzberg::EmailAttachment>(&json)
+        .map(EmailAttachment)
+        .map_err(|e| e.to_string())
+}
+
+pub fn ocr_table_from_json(json: String) -> Result<OcrTable, String> {
+    serde_json::from_str::<kreuzberg::OcrTable>(&json)
+        .map(OcrTable)
+        .map_err(|e| e.to_string())
+}
+
+pub fn image_preprocessing_metadata_from_json(json: String) -> Result<ImagePreprocessingMetadata, String> {
+    serde_json::from_str::<kreuzberg::ImagePreprocessingMetadata>(&json)
+        .map(ImagePreprocessingMetadata)
+        .map_err(|e| e.to_string())
+}
+
+pub fn header_metadata_from_json(json: String) -> Result<HeaderMetadata, String> {
+    serde_json::from_str::<kreuzberg::HeaderMetadata>(&json)
+        .map(HeaderMetadata)
+        .map_err(|e| e.to_string())
+}
+
+pub fn link_metadata_from_json(json: String) -> Result<LinkMetadata, String> {
+    serde_json::from_str::<kreuzberg::LinkMetadata>(&json)
+        .map(LinkMetadata)
+        .map_err(|e| e.to_string())
+}
+
+pub fn image_metadata_type_from_json(json: String) -> Result<ImageMetadataType, String> {
+    serde_json::from_str::<kreuzberg::ImageMetadataType>(&json)
+        .map(ImageMetadataType)
+        .map_err(|e| e.to_string())
+}
+
+pub fn structured_data_from_json(json: String) -> Result<StructuredData, String> {
+    serde_json::from_str::<kreuzberg::StructuredData>(&json)
+        .map(StructuredData)
+        .map_err(|e| e.to_string())
+}
+
+pub fn error_metadata_from_json(json: String) -> Result<ErrorMetadata, String> {
+    serde_json::from_str::<kreuzberg::ErrorMetadata>(&json)
+        .map(ErrorMetadata)
+        .map_err(|e| e.to_string())
+}
+
+pub fn year_range_from_json(json: String) -> Result<YearRange, String> {
+    serde_json::from_str::<kreuzberg::YearRange>(&json)
+        .map(YearRange)
+        .map_err(|e| e.to_string())
+}
+
+pub fn dbf_field_info_from_json(json: String) -> Result<DbfFieldInfo, String> {
+    serde_json::from_str::<kreuzberg::DbfFieldInfo>(&json)
+        .map(DbfFieldInfo)
+        .map_err(|e| e.to_string())
+}
+
+pub fn contributor_role_from_json(json: String) -> Result<ContributorRole, String> {
+    serde_json::from_str::<kreuzberg::ContributorRole>(&json)
+        .map(ContributorRole)
+        .map_err(|e| e.to_string())
+}
+
+pub fn page_structure_from_json(json: String) -> Result<PageStructure, String> {
+    serde_json::from_str::<kreuzberg::PageStructure>(&json)
+        .map(PageStructure)
+        .map_err(|e| e.to_string())
+}
+
+pub fn page_info_from_json(json: String) -> Result<PageInfo, String> {
+    serde_json::from_str::<kreuzberg::PageInfo>(&json)
+        .map(PageInfo)
+        .map_err(|e| e.to_string())
+}
+
+pub fn page_content_from_json(json: String) -> Result<PageContent, String> {
+    serde_json::from_str::<kreuzberg::PageContent>(&json)
+        .map(PageContent)
+        .map_err(|e| e.to_string())
+}
+
+pub fn page_hierarchy_from_json(json: String) -> Result<PageHierarchy, String> {
+    serde_json::from_str::<kreuzberg::PageHierarchy>(&json)
+        .map(PageHierarchy)
+        .map_err(|e| e.to_string())
+}
+
+pub fn hierarchical_block_from_json(json: String) -> Result<HierarchicalBlock, String> {
+    serde_json::from_str::<kreuzberg::HierarchicalBlock>(&json)
+        .map(HierarchicalBlock)
+        .map_err(|e| e.to_string())
+}
+
+pub fn uri_from_json(json: String) -> Result<Uri, String> {
+    serde_json::from_str::<kreuzberg::Uri>(&json)
+        .map(Uri)
+        .map_err(|e| e.to_string())
+}
+
+pub fn detect_response_from_json(json: String) -> Result<DetectResponse, String> {
+    serde_json::from_str::<kreuzberg::api::DetectResponse>(&json)
+        .map(DetectResponse)
+        .map_err(|e| e.to_string())
+}
+
+pub fn embedding_preset_from_json(json: String) -> Result<EmbeddingPreset, String> {
+    serde_json::from_str::<kreuzberg::EmbeddingPreset>(&json)
+        .map(EmbeddingPreset)
+        .map_err(|e| e.to_string())
+}
+
+pub fn keyword_from_json(json: String) -> Result<Keyword, String> {
+    serde_json::from_str::<kreuzberg::Keyword>(&json)
+        .map(Keyword)
+        .map_err(|e| e.to_string())
+}
+
+pub fn model_paths_from_json(json: String) -> Result<ModelPaths, String> {
+    serde_json::from_str::<kreuzberg::ModelPaths>(&json)
+        .map(ModelPaths)
+        .map_err(|e| e.to_string())
+}
+
+pub fn layout_detection_from_json(json: String) -> Result<LayoutDetection, String> {
+    serde_json::from_str::<kreuzberg::LayoutDetection>(&json)
+        .map(LayoutDetection)
+        .map_err(|e| e.to_string())
+}
+
+pub fn recognized_table_from_json(json: String) -> Result<RecognizedTable, String> {
+    serde_json::from_str::<kreuzberg::RecognizedTable>(&json)
+        .map(RecognizedTable)
+        .map_err(|e| e.to_string())
+}
+
+pub fn detection_result_from_json(json: String) -> Result<DetectionResult, String> {
+    serde_json::from_str::<kreuzberg::DetectionResult>(&json)
+        .map(DetectionResult)
+        .map_err(|e| e.to_string())
+}
+
+pub fn embedded_file_from_json(json: String) -> Result<EmbeddedFile, String> {
+    serde_json::from_str::<kreuzberg::pdf::embedded_files::EmbeddedFile>(&json)
+        .map(EmbeddedFile)
         .map_err(|e| e.to_string())
 }

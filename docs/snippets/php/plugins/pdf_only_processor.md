@@ -25,14 +25,14 @@ class PdfOnlyProcessor implements PostProcessor {
         if ($result->mime_type !== 'application/pdf') {
             return;
         }
-        
+
         // Process PDF-specific logic
         // For example: extract page information, count pages, extract images, etc.
-        
+
         if (!isset($result->metadata)) {
             $result->metadata = [];
         }
-        
+
         if (is_array($result->metadata)) {
             $result->metadata['pdf_processed'] = true;
             $result->metadata['processor_version'] = '1.0.0';

@@ -6,6 +6,12 @@ package dev.kreuzberg
  * Token reduction configuration.
  */
 data class TokenReductionOptions(
+    /**
+     * Reduction mode: "off", "light", "moderate", "aggressive", "maximum"
+     */
     val mode: String,
+    /**
+     * Preserve important words (capitalized, technical terms)
+     */
     val preserveImportantWords: Boolean,
 )

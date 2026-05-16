@@ -4,7 +4,6 @@
 
 use rmcp::schemars;
 #[cfg_attr(alef, alef(skip))]
-
 /// Request parameters for file extraction.
 #[derive(Debug, serde::Deserialize, serde::Serialize, schemars::JsonSchema)]
 pub struct ExtractFileParams {
@@ -24,7 +23,6 @@ pub struct ExtractFileParams {
     pub response_format: Option<String>,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Request parameters for bytes extraction.
 #[derive(Debug, serde::Deserialize, serde::Serialize, schemars::JsonSchema)]
 pub struct ExtractBytesParams {
@@ -44,7 +42,6 @@ pub struct ExtractBytesParams {
     pub response_format: Option<String>,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Request parameters for batch file extraction.
 #[derive(Debug, serde::Deserialize, serde::Serialize, schemars::JsonSchema)]
 pub struct BatchExtractFilesParams {

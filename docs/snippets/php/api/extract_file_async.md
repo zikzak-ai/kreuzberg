@@ -1,4 +1,5 @@
 <!-- snippet:syntax-only -->
+
 ```php title="PHP"
 <?php
 declare(strict_types=1);

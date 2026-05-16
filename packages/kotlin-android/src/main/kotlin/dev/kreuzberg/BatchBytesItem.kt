@@ -9,7 +9,16 @@ package dev.kreuzberg
  * to represent a single item in a batch extraction job.
  */
 data class BatchBytesItem(
+    /**
+     * The content bytes to extract from
+     */
     val content: ByteArray,
+    /**
+     * MIME type of the content (e.g., "application/pdf", "text/html")
+     */
     val mimeType: String,
+    /**
+     * Per-item configuration overrides (None uses batch-level defaults)
+     */
     val config: FileExtractionConfig?,
 )

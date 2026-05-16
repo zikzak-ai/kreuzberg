@@ -18,318 +18,1085 @@ pub use kreuzberg::extractors::SyncExtractor;
 #[allow(unused_imports)]
 pub use kreuzberg::internal::InternalDocument;
 
+/// Hardware acceleration configuration for ONNX Runtime models.
+///
+/// Controls which execution provider (CPU, CoreML, CUDA, TensorRT) is used
+/// for inference in layout detection and embedding generation.
+///
+/// # Example
+///
+/// ```rust
+/// use kreuzberg::AccelerationConfig;
+///
+/// // Auto-select: CoreML on macOS, CUDA on Linux, CPU elsewhere
+/// let config = AccelerationConfig::default();
+///
+/// // Force CPU only
+/// let config = AccelerationConfig {
+///     provider: kreuzberg::ExecutionProviderType::Cpu,
+///     ..Default::default()
+/// };
+/// ```
 #[frb(mirror(AccelerationConfig))]
 pub struct AccelerationConfig {
+    /// Execution provider to use for ONNX inference.
     pub provider: ExecutionProviderType,
+    /// GPU device ID (for CUDA/TensorRT). Ignored for CPU/CoreML/Auto.
     pub device_id: i64,
 }
 
+/// Cross-extractor content filtering configuration.
+///
+/// Controls whether "furniture" content (headers, footers, page numbers,
+/// watermarks, repeating text) is included in or stripped from extraction
+/// results. Applies across all extractors (PDF, DOCX, RTF, ODT, HTML, etc.)
+/// with format-specific implementation.
+///
+/// When `None` on `ExtractionConfig`, each extractor uses its current
+/// default behavior unchanged.
 #[frb(mirror(ContentFilterConfig))]
 pub struct ContentFilterConfig {
+    /// Include running headers in extraction output.
+    ///
+    /// - PDF: Disables top-margin furniture stripping and prevents the layout
+    ///   model from treating `PageHeader`-classified regions as furniture.
+    /// - DOCX: Includes document headers in text output.
+    /// - RTF/ODT: Headers already included; this is a no-op when true.
+    /// - HTML/EPUB: Keeps `<header>` element content.
+    ///
+    /// Default: `false` (headers are stripped or excluded).
     pub include_headers: bool,
+    /// Include running footers in extraction output.
+    ///
+    /// - PDF: Disables bottom-margin furniture stripping and prevents the layout
+    ///   model from treating `PageFooter`-classified regions as furniture.
+    /// - DOCX: Includes document footers in text output.
+    /// - RTF/ODT: Footers already included; this is a no-op when true.
+    /// - HTML/EPUB: Keeps `<footer>` element content.
+    ///
+    /// Default: `false` (footers are stripped or excluded).
     pub include_footers: bool,
+    /// Enable the heuristic cross-page repeating text detector.
+    ///
+    /// When `true` (default), text that repeats verbatim across a supermajority
+    /// of pages is classified as furniture and stripped.  Disable this if brand
+    /// names or repeated headings are being incorrectly removed by the heuristic.
+    ///
+    /// Note: when a layout-detection model is active, the model may independently
+    /// classify page-header / page-footer regions as furniture on a per-page basis.
+    /// To preserve those regions, set `include_headers = true` and/or
+    /// `include_footers = true` in addition to disabling this flag.
+    ///
+    /// Primarily affects PDF extraction.
+    ///
+    /// Default: `true`.
     pub strip_repeating_text: bool,
+    /// Include watermark text in extraction output.
+    ///
+    /// - PDF: Keeps watermark artifacts and arXiv identifiers.
+    /// - Other formats: No effect currently.
+    ///
+    /// Default: `false` (watermarks are stripped).
     pub include_watermarks: bool,
 }
 
+/// Configuration for email extraction.
 #[frb(mirror(EmailConfig))]
 pub struct EmailConfig {
+    /// Windows codepage number to use when an MSG file contains no codepage property.
+    /// Defaults to `None`, which falls back to windows-1252.
+    ///
+    /// If an unrecognized or invalid codepage number is supplied (including 0),
+    /// the behavior silently falls back to windows-1252 — the same as when the
+    /// MSG file itself contains an unrecognized codepage. No error or warning is
+    /// emitted. Users should verify output when supplying unusual values.
+    ///
+    /// Common values:
+    /// - 1250: Central European (Polish, Czech, Hungarian, etc.)
+    /// - 1251: Cyrillic (Russian, Ukrainian, Bulgarian, etc.)
+    /// - 1252: Western European (default)
+    /// - 1253: Greek
+    /// - 1254: Turkish
+    /// - 1255: Hebrew
+    /// - 1256: Arabic
+    /// - 932:  Japanese (Shift-JIS)
+    /// - 936:  Simplified Chinese (GBK)
     pub msg_fallback_codepage: Option<i64>,
 }
 
+/// Main extraction configuration.
+///
+/// This struct contains all configuration options for the extraction process.
+/// It can be loaded from TOML, YAML, or JSON files, or created programmatically.
+///
+/// # Example
+///
+/// ```rust
+/// use kreuzberg::core::config::ExtractionConfig;
+///
+/// // Create with defaults
+/// let config = ExtractionConfig::default();
+///
+/// // Load from TOML file
+/// // let config = ExtractionConfig::from_toml_file("kreuzberg.toml")?;
+/// ```
 #[frb(mirror(ExtractionConfig))]
 pub struct ExtractionConfig {
+    /// Enable caching of extraction results
     pub use_cache: bool,
+    /// Enable quality post-processing
     pub enable_quality_processing: bool,
+    /// OCR configuration (None = OCR disabled)
     pub ocr: Option<OcrConfig>,
+    /// Force OCR even for searchable PDFs
     pub force_ocr: bool,
+    /// Force OCR on specific pages only (1-indexed page numbers, must be >= 1).
+    ///
+    /// When set, only the listed pages are OCR'd regardless of text layer quality.
+    /// Unlisted pages use native text extraction. Ignored when `force_ocr` is `true`.
+    /// Only applies to PDF documents. Duplicates are automatically deduplicated.
+    /// An `ocr` config is recommended for backend/language selection; defaults are used if absent.
     pub force_ocr_pages: Option<Vec<i64>>,
+    /// Disable OCR entirely, even for images.
+    ///
+    /// When `true`, OCR is skipped for all document types. Images return metadata
+    /// only (dimensions, format, EXIF) without text extraction. PDFs use only
+    /// native text extraction without OCR fallback.
+    ///
+    /// Cannot be `true` simultaneously with `force_ocr`.
+    ///
+    /// *Added in v4.7.0.*
     pub disable_ocr: bool,
+    /// Text chunking configuration (None = chunking disabled)
     pub chunking: Option<ChunkingConfig>,
+    /// Content filtering configuration (None = use extractor defaults).
+    ///
+    /// Controls whether document "furniture" (headers, footers, watermarks,
+    /// repeating text) is included in or stripped from extraction results.
+    /// See [`ContentFilterConfig`] for per-field documentation.
     pub content_filter: Option<ContentFilterConfig>,
+    /// Image extraction configuration (None = no image extraction)
     pub images: Option<ImageExtractionConfig>,
+    /// PDF-specific options (None = use defaults)
     pub pdf_options: Option<PdfConfig>,
+    /// Token reduction configuration (None = no token reduction)
     pub token_reduction: Option<TokenReductionOptions>,
+    /// Language detection configuration (None = no language detection)
     pub language_detection: Option<LanguageDetectionConfig>,
+    /// Page extraction configuration (None = no page tracking)
     pub pages: Option<PageConfig>,
+    /// Keyword extraction configuration (None = no keyword extraction)
     pub keywords: Option<KeywordConfig>,
+    /// Post-processor configuration (None = use defaults)
     pub postprocessor: Option<PostProcessorConfig>,
+    /// HTML to Markdown conversion options (None = use defaults)
+    ///
+    /// Configure how HTML documents are converted to Markdown, including heading styles,
+    /// list formatting, code block styles, and preprocessing options.
     pub html_options: Option<String>,
+    /// Styled HTML output configuration.
+    ///
+    /// When set alongside `output_format = OutputFormat::Html`, the extraction
+    /// pipeline uses [`StyledHtmlRenderer`](crate::rendering::StyledHtmlRenderer)
+    /// which emits stable `kb-*` CSS class hooks on every structural element
+    /// and optionally embeds theme CSS or user-supplied CSS in a `<style>` block.
+    ///
+    /// When `None`, the existing plain comrak-based HTML renderer is used.
     pub html_output: Option<HtmlOutputConfig>,
+    /// Default per-file timeout in seconds for batch extraction.
+    ///
+    /// When set, each file in a batch will be canceled after this duration
+    /// unless overridden by [`FileExtractionConfig::timeout_secs`].
+    /// `None` means no timeout (unbounded extraction time).
     pub extraction_timeout_secs: Option<i64>,
+    /// Maximum concurrent extractions in batch operations (None = (num_cpus × 1.5).ceil()).
+    ///
+    /// Limits parallelism to prevent resource exhaustion when processing
+    /// large batches. Defaults to (num_cpus × 1.5).ceil() when not set.
     pub max_concurrent_extractions: Option<i64>,
+    /// Result structure format
+    ///
+    /// Controls whether results are returned in unified format (default) with all
+    /// content in the `content` field, or element-based format with semantic
+    /// elements (for Unstructured-compatible output).
     pub result_format: ResultFormat,
+    /// Security limits for archive extraction.
+    ///
+    /// Controls maximum archive size, compression ratio, file count, and other
+    /// security thresholds to prevent decompression bomb attacks. Also caps
+    /// nesting depth, iteration count, entity / token length, cumulative
+    /// content size, and table cell count for every extraction path that
+    /// ingests user-controlled bytes.
+    /// When `None`, default limits are used.
     pub security_limits: Option<SecurityLimits>,
+    /// Content text format (default: Plain).
+    ///
+    /// Controls the format of the extracted content:
+    /// - `Plain`: Raw extracted text (default)
+    /// - `Markdown`: Markdown formatted output
+    /// - `Djot`: Djot markup format (requires djot feature)
+    /// - `Html`: HTML formatted output
+    ///
+    /// When set to a structured format, extraction results will include
+    /// formatted output. The `formatted_content` field may be populated
+    /// when format conversion is applied.
     pub output_format: OutputFormat,
+    /// Layout detection configuration (None = layout detection disabled).
+    ///
+    /// When set, PDF pages and images are analyzed for document structure
+    /// (headings, code, formulas, tables, figures, etc.) using RT-DETR models
+    /// via ONNX Runtime. For PDFs, layout hints override paragraph classification
+    /// in the markdown pipeline. For images, per-region OCR is performed with
+    /// markdown formatting based on detected layout classes.
+    /// Requires the `layout-detection` feature to run inference; the field is
+    /// present whenever the `layout-types` feature is active (which includes
+    /// `layout-detection` as well as the no-ORT target groups).
     pub layout: Option<LayoutDetectionConfig>,
+    /// Run layout detection on the non-OCR PDF markdown path.
+    ///
+    /// When `true` and `layout` is `Some(_)`, layout regions inform heading,
+    /// table, list, and figure detection in the structure pipeline that would
+    /// otherwise rely on font-clustering heuristics alone. Substantially
+    /// improves SF1 (structural F1) at the cost of inference latency
+    /// (~150-300ms/page CPU, ~20-50ms/page GPU). Default: `false`.
+    /// Requires the `layout-detection` feature.
     pub use_layout_for_markdown: bool,
+    /// Enable structured document tree output.
+    ///
+    /// When true, populates the `document` field on `ExtractionResult` with a
+    /// hierarchical `DocumentStructure` containing heading-driven section nesting,
+    /// table grids, content layer classification, and inline annotations.
+    ///
+    /// Independent of `result_format` — can be combined with Unified or ElementBased.
     pub include_document_structure: bool,
+    /// Hardware acceleration configuration for ONNX Runtime models.
+    ///
+    /// Controls execution provider selection for layout detection and embedding
+    /// models. When `None`, uses platform defaults (CoreML on macOS, CUDA on
+    /// Linux, CPU on Windows).
     pub acceleration: Option<AccelerationConfig>,
+    /// Cache namespace for tenant isolation.
+    ///
+    /// When set, cache entries are stored under `{cache_dir}/{namespace}/`.
+    /// Must be alphanumeric, hyphens, or underscores only (max 64 chars).
+    /// Different namespaces have isolated cache spaces on the same filesystem.
     pub cache_namespace: Option<String>,
+    /// Per-request cache TTL in seconds.
+    ///
+    /// Overrides the global `max_age_days` for this specific extraction.
+    /// When `0`, caching is completely skipped (no read or write).
+    /// When `None`, the global TTL applies.
     pub cache_ttl_secs: Option<i64>,
+    /// Email extraction configuration (None = use defaults).
+    ///
+    /// Currently supports configuring the fallback codepage for MSG files
+    /// that do not specify one. See `EmailConfig` for details.
     pub email: Option<EmailConfig>,
+    /// Concurrency limits for constrained environments (None = use defaults).
+    ///
+    /// Controls Rayon thread pool size, ONNX Runtime intra-op threads, and
+    /// (when `max_concurrent_extractions` is unset) the batch concurrency
+    /// semaphore. See `ConcurrencyConfig` for details.
     pub concurrency: Option<String>,
+    /// Maximum recursion depth for archive extraction (default: 3).
+    /// Set to 0 to disable recursive extraction (legacy behavior).
     pub max_archive_depth: i64,
+    /// Tree-sitter language pack configuration (None = tree-sitter disabled).
+    ///
+    /// When set, enables code file extraction using tree-sitter parsers.
+    /// Controls grammar download behavior and code analysis options.
     pub tree_sitter: Option<TreeSitterConfig>,
+    /// Structured extraction via LLM (None = disabled).
+    ///
+    /// When set, the extracted document content is sent to an LLM with the
+    /// provided JSON schema. The structured response is stored in
+    /// `ExtractionResult::structured_output`.
     pub structured_extraction: Option<StructuredExtractionConfig>,
+    /// Cancellation token for this extraction (None = no external cancellation).
+    ///
+    /// Pass a [`CancellationToken`] clone here and call [`CancellationToken::cancel`]
+    /// from another thread / task to abort the extraction in progress. The extractor
+    /// checks the token at safe checkpoints (before lock acquisition, between pages,
+    /// between batch items) and returns [`KreuzbergError::Cancelled`] when set.
+    ///
+    /// The field is excluded from serialization because `CancellationToken` is a
+    /// runtime handle, not a configuration value.
     pub cancel_token: Option<String>,
 }
 
+/// Per-file extraction configuration overrides for batch processing.
+///
+/// All fields are `Option<T>` — `None` means "use the batch-level default."
+/// This type is used with `batch_extract_files` and
+/// `batch_extract_bytes` to allow heterogeneous
+/// extraction settings within a single batch.
+///
+/// # Excluded Fields
+///
+/// The following `ExtractionConfig` fields are batch-level only and
+/// cannot be overridden per file:
+/// - `max_concurrent_extractions` — controls batch parallelism
+/// - `use_cache` — global caching policy
+/// - `acceleration` — shared ONNX execution provider
+/// - `security_limits` — global archive security policy
+///
+/// # Example
+///
+/// ```rust
+/// use kreuzberg::FileExtractionConfig;
+///
+/// // Override just OCR forcing for a specific file
+/// let config = FileExtractionConfig {
+///     force_ocr: Some(true),
+///     ..Default::default()
+/// };
+/// ```
 #[frb(mirror(FileExtractionConfig))]
 pub struct FileExtractionConfig {
+    /// Override quality post-processing for this file.
     pub enable_quality_processing: Option<bool>,
+    /// Override OCR configuration for this file (None in the Option = use batch default).
     pub ocr: Option<OcrConfig>,
+    /// Override force OCR for this file.
     pub force_ocr: Option<bool>,
+    /// Override force OCR pages for this file (1-indexed page numbers).
     pub force_ocr_pages: Option<Vec<i64>>,
+    /// Override disable OCR for this file.
     pub disable_ocr: Option<bool>,
+    /// Override chunking configuration for this file.
     pub chunking: Option<ChunkingConfig>,
+    /// Override content filtering configuration for this file.
     pub content_filter: Option<ContentFilterConfig>,
+    /// Override image extraction configuration for this file.
     pub images: Option<ImageExtractionConfig>,
+    /// Override PDF options for this file.
     pub pdf_options: Option<PdfConfig>,
+    /// Override token reduction for this file.
     pub token_reduction: Option<TokenReductionOptions>,
+    /// Override language detection for this file.
     pub language_detection: Option<LanguageDetectionConfig>,
+    /// Override page extraction for this file.
     pub pages: Option<PageConfig>,
+    /// Override keyword extraction for this file.
     pub keywords: Option<KeywordConfig>,
+    /// Override post-processor for this file.
     pub postprocessor: Option<PostProcessorConfig>,
+    /// Override HTML conversion options for this file.
     pub html_options: Option<String>,
+    /// Override result format for this file.
     pub result_format: Option<ResultFormat>,
+    /// Override output content format for this file.
     pub output_format: Option<OutputFormat>,
+    /// Override document structure output for this file.
     pub include_document_structure: Option<bool>,
+    /// Override layout detection for this file.
     pub layout: Option<LayoutDetectionConfig>,
+    /// Override per-file extraction timeout in seconds.
+    ///
+    /// When set, the extraction for this file will be canceled after the
+    /// specified duration. A timed-out file produces an error result without
+    /// affecting other files in the batch.
     pub timeout_secs: Option<i64>,
+    /// Override tree-sitter configuration for this file.
     pub tree_sitter: Option<TreeSitterConfig>,
+    /// Override structured extraction configuration for this file.
+    ///
+    /// When set, enables LLM-based structured extraction with a JSON schema
+    /// for this specific file. The extracted content is sent to a VLM/LLM
+    /// and the response is parsed according to the provided schema.
     pub structured_extraction: Option<StructuredExtractionConfig>,
 }
 
+/// Batch item for byte array extraction.
+///
+/// Used with `batch_extract_bytes` and `batch_extract_bytes_sync`
+/// to represent a single item in a batch extraction job.
 #[frb(mirror(BatchBytesItem))]
 pub struct BatchBytesItem {
+    /// The content bytes to extract from
     pub content: Vec<u8>,
+    /// MIME type of the content (e.g., "application/pdf", "text/html")
     pub mime_type: String,
+    /// Per-item configuration overrides (None uses batch-level defaults)
     pub config: Option<FileExtractionConfig>,
 }
 
+/// Batch item for file extraction.
+///
+/// Used with `batch_extract_files` and `batch_extract_files_sync`
+/// to represent a single file in a batch extraction job.
 #[frb(mirror(BatchFileItem))]
 pub struct BatchFileItem {
+    /// Path to the file to extract from
     pub path: String,
+    /// Per-file configuration overrides (None uses batch-level defaults)
     pub config: Option<FileExtractionConfig>,
 }
 
+/// Image extraction configuration.
 #[frb(mirror(ImageExtractionConfig))]
 pub struct ImageExtractionConfig {
+    /// Extract images from documents
     pub extract_images: bool,
+    /// Target DPI for image normalization
     pub target_dpi: i64,
+    /// Maximum dimension for images (width or height)
     pub max_image_dimension: i64,
+    /// Whether to inject image reference placeholders into markdown output.
+    /// When `true` (default), image references like `![Image 1](embedded:p1_i0)`
+    /// are appended to the markdown. Set to `false` to extract images as data
+    /// without polluting the markdown output.
     pub inject_placeholders: bool,
+    /// Automatically adjust DPI based on image content
     pub auto_adjust_dpi: bool,
+    /// Minimum DPI threshold
     pub min_dpi: i64,
+    /// Maximum DPI threshold
     pub max_dpi: i64,
+    /// Maximum number of image objects to extract per PDF page.
+    ///
+    /// Some PDFs (e.g. technical diagrams stored as thousands of raster fragments)
+    /// can trigger extremely long or indefinite extraction times when every image
+    /// object on a dense page is decoded individually via the PDF extractor. Setting this
+    /// limit causes kreuzberg to stop collecting individual images once the count
+    /// per page reaches the cap and emit a warning instead.
+    ///
+    /// `None` (default) means no limit — all images are extracted.
     pub max_images_per_page: Option<i64>,
+    /// When `true` (default), extracted images are classified by kind and grouped
+    /// into clusters where they appear to belong to one figure.
     pub classify: bool,
 }
 
+/// Token reduction configuration.
 #[frb(mirror(TokenReductionOptions))]
 pub struct TokenReductionOptions {
+    /// Reduction mode: "off", "light", "moderate", "aggressive", "maximum"
     pub mode: String,
+    /// Preserve important words (capitalized, technical terms)
     pub preserve_important_words: bool,
 }
 
+/// Language detection configuration.
 #[frb(mirror(LanguageDetectionConfig))]
 pub struct LanguageDetectionConfig {
+    /// Enable language detection
     pub enabled: bool,
+    /// Minimum confidence threshold (0.0-1.0)
     pub min_confidence: f64,
+    /// Detect multiple languages in the document
     pub detect_multiple: bool,
 }
 
+/// Configuration for styled HTML output.
+///
+/// When set on [`ExtractionConfig::html_output`] alongside
+/// `output_format = OutputFormat::Html`, the pipeline builds a
+/// [`StyledHtmlRenderer`](crate::rendering::StyledHtmlRenderer) instead of
+/// the plain comrak-based renderer.
+///
+/// # Example
+///
+/// ```rust
+/// use kreuzberg::core::config::{HtmlOutputConfig, HtmlTheme};
+///
+/// let config = HtmlOutputConfig {
+///     theme: HtmlTheme::GitHub,
+///     css: Some(".kb-p { font-size: 1.1rem; }".to_string()),
+///     ..Default::default()
+/// };
+/// ```
 #[frb(mirror(HtmlOutputConfig))]
 pub struct HtmlOutputConfig {
+    /// Inline CSS string injected into the output after the theme stylesheet.
+    /// Concatenated after `css_file` content when both are set.
     pub css: Option<String>,
+    /// Path to a CSS file loaded once at renderer construction time.
+    /// Concatenated before `css` when both are set.
     pub css_file: Option<String>,
+    /// Built-in colour/typography theme. Default: [`HtmlTheme::Unstyled`].
     pub theme: HtmlTheme,
+    /// CSS class prefix applied to every emitted class name.
+    ///
+    /// Default: `"kb-"`. Change this if your host application already uses
+    /// classes that start with `kb-`.
     pub class_prefix: String,
+    /// When `true` (default), write the resolved CSS into a `<style>` block
+    /// immediately after the opening `<div class="{prefix}doc">`.
+    ///
+    /// Set to `false` to emit only the structural markup and wire up your
+    /// own stylesheet targeting the `kb-*` class names.
     pub embed_css: bool,
 }
 
+/// Layout detection configuration.
+///
+/// Controls layout detection behavior in the extraction pipeline.
+/// When set on [`ExtractionConfig`](super::ExtractionConfig), layout detection
+/// is enabled for PDF extraction.
 #[frb(mirror(LayoutDetectionConfig))]
 pub struct LayoutDetectionConfig {
+    /// Confidence threshold override (None = use model default).
     pub confidence_threshold: Option<f64>,
+    /// Whether to apply postprocessing heuristics (default: true).
     pub apply_heuristics: bool,
+    /// Table structure recognition model.
+    ///
+    /// Controls which model is used for table cell detection within layout-detected
+    /// table regions. Defaults to [`TableModel::Tatr`].
     pub table_model: TableModel,
+    /// Hardware acceleration for ONNX models (layout detection + table structure).
+    ///
+    /// When set, controls which execution provider (CPU, CUDA, CoreML, TensorRT)
+    /// is used for inference. Defaults to `None` (auto-select per platform).
     pub acceleration: Option<AccelerationConfig>,
 }
 
+/// Configuration for an LLM provider/model via liter-llm.
+///
+/// Each feature (VLM OCR, VLM embeddings, structured extraction) carries
+/// its own `LlmConfig`, allowing different providers per feature.
+///
+/// # Example
+///
+/// ```toml
+/// [structured_extraction.llm]
+/// model = "openai/gpt-4o"
+/// api_key = "sk-..."  # or use KREUZBERG_LLM_API_KEY env var
+/// ```
 #[frb(mirror(LlmConfig))]
 pub struct LlmConfig {
+    /// Provider/model string using liter-llm routing format.
+    ///
+    /// Examples: `"openai/gpt-4o"`, `"anthropic/claude-sonnet-4-20250514"`,
+    /// `"groq/llama-3.1-70b-versatile"`.
     pub model: String,
+    /// API key for the provider. When `None`, liter-llm falls back to
+    /// the provider's standard environment variable (e.g., `OPENAI_API_KEY`).
     pub api_key: Option<String>,
+    /// Custom base URL override for the provider endpoint.
     pub base_url: Option<String>,
+    /// Request timeout in seconds (default: 60).
     pub timeout_secs: Option<i64>,
+    /// Maximum retry attempts (default: 3).
     pub max_retries: Option<i64>,
+    /// Sampling temperature for generation tasks.
     pub temperature: Option<f64>,
+    /// Maximum tokens to generate.
     pub max_tokens: Option<i64>,
 }
 
+/// Configuration for LLM-based structured data extraction.
+///
+/// Sends extracted document content to a VLM with a JSON schema,
+/// returning structured data that conforms to the schema.
+///
+/// # Example
+///
+/// ```toml
+/// [structured_extraction]
+/// schema_name = "invoice_data"
+/// strict = true
+///
+/// [structured_extraction.schema]
+/// type = "object"
+/// properties.vendor = { type = "string" }
+/// properties.total = { type = "number" }
+/// required = ["vendor", "total"]
+///
+/// [structured_extraction.llm]
+/// model = "openai/gpt-4o"
+/// ```
 #[frb(mirror(StructuredExtractionConfig))]
 pub struct StructuredExtractionConfig {
+    /// JSON Schema defining the desired output structure.
     pub schema: String,
+    /// Schema name passed to the LLM's structured output mode.
     pub schema_name: String,
+    /// Optional schema description for the LLM.
     pub schema_description: Option<String>,
+    /// Enable strict mode — output must exactly match the schema.
     pub strict: bool,
+    /// Custom Jinja2 extraction prompt template. When `None`, a default template is used.
+    ///
+    /// Available template variables:
+    /// - `{{ content }}` — The extracted document text.
+    /// - `{{ schema }}` — The JSON schema as a formatted string.
+    /// - `{{ schema_name }}` — The schema name.
+    /// - `{{ schema_description }}` — The schema description (may be empty).
     pub prompt: Option<String>,
+    /// LLM configuration for the extraction.
     pub llm: LlmConfig,
 }
 
+/// Quality thresholds for OCR fallback decisions and pipeline quality gating.
+///
+/// All fields default to the values that match the previous hardcoded behavior,
+/// so `OcrQualityThresholds::default()` preserves existing semantics exactly.
 #[frb(mirror(OcrQualityThresholds))]
 pub struct OcrQualityThresholds {
+    /// Minimum total non-whitespace characters to consider text substantive.
     pub min_total_non_whitespace: i64,
+    /// Minimum non-whitespace characters per page on average.
     pub min_non_whitespace_per_page: f64,
+    /// Minimum character count for a word to be "meaningful".
     pub min_meaningful_word_len: i64,
+    /// Minimum count of meaningful words before text is accepted.
     pub min_meaningful_words: i64,
+    /// Minimum alphanumeric ratio (non-whitespace chars that are alphanumeric).
     pub min_alnum_ratio: f64,
+    /// Minimum Unicode replacement characters (U+FFFD) to trigger OCR fallback.
     pub min_garbage_chars: i64,
+    /// Maximum fraction of short (1-2 char) words before text is considered fragmented.
     pub max_fragmented_word_ratio: f64,
+    /// Critical fragmentation threshold — triggers OCR regardless of meaningful words.
+    /// Normal English text has ~20-30% short words. 80%+ is definitive garbage.
     pub critical_fragmented_word_ratio: f64,
+    /// Minimum average word length. Below this with enough words indicates garbled extraction.
     pub min_avg_word_length: f64,
+    /// Minimum word count before average word length check applies.
     pub min_words_for_avg_length_check: i64,
+    /// Minimum consecutive word repetition ratio to detect column scrambling.
     pub min_consecutive_repeat_ratio: f64,
+    /// Minimum word count before consecutive repetition check is applied.
     pub min_words_for_repeat_check: i64,
+    /// Minimum character count for "substantive markdown" OCR skip gate.
     pub substantive_min_chars: i64,
+    /// Minimum character count for "non-text content" OCR skip gate.
     pub non_text_min_chars: i64,
+    /// Alphanumeric+whitespace ratio threshold for skip decisions.
     pub alnum_ws_ratio_threshold: f64,
+    /// Minimum quality score (0.0-1.0) for a pipeline stage result to be accepted.
+    /// If the result from a backend scores below this, try the next backend.
     pub pipeline_min_quality: f64,
 }
 
+/// A single backend stage in the OCR pipeline.
 #[frb(mirror(OcrPipelineStage))]
 pub struct OcrPipelineStage {
+    /// Backend name: "tesseract", "paddleocr", "easyocr", or a custom registered name.
     pub backend: String,
+    /// Priority weight (higher = tried first). Stages are sorted by priority descending.
     pub priority: i64,
+    /// Language override for this stage (None = use parent OcrConfig.language).
     pub language: Option<String>,
+    /// Tesseract-specific config override for this stage.
     pub tesseract_config: Option<TesseractConfig>,
+    /// PaddleOCR-specific config for this stage.
     pub paddle_ocr_config: Option<String>,
+    /// VLM config override for this pipeline stage.
     pub vlm_config: Option<LlmConfig>,
+    /// Arbitrary per-call options passed through to the backend unchanged.
+    ///
+    /// Backends that support runtime tuning (mode switching, preprocessing
+    /// flags, inference parameters, etc.) read this value and deserialize
+    /// the keys they care about. Keys unknown to the backend are silently
+    /// ignored, so options from different backends can coexist in the same
+    /// config without conflict.
+    ///
+    /// Example (custom backend):
+    /// ```json
+    /// { "mode": "fast", "enable_layout": true }
+    /// ```
     pub backend_options: Option<String>,
 }
 
+/// Multi-backend OCR pipeline with quality-based fallback.
+///
+/// Backends are tried in priority order (highest first). After each backend
+/// produces output, quality is evaluated. If it meets `quality_thresholds.pipeline_min_quality`,
+/// the result is accepted. Otherwise the next backend is tried.
 #[frb(mirror(OcrPipelineConfig))]
 pub struct OcrPipelineConfig {
+    /// Ordered list of backends to try. Sorted by priority (descending) at runtime.
     pub stages: Vec<OcrPipelineStage>,
+    /// Quality thresholds for deciding whether to accept a result or try the next backend.
     pub quality_thresholds: OcrQualityThresholds,
 }
 
+/// OCR configuration.
 #[frb(mirror(OcrConfig))]
 pub struct OcrConfig {
+    /// Whether OCR is enabled.
+    ///
+    /// Setting `enabled: false` is a shorthand for `disable_ocr: true` on the parent
+    /// [`ExtractionConfig`](crate::core::config::ExtractionConfig). Images return
+    /// metadata only; PDFs use native text extraction without OCR fallback.
+    ///
+    /// Defaults to `true`. When `false`, all other OCR settings are ignored.
     pub enabled: bool,
+    /// OCR backend: tesseract, easyocr, paddleocr
     pub backend: String,
+    /// Language code (e.g., "eng", "deu")
     pub language: String,
+    /// Tesseract-specific configuration (optional)
     pub tesseract_config: Option<TesseractConfig>,
+    /// Output format for OCR results (optional, for format conversion)
     pub output_format: Option<OutputFormat>,
+    /// PaddleOCR-specific configuration (optional, JSON passthrough)
     pub paddle_ocr_config: Option<String>,
+    /// Arbitrary per-call options passed through to the backend unchanged.
+    ///
+    /// Custom OCR backends and built-in backends that support runtime tuning
+    /// can read this value and deserialize the keys they care about. Keys
+    /// unknown to the backend are silently ignored.
+    ///
+    /// This is the recommended extension point for per-call parameters that
+    /// are not covered by the typed fields above (e.g. mode switching,
+    /// preprocessing flags, inference batch size).
+    ///
+    /// **Scope:** when `pipeline` is `None`, this value is propagated to the
+    /// primary stage of the auto-constructed pipeline. When `pipeline` is
+    /// explicitly set, this field has **no effect** — the caller must set
+    /// `OcrPipelineStage.backend_options` directly on the relevant stage(s)
+    /// instead.
+    ///
+    /// Example:
+    /// ```json
+    /// { "mode": "fast", "enable_layout": true, "timeout_ms": 5000 }
+    /// ```
     pub backend_options: Option<String>,
+    /// OCR element extraction configuration
     pub element_config: Option<OcrElementConfig>,
+    /// Quality thresholds for the native-text-to-OCR fallback decision.
+    /// When None, uses compiled defaults (matching previous hardcoded behavior).
     pub quality_thresholds: Option<OcrQualityThresholds>,
+    /// Multi-backend OCR pipeline configuration. When set, enables weighted
+    /// fallback across multiple OCR backends based on output quality.
+    /// When None, uses the single `backend` field (same as today).
     pub pipeline: Option<OcrPipelineConfig>,
+    /// Enable automatic page rotation based on orientation detection.
+    ///
+    /// When enabled, uses Tesseract's `DetectOrientationScript()` to detect
+    /// page orientation (0/90/180/270 degrees) before OCR. If the page is
+    /// rotated with high confidence, the image is corrected before recognition.
+    /// This is critical for handling rotated scanned documents.
     pub auto_rotate: bool,
+    /// VLM (Vision Language Model) OCR configuration.
+    ///
+    /// Required when `backend` is `"vlm"`. Uses liter-llm to send page
+    /// images to a vision model for text extraction.
     pub vlm_config: Option<LlmConfig>,
+    /// Custom Jinja2 prompt template for VLM OCR.
+    ///
+    /// When `None`, uses the default template. Available variables:
+    /// - `{{ language }}` — The document language code (e.g., "eng", "deu").
     pub vlm_prompt: Option<String>,
+    /// Hardware acceleration for ONNX Runtime models (e.g. PaddleOCR, layout detection).
+    ///
+    /// Not user-configurable via config files — injected at runtime from
+    /// `ExtractionConfig::acceleration` before each `process_image` call.
     pub acceleration: Option<AccelerationConfig>,
+    /// Caller-supplied Tesseract `traineddata` bytes per language code.
+    ///
+    /// Primary use case is the WASM build, which has no filesystem and cannot
+    /// download tessdata at runtime. Native builds typically rely on
+    /// `TessdataManager` and ignore this field. When present, the WASM
+    /// Tesseract backend prefers these bytes over its compile-time-bundled
+    /// English data.
+    ///
+    /// Skipped by serde to keep config files small — supply via the typed API
+    /// at runtime.
     pub tessdata_bytes: Option<std::collections::HashMap<String, Vec<u8>>>,
 }
 
+/// Page extraction and tracking configuration.
+///
+/// Controls how pages are extracted, tracked, and represented in the extraction results.
+/// When `None`, page tracking is disabled.
+///
+/// Page range tracking in chunk metadata (first_page/last_page) is automatically enabled
+/// when page boundaries are available and chunking is configured.
 #[frb(mirror(PageConfig))]
 pub struct PageConfig {
+    /// Extract pages as separate array (ExtractionResult.pages)
     pub extract_pages: bool,
+    /// Insert page markers in main content string
     pub insert_page_markers: bool,
+    /// Page marker format (use {page_num} placeholder)
+    /// Default: "\n\n<!-- PAGE {page_num} -->\n\n"
     pub marker_format: String,
 }
 
+/// PDF-specific configuration.
 #[frb(mirror(PdfConfig))]
 pub struct PdfConfig {
+    /// Extract images from PDF
     pub extract_images: bool,
+    /// Extract tables from PDF.
+    ///
+    /// When `true` (default), runs pdf_oxide's native grid detector and, if it
+    /// finds nothing, falls back to the heuristic text-layer reconstruction in
+    /// `pdf::oxide::table::extract_tables_heuristic`. Set to `false` to skip
+    /// both passes — `tables` will then be empty in the result.
     pub extract_tables: bool,
+    /// List of passwords to try when opening encrypted PDFs
     pub passwords: Option<Vec<String>>,
+    /// Extract PDF metadata
     pub extract_metadata: bool,
+    /// Hierarchy extraction configuration (None = hierarchy extraction disabled)
     pub hierarchy: Option<HierarchyConfig>,
+    /// Extract PDF annotations (text notes, highlights, links, stamps).
+    /// Default: false
     pub extract_annotations: bool,
+    /// Top margin fraction (0.0–1.0) of page height to exclude headers/running heads.
+    /// Default: 0.06 (6%)
     pub top_margin_fraction: Option<f64>,
+    /// Bottom margin fraction (0.0–1.0) of page height to exclude footers/page numbers.
+    /// Default: 0.05 (5%)
     pub bottom_margin_fraction: Option<f64>,
+    /// Allow single-column pseudo tables in extraction results.
+    ///
+    /// By default, tables with fewer than 2 columns (layout-guided) or 3 columns
+    /// (heuristic) are rejected. When `true`, the minimum column count is relaxed
+    /// to 1, allowing single-column structured data (glossaries, itemized lists)
+    /// to be emitted as tables. Other quality filters (density, sparsity, prose
+    /// detection) still apply.
     pub allow_single_column_tables: bool,
+    /// Perform OCR on inline images extracted from PDF pages and attach the
+    /// recognized text to each `ExtractedImage.ocr_result`. Requires Tesseract
+    /// to be available; if `ExtractionConfig.ocr` is `None` the extractor
+    /// falls back to `TesseractConfig::default()`. Per-image failures degrade
+    /// gracefully (the image is returned without OCR text rather than failing
+    /// the whole extraction). Default: `false`.
     pub ocr_inline_images: bool,
 }
 
+/// Hierarchy extraction configuration for PDF text structure analysis.
+///
+/// Enables extraction of document hierarchy levels (H1-H6) based on font size
+/// clustering and semantic analysis. When enabled, hierarchical blocks are
+/// included in page content.
 #[frb(mirror(HierarchyConfig))]
 pub struct HierarchyConfig {
+    /// Enable hierarchy extraction
     pub enabled: bool,
+    /// Number of font size clusters to use for hierarchy levels (1-7)
+    ///
+    /// Default: 6, which provides H1-H6 heading levels with body text.
+    /// Larger values create more fine-grained hierarchy levels.
     pub k_clusters: i64,
+    /// Include bounding box information in hierarchy blocks
     pub include_bbox: bool,
+    /// OCR coverage threshold for smart OCR triggering (0.0-1.0)
+    ///
+    /// Determines when OCR should be triggered based on text block coverage.
+    /// OCR is triggered when text blocks cover less than this fraction of the page.
+    /// Default: 0.5 (trigger OCR if less than 50% of page has text)
     pub ocr_coverage_threshold: Option<f64>,
 }
 
+/// Post-processor configuration.
 #[frb(mirror(PostProcessorConfig))]
 pub struct PostProcessorConfig {
+    /// Enable post-processors
     pub enabled: bool,
+    /// Whitelist of processor names to run (None = all enabled)
     pub enabled_processors: Option<Vec<String>>,
+    /// Blacklist of processor names to skip (None = none disabled)
     pub disabled_processors: Option<Vec<String>>,
+    /// Pre-computed AHashSet for O(1) enabled processor lookup
     pub enabled_set: Option<String>,
+    /// Pre-computed AHashSet for O(1) disabled processor lookup
     pub disabled_set: Option<String>,
 }
 
+/// Chunking configuration.
+///
+/// Configures text chunking for document content, including chunk size,
+/// overlap, trimming behavior, and optional embeddings.
+///
+/// Use `..Default::default()` when constructing to allow for future field additions:
+/// ```rust
+/// let config = ChunkingConfig {
+///     max_characters: 500,
+///     ..Default::default()
+/// };
+/// ```
 #[frb(mirror(ChunkingConfig))]
 pub struct ChunkingConfig {
+    /// Maximum size per chunk (in units determined by `sizing`).
+    ///
+    /// When `sizing` is `Characters` (default), this is the max character count.
+    /// When using token-based sizing, this is the max token count.
+    ///
+    /// Default: 1000
     pub max_characters: i64,
+    /// Overlap between chunks (in units determined by `sizing`).
+    ///
+    /// Default: 200
     pub overlap: i64,
+    /// Whether to trim whitespace from chunk boundaries.
+    ///
+    /// Default: true
     pub trim: bool,
+    /// Type of chunker to use (Text or Markdown).
+    ///
+    /// Default: Text
     pub chunker_type: ChunkerType,
+    /// Optional embedding configuration for chunk embeddings.
     pub embedding: Option<EmbeddingConfig>,
+    /// Use a preset configuration (overrides individual settings if provided).
     pub preset: Option<String>,
+    /// How to measure chunk size.
+    ///
+    /// Default: `Characters` (Unicode character count).
+    /// Enable `chunking-tiktoken` or `chunking-tokenizers` features for token-based sizing.
     pub sizing: ChunkSizing,
+    /// When `true` and `chunker_type` is `Markdown`, prepend the heading hierarchy
+    /// path (e.g. `"# Title > ## Section\n\n"`) to each chunk's content string.
+    ///
+    /// This is useful for RAG pipelines where each chunk needs self-contained
+    /// context about its position in the document structure.
+    ///
+    /// Default: `false`
     pub prepend_heading_context: bool,
+    /// Optional cosine similarity threshold for semantic topic boundary detection.
+    ///
+    /// Only used when `chunker_type` is `Semantic` and an `EmbeddingConfig` is
+    /// provided. You almost never need to set this. When omitted, defaults to
+    /// `0.75` which works well for most documents. Lower values detect more
+    /// topic boundaries (more, smaller chunks); higher values detect fewer.
+    /// Range: `0.0..=1.0`.
     pub topic_threshold: Option<f64>,
 }
 
+/// Embedding configuration for text chunks.
+///
+/// Configures embedding generation using ONNX models via the vendored embedding engine.
+/// Requires the `embeddings` feature to be enabled.
 #[frb(mirror(EmbeddingConfig))]
 pub struct EmbeddingConfig {
+    /// The embedding model to use (defaults to "balanced" preset if not specified)
     pub model: EmbeddingModelType,
+    /// Whether to normalize embedding vectors (recommended for cosine similarity)
     pub normalize: bool,
+    /// Batch size for embedding generation
     pub batch_size: i64,
+    /// Show model download progress
     pub show_download_progress: bool,
+    /// Custom cache directory for model files
+    ///
+    /// Defaults to `~/.cache/kreuzberg/embeddings/` if not specified.
+    /// Allows full customization of model download location.
     pub cache_dir: Option<String>,
+    /// Hardware acceleration for the embedding ONNX model.
+    ///
+    /// When set, controls which execution provider (CPU, CUDA, CoreML, TensorRT)
+    /// is used for inference. Defaults to `None` (auto-select per platform).
     pub acceleration: Option<AccelerationConfig>,
+    /// Maximum wall-clock duration (in seconds) for a single `embed()` call when
+    /// using [`EmbeddingModelType::Plugin`].
+    ///
+    /// Applies only to the in-process plugin path — protects against hung
+    /// host-language backends (e.g. a Python callback deadlocked on the GIL,
+    /// a model stuck on CUDA OOM retries, etc.). On timeout, the dispatcher
+    /// returns `Plugin` instead of blocking forever.
+    ///
+    /// `None` disables the timeout. The default (60 seconds) is conservative
+    /// for common in-process inference; increase for large batches on slow
+    /// hardware.
     pub max_embed_duration_secs: Option<i64>,
 }
 
+/// Configuration for tree-sitter language pack integration.
+///
+/// Controls grammar download behavior and code analysis options.
+///
+/// # Example (TOML)
+///
+/// ```toml
+/// [tree_sitter]
+/// languages = ["python", "rust"]
+/// groups = ["web"]
+///
+/// [tree_sitter.process]
+/// structure = true
+/// comments = true
+/// docstrings = true
+/// ```
 #[frb(mirror(TreeSitterConfig))]
 pub struct TreeSitterConfig {
+    /// Enable code intelligence processing (default: true).
+    ///
+    /// When `false`, tree-sitter analysis is completely skipped even if
+    /// the config section is present.
     pub enabled: bool,
+    /// Custom cache directory for downloaded grammars.
+    ///
+    /// When `None`, uses the default: `~/.cache/tree-sitter-language-pack/v{version}/libs/`.
     pub cache_dir: Option<String>,
+    /// Languages to pre-download on init (e.g., `["python", "rust"]`).
     pub languages: Option<Vec<String>>,
+    /// Language groups to pre-download (e.g., `["web", "systems", "scripting"]`).
     pub groups: Option<Vec<String>>,
+    /// Processing options for code analysis.
     pub process: TreeSitterProcessConfig,
 }
 
+/// Processing options for tree-sitter code analysis.
+///
+/// Controls which analysis features are enabled when extracting code files.
 #[frb(mirror(TreeSitterProcessConfig))]
 pub struct TreeSitterProcessConfig {
+    /// Extract structural items (functions, classes, structs, etc.). Default: true.
     pub structure: bool,
+    /// Extract import statements. Default: true.
     pub imports: bool,
+    /// Extract export statements. Default: true.
     pub exports: bool,
+    /// Extract comments. Default: false.
     pub comments: bool,
+    /// Extract docstrings. Default: false.
     pub docstrings: bool,
+    /// Extract symbol definitions. Default: false.
     pub symbols: bool,
+    /// Include parse diagnostics. Default: false.
     pub diagnostics: bool,
+    /// Maximum chunk size in bytes. `None` disables chunking.
     pub chunk_max_size: Option<i64>,
+    /// Content rendering mode for code extraction.
     pub content_mode: CodeContentMode,
 }
 
+/// A supported document format entry.
+///
+/// Represents a file extension and its corresponding MIME type that Kreuzberg can process.
 #[frb(mirror(SupportedFormat))]
 pub struct SupportedFormat {
+    /// File extension (without leading dot), e.g., "pdf", "docx"
     pub extension: String,
+    /// MIME type string, e.g., "application/pdf"
     pub mime_type: String,
 }
 
+/// API server configuration.
+///
+/// This struct holds all configuration options for the Kreuzberg API server,
+/// including host/port settings, CORS configuration, and upload limits.
+///
+/// # Defaults
+///
+/// - `host`: "127.0.0.1" (localhost only)
+/// - `port`: 8000
+/// - `cors_origins`: empty vector (allows all origins)
+/// - `max_request_body_bytes`: 104_857_600 (100 MB)
+/// - `max_multipart_field_bytes`: 104_857_600 (100 MB)
 #[frb(mirror(ServerConfig))]
 pub struct ServerConfig {
+    /// Server host address (e.g., "127.0.0.1", "0.0.0.0")
     pub host: String,
+    /// Server port number
     pub port: i64,
+    /// CORS allowed origins. Empty vector means allow all origins.
+    ///
+    /// If this is an empty vector, the server will accept requests from any origin.
+    /// If populated with specific origins (e.g., `"https://example.com"`), only
+    /// those origins will be allowed.
     pub cors_origins: Vec<String>,
+    /// Maximum size of request body in bytes (default: 100 MB)
     pub max_request_body_bytes: i64,
+    /// Maximum size of multipart fields in bytes (default: 100 MB)
     pub max_multipart_field_bytes: i64,
 }
 
@@ -341,16 +1108,33 @@ pub struct StructuredDataResult {
     pub text_fields: Vec<String>,
 }
 
+/// Configuration for security limits across extractors.
+///
+/// All limits are intentionally conservative to prevent DoS attacks
+/// while still supporting legitimate documents.
 #[frb(mirror(SecurityLimits))]
 pub struct SecurityLimits {
+    /// Maximum uncompressed size for archives (500 MB)
     pub max_archive_size: i64,
+    /// Maximum compression ratio before flagging as potential bomb (100:1)
     pub max_compression_ratio: i64,
+    /// Maximum number of files in archive (10,000)
     pub max_files_in_archive: i64,
+    /// Maximum nesting depth for structures (100)
     pub max_nesting_depth: i64,
+    /// Maximum length of any single XML entity / attribute / token (1 MiB).
+    /// This is a per-token cap, NOT a cumulative cap — billion-laughs class
+    /// attacks where a single entity expands to hundreds of MB are caught
+    /// here, while normal long text content (a paragraph, a CDATA block) is
+    /// caught by `max_content_size` instead.
     pub max_entity_length: i64,
+    /// Maximum string growth per document (100 MB)
     pub max_content_size: i64,
+    /// Maximum iterations per operation
     pub max_iterations: i64,
+    /// Maximum XML depth (100 levels)
     pub max_xml_depth: i64,
+    /// Maximum cells per table (100,000)
     pub max_table_cells: i64,
 }
 
@@ -369,557 +1153,1258 @@ pub struct TokenReductionConfig {
     pub enable_semantic_clustering: bool,
 }
 
+/// A PDF annotation extracted from a document page.
 #[frb(mirror(PdfAnnotation))]
 pub struct PdfAnnotation {
+    /// The type of annotation.
     pub annotation_type: PdfAnnotationType,
+    /// Text content of the annotation (e.g., comment text, link URL).
     pub content: Option<String>,
+    /// Page number where the annotation appears (1-indexed).
     pub page_number: i64,
+    /// Bounding box of the annotation on the page.
     pub bounding_box: Option<String>,
 }
 
+/// Comprehensive Djot document structure with semantic preservation.
+///
+/// This type captures the full richness of Djot markup, including:
+/// - Block-level structures (headings, lists, blockquotes, code blocks, etc.)
+/// - Inline formatting (emphasis, strong, highlight, subscript, superscript, etc.)
+/// - Attributes (classes, IDs, key-value pairs)
+/// - Links, images, footnotes
+/// - Math expressions (inline and display)
+/// - Tables with full structure
+///
+/// Available when the `djot` feature is enabled.
 #[frb(mirror(DjotContent))]
 pub struct DjotContent {
+    /// Plain text representation for backwards compatibility
     pub plain_text: String,
+    /// Structured block-level content
     pub blocks: Vec<FormattedBlock>,
+    /// Metadata from YAML frontmatter
     pub metadata: Metadata,
+    /// Extracted tables as structured data
     pub tables: Vec<Table>,
+    /// Extracted images with metadata
     pub images: Vec<DjotImage>,
+    /// Extracted links with URLs
     pub links: Vec<DjotLink>,
+    /// Footnote definitions
     pub footnotes: Vec<Footnote>,
+    /// Attributes mapped by element identifier (if present)
     pub attributes: Vec<String>,
 }
 
+/// Block-level element in a Djot document.
+///
+/// Represents structural elements like headings, paragraphs, lists, code blocks, etc.
 #[frb(mirror(FormattedBlock))]
 pub struct FormattedBlock {
+    /// Type of block element
     pub block_type: BlockType,
+    /// Heading level (1-6) for headings, or nesting level for lists
     pub level: Option<i64>,
+    /// Inline content within the block
     pub inline_content: Vec<InlineElement>,
+    /// Element attributes (classes, IDs, key-value pairs)
     pub attributes: Option<String>,
+    /// Language identifier for code blocks
     pub language: Option<String>,
+    /// Raw code content for code blocks
     pub code: Option<String>,
+    /// Nested blocks for containers (blockquotes, list items, divs)
     pub children: Vec<FormattedBlock>,
 }
 
+/// Inline element within a block.
+///
+/// Represents text with formatting, links, images, etc.
 #[frb(mirror(InlineElement))]
 pub struct InlineElement {
+    /// Type of inline element
     pub element_type: InlineType,
+    /// Text content
     pub content: String,
+    /// Element attributes
     pub attributes: Option<String>,
+    /// Additional metadata (e.g., href for links, src/alt for images)
     pub metadata: Option<std::collections::HashMap<String, String>>,
 }
 
+/// Image element in Djot.
 #[frb(mirror(DjotImage))]
 pub struct DjotImage {
+    /// Image source URL or path
     pub src: String,
+    /// Alternative text
     pub alt: String,
+    /// Optional title
     pub title: Option<String>,
+    /// Element attributes
     pub attributes: Option<String>,
 }
 
+/// Link element in Djot.
 #[frb(mirror(DjotLink))]
 pub struct DjotLink {
+    /// Link URL
     pub url: String,
+    /// Link text content
     pub text: String,
+    /// Optional title
     pub title: Option<String>,
+    /// Element attributes
     pub attributes: Option<String>,
 }
 
+/// Footnote in Djot.
 #[frb(mirror(Footnote))]
 pub struct Footnote {
+    /// Footnote label
     pub label: String,
+    /// Footnote content blocks
     pub content: Vec<FormattedBlock>,
 }
 
+/// Top-level structured document representation.
+///
+/// A flat array of nodes with index-based parent/child references forming a tree.
+/// Root-level nodes have `parent: None`. Use `body_roots()` and `furniture_roots()`
+/// to iterate over top-level content by layer.
+///
+/// # Validation
+///
+/// Call `validate()` after construction to verify all node indices are in bounds
+/// and parent-child relationships are bidirectionally consistent.
 #[frb(mirror(DocumentStructure))]
 pub struct DocumentStructure {
+    /// All nodes in document/reading order.
     pub nodes: Vec<DocumentNode>,
+    /// Origin format identifier (e.g. "docx", "pptx", "html", "pdf").
+    ///
+    /// Allows renderers to apply format-aware heuristics when converting
+    /// the document tree to output formats.
     pub source_format: Option<String>,
+    /// Resolved relationships between nodes (footnote refs, citations, anchor links, etc.).
+    ///
+    /// Populated during derivation from the internal document representation.
+    /// Empty when no relationships are detected.
     pub relationships: Vec<DocumentRelationship>,
+    /// Sorted, deduplicated list of node type names present in this document.
+    ///
+    /// Each value is the snake_case `node_type` tag of the corresponding
+    /// [`NodeContent`] variant (e.g. `"paragraph"`, `"heading"`, `"table"`, …).
+    ///
+    /// Computed from [`nodes`] via [`DocumentStructure::finalize_node_types`].
+    /// Empty until that method is called (internal construction paths call it
+    /// at the end of derivation).
     pub node_types: Vec<String>,
 }
 
+/// A resolved relationship between two nodes in the document tree.
 #[frb(mirror(DocumentRelationship))]
 pub struct DocumentRelationship {
+    /// Source node index (the referencing node).
     pub source: i64,
+    /// Target node index (the referenced node).
     pub target: i64,
+    /// Semantic kind of the relationship.
     pub kind: RelationshipKind,
 }
 
+/// A single node in the document tree.
+///
+/// Each node has deterministic `id`, typed `content`, optional `parent`/`children`
+/// for tree structure, and metadata like page number, bounding box, and content layer.
 #[frb(mirror(DocumentNode))]
 pub struct DocumentNode {
+    /// Deterministic identifier (hash of content + position).
     pub id: String,
+    /// Node content — tagged enum, type-specific data only.
     pub content: NodeContent,
+    /// Parent node index (`None` = root-level node).
     pub parent: Option<i64>,
+    /// Child node indices in reading order.
     pub children: Vec<i64>,
+    /// Content layer classification.
     pub content_layer: ContentLayer,
+    /// Page number where this node starts (1-indexed).
     pub page: Option<i64>,
+    /// Page number where this node ends (for multi-page tables/sections).
     pub page_end: Option<i64>,
+    /// Bounding box in document coordinates.
     pub bbox: Option<String>,
+    /// Inline annotations (formatting, links) on this node's text content.
+    ///
+    /// Only meaningful for text-carrying nodes; empty for containers.
     pub annotations: Vec<TextAnnotation>,
+    /// Format-specific key-value attributes.
+    ///
+    /// Extensible bag for data that doesn't warrant a typed field: CSS classes,
+    /// LaTeX environment names, Excel cell formulas, slide layout names, etc.
     pub attributes: Option<std::collections::HashMap<String, String>>,
 }
 
+/// Structured table grid with cell-level metadata.
+///
+/// Stores row/column dimensions and a flat list of cells with position info.
 #[frb(mirror(TableGrid))]
 pub struct TableGrid {
+    /// Number of rows in the table.
     pub rows: i64,
+    /// Number of columns in the table.
     pub cols: i64,
+    /// All cells in row-major order.
     pub cells: Vec<GridCell>,
 }
 
+/// Individual grid cell with position and span metadata.
 #[frb(mirror(GridCell))]
 pub struct GridCell {
+    /// Cell text content.
     pub content: String,
+    /// Zero-indexed row position.
     pub row: i64,
+    /// Zero-indexed column position.
     pub col: i64,
+    /// Number of rows this cell spans.
     pub row_span: i64,
+    /// Number of columns this cell spans.
     pub col_span: i64,
+    /// Whether this is a header cell.
     pub is_header: bool,
+    /// Bounding box for this cell (if available).
     pub bbox: Option<String>,
 }
 
+/// Inline text annotation — byte-range based formatting and links.
+///
+/// Annotations reference byte offsets into the node's text content,
+/// enabling precise identification of formatted regions.
 #[frb(mirror(TextAnnotation))]
 pub struct TextAnnotation {
+    /// Start byte offset in the node's text content (inclusive).
     pub start: i64,
+    /// End byte offset in the node's text content (exclusive).
     pub end: i64,
+    /// Annotation type.
     pub kind: AnnotationKind,
 }
 
+/// General extraction result used by the core extraction API.
+///
+/// This is the main result type returned by all extraction functions.
 #[frb(mirror(ExtractionResult))]
 pub struct ExtractionResult {
     pub content: String,
     pub mime_type: String,
     pub metadata: Metadata,
+    /// Extraction strategy used to produce the returned text.
+    ///
+    /// Populated when the extractor can reliably distinguish native text extraction,
+    /// OCR-only extraction, or mixed native/OCR output.
     pub extraction_method: Option<ExtractionMethod>,
     pub tables: Vec<Table>,
     pub detected_languages: Option<Vec<String>>,
+    /// Text chunks when chunking is enabled.
+    ///
+    /// When chunking configuration is provided, the content is split into
+    /// overlapping chunks for efficient processing. Each chunk contains the text,
+    /// optional embeddings (if enabled), and metadata about its position.
     pub chunks: Option<Vec<Chunk>>,
+    /// Extracted images from the document.
+    ///
+    /// When image extraction is enabled via `ImageExtractionConfig`, this field
+    /// contains all images found in the document with their raw data and metadata.
+    /// Each image may optionally contain a nested `ocr_result` if OCR was performed.
     pub images: Option<Vec<ExtractedImage>>,
+    /// Per-page content when page extraction is enabled.
+    ///
+    /// When page extraction is configured, the document is split into per-page content
+    /// with tables and images mapped to their respective pages.
     pub pages: Option<Vec<PageContent>>,
+    /// Semantic elements when element-based result format is enabled.
+    ///
+    /// When result_format is set to ElementBased, this field contains semantic
+    /// elements with type classification, unique identifiers, and metadata for
+    /// Unstructured-compatible element-based processing.
     pub elements: Option<Vec<Element>>,
+    /// Rich Djot content structure (when extracting Djot documents).
+    ///
+    /// When extracting Djot documents with structured extraction enabled,
+    /// this field contains the full semantic structure including:
+    /// - Block-level elements with nesting
+    /// - Inline formatting with attributes
+    /// - Links, images, footnotes
+    /// - Math expressions
+    /// - Complete attribute information
+    ///
+    /// The `content` field still contains plain text for backward compatibility.
+    ///
+    /// Always `None` for non-Djot documents.
     pub djot_content: Option<DjotContent>,
+    /// OCR elements with full spatial and confidence metadata.
+    ///
+    /// When OCR is performed with element extraction enabled, this field contains
+    /// the structured representation of detected text including:
+    /// - Bounding geometry (rectangles or quadrilaterals)
+    /// - Confidence scores (detection and recognition)
+    /// - Rotation information
+    /// - Hierarchical relationships (Tesseract only)
+    ///
+    /// This field preserves all metadata that would otherwise be lost when
+    /// converting to plain text or markdown output formats.
+    ///
+    /// Only populated when `OcrElementConfig.include_elements` is true.
     pub ocr_elements: Option<Vec<OcrElement>>,
+    /// Structured document tree (when document structure extraction is enabled).
+    ///
+    /// When `include_document_structure` is true in `ExtractionConfig`, this field
+    /// contains the full hierarchical representation of the document including:
+    /// - Heading-driven section nesting
+    /// - Table grids with cell-level metadata
+    /// - Content layer classification (body, header, footer, footnote)
+    /// - Inline text annotations (formatting, links)
+    /// - Bounding boxes and page numbers
+    ///
+    /// Independent of `result_format` — can be combined with Unified or ElementBased.
     pub document: Option<DocumentStructure>,
+    /// Extracted keywords when keyword extraction is enabled.
+    ///
+    /// When keyword extraction (RAKE or YAKE) is configured, this field contains
+    /// the extracted keywords with scores, algorithm info, and position data.
+    /// Previously stored in `metadata.additional["keywords"]`.
     pub extracted_keywords: Option<Vec<Keyword>>,
+    /// Document quality score from quality analysis.
+    ///
+    /// A value between 0.0 and 1.0 indicating the overall text quality.
+    /// Previously stored in `metadata.additional["quality_score"]`.
     pub quality_score: Option<f64>,
+    /// Non-fatal warnings collected during processing pipeline stages.
+    ///
+    /// Captures errors from optional pipeline features (embedding, chunking,
+    /// language detection, output formatting) that don't prevent extraction
+    /// but may indicate degraded results.
+    /// Previously stored as individual keys in `metadata.additional`.
     pub processing_warnings: Vec<ProcessingWarning>,
+    /// PDF annotations extracted from the document.
+    ///
+    /// When annotation extraction is enabled via `PdfConfig::extract_annotations`,
+    /// this field contains text notes, highlights, links, stamps, and other
+    /// annotations found in PDF documents.
     pub annotations: Option<Vec<PdfAnnotation>>,
+    /// Nested extraction results from archive contents.
+    ///
+    /// When extracting archives, each processable file inside produces its own
+    /// full extraction result. Set to `None` for non-archive formats.
+    /// Use `max_archive_depth` in config to control recursion depth.
     pub children: Option<Vec<ArchiveEntry>>,
+    /// URIs/links discovered during document extraction.
+    ///
+    /// Contains hyperlinks, image references, citations, email addresses, and
+    /// other URI-like references found in the document. Always extracted when
+    /// present in the source document.
     pub uris: Option<Vec<Uri>>,
+    /// Structured extraction output from LLM-based JSON schema extraction.
+    ///
+    /// When `structured_extraction` is configured in `ExtractionConfig`, the
+    /// extracted document content is sent to a VLM with the provided JSON schema.
+    /// The response is parsed and stored here as a JSON value matching the schema.
     pub structured_output: Option<String>,
+    /// Code intelligence results from tree-sitter analysis.
+    ///
+    /// Populated when extracting source code files with the `tree-sitter` feature.
+    /// Contains metrics, structural analysis, imports/exports, comments,
+    /// docstrings, symbols, diagnostics, and optionally chunked code segments.
     pub code_intelligence: Option<String>,
+    /// LLM token usage and cost data for all LLM calls made during this extraction.
+    ///
+    /// Contains one entry per LLM call. Multiple entries are produced when
+    /// VLM OCR, structured extraction, and/or LLM embeddings all run during
+    /// the same extraction.
+    ///
+    /// `None` when no LLM was used.
     pub llm_usage: Option<Vec<LlmUsage>>,
+    /// Pre-rendered content in the requested output format.
+    ///
+    /// Populated during `derive_extraction_result` before tree derivation consumes
+    /// element data. `apply_output_format` swaps this into `content` at the end
+    /// of the pipeline, after post-processors have operated on plain text.
     pub formatted_content: Option<String>,
+    /// Structured hOCR document for the OCR+layout pipeline.
+    ///
+    /// When tesseract produces hOCR output, the parsed `InternalDocument` carries
+    /// paragraph structure with bounding boxes and confidence scores. The layout
+    /// classification step enriches these elements before final rendering.
     pub ocr_internal_document: Option<String>,
 }
 
+/// A single file extracted from an archive.
+///
+/// When archives (ZIP, TAR, 7Z, GZIP) are extracted with recursive extraction
+/// enabled, each processable file produces its own full `ExtractionResult`.
 #[frb(mirror(ArchiveEntry))]
 pub struct ArchiveEntry {
+    /// Archive-relative file path (e.g. "folder/document.pdf").
     pub path: String,
+    /// Detected MIME type of the file.
     pub mime_type: String,
+    /// Full extraction result for this file.
     pub result: ExtractionResult,
 }
 
+/// A non-fatal warning from a processing pipeline stage.
+///
+/// Captures errors from optional features that don't prevent extraction
+/// but may indicate degraded results.
 #[frb(mirror(ProcessingWarning))]
 pub struct ProcessingWarning {
+    /// The pipeline stage or feature that produced this warning
+    /// (e.g., "embedding", "chunking", "language_detection", "output_format").
     pub source: String,
+    /// Human-readable description of what went wrong.
     pub message: String,
 }
 
+/// Token usage and cost data for a single LLM call made during extraction.
+///
+/// Populated when VLM OCR, structured extraction, or LLM-based embeddings
+/// are used. Multiple entries may be present when multiple LLM calls occur
+/// within one extraction (e.g. VLM OCR + structured extraction).
 #[frb(mirror(LlmUsage))]
 pub struct LlmUsage {
+    /// The LLM model identifier (e.g. "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514").
     pub model: String,
+    /// The pipeline stage that triggered this LLM call
+    /// (e.g. "vlm_ocr", "structured_extraction", "embeddings").
     pub source: String,
+    /// Number of input/prompt tokens consumed.
     pub input_tokens: Option<i64>,
+    /// Number of output/completion tokens generated.
     pub output_tokens: Option<i64>,
+    /// Total tokens (input + output).
     pub total_tokens: Option<i64>,
+    /// Estimated cost in USD based on the provider's published pricing.
     pub estimated_cost: Option<f64>,
+    /// Why the model stopped generating (e.g. "stop", "length", "content_filter").
     pub finish_reason: Option<String>,
 }
 
+/// A text chunk with optional embedding and metadata.
+///
+/// Chunks are created when chunking is enabled in `ExtractionConfig`. Each chunk
+/// contains the text content, optional embedding vector (if embedding generation
+/// is configured), and metadata about its position in the document.
 #[frb(mirror(Chunk))]
 pub struct Chunk {
+    /// The text content of this chunk.
     pub content: String,
+    /// Semantic structural classification of this chunk.
+    ///
+    /// Assigned by the heuristic classifier based on content patterns and
+    /// heading context. Defaults to `ChunkType::Unknown` when no rule matches.
     pub chunk_type: ChunkType,
+    /// Optional embedding vector for this chunk.
+    ///
+    /// Only populated when `EmbeddingConfig` is provided in chunking configuration.
+    /// The dimensionality depends on the chosen embedding model.
     pub embedding: Option<Vec<f64>>,
+    /// Metadata about this chunk's position and properties.
     pub metadata: ChunkMetadata,
 }
 
+/// Heading context for a chunk within a Markdown document.
+///
+/// Contains the heading hierarchy from document root to this chunk's section.
 #[frb(mirror(HeadingContext))]
 pub struct HeadingContext {
+    /// The heading hierarchy from document root to this chunk's section.
+    /// Index 0 is the outermost (h1), last element is the most specific.
     pub headings: Vec<HeadingLevel>,
 }
 
+/// A single heading in the hierarchy.
 #[frb(mirror(HeadingLevel))]
 pub struct HeadingLevel {
+    /// Heading depth (1 = h1, 2 = h2, etc.)
     pub level: i64,
+    /// The text content of the heading.
     pub text: String,
 }
 
+/// Metadata about a chunk's position in the original document.
 #[frb(mirror(ChunkMetadata))]
 pub struct ChunkMetadata {
+    /// Byte offset where this chunk starts in the original text (UTF-8 valid boundary).
     pub byte_start: i64,
+    /// Byte offset where this chunk ends in the original text (UTF-8 valid boundary).
     pub byte_end: i64,
+    /// Number of tokens in this chunk (if available).
+    ///
+    /// This is calculated by the embedding model's tokenizer if embeddings are enabled.
     pub token_count: Option<i64>,
+    /// Zero-based index of this chunk in the document.
     pub chunk_index: i64,
+    /// Total number of chunks in the document.
     pub total_chunks: i64,
+    /// First page number this chunk spans (1-indexed).
+    ///
+    /// Only populated when page tracking is enabled in extraction configuration.
     pub first_page: Option<i64>,
+    /// Last page number this chunk spans (1-indexed, equal to first_page for single-page chunks).
+    ///
+    /// Only populated when page tracking is enabled in extraction configuration.
     pub last_page: Option<i64>,
+    /// Heading context when using Markdown chunker.
+    ///
+    /// Contains the heading hierarchy this chunk falls under.
+    /// Only populated when `ChunkerType::Markdown` is used.
     pub heading_context: Option<HeadingContext>,
+    /// Indices into `ExtractionResult.images` for images on pages covered by this chunk.
+    ///
+    /// Contains zero-based indices into the top-level `images` collection for every
+    /// image whose `page_number` falls within `[first_page, last_page]`.
+    /// Empty when image extraction is disabled or the chunk spans no pages with images.
     pub image_indices: Vec<i64>,
 }
 
+/// Extracted image from a document.
+///
+/// Contains raw image data, metadata, and optional nested OCR results.
+/// Raw bytes allow cross-language compatibility - users can convert to
+/// PIL.Image (Python), Sharp (Node.js), or other formats as needed.
 #[frb(mirror(ExtractedImage))]
 pub struct ExtractedImage {
+    /// Raw image data (PNG, JPEG, WebP, etc. bytes).
+    /// Uses `bytes::Bytes` for cheap cloning of large buffers.
     pub data: Vec<u8>,
+    /// Image format (e.g., "jpeg", "png", "webp")
+    /// Uses Cow<'static, str> to avoid allocation for static literals.
     pub format: String,
+    /// Zero-indexed position of this image in the document/page
     pub image_index: i64,
+    /// Page/slide number where image was found (1-indexed)
     pub page_number: Option<i64>,
+    /// Image width in pixels
     pub width: Option<i64>,
+    /// Image height in pixels
     pub height: Option<i64>,
+    /// Colorspace information (e.g., "RGB", "CMYK", "Gray")
     pub colorspace: Option<String>,
+    /// Bits per color component (e.g., 8, 16)
     pub bits_per_component: Option<i64>,
+    /// Whether this image is a mask image
     pub is_mask: bool,
+    /// Optional description of the image
     pub description: Option<String>,
+    /// Nested OCR extraction result (if image was OCRed)
+    ///
+    /// When OCR is performed on this image, the result is embedded here
+    /// rather than in a separate collection, making the relationship explicit.
     pub ocr_result: Option<ExtractionResult>,
+    /// Bounding box of the image on the page (PDF coordinates: x0=left, y0=bottom, x1=right, y1=top).
+    /// Only populated for PDF-extracted images when position data is available from the PDF extractor.
     pub bounding_box: Option<String>,
+    /// Original source path of the image within the document archive (e.g., "media/image1.png" in DOCX).
+    /// Used for rendering image references when the binary data is not extracted.
     pub source_path: Option<String>,
+    /// Heuristic classification of what this image likely depicts.
+    /// `None` if classification was disabled or inconclusive.
     pub image_kind: Option<ImageKind>,
+    /// Confidence score for `image_kind`, in the range 0.0 to 1.0.
     pub kind_confidence: Option<f64>,
+    /// Identifier shared across images that form a single logical figure
+    /// (e.g. all raster tiles of one technical drawing). `None` for singletons.
     pub cluster_id: Option<i64>,
 }
 
+/// Metadata for a semantic element.
 #[frb(mirror(ElementMetadata))]
 pub struct ElementMetadata {
+    /// Page number (1-indexed)
     pub page_number: Option<i64>,
+    /// Source filename or document name
     pub filename: Option<String>,
+    /// Bounding box coordinates if available
     pub coordinates: Option<String>,
+    /// Position index in the element sequence
     pub element_index: Option<i64>,
+    /// Additional custom metadata
     pub additional: std::collections::HashMap<String, String>,
 }
 
+/// Semantic element extracted from document.
+///
+/// Represents a logical unit of content with semantic classification,
+/// unique identifier, and metadata for tracking origin and position.
 #[frb(mirror(Element))]
 pub struct Element {
+    /// Unique element identifier
     pub element_id: String,
+    /// Semantic type of this element
     pub element_type: ElementType,
+    /// Text content of the element
     pub text: String,
+    /// Metadata about the element
     pub metadata: ElementMetadata,
 }
 
+/// Excel workbook representation.
+///
+/// Contains all sheets from an Excel file (.xlsx, .xls, etc.) with
+/// extracted content and metadata.
 #[frb(mirror(ExcelWorkbook))]
 pub struct ExcelWorkbook {
+    /// All sheets in the workbook
     pub sheets: Vec<ExcelSheet>,
+    /// Workbook-level metadata (author, creation date, etc.)
     pub metadata: std::collections::HashMap<String, String>,
 }
 
+/// Single Excel worksheet.
+///
+/// Represents one sheet from an Excel workbook with its content
+/// converted to Markdown format and dimensional statistics.
 #[frb(mirror(ExcelSheet))]
 pub struct ExcelSheet {
+    /// Sheet name as it appears in Excel
     pub name: String,
+    /// Sheet content converted to Markdown tables
     pub markdown: String,
+    /// Number of rows
     pub row_count: i64,
+    /// Number of columns
     pub col_count: i64,
+    /// Total number of non-empty cells
     pub cell_count: i64,
+    /// Pre-extracted table cells (2D vector of cell values)
+    /// Populated during markdown generation to avoid re-parsing markdown.
+    /// None for empty sheets.
     pub table_cells: Option<Vec<Vec<String>>>,
 }
 
+/// XML extraction result.
+///
+/// Contains extracted text content from XML files along with
+/// structural statistics about the XML document.
 #[frb(mirror(XmlExtractionResult))]
 pub struct XmlExtractionResult {
+    /// Extracted text content (XML structure filtered out)
     pub content: String,
+    /// Total number of XML elements processed
     pub element_count: i64,
+    /// List of unique element names found (sorted)
     pub unique_elements: Vec<String>,
 }
 
+/// Plain text and Markdown extraction result.
+///
+/// Contains the extracted text along with statistics and,
+/// for Markdown files, structural elements like headers and links.
 #[frb(mirror(TextExtractionResult))]
 pub struct TextExtractionResult {
+    /// Extracted text content
     pub content: String,
+    /// Number of lines
     pub line_count: i64,
+    /// Number of words
     pub word_count: i64,
+    /// Number of characters
     pub character_count: i64,
+    /// Markdown headers (text only, Markdown files only)
     pub headers: Option<Vec<String>>,
+    /// Markdown links as (text, URL) tuples (Markdown files only)
     pub links: Option<Vec<String>>,
+    /// Code blocks as (language, code) tuples (Markdown files only)
     pub code_blocks: Option<Vec<String>>,
 }
 
+/// PowerPoint (PPTX) extraction result.
+///
+/// Contains extracted slide content, metadata, and embedded images/tables.
 #[frb(mirror(PptxExtractionResult))]
 pub struct PptxExtractionResult {
+    /// Extracted text content from all slides
     pub content: String,
+    /// Presentation metadata
     pub metadata: PptxMetadata,
+    /// Total number of slides
     pub slide_count: i64,
+    /// Total number of embedded images
     pub image_count: i64,
+    /// Total number of tables
     pub table_count: i64,
+    /// Extracted images from the presentation
     pub images: Vec<ExtractedImage>,
+    /// Slide structure with boundaries (when page tracking is enabled)
     pub page_structure: Option<PageStructure>,
+    /// Per-slide content (when page tracking is enabled)
     pub page_contents: Option<Vec<PageContent>>,
+    /// Structured document representation
     pub document: Option<DocumentStructure>,
+    /// Hyperlinks discovered in slides as (url, optional_label) pairs.
     pub hyperlinks: Vec<String>,
+    /// Office metadata extracted from docProps/core.xml and docProps/app.xml.
+    ///
+    /// Contains keys like "title", "author", "created_by", "subject", "keywords",
+    /// "modified_by", "created_at", "modified_at", etc.
     pub office_metadata: std::collections::HashMap<String, String>,
 }
 
+/// Email extraction result.
+///
+/// Complete representation of an extracted email message (.eml or .msg)
+/// including headers, body content, and attachments.
 #[frb(mirror(EmailExtractionResult))]
 pub struct EmailExtractionResult {
+    /// Email subject line
     pub subject: Option<String>,
+    /// Sender email address
     pub from_email: Option<String>,
+    /// Primary recipient email addresses
     pub to_emails: Vec<String>,
+    /// CC recipient email addresses
     pub cc_emails: Vec<String>,
+    /// BCC recipient email addresses
     pub bcc_emails: Vec<String>,
+    /// Email date/timestamp
     pub date: Option<String>,
+    /// Message-ID header value
     pub message_id: Option<String>,
+    /// Plain text version of the email body
     pub plain_text: Option<String>,
+    /// HTML version of the email body
     pub html_content: Option<String>,
+    /// Cleaned/processed text content. Aliased as `cleaned_text` for back-compat.
     pub content: String,
+    /// List of email attachments
     pub attachments: Vec<EmailAttachment>,
+    /// Additional email headers and metadata
     pub metadata: std::collections::HashMap<String, String>,
 }
 
+/// Email attachment representation.
+///
+/// Contains metadata and optionally the content of an email attachment.
 #[frb(mirror(EmailAttachment))]
 pub struct EmailAttachment {
+    /// Attachment name (from Content-Disposition header)
     pub name: Option<String>,
+    /// Filename of the attachment
     pub filename: Option<String>,
+    /// MIME type of the attachment
     pub mime_type: Option<String>,
+    /// Size in bytes
     pub size: Option<i64>,
+    /// Whether this attachment is an image
     pub is_image: bool,
+    /// Attachment data (if extracted).
+    /// Uses `bytes::Bytes` for cheap cloning of large buffers.
     pub data: Option<Vec<u8>>,
 }
 
+/// OCR extraction result.
+///
+/// Result of performing OCR on an image or scanned document,
+/// including recognized text and detected tables.
 #[frb(mirror(OcrExtractionResult))]
 pub struct OcrExtractionResult {
+    /// Recognized text content
     pub content: String,
+    /// Original MIME type of the processed image
     pub mime_type: String,
+    /// OCR processing metadata (confidence scores, language, etc.)
     pub metadata: std::collections::HashMap<String, String>,
+    /// Tables detected and extracted via OCR
     pub tables: Vec<OcrTable>,
+    /// Structured OCR elements with bounding boxes and confidence scores.
+    /// Available when TSV output is requested or table detection is enabled.
     pub ocr_elements: Option<Vec<OcrElement>>,
+    /// Structured document produced from hOCR parsing.
+    /// Carries paragraph structure, bounding boxes, and confidence scores
+    /// that the flattened `content` string discards.
     pub internal_document: Option<String>,
 }
 
+/// Table detected via OCR.
+///
+/// Represents a table structure recognized during OCR processing.
 #[frb(mirror(OcrTable))]
 pub struct OcrTable {
+    /// Table cells as a 2D vector (rows × columns)
     pub cells: Vec<Vec<String>>,
+    /// Markdown representation of the table
     pub markdown: String,
+    /// Page number where the table was found (1-indexed)
     pub page_number: i64,
+    /// Bounding box of the table in pixel coordinates (from OCR word positions).
     pub bounding_box: Option<OcrTableBoundingBox>,
 }
 
+/// Bounding box for an OCR-detected table in pixel coordinates.
 #[frb(mirror(OcrTableBoundingBox))]
 pub struct OcrTableBoundingBox {
+    /// Left x-coordinate (pixels)
     pub left: i64,
+    /// Top y-coordinate (pixels)
     pub top: i64,
+    /// Right x-coordinate (pixels)
     pub right: i64,
+    /// Bottom y-coordinate (pixels)
     pub bottom: i64,
 }
 
+/// Image preprocessing configuration for OCR.
+///
+/// These settings control how images are preprocessed before OCR to improve
+/// text recognition quality. Different preprocessing strategies work better
+/// for different document types.
 #[frb(mirror(ImagePreprocessingConfig))]
 pub struct ImagePreprocessingConfig {
+    /// Target DPI for the image (300 is standard, 600 for small text).
     pub target_dpi: i64,
+    /// Auto-detect and correct image rotation.
     pub auto_rotate: bool,
+    /// Correct skew (tilted images).
     pub deskew: bool,
+    /// Remove noise from the image.
     pub denoise: bool,
+    /// Enhance contrast for better text visibility.
     pub contrast_enhance: bool,
+    /// Binarization method: "otsu", "sauvola", "adaptive".
     pub binarization_method: String,
+    /// Invert colors (white text on black → black on white).
     pub invert_colors: bool,
 }
 
+/// Tesseract OCR configuration.
+///
+/// Provides fine-grained control over Tesseract OCR engine parameters.
+/// Most users can use the defaults, but these settings allow optimization
+/// for specific document types (invoices, handwriting, etc.).
 #[frb(mirror(TesseractConfig))]
 pub struct TesseractConfig {
+    /// Language code (e.g., "eng", "deu", "fra")
     pub language: String,
+    /// Page Segmentation Mode (0-13).
+    ///
+    /// Common values:
+    /// - 3: Fully automatic page segmentation (native default)
+    /// - 6: Assume a single uniform block of text (WASM default — avoids layout-analysis hang)
+    /// - 11: Sparse text with no particular order
     pub psm: i64,
+    /// Output format ("text" or "markdown")
     pub output_format: String,
+    /// OCR Engine Mode (0-3).
+    ///
+    /// - 0: Legacy engine only
+    /// - 1: Neural nets (LSTM) only (usually best)
+    /// - 2: Legacy + LSTM
+    /// - 3: Default (based on what's available)
     pub oem: i64,
+    /// Minimum confidence threshold (0.0-100.0).
+    ///
+    /// Words with confidence below this threshold may be rejected or flagged.
     pub min_confidence: f64,
+    /// Image preprocessing configuration.
+    ///
+    /// Controls how images are preprocessed before OCR. Can significantly
+    /// improve quality for scanned documents or low-quality images.
     pub preprocessing: Option<ImagePreprocessingConfig>,
+    /// Enable automatic table detection and reconstruction
     pub enable_table_detection: bool,
+    /// Minimum confidence threshold for table detection (0.0-1.0)
     pub table_min_confidence: f64,
+    /// Column threshold for table detection (pixels)
     pub table_column_threshold: i64,
+    /// Row threshold ratio for table detection (0.0-1.0)
     pub table_row_threshold_ratio: f64,
+    /// Enable OCR result caching
     pub use_cache: bool,
+    /// Use pre-adapted templates for character classification
     pub classify_use_pre_adapted_templates: bool,
+    /// Enable N-gram language model
     pub language_model_ngram_on: bool,
+    /// Don't reject good words during block-level processing
     pub tessedit_dont_blkrej_good_wds: bool,
+    /// Don't reject good words during row-level processing
     pub tessedit_dont_rowrej_good_wds: bool,
+    /// Enable dictionary correction
     pub tessedit_enable_dict_correction: bool,
+    /// Whitelist of allowed characters (empty = all allowed)
     pub tessedit_char_whitelist: String,
+    /// Blacklist of forbidden characters (empty = none forbidden)
     pub tessedit_char_blacklist: String,
+    /// Use primary language params model
     pub tessedit_use_primary_params_model: bool,
+    /// Variable-width space detection
     pub textord_space_size_is_variable: bool,
+    /// Use adaptive thresholding method
     pub thresholding_method: bool,
 }
 
+/// Image preprocessing metadata.
+///
+/// Tracks the transformations applied to an image during OCR preprocessing,
+/// including DPI normalization, resizing, and resampling.
 #[frb(mirror(ImagePreprocessingMetadata))]
 pub struct ImagePreprocessingMetadata {
+    /// Original image dimensions (width, height) in pixels
     pub original_dimensions: Vec<i64>,
+    /// Original image DPI (horizontal, vertical)
     pub original_dpi: Vec<f64>,
+    /// Target DPI from configuration
     pub target_dpi: i64,
+    /// Scaling factor applied to the image
     pub scale_factor: f64,
+    /// Whether DPI was auto-adjusted based on content
     pub auto_adjusted: bool,
+    /// Final DPI after processing
     pub final_dpi: i64,
+    /// New dimensions after resizing (if resized)
     pub new_dimensions: Option<Vec<i64>>,
+    /// Resampling algorithm used ("LANCZOS3", "CATMULLROM", etc.)
     pub resample_method: String,
+    /// Whether dimensions were clamped to max_image_dimension
     pub dimension_clamped: bool,
+    /// Calculated optimal DPI (if auto_adjust_dpi enabled)
     pub calculated_dpi: Option<i64>,
+    /// Whether resize was skipped (dimensions already optimal)
     pub skipped_resize: bool,
+    /// Error message if resize failed
     pub resize_error: Option<String>,
 }
 
+/// Extraction result metadata.
+///
+/// Contains common fields applicable to all formats, format-specific metadata
+/// via a discriminated union, and additional custom fields from postprocessors.
 #[frb(mirror(Metadata))]
 pub struct Metadata {
+    /// Document title
     pub title: Option<String>,
+    /// Document subject or description
     pub subject: Option<String>,
+    /// Primary author(s) - always Vec for consistency
     pub authors: Option<Vec<String>>,
+    /// Keywords/tags - always Vec for consistency
     pub keywords: Option<Vec<String>>,
+    /// Primary language (ISO 639 code)
     pub language: Option<String>,
+    /// Creation timestamp (ISO 8601 format)
     pub created_at: Option<String>,
+    /// Last modification timestamp (ISO 8601 format)
     pub modified_at: Option<String>,
+    /// User who created the document
     pub created_by: Option<String>,
+    /// User who last modified the document
     pub modified_by: Option<String>,
+    /// Page/slide/sheet structure with boundaries
     pub pages: Option<PageStructure>,
+    /// Format-specific metadata (discriminated union)
+    ///
+    /// Contains detailed metadata specific to the document format.
+    /// Serialized as a nested `"format"` object with a `format_type` discriminator field.
     pub format: Option<FormatMetadata>,
+    /// Image preprocessing metadata (when OCR preprocessing was applied)
     pub image_preprocessing: Option<ImagePreprocessingMetadata>,
+    /// JSON schema (for structured data extraction)
     pub json_schema: Option<String>,
+    /// Error metadata (for batch operations)
     pub error: Option<ErrorMetadata>,
+    /// Extraction duration in milliseconds (for benchmarking).
+    ///
+    /// This field is populated by batch extraction to provide per-file timing
+    /// information. It's `None` for single-file extraction (which uses external timing).
     pub extraction_duration_ms: Option<i64>,
+    /// Document category (from frontmatter or classification).
     pub category: Option<String>,
+    /// Document tags (from frontmatter).
     pub tags: Option<Vec<String>>,
+    /// Document version string (from frontmatter).
     pub document_version: Option<String>,
+    /// Abstract or summary text (from frontmatter).
     pub abstract_text: Option<String>,
+    /// Output format identifier (e.g., "markdown", "html", "text").
+    ///
+    /// Set by the output format pipeline stage when format conversion is applied.
+    /// Previously stored in `metadata.additional["output_format"]`.
     pub output_format: Option<String>,
+    /// Whether OCR was used during extraction.
+    ///
+    /// Set to `true` whenever the extraction pipeline ran an OCR backend
+    /// (Tesseract, PaddleOCR, VLM, etc.) and used that output as the primary
+    /// or fallback text. `false` means native text extraction was used exclusively.
     pub ocr_used: bool,
+    /// Additional custom fields from postprocessors.
+    ///
+    /// Serialized as a nested `"additional"` object (not flattened at root level).
+    /// Uses `Cow<'static, str>` keys so static string keys avoid allocation.
     pub additional: std::collections::HashMap<String, String>,
 }
 
+/// Excel/spreadsheet format metadata.
+///
+/// Identifies the document as a spreadsheet source via the `FormatMetadata::Excel`
+/// discriminant. Sheet count and sheet names are stored inside this struct.
 #[frb(mirror(ExcelMetadata))]
 pub struct ExcelMetadata {
+    /// Number of sheets in the workbook.
     pub sheet_count: Option<i64>,
+    /// Names of all sheets in the workbook.
     pub sheet_names: Option<Vec<String>>,
 }
 
+/// Email metadata extracted from .eml and .msg files.
+///
+/// Includes sender/recipient information, message ID, and attachment list.
 #[frb(mirror(EmailMetadata))]
 pub struct EmailMetadata {
+    /// Sender's email address
     pub from_email: Option<String>,
+    /// Sender's display name
     pub from_name: Option<String>,
+    /// Primary recipients
     pub to_emails: Vec<String>,
+    /// CC recipients
     pub cc_emails: Vec<String>,
+    /// BCC recipients
     pub bcc_emails: Vec<String>,
+    /// Message-ID header value
     pub message_id: Option<String>,
+    /// List of attachment filenames
     pub attachments: Vec<String>,
 }
 
+/// Archive (ZIP/TAR/7Z) metadata.
+///
+/// Extracted from compressed archive files containing file lists and size information.
 #[frb(mirror(ArchiveMetadata))]
 pub struct ArchiveMetadata {
+    /// Archive format ("ZIP", "TAR", "7Z", etc.)
     pub format: String,
+    /// Total number of files in the archive
     pub file_count: i64,
+    /// List of file paths within the archive
     pub file_list: Vec<String>,
+    /// Total uncompressed size in bytes
     pub total_size: i64,
+    /// Compressed size in bytes (if available)
     pub compressed_size: Option<i64>,
 }
 
+/// Image metadata extracted from image files.
+///
+/// Includes dimensions, format, and EXIF data.
 #[frb(mirror(ImageMetadata))]
 pub struct ImageMetadata {
+    /// Image width in pixels
     pub width: i64,
+    /// Image height in pixels
     pub height: i64,
+    /// Image format (e.g., "PNG", "JPEG", "TIFF")
     pub format: String,
+    /// EXIF metadata tags
     pub exif: std::collections::HashMap<String, String>,
 }
 
+/// XML metadata extracted during XML parsing.
+///
+/// Provides statistics about XML document structure.
 #[frb(mirror(XmlMetadata))]
 pub struct XmlMetadata {
+    /// Total number of XML elements processed
     pub element_count: i64,
+    /// List of unique element tag names (sorted)
     pub unique_elements: Vec<String>,
 }
 
+/// Text/Markdown metadata.
+///
+/// Extracted from plain text and Markdown files. Includes word counts and,
+/// for Markdown, structural elements like headers and links.
 #[frb(mirror(TextMetadata))]
 pub struct TextMetadata {
+    /// Number of lines in the document
     pub line_count: i64,
+    /// Number of words
     pub word_count: i64,
+    /// Number of characters
     pub character_count: i64,
+    /// Markdown headers (headings text only, for Markdown files)
     pub headers: Option<Vec<String>>,
+    /// Markdown links as (text, url) tuples (for Markdown files)
     pub links: Option<Vec<String>>,
+    /// Code blocks as (language, code) tuples (for Markdown files)
     pub code_blocks: Option<Vec<String>>,
 }
 
+/// Header/heading element metadata.
 #[frb(mirror(HeaderMetadata))]
 pub struct HeaderMetadata {
+    /// Header level: 1 (h1) through 6 (h6)
     pub level: i64,
+    /// Normalized text content of the header
     pub text: String,
+    /// HTML id attribute if present
     pub id: Option<String>,
+    /// Document tree depth at the header element
     pub depth: i64,
+    /// Byte offset in original HTML document
     pub html_offset: i64,
 }
 
+/// Link element metadata.
 #[frb(mirror(LinkMetadata))]
 pub struct LinkMetadata {
+    /// The href URL value
     pub href: String,
+    /// Link text content (normalized)
     pub text: String,
+    /// Optional title attribute
     pub title: Option<String>,
+    /// Link type classification
     pub link_type: LinkType,
+    /// Rel attribute values
     pub rel: Vec<String>,
+    /// Additional attributes as key-value pairs
     pub attributes: Vec<String>,
 }
 
+/// Image element metadata.
 #[frb(mirror(ImageMetadataType))]
 pub struct ImageMetadataType {
+    /// Image source (URL, data URI, or SVG content)
     pub src: String,
+    /// Alternative text from alt attribute
     pub alt: Option<String>,
+    /// Title attribute
     pub title: Option<String>,
+    /// Image dimensions as (width, height) if available
     pub dimensions: Option<Vec<i64>>,
+    /// Image type classification
     pub image_type: ImageType,
+    /// Additional attributes as key-value pairs
     pub attributes: Vec<String>,
 }
 
+/// Structured data (Schema.org, microdata, RDFa) block.
 #[frb(mirror(StructuredData))]
 pub struct StructuredData {
+    /// Type of structured data
     pub data_type: StructuredDataType,
+    /// Raw JSON string representation
     pub raw_json: String,
+    /// Schema type if detectable (e.g., "Article", "Event", "Product")
     pub schema_type: Option<String>,
 }
 
+/// HTML metadata extracted from HTML documents.
+///
+/// Includes document-level metadata, Open Graph data, Twitter Card metadata,
+/// and extracted structural elements (headers, links, images, structured data).
 #[frb(mirror(HtmlMetadata))]
 pub struct HtmlMetadata {
+    /// Document title from `<title>` tag
     pub title: Option<String>,
+    /// Document description from `<meta name="description">` tag
     pub description: Option<String>,
+    /// Document keywords from `<meta name="keywords">` tag, split on commas
     pub keywords: Vec<String>,
+    /// Document author from `<meta name="author">` tag
     pub author: Option<String>,
+    /// Canonical URL from `<link rel="canonical">` tag
     pub canonical_url: Option<String>,
+    /// Base URL from `<base href="">` tag for resolving relative URLs
     pub base_href: Option<String>,
+    /// Document language from `lang` attribute
     pub language: Option<String>,
+    /// Document text direction from `dir` attribute
     pub text_direction: Option<TextDirection>,
+    /// Open Graph metadata (og:* properties) for social media
+    /// Keys like "title", "description", "image", "url", etc.
     pub open_graph: std::collections::HashMap<String, String>,
+    /// Twitter Card metadata (twitter:* properties)
+    /// Keys like "card", "site", "creator", "title", "description", "image", etc.
     pub twitter_card: std::collections::HashMap<String, String>,
+    /// Additional meta tags not covered by specific fields
+    /// Keys are meta name/property attributes, values are content
     pub meta_tags: std::collections::HashMap<String, String>,
+    /// Extracted header elements with hierarchy
     pub headers: Vec<HeaderMetadata>,
+    /// Extracted hyperlinks with type classification
     pub links: Vec<LinkMetadata>,
+    /// Extracted images with source and dimensions
     pub images: Vec<ImageMetadataType>,
+    /// Extracted structured data blocks
     pub structured_data: Vec<StructuredData>,
 }
 
+/// OCR processing metadata.
+///
+/// Captures information about OCR processing configuration and results.
 #[frb(mirror(OcrMetadata))]
 pub struct OcrMetadata {
+    /// OCR language code(s) used
     pub language: String,
+    /// Tesseract Page Segmentation Mode (PSM)
     pub psm: i64,
+    /// Output format (e.g., "text", "hocr")
     pub output_format: String,
+    /// Number of tables detected
     pub table_count: i64,
     pub table_rows: Option<i64>,
     pub table_cols: Option<i64>,
 }
 
+/// Error metadata (for batch operations).
 #[frb(mirror(ErrorMetadata))]
 pub struct ErrorMetadata {
     pub error_type: String,
     pub message: String,
 }
 
+/// PowerPoint presentation metadata.
+///
+/// Extracted from PPTX files containing slide counts and presentation details.
 #[frb(mirror(PptxMetadata))]
 pub struct PptxMetadata {
+    /// Total number of slides in the presentation
     pub slide_count: i64,
+    /// Names of slides (if available)
     pub slide_names: Vec<String>,
+    /// Number of embedded images
     pub image_count: Option<i64>,
+    /// Number of tables
     pub table_count: Option<i64>,
 }
 
+/// Word document metadata.
+///
+/// Extracted from DOCX files using shared Office Open XML metadata extraction.
+/// Integrates with `office_metadata` module for core/app/custom properties.
 #[frb(mirror(DocxMetadata))]
 pub struct DocxMetadata {
+    /// Core properties from docProps/core.xml (Dublin Core metadata)
+    ///
+    /// Contains title, creator, subject, keywords, dates, etc.
+    /// Shared format across DOCX/PPTX/XLSX documents.
     pub core_properties: Option<String>,
+    /// Application properties from docProps/app.xml (Word-specific statistics)
+    ///
+    /// Contains word count, page count, paragraph count, editing time, etc.
+    /// DOCX-specific variant of Office application properties.
     pub app_properties: Option<String>,
+    /// Custom properties from docProps/custom.xml (user-defined properties)
+    ///
+    /// Contains key-value pairs defined by users or applications.
+    /// Values can be strings, numbers, booleans, or dates.
     pub custom_properties: Option<std::collections::HashMap<String, String>>,
 }
 
+/// CSV/TSV file metadata.
 #[frb(mirror(CsvMetadata))]
 pub struct CsvMetadata {
     pub row_count: i64,
@@ -929,8 +2414,10 @@ pub struct CsvMetadata {
     pub column_types: Option<Vec<String>>,
 }
 
+/// BibTeX bibliography metadata.
 #[frb(mirror(BibtexMetadata))]
 pub struct BibtexMetadata {
+    /// Number of entries in the bibliography.
     pub entry_count: i64,
     pub citation_keys: Vec<String>,
     pub authors: Vec<String>,
@@ -938,6 +2425,7 @@ pub struct BibtexMetadata {
     pub entry_types: Option<std::collections::HashMap<String, i64>>,
 }
 
+/// Citation file metadata (RIS, PubMed, EndNote).
 #[frb(mirror(CitationMetadata))]
 pub struct CitationMetadata {
     pub citation_count: i64,
@@ -948,6 +2436,7 @@ pub struct CitationMetadata {
     pub keywords: Vec<String>,
 }
 
+/// Year range for bibliographic metadata.
 #[frb(mirror(YearRange))]
 pub struct YearRange {
     pub min: Option<i64>,
@@ -955,6 +2444,7 @@ pub struct YearRange {
     pub years: Vec<i64>,
 }
 
+/// FictionBook (FB2) metadata.
 #[frb(mirror(FictionBookMetadata))]
 pub struct FictionBookMetadata {
     pub genres: Vec<String>,
@@ -962,6 +2452,7 @@ pub struct FictionBookMetadata {
     pub annotation: Option<String>,
 }
 
+/// dBASE (DBF) file metadata.
 #[frb(mirror(DbfMetadata))]
 pub struct DbfMetadata {
     pub record_count: i64,
@@ -969,12 +2460,14 @@ pub struct DbfMetadata {
     pub fields: Vec<DbfFieldInfo>,
 }
 
+/// dBASE field information.
 #[frb(mirror(DbfFieldInfo))]
 pub struct DbfFieldInfo {
     pub name: String,
     pub field_type: String,
 }
 
+/// JATS (Journal Article Tag Suite) metadata.
 #[frb(mirror(JatsMetadata))]
 pub struct JatsMetadata {
     pub copyright: Option<String>,
@@ -983,12 +2476,14 @@ pub struct JatsMetadata {
     pub contributor_roles: Vec<ContributorRole>,
 }
 
+/// JATS contributor with role.
 #[frb(mirror(ContributorRole))]
 pub struct ContributorRole {
     pub name: String,
     pub role: Option<String>,
 }
 
+/// EPUB metadata (Dublin Core extensions).
 #[frb(mirror(EpubMetadata))]
 pub struct EpubMetadata {
     pub coverage: Option<String>,
@@ -999,172 +2494,398 @@ pub struct EpubMetadata {
     pub cover_image: Option<String>,
 }
 
+/// Outlook PST archive metadata.
 #[frb(mirror(PstMetadata))]
 pub struct PstMetadata {
     pub message_count: i64,
 }
 
+/// Confidence scores for an OCR element.
+///
+/// Separates detection confidence (how confident that text exists at this location)
+/// from recognition confidence (how confident about the actual text content).
 #[frb(mirror(OcrConfidence))]
 pub struct OcrConfidence {
+    /// Detection confidence: how confident the OCR engine is that text exists here.
+    ///
+    /// PaddleOCR provides this as `box_score`, Tesseract doesn't have a direct equivalent.
+    /// Range: 0.0 to 1.0 (or None if not available).
     pub detection: Option<f64>,
+    /// Recognition confidence: how confident about the text content.
+    ///
+    /// Range: 0.0 to 1.0.
     pub recognition: f64,
 }
 
+/// Rotation information for an OCR element.
 #[frb(mirror(OcrRotation))]
 pub struct OcrRotation {
+    /// Rotation angle in degrees (0, 90, 180, 270 for PaddleOCR).
     pub angle_degrees: f64,
+    /// Confidence score for the rotation detection.
     pub confidence: Option<f64>,
 }
 
+/// A unified OCR element representing detected text with full metadata.
+///
+/// This is the primary type for structured OCR output, preserving all information
+/// from both Tesseract and PaddleOCR backends.
 #[frb(mirror(OcrElement))]
 pub struct OcrElement {
+    /// The recognized text content.
     pub text: String,
+    /// Bounding geometry (rectangle or quadrilateral).
     pub geometry: OcrBoundingGeometry,
+    /// Confidence scores for detection and recognition.
     pub confidence: OcrConfidence,
+    /// Hierarchical level (word, line, block, page).
     pub level: OcrElementLevel,
+    /// Rotation information (if detected).
     pub rotation: Option<OcrRotation>,
+    /// Page number (1-indexed).
     pub page_number: i64,
+    /// Parent element ID for hierarchical relationships.
+    ///
+    /// Only used for Tesseract output which has word -> line -> block hierarchy.
     pub parent_id: Option<String>,
+    /// Backend-specific metadata that doesn't fit the unified schema.
     pub backend_metadata: std::collections::HashMap<String, String>,
 }
 
+/// Configuration for OCR element extraction.
+///
+/// Controls how OCR elements are extracted and filtered.
 #[frb(mirror(OcrElementConfig))]
 pub struct OcrElementConfig {
+    /// Whether to include OCR elements in the extraction result.
+    ///
+    /// When true, the `ocr_elements` field in `ExtractionResult` will be populated.
     pub include_elements: bool,
+    /// Minimum hierarchical level to include.
+    ///
+    /// Elements below this level (e.g., words when min_level is Line) will be excluded.
     pub min_level: OcrElementLevel,
+    /// Minimum recognition confidence threshold (0.0-1.0).
+    ///
+    /// Elements with confidence below this threshold will be filtered out.
     pub min_confidence: f64,
+    /// Whether to build hierarchical relationships between elements.
+    ///
+    /// When true, `parent_id` fields will be populated based on spatial containment.
+    /// Only meaningful for Tesseract output.
     pub build_hierarchy: bool,
 }
 
+/// Unified page structure for documents.
+///
+/// Supports different page types (PDF pages, PPTX slides, Excel sheets)
+/// with character offset boundaries for chunk-to-page mapping.
 #[frb(mirror(PageStructure))]
 pub struct PageStructure {
+    /// Total number of pages/slides/sheets
     pub total_count: i64,
+    /// Type of paginated unit
     pub unit_type: PageUnitType,
+    /// Character offset boundaries for each page
+    ///
+    /// Maps character ranges in the extracted content to page numbers.
+    /// Used for chunk page range calculation.
     pub boundaries: Option<Vec<PageBoundary>>,
+    /// Detailed per-page metadata (optional, only when needed)
     pub pages: Option<Vec<PageInfo>>,
 }
 
+/// Byte offset boundary for a page.
+///
+/// Tracks where a specific page's content starts and ends in the main content string,
+/// enabling mapping from byte positions to page numbers. Offsets are guaranteed to be
+/// at valid UTF-8 character boundaries when using standard String methods (push_str, push, etc.).
 #[frb(mirror(PageBoundary))]
 pub struct PageBoundary {
+    /// Byte offset where this page starts in the content string (UTF-8 valid boundary, inclusive)
     pub byte_start: i64,
+    /// Byte offset where this page ends in the content string (UTF-8 valid boundary, exclusive)
     pub byte_end: i64,
+    /// Page number (1-indexed)
     pub page_number: i64,
 }
 
+/// Metadata for individual page/slide/sheet.
+///
+/// Captures per-page information including dimensions, content counts,
+/// and visibility state (for presentations).
 #[frb(mirror(PageInfo))]
 pub struct PageInfo {
+    /// Page number (1-indexed)
     pub number: i64,
+    /// Page title (usually for presentations)
     pub title: Option<String>,
+    /// Dimensions in points (PDF) or pixels (images): (width, height)
     pub dimensions: Option<Vec<f64>>,
+    /// Number of images on this page
     pub image_count: Option<i64>,
+    /// Number of tables on this page
     pub table_count: Option<i64>,
+    /// Whether this page is hidden (e.g., in presentations)
     pub hidden: Option<bool>,
+    /// Whether this page is blank (no meaningful text, no images, no tables)
+    ///
+    /// A page is considered blank if it has fewer than 3 non-whitespace characters
+    /// and contains no tables or images. This is useful for filtering out empty pages
+    /// in scanned documents or PDFs with blank separator pages.
     pub is_blank: Option<bool>,
+    /// Whether this page contains non-trivial vector graphics (paths, shapes, curves)
+    ///
+    /// Indicates the presence of vector-drawn content such as charts, diagrams,
+    /// or geometric shapes (e.g., from Adobe InDesign, LaTeX TikZ). These are
+    /// invisible to `ExtractionResult.images` since they are not embedded as raster
+    /// XObjects. Set to `true` when path count exceeds a heuristic threshold,
+    /// signaling that downstream consumers may want to rasterize the page to
+    /// capture this content.
+    ///
+    /// Only populated for PDFs; `None` for other document types.
     pub has_vector_graphics: bool,
 }
 
+/// Content for a single page/slide.
+///
+/// When page extraction is enabled, documents are split into per-page content
+/// with associated tables and images mapped to each page.
+///
+/// # Performance
+///
+/// Uses Arc-wrapped tables and images for memory efficiency:
+/// - `Vec<Arc<Table>>` enables zero-copy sharing of table data
+/// - `Vec<Arc<ExtractedImage>>` enables zero-copy sharing of image data
+/// - Maintains exact JSON compatibility via custom Serialize/Deserialize
+///
+/// This reduces memory overhead for documents with shared tables/images
+/// by avoiding redundant copies during serialization.
 #[frb(mirror(PageContent))]
 pub struct PageContent {
+    /// Page number (1-indexed)
     pub page_number: i64,
+    /// Text content for this page
     pub content: String,
+    /// Tables found on this page (uses Arc for memory efficiency)
+    ///
+    /// Serializes as Vec<Table> for JSON compatibility while maintaining
+    /// Arc semantics in-memory for zero-copy sharing.
     pub tables: Vec<Table>,
+    /// Indices into `ExtractionResult.images` for images found on this page.
+    ///
+    /// Each value is a zero-based index into the top-level `images` collection.
+    /// Only populated when `extract_images = true` in the extraction config.
     pub image_indices: Vec<i64>,
+    /// Hierarchy information for the page (when hierarchy extraction is enabled)
+    ///
+    /// Contains text hierarchy levels (H1-H6) extracted from the page content.
     pub hierarchy: Option<PageHierarchy>,
+    /// Whether this page is blank (no meaningful text content)
+    ///
+    /// Determined during extraction based on text content analysis.
+    /// A page is blank if it has fewer than 3 non-whitespace characters
+    /// and contains no tables or images.
     pub is_blank: Option<bool>,
+    /// Layout detection regions for this page (when layout detection is enabled).
+    ///
+    /// Contains detected layout regions with class, confidence, bounding box,
+    /// and area fraction. Only populated when layout detection is configured.
     pub layout_regions: Option<Vec<LayoutRegion>>,
 }
 
+/// A detected layout region on a page.
+///
+/// When layout detection is enabled, each page may have layout regions
+/// identifying different content types (text, pictures, tables, etc.)
+/// with confidence scores and spatial positions.
 #[frb(mirror(LayoutRegion))]
 pub struct LayoutRegion {
+    /// Layout class name (e.g. "picture", "table", "text", "section_header").
     pub class_name: String,
+    /// Confidence score from the layout detection model (0.0 to 1.0).
     pub confidence: f64,
+    /// Bounding box in document coordinate space.
     pub bounding_box: String,
+    /// Fraction of the page area covered by this region (0.0 to 1.0).
     pub area_fraction: f64,
 }
 
+/// Page hierarchy structure containing heading levels and block information.
+///
+/// Used when PDF text hierarchy extraction is enabled. Contains hierarchical
+/// blocks with heading levels (H1-H6) for semantic document structure.
 #[frb(mirror(PageHierarchy))]
 pub struct PageHierarchy {
+    /// Number of hierarchy blocks on this page
     pub block_count: i64,
+    /// Hierarchical blocks with heading levels
     pub blocks: Vec<HierarchicalBlock>,
 }
 
+/// A text block with hierarchy level assignment.
+///
+/// Represents a block of text with semantic heading information extracted from
+/// font size clustering and hierarchical analysis.
 #[frb(mirror(HierarchicalBlock))]
 pub struct HierarchicalBlock {
+    /// The text content of this block
     pub text: String,
+    /// The font size of the text in this block
     pub font_size: f64,
+    /// The hierarchy level of this block (H1-H6 or Body)
+    ///
+    /// Levels correspond to HTML heading tags:
+    /// - "h1": Top-level heading
+    /// - "h2": Secondary heading
+    /// - "h3": Tertiary heading
+    /// - "h4": Quaternary heading
+    /// - "h5": Quinary heading
+    /// - "h6": Senary heading
+    /// - "body": Body text (no heading level)
     pub level: String,
+    /// Bounding box information for the block
+    ///
+    /// Contains coordinates as (left, top, right, bottom) in PDF units.
     pub bbox: Option<Vec<f64>>,
 }
 
+/// Extracted table structure.
+///
+/// Represents a table detected and extracted from a document (PDF, image, etc.).
+/// Tables are converted to both structured cell data and Markdown format.
 #[frb(mirror(Table))]
 pub struct Table {
+    /// Table cells as a 2D vector (rows × columns)
     pub cells: Vec<Vec<String>>,
+    /// Markdown representation of the table
     pub markdown: String,
+    /// Page number where the table was found (1-indexed)
     pub page_number: i64,
+    /// Bounding box of the table on the page (PDF coordinates: x0=left, y0=bottom, x1=right, y1=top).
+    /// Only populated for PDF-extracted tables when position data is available.
     pub bounding_box: Option<String>,
 }
 
+/// Individual table cell with content and optional styling.
+///
+/// Future extension point for rich table support with cell-level metadata.
 #[frb(mirror(TableCell))]
 pub struct TableCell {
+    /// Cell content as text
     pub content: String,
+    /// Row span (number of rows this cell spans)
     pub row_span: i64,
+    /// Column span (number of columns this cell spans)
     pub col_span: i64,
+    /// Whether this is a header cell
     pub is_header: bool,
 }
 
+/// A URI extracted from a document.
+///
+/// Represents any link, reference, or resource pointer found during extraction.
+/// The `kind` field classifies the URI semantically, while `label` carries
+/// optional human-readable display text.
 #[frb(mirror(Uri))]
 pub struct Uri {
+    /// The URL or path string.
     pub url: String,
+    /// Optional display text / label for the link.
     pub label: Option<String>,
+    /// Optional page number where the URI was found (1-indexed).
     pub page: Option<i64>,
+    /// Semantic classification of the URI.
     pub kind: UriKind,
 }
 
+/// MIME type detection response.
 #[frb(mirror(DetectResponse))]
 pub struct DetectResponse {
+    /// Detected MIME type
     pub mime_type: String,
+    /// Original filename (if provided)
     pub filename: Option<String>,
 }
 
+/// Preset configurations for common RAG use cases.
+///
+/// Each preset combines chunk size, overlap, and embedding model
+/// to provide an optimized configuration for specific scenarios.
+///
+/// All string fields are owned `String` for FFI compatibility — instances
+/// are safe to clone and pass across language boundaries.
 #[frb(mirror(EmbeddingPreset))]
 pub struct EmbeddingPreset {
     pub name: String,
     pub chunk_size: i64,
     pub overlap: i64,
+    /// HuggingFace repository name for the model.
     pub model_repo: String,
+    /// Pooling strategy: "cls" or "mean".
     pub pooling: String,
+    /// Path to the ONNX model file within the repo.
     pub model_file: String,
     pub dimensions: i64,
     pub description: String,
 }
 
+/// YAKE-specific parameters.
 #[frb(mirror(YakeParams))]
 pub struct YakeParams {
+    /// Window size for co-occurrence analysis (default: 2).
+    ///
+    /// Controls the context window for computing co-occurrence statistics.
     pub window_size: i64,
 }
 
+/// RAKE-specific parameters.
 #[frb(mirror(RakeParams))]
 pub struct RakeParams {
+    /// Minimum word length to consider (default: 1).
     pub min_word_length: i64,
+    /// Maximum words in a keyword phrase (default: 3).
     pub max_words_per_phrase: i64,
 }
 
+/// Keyword extraction configuration.
 #[frb(mirror(KeywordConfig))]
 pub struct KeywordConfig {
+    /// Algorithm to use for extraction.
     pub algorithm: KeywordAlgorithm,
+    /// Maximum number of keywords to extract (default: 10).
     pub max_keywords: i64,
+    /// Minimum score threshold (0.0-1.0, default: 0.0).
+    ///
+    /// Keywords with scores below this threshold are filtered out.
+    /// Note: Score ranges differ between algorithms.
     pub min_score: f64,
+    /// N-gram range for keyword extraction (min, max).
+    ///
+    /// (1, 1) = unigrams only
+    /// (1, 2) = unigrams and bigrams
+    /// (1, 3) = unigrams, bigrams, and trigrams (default)
     pub ngram_range: Vec<i64>,
+    /// Language code for stopword filtering (e.g., "en", "de", "fr").
+    ///
+    /// If None, no stopword filtering is applied.
     pub language: Option<String>,
+    /// YAKE-specific tuning parameters.
     pub yake_params: Option<YakeParams>,
+    /// RAKE-specific tuning parameters.
     pub rake_params: Option<RakeParams>,
 }
 
+/// Extracted keyword with metadata.
 #[frb(mirror(Keyword))]
 pub struct Keyword {
+    /// The keyword text.
     pub text: String,
+    /// Relevance score (higher is better, algorithm-specific range).
     pub score: f64,
+    /// Algorithm that extracted this keyword.
     pub algorithm: KeywordAlgorithm,
+    /// Optional positions where keyword appears in text (character offsets).
     pub positions: Option<Vec<i64>>,
 }
 
@@ -1174,36 +2895,90 @@ pub struct OcrCacheStats {
     pub total_size_mb: f64,
 }
 
+/// Configuration for PaddleOCR backend.
+///
+/// Configures PaddleOCR text detection and recognition with multi-language support.
+/// Uses a builder pattern for convenient configuration.
+///
+/// # Examples
+///
+/// ```no_run
+/// use kreuzberg::PaddleOcrConfig;
+///
+/// // Create with default English configuration
+/// let config = PaddleOcrConfig::new("en");
+///
+/// // Create with custom cache directory
+/// let config = PaddleOcrConfig::new("ch")
+///     .with_cache_dir("/path/to/cache".into());
+///
+/// // Enable table detection
+/// let config = PaddleOcrConfig::new("en")
+///     .with_table_detection(true);
+/// ```
 #[frb(mirror(PaddleOcrConfig))]
 pub struct PaddleOcrConfig {
+    /// Language code (e.g., "en", "ch", "jpn", "kor", "deu", "fra")
     pub language: String,
+    /// Optional custom cache directory for model files
     pub cache_dir: Option<String>,
+    /// Enable angle classification for rotated text (default: false).
+    /// Can misfire on short text regions, rotating crops incorrectly before recognition.
     pub use_angle_cls: bool,
+    /// Enable table structure detection (default: false)
     pub enable_table_detection: bool,
+    /// Database threshold for text detection (default: 0.3)
+    /// Range: 0.0-1.0, higher values require more confident detections
     pub det_db_thresh: f64,
+    /// Box threshold for text bounding box refinement (default: 0.5)
+    /// Range: 0.0-1.0
     pub det_db_box_thresh: f64,
+    /// Unclip ratio for expanding text bounding boxes (default: 1.6)
+    /// Controls the expansion of detected text regions
     pub det_db_unclip_ratio: f64,
+    /// Maximum side length for detection image (default: 960)
+    /// Larger images may be resized to this limit for faster inference
     pub det_limit_side_len: i64,
+    /// Batch size for recognition inference (default: 6)
+    /// Number of text regions to process simultaneously
     pub rec_batch_num: i64,
+    /// Padding in pixels added around the image before detection (default: 10).
+    /// Large values can include surrounding content like table gridlines.
     pub padding: i64,
+    /// Minimum recognition confidence score for text lines (default: 0.5).
+    /// Text regions with recognition confidence below this threshold are discarded.
+    /// Matches PaddleOCR Python's `drop_score` parameter.
+    /// Range: 0.0-1.0
     pub drop_score: f64,
+    /// Model tier controlling detection/recognition model size and accuracy trade-off.
+    /// - `"mobile"` (default): Lightweight models (~4.5MB detection, ~16.5MB recognition), fast download and inference
+    /// - `"server"`: Large, high-accuracy models (~88MB detection, ~84MB recognition), best for GPU or complex documents
     pub model_tier: String,
 }
 
+/// Combined paths to all models needed for OCR (backward compatibility).
 #[frb(mirror(ModelPaths))]
 pub struct ModelPaths {
+    /// Path to the detection model directory.
     pub det_model: String,
+    /// Path to the classification model directory.
     pub cls_model: String,
+    /// Path to the recognition model directory.
     pub rec_model: String,
+    /// Path to the character dictionary file.
     pub dict_file: String,
 }
 
+/// Document orientation detection result.
 #[frb(mirror(OrientationResult))]
 pub struct OrientationResult {
+    /// Detected orientation in degrees (0, 90, 180, or 270).
     pub degrees: i64,
+    /// Confidence score (0.0-1.0).
     pub confidence: f64,
 }
 
+/// Bounding box in original image coordinates (x1, y1) top-left, (x2, y2) bottom-right.
 #[frb(mirror(BBox))]
 pub struct BBox {
     pub x1: f64,
@@ -1212,6 +2987,7 @@ pub struct BBox {
     pub y2: f64,
 }
 
+/// A single layout detection result.
 #[frb(mirror(LayoutDetection))]
 pub struct LayoutDetection {
     pub class_name: LayoutClass,
@@ -1219,13 +2995,23 @@ pub struct LayoutDetection {
     pub bbox: BBox,
 }
 
+/// Pre-computed table markdown for a table detection region.
+///
+/// Produced by the TATR-based table structure recognizer and surfaced as part of
+/// layout-aware OCR results.  The struct lives here (under `layout-types`, pure-Rust)
+/// so that consumers who do not enable `layout-detection` (ORT) can still reference
+/// the type in their own code.
 #[frb(mirror(RecognizedTable))]
 pub struct RecognizedTable {
+    /// Detection bbox that this table corresponds to (for matching).
     pub detection_bbox: BBox,
+    /// Table cells as a 2D vector (rows × columns).
     pub cells: Vec<Vec<String>>,
+    /// Rendered markdown table.
     pub markdown: String,
 }
 
+/// Page-level detection result containing all detections and page metadata.
 #[frb(mirror(DetectionResult))]
 pub struct DetectionResult {
     pub page_width: i64,
@@ -1233,62 +3019,136 @@ pub struct DetectionResult {
     pub detections: Vec<LayoutDetection>,
 }
 
+/// Embedded file descriptor extracted from the PDF name tree.
 #[frb(mirror(EmbeddedFile))]
 pub struct EmbeddedFile {
+    /// The filename as stored in the PDF name tree.
     pub name: String,
+    /// Raw file bytes from the embedded stream.
     pub data: Vec<u8>,
+    /// MIME type if specified in the filespec, otherwise `None`.
     pub mime_type: Option<String>,
 }
 
+/// PDF-specific metadata.
+///
+/// Contains metadata fields specific to PDF documents that are not in the common
+/// `Metadata` structure. Common fields like title, authors, keywords, and dates
+/// are at the `Metadata` level.
 #[frb(mirror(PdfMetadata))]
 pub struct PdfMetadata {
+    /// PDF version (e.g., "1.7", "2.0")
     pub pdf_version: Option<String>,
+    /// PDF producer (application that created the PDF)
     pub producer: Option<String>,
+    /// Whether the PDF is encrypted/password-protected
     pub is_encrypted: Option<bool>,
+    /// First page width in points (1/72 inch)
     pub width: Option<i64>,
+    /// First page height in points (1/72 inch)
     pub height: Option<i64>,
+    /// Total number of pages in the PDF document
     pub page_count: Option<i64>,
 }
 
+/// ONNX Runtime execution provider type.
+///
+/// Determines which hardware backend is used for model inference.
+/// `Auto` (default) selects the best available provider per platform.
 #[frb(mirror(ExecutionProviderType))]
 pub enum ExecutionProviderType {
+    /// Auto-select: CoreML on macOS, CUDA on Linux, CPU elsewhere.
     Auto,
+    /// CPU execution provider (always available).
     Cpu,
+    /// Apple CoreML (macOS/iOS Neural Engine + GPU).
     CoreMl,
+    /// NVIDIA CUDA GPU acceleration.
     Cuda,
+    /// NVIDIA TensorRT (optimized CUDA inference).
     TensorRt,
 }
 
+/// Output format for extraction results.
+///
+/// Controls the format of the `content` field in `ExtractionResult`.
+/// When set to `Markdown`, `Djot`, or `Html`, the output will be formatted
+/// accordingly. `Plain` returns the raw extracted text.
+/// `Structured` returns JSON with full OCR element data including bounding
+/// boxes and confidence scores.
 #[frb(mirror(OutputFormat))]
 pub enum OutputFormat {
+    /// Plain text content only (default)
     Plain,
+    /// Markdown format
     Markdown,
+    /// Djot markup format
     Djot,
+    /// HTML format
     Html,
+    /// JSON tree format with heading-driven sections.
     Json,
+    /// Structured JSON format with full OCR element metadata.
     Structured,
+    /// Custom renderer registered via the RendererRegistry.
+    /// The string is the renderer name (e.g., "docx", "latex").
     Custom { field0: String },
 }
 
+/// Built-in HTML theme selection.
 #[frb(mirror(HtmlTheme))]
 pub enum HtmlTheme {
+    /// Sensible defaults: system font stack, neutral colours, readable line
+    /// measure. CSS custom properties (`--kb-*`) are all defined so user CSS
+    /// can override individual values.
     Default,
+    /// GitHub Markdown-inspired palette and spacing.
     GitHub,
+    /// Dark background, light text.
     Dark,
+    /// Minimal light theme with generous whitespace.
     Light,
+    /// No built-in stylesheet emitted. CSS custom properties are still defined
+    /// on `:root` so user stylesheets can reference `var(--kb-*)` tokens.
     Unstyled,
 }
 
+/// Which table structure recognition model to use.
+///
+/// Controls the model used for table cell detection within layout-detected
+/// table regions. Wire format is snake_case in all serializers (JSON, TOML,
+/// YAML).
 #[frb(mirror(TableModel))]
 pub enum TableModel {
+    /// TATR (Table Transformer) -- default, 30MB, DETR-based row/column detection.
     Tatr,
+    /// SLANeXT wired variant -- 365MB, optimized for bordered tables.
     SlanetWired,
+    /// SLANeXT wireless variant -- 365MB, optimized for borderless tables.
     SlanetWireless,
+    /// SLANet-plus -- 7.78MB, lightweight general-purpose.
     SlanetPlus,
+    /// Classifier-routed SLANeXT: auto-select wired/wireless per table.
+    /// Uses PP-LCNet classifier (6.78MB) + both SLANeXT variants (730MB total).
     SlanetAuto,
+    /// Disable table structure model inference entirely; use heuristic path only.
     Disabled,
 }
 
+/// Type of text chunker to use.
+///
+/// # Variants
+///
+/// * `Text` - Generic text splitter, splits on whitespace and punctuation
+/// * `Markdown` - Markdown-aware splitter, preserves formatting and structure
+/// * `Yaml` - YAML-aware splitter, creates one chunk per top-level key
+/// * `Semantic` - Topic-aware chunker. With an `EmbeddingConfig`, splits at
+///   embedding-based topic shifts tuned by `topic_threshold` (default 0.75,
+///   lower = more splits). Without an embedding, falls back to a
+///   structural-boundary heuristic (ALL-CAPS headers, numbered sections,
+///   blank-line paragraphs) and merges groups into chunks capped at
+///   `max_characters` (default 1000). `topic_threshold` has no effect in the
+///   fallback path. For best results, pair with an embedding model.
 #[frb(mirror(ChunkerType))]
 pub enum ChunkerType {
     Text,
@@ -1297,35 +3157,91 @@ pub enum ChunkerType {
     Semantic,
 }
 
+/// How chunk size is measured.
+///
+/// Defaults to `Characters` (Unicode character count). When using token-based sizing,
+/// chunks are sized by token count according to the specified tokenizer.
+///
+/// Token-based sizing uses HuggingFace tokenizers loaded at runtime. Any tokenizer
+/// available on HuggingFace Hub can be used, including OpenAI-compatible tokenizers
+/// (e.g., `Xenova/gpt-4o`, `Xenova/cl100k_base`).
 #[frb(mirror(ChunkSizing))]
 pub enum ChunkSizing {
+    /// Size measured in Unicode characters (default).
     Characters,
-    Tokenizer { model: String, cache_dir: String },
+    /// Size measured in tokens from a HuggingFace tokenizer.
+    Tokenizer {
+        /// HuggingFace model ID or path, e.g. "Xenova/gpt-4o", "bert-base-uncased".
+        model: String,
+        /// Optional cache directory override for tokenizer files.
+        /// Defaults to hf-hub's standard cache (`~/.cache/huggingface/`).
+        /// Can also be set via `KREUZBERG_TOKENIZER_CACHE_DIR` environment variable.
+        cache_dir: String,
+    },
 }
 
+/// Embedding model types supported by Kreuzberg.
 #[frb(mirror(EmbeddingModelType))]
 pub enum EmbeddingModelType {
+    /// Use a preset model configuration (recommended)
     Preset { name: String },
+    /// Use a custom ONNX model from HuggingFace
     Custom { model_id: String, dimensions: i64 },
+    /// Provider-hosted embedding model via liter-llm.
+    ///
+    /// Uses the model specified in the nested `LlmConfig` (e.g.,
+    /// `"openai/text-embedding-3-small"`).
     Llm { llm: LlmConfig },
+    /// In-process embedding backend registered via the plugin system.
+    ///
+    /// The caller registers an [`EmbeddingBackend`](crate::plugins::EmbeddingBackend) once
+    /// (e.g. a wrapper around an already-loaded `llama-cpp-python`, `sentence-transformers`,
+    /// or tuned ONNX model), then references it by name in config. Kreuzberg calls back
+    /// into the registered backend during chunking and standalone embed requests —
+    /// no HuggingFace download, no ONNX Runtime requirement, no HTTP sidecar.
+    ///
+    /// When this variant is selected, only the following [`EmbeddingConfig`] fields
+    /// apply: `normalize` (post-call L2 normalization) and `max_embed_duration_secs`
+    /// (dispatcher timeout). Model-loading fields (`batch_size`, `cache_dir`,
+    /// `show_download_progress`, `acceleration`) are ignored — the host owns the
+    /// model lifecycle.
+    ///
+    /// Semantic chunking falls back to [`ChunkingConfig::max_characters`] when this variant
+    /// is used, since there is no preset to look a chunk-size ceiling up against — size your
+    /// context window via `max_characters` directly.
+    ///
+    /// See `register_embedding_backend`.
     Plugin { name: String },
 }
 
+/// Content rendering mode for code extraction.
+///
+/// Controls how extracted code content is represented in the `content` field
+/// of `ExtractionResult`.
 #[frb(mirror(CodeContentMode))]
 pub enum CodeContentMode {
+    /// Use TSLP semantic chunks as content (default).
     Chunks,
+    /// Use raw source code as content.
     Raw,
+    /// Emit function/class headings + docstrings (no code bodies).
     Structure,
 }
 
+/// Type of list detection.
 #[frb(mirror(ListType))]
 pub enum ListType {
+    /// Bullet points (-, *, •, etc.)
     Bullet,
+    /// Numbered lists (1., 2., etc.)
     Numbered,
+    /// Lettered lists (a., b., A., B., etc.)
     Lettered,
+    /// Indented items
     Indented,
 }
 
+/// Whether the drawing is inline or anchored.
 #[frb(mirror(DrawingType))]
 pub enum DrawingType {
     Inline,
@@ -1340,18 +3256,48 @@ pub enum FracType {
     Skewed,
 }
 
+/// OCR backend types.
 #[frb(mirror(OcrBackendType))]
 pub enum OcrBackendType {
+    /// Tesseract OCR (native Rust binding)
     Tesseract,
+    /// EasyOCR (Python-based, via FFI)
     EasyOCR,
+    /// PaddleOCR (Python-based, via FFI)
     PaddleOCR,
+    /// Custom/third-party OCR backend
     Custom,
 }
 
+/// Processing stages for post-processors.
+///
+/// Post-processors are executed in stage order (Early → Middle → Late).
+/// Use stages to control the order of post-processing operations.
 #[frb(mirror(ProcessingStage))]
 pub enum ProcessingStage {
+    /// Early stage - foundational processing.
+    ///
+    /// Use for:
+    /// - Language detection
+    /// - Character encoding normalization
+    /// - Entity extraction (NER)
+    /// - Text quality scoring
     Early,
+    /// Middle stage - content transformation.
+    ///
+    /// Use for:
+    /// - Keyword extraction
+    /// - Token reduction
+    /// - Text summarization
+    /// - Semantic analysis
     Middle,
+    /// Late stage - final enrichment.
+    ///
+    /// Use for:
+    /// - Custom user hooks
+    /// - Analytics/logging
+    /// - Final validation
+    /// - Output formatting
     Late,
 }
 
@@ -1364,17 +3310,26 @@ pub enum ReductionLevel {
     Maximum,
 }
 
+/// Type of PDF annotation.
 #[frb(mirror(PdfAnnotationType))]
 pub enum PdfAnnotationType {
+    /// Sticky note / text annotation
     Text,
+    /// Highlighted text region
     Highlight,
+    /// Hyperlink annotation
     Link,
+    /// Rubber stamp annotation
     Stamp,
+    /// Underline text markup
     Underline,
+    /// Strikeout text markup
     StrikeOut,
+    /// Any other annotation type
     Other,
 }
 
+/// Types of block-level elements in Djot.
 #[frb(mirror(BlockType))]
 pub enum BlockType {
     Paragraph,
@@ -1395,6 +3350,7 @@ pub enum BlockType {
     MathDisplay,
 }
 
+/// Types of inline elements in Djot.
 #[frb(mirror(InlineType))]
 pub enum InlineType {
     Text,
@@ -1415,94 +3371,118 @@ pub enum InlineType {
     Symbol,
 }
 
+/// Semantic kind of a relationship between document elements.
 #[frb(mirror(RelationshipKind))]
 pub enum RelationshipKind {
+    /// Footnote marker -> footnote definition.
     FootnoteReference,
+    /// Citation marker -> bibliography entry.
     CitationReference,
+    /// Internal anchor link (`#id`) -> target heading/element.
     InternalLink,
+    /// Caption paragraph -> figure/table it describes.
     Caption,
+    /// Label -> labeled element (HTML `<label for>`, LaTeX `\label{}`).
     Label,
+    /// TOC entry -> target section.
     TocEntry,
+    /// Cross-reference (LaTeX `\ref{}`, DOCX cross-reference field).
     CrossReference,
 }
 
+/// Content layer classification for document nodes.
+///
+/// Replaces separate body/furniture arrays with per-node granularity.
 #[frb(mirror(ContentLayer))]
 pub enum ContentLayer {
+    /// Main document body content.
     Body,
+    /// Page/section header (running header).
     Header,
+    /// Page/section footer (running footer).
     Footer,
+    /// Footnote content.
     Footnote,
 }
 
+/// Tagged enum for node content. Each variant carries only type-specific data.
+///
+/// Uses `#[serde(tag = "node_type")]` to avoid "type" keyword collision in
+/// Go/Java/TypeScript bindings.
 #[frb(mirror(NodeContent))]
 pub enum NodeContent {
-    Title {
-        text: String,
-    },
-    Heading {
-        level: i64,
-        text: String,
-    },
-    Paragraph {
-        text: String,
-    },
-    List {
-        ordered: bool,
-    },
-    ListItem {
-        text: String,
-    },
-    Table {
-        grid: TableGrid,
-    },
+    /// Document title.
+    Title { text: String },
+    /// Section heading with level (1-6).
+    Heading { level: i64, text: String },
+    /// Body text paragraph.
+    Paragraph { text: String },
+    /// List container — children are `ListItem` nodes.
+    List { ordered: bool },
+    /// Individual list item.
+    ListItem { text: String },
+    /// Table with structured cell grid.
+    Table { grid: TableGrid },
+    /// Image reference.
     Image {
         description: String,
         image_index: i64,
+        /// Source URL or path of the image (from `<img src="...">` or `![](src)`).
         src: String,
     },
-    Code {
-        text: String,
-        language: String,
-    },
+    /// Code block.
+    Code { text: String, language: String },
+    /// Block quote — container, children carry the quoted content.
     Quote,
-    Formula {
-        text: String,
-    },
-    Footnote {
-        text: String,
-    },
+    /// Mathematical formula / equation.
+    Formula { text: String },
+    /// Footnote reference content.
+    Footnote { text: String },
+    /// Logical grouping container (section, key-value area).
+    ///
+    /// `heading_level` + `heading_text` capture the section heading directly
+    /// rather than relying on a first-child positional convention.
     Group {
         label: String,
         heading_level: i64,
         heading_text: String,
     },
+    /// Page break marker.
     PageBreak,
+    /// Presentation slide container — children are the slide's content nodes.
     Slide {
+        /// 1-indexed slide number.
         number: i64,
         title: String,
     },
+    /// Definition list container — children are `DefinitionItem` nodes.
     DefinitionList,
-    DefinitionItem {
-        term: String,
-        definition: String,
-    },
-    Citation {
-        key: String,
-        text: String,
-    },
+    /// Individual definition list entry with term and definition.
+    DefinitionItem { term: String, definition: String },
+    /// Citation or bibliographic reference.
+    Citation { key: String, text: String },
+    /// Admonition / callout container (note, warning, tip, etc.).
+    ///
+    /// Children carry the admonition body content.
     Admonition {
+        /// Kind of admonition (e.g. "note", "warning", "tip", "danger").
         kind: String,
         title: String,
     },
+    /// Raw block preserved verbatim from the source format.
+    ///
+    /// Used for content that cannot be mapped to a semantic node type
+    /// (e.g. JSX in MDX, raw LaTeX in markdown, embedded HTML).
     RawBlock {
+        /// Source format identifier (e.g. "html", "latex", "jsx").
         format: String,
         content: String,
     },
-    MetadataBlock {
-        entries: Vec<String>,
-    },
+    /// Structured metadata block (email headers, YAML frontmatter, etc.).
+    MetadataBlock { entries: Vec<String> },
 }
 
+/// Types of inline text annotations.
 #[frb(mirror(AnnotationKind))]
 pub enum AnnotationKind {
     Bold,
@@ -1512,13 +3492,28 @@ pub enum AnnotationKind {
     Code,
     Subscript,
     Superscript,
-    Link { url: String, title: String },
+    Link {
+        url: String,
+        title: String,
+    },
+    /// Highlighted text (PDF highlights, HTML `<mark>`).
     Highlight,
-    Color { value: String },
-    FontSize { value: String },
-    Custom { name: String, value: String },
+    /// Text color (CSS-compatible value, e.g. "#ff0000", "red").
+    Color {
+        value: String,
+    },
+    /// Font size with units (e.g. "12pt", "1.2em", "16px").
+    FontSize {
+        value: String,
+    },
+    /// Extensible annotation for format-specific styling.
+    Custom {
+        name: String,
+        value: String,
+    },
 }
 
+/// How the extracted text was produced.
 #[frb(mirror(ExtractionMethod))]
 pub enum ExtractionMethod {
     Native,
@@ -1526,59 +3521,115 @@ pub enum ExtractionMethod {
     Mixed,
 }
 
+/// Semantic structural classification of a text chunk.
+///
+/// Assigned by the heuristic classifier in `chunking::classifier`.
+/// Defaults to `Unknown` when no rule matches.
+/// Designed to be extended in future versions without breaking changes.
 #[frb(mirror(ChunkType))]
 pub enum ChunkType {
+    /// Section heading or document title.
     Heading,
+    /// Party list: names, addresses, and signatories.
     PartyList,
+    /// Definition clause ("X means…", "X shall mean…").
     Definitions,
+    /// Operative clause containing legal/contractual action verbs.
     OperativeClause,
+    /// Signature block with signatures, names, and dates.
     SignatureBlock,
+    /// Schedule, annex, appendix, or exhibit section.
     Schedule,
+    /// Table-like content with aligned columns or repeated patterns.
     TableLike,
+    /// Mathematical formula or equation.
     Formula,
+    /// Code block or preformatted content.
     CodeBlock,
+    /// Embedded or referenced image content.
     Image,
+    /// Organizational chart or hierarchy diagram.
     OrgChart,
+    /// Diagram, figure, or visual illustration.
     Diagram,
+    /// Unclassified or mixed content.
     Unknown,
 }
 
+/// Heuristic classification of what an image likely depicts.
 #[frb(mirror(ImageKind))]
 pub enum ImageKind {
+    /// Photographic image (natural scene, photograph)
     Photograph,
+    /// Technical or schematic diagram
     Diagram,
+    /// Chart, graph, or plot
     Chart,
+    /// Freehand or technical drawing
     Drawing,
+    /// Text-heavy image (scanned text, document)
     TextBlock,
+    /// Decorative element or border
     Decoration,
+    /// Logo or brand mark
     Logo,
+    /// Small icon
     Icon,
+    /// Fragment of a larger tiled image (tile of a technical drawing)
     TileFragment,
+    /// Mask or transparency map
     Mask,
+    /// Could not classify with reasonable confidence
     Unknown,
 }
 
+/// Result-shape selection for extraction results.
+///
+/// Distinct from `OutputFormat` (which controls rendering — Plain, Markdown,
+/// HTML, etc.). `ResultFormat` controls the *shape* of the result: a unified content
+/// blob vs. an element-based decomposition.
 #[frb(mirror(ResultFormat))]
 pub enum ResultFormat {
+    /// Unified format with all content in `content` field
     Unified,
+    /// Element-based format with semantic element extraction
     ElementBased,
 }
 
+/// Semantic element type classification.
+///
+/// Categorizes text content into semantic units for downstream processing.
+/// Supports the element types commonly found in Unstructured documents.
 #[frb(mirror(ElementType))]
 pub enum ElementType {
+    /// Document title
     Title,
+    /// Main narrative text body
     NarrativeText,
+    /// Section heading
     Heading,
+    /// List item (bullet, numbered, etc.)
     ListItem,
+    /// Table element
     Table,
+    /// Image element
     Image,
+    /// Page break marker
     PageBreak,
+    /// Code block
     CodeBlock,
+    /// Block quote
     BlockQuote,
+    /// Footer text
     Footer,
+    /// Header text
     Header,
 }
 
+/// Format-specific metadata (discriminated union).
+///
+/// Only one format type can exist per extraction result. This provides
+/// type-safe, clean metadata without nested optionals.
 #[frb(mirror(FormatMetadata))]
 pub enum FormatMetadata {
     Pdf { field0: PdfMetadata },
@@ -1603,82 +3654,141 @@ pub enum FormatMetadata {
     Code { field0: String },
 }
 
+/// Text direction enumeration for HTML documents.
 #[frb(mirror(TextDirection))]
 pub enum TextDirection {
+    /// Left-to-right text direction
     LeftToRight,
+    /// Right-to-left text direction
     RightToLeft,
+    /// Automatic text direction detection
     Auto,
 }
 
+/// Link type classification.
 #[frb(mirror(LinkType))]
 pub enum LinkType {
+    /// Anchor link (#section)
     Anchor,
+    /// Internal link (same domain)
     Internal,
+    /// External link (different domain)
     External,
+    /// Email link (mailto:)
     Email,
+    /// Phone link (tel:)
     Phone,
+    /// Other link type
     Other,
 }
 
+/// Image type classification.
 #[frb(mirror(ImageType))]
 pub enum ImageType {
+    /// Data URI image
     DataUri,
+    /// Inline SVG
     InlineSvg,
+    /// External image URL
     External,
+    /// Relative path image
     Relative,
 }
 
+/// Structured data type classification.
 #[frb(mirror(StructuredDataType))]
 pub enum StructuredDataType {
+    /// JSON-LD structured data
     JsonLd,
+    /// Microdata
     Microdata,
+    /// RDFa
     RDFa,
 }
 
+/// Bounding geometry for an OCR element.
+///
+/// Supports both axis-aligned rectangles (from Tesseract) and 4-point quadrilaterals
+/// (from PaddleOCR and rotated text detection).
 #[frb(mirror(OcrBoundingGeometry))]
 pub enum OcrBoundingGeometry {
+    /// Axis-aligned bounding box (typical for Tesseract output).
     Rectangle {
+        /// Left x-coordinate in pixels
         left: i64,
+        /// Top y-coordinate in pixels
         top: i64,
+        /// Width in pixels
         width: i64,
+        /// Height in pixels
         height: i64,
     },
+    /// 4-point quadrilateral for rotated/skewed text (PaddleOCR).
+    ///
+    /// Points are in clockwise order starting from top-left:
+    /// `[top_left, top_right, bottom_right, bottom_left]`
     Quadrilateral {
+        /// Four corner points as `[(x, y), ...]` in clockwise order
         points: String,
     },
 }
 
+/// Hierarchical level of an OCR element.
+///
+/// Maps to Tesseract's page segmentation hierarchy and provides
+/// equivalent semantics for PaddleOCR.
 #[frb(mirror(OcrElementLevel))]
 pub enum OcrElementLevel {
+    /// Individual word
     Word,
+    /// Line of text (default for PaddleOCR)
     Line,
+    /// Paragraph or text block
     Block,
+    /// Page-level element
     Page,
 }
 
+/// Type of paginated unit in a document.
+///
+/// Distinguishes between different types of "pages" (PDF pages, presentation slides, spreadsheet sheets).
 #[frb(mirror(PageUnitType))]
 pub enum PageUnitType {
+    /// Standard document pages (PDF, DOCX, images)
     Page,
+    /// Presentation slides (PPTX, ODP)
     Slide,
+    /// Spreadsheet sheets (XLSX, ODS)
     Sheet,
 }
 
+/// Semantic classification of an extracted URI.
 #[frb(mirror(UriKind))]
 pub enum UriKind {
+    /// A clickable hyperlink (web URL, file link).
     Hyperlink,
+    /// An image or media resource reference.
     Image,
+    /// An internal anchor or cross-reference target.
     Anchor,
+    /// A citation or bibliographic reference (DOI, academic ref).
     Citation,
+    /// A general reference (e.g. `\ref{}` in LaTeX, `:ref:` in RST).
     Reference,
+    /// An email address (`mailto:` link or bare email).
     Email,
 }
 
+/// Keyword algorithm selection.
 #[frb(mirror(KeywordAlgorithm))]
 pub enum KeywordAlgorithm {
+    /// YAKE (Yet Another Keyword Extractor) - statistical approach
     Yake,
+    /// RAKE (Rapid Automatic Keyword Extraction) - co-occurrence based
     Rake,
 }
 
+/// Page Segmentation Mode for Tesseract OCR
 #[frb(mirror(PSMMode))]
 pub enum PSMMode {
     OsdOnly,
@@ -1694,26 +3804,52 @@ pub enum PSMMode {
     SingleChar,
 }
 
+/// Supported languages in PaddleOCR.
+///
+/// Maps user-friendly language codes to paddle-ocr-rs language identifiers.
 #[frb(mirror(PaddleLanguage))]
 pub enum PaddleLanguage {
+    /// English
     English,
+    /// Simplified Chinese
     Chinese,
+    /// Japanese
     Japanese,
+    /// Korean
     Korean,
+    /// German
     German,
+    /// French
     French,
+    /// Latin script (covers most European languages)
     Latin,
+    /// Cyrillic (Russian and related)
     Cyrillic,
+    /// Traditional Chinese
     TraditionalChinese,
+    /// Thai
     Thai,
+    /// Greek
     Greek,
+    /// East Slavic (Russian, Ukrainian, Belarusian)
     EastSlavic,
+    /// Arabic (Arabic, Persian, Urdu)
     Arabic,
+    /// Devanagari (Hindi, Marathi, Sanskrit, Nepali)
     Devanagari,
+    /// Tamil
     Tamil,
+    /// Telugu
     Telugu,
 }
 
+/// The 17 canonical document layout classes.
+///
+/// All model backends (RT-DETR, YOLO, etc.) map their native class IDs
+/// to this shared set. Models with fewer classes (DocLayNet: 11, PubLayNet: 5)
+/// map to the closest equivalent.
+///
+/// Wire format is snake_case in all serializers (JSON, TOML, YAML).
 #[frb(mirror(LayoutClass))]
 pub enum LayoutClass {
     Caption,

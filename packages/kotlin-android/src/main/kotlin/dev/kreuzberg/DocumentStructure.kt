@@ -15,8 +15,33 @@ package dev.kreuzberg
  * and parent-child relationships are bidirectionally consistent.
  */
 data class DocumentStructure(
+    /**
+     * All nodes in document/reading order.
+     */
     val nodes: List<DocumentNode>,
+    /**
+     * Origin format identifier (e.g. "docx", "pptx", "html", "pdf").
+     *
+     * Allows renderers to apply format-aware heuristics when converting
+     * the document tree to output formats.
+     */
     val sourceFormat: String?,
+    /**
+     * Resolved relationships between nodes (footnote refs, citations, anchor links, etc.).
+     *
+     * Populated during derivation from the internal document representation.
+     * Empty when no relationships are detected.
+     */
     val relationships: List<DocumentRelationship>,
+    /**
+     * Sorted, deduplicated list of node type names present in this document.
+     *
+     * Each value is the snake_case `node_type` tag of the corresponding
+     * `NodeContent` variant (e.g. `"paragraph"`, `"heading"`, `"table"`, …).
+     *
+     * Computed from `nodes` via `DocumentStructure.finalize_node_types`.
+     * Empty until that method is called (internal construction paths call it
+     * at the end of derivation).
+     */
     val nodeTypes: List<String>,
 )

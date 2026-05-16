@@ -1,8 +1,5 @@
 ```typescript title="TypeScript"
-import {
-  registerPostProcessor,
-  type ExtractionResult,
-} from "@kreuzberg/node";
+import { registerPostProcessor, type ExtractionResult } from "@kreuzberg/node";
 
 class PdfOnlyProcessor {
   name(): string {

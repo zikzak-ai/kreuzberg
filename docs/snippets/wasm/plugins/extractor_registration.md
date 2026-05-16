@@ -7,7 +7,7 @@ import init, {
   registerDocumentExtractor,
   unregisterDocumentExtractor,
   listDocumentExtractors,
-  extractBytes
+  extractBytes,
 } from "kreuzberg-wasm";
 
 await init();
@@ -25,7 +25,7 @@ const customExtractor = {
     return JSON.stringify({
       text: `Extracted: ${text.slice(0, 100)}`,
       page_count: 1,
-      language: "en"
+      language: "en",
     });
   },
 
@@ -35,7 +35,7 @@ const customExtractor = {
   },
 
   // Optional: plugin name (returned by Plugin trait)
-  version: () => "1.0.0"
+  version: () => "1.0.0",
 };
 
 // Register the custom extractor

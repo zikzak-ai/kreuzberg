@@ -1,4 +1,5 @@
 <!-- snippet:skip reason="DocumentExtractor trait has no createDocumentExtractorDartImpl factory in the generated Dart binding; custom extractors must be written and registered in Rust." -->
+
 ```dart title="Dart"
 import 'package:kreuzberg/kreuzberg.dart';
 

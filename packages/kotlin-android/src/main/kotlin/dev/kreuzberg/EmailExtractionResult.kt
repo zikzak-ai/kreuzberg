@@ -9,16 +9,52 @@ package dev.kreuzberg
  * including headers, body content, and attachments.
  */
 data class EmailExtractionResult(
+    /**
+     * Email subject line
+     */
     val subject: String?,
+    /**
+     * Sender email address
+     */
     val fromEmail: String?,
+    /**
+     * Primary recipient email addresses
+     */
     val toEmails: List<String>,
+    /**
+     * CC recipient email addresses
+     */
     val ccEmails: List<String>,
+    /**
+     * BCC recipient email addresses
+     */
     val bccEmails: List<String>,
+    /**
+     * Email date/timestamp
+     */
     val date: String?,
+    /**
+     * Message-ID header value
+     */
     val messageId: String?,
+    /**
+     * Plain text version of the email body
+     */
     val plainText: String?,
+    /**
+     * HTML version of the email body
+     */
     val htmlContent: String?,
+    /**
+     * Cleaned/processed text content. Aliased as `cleaned_text` for back-compat.
+     */
     val content: String,
+    /**
+     * List of email attachments
+     */
     val attachments: List<EmailAttachment>,
+    /**
+     * Additional email headers and metadata
+     */
     val metadata: Map<String, String>,
 )

@@ -10,8 +10,26 @@ package dev.kreuzberg
  * is enabled for PDF extraction.
  */
 data class LayoutDetectionConfig(
+    /**
+     * Confidence threshold override (None = use model default).
+     */
     val confidenceThreshold: Float?,
+    /**
+     * Whether to apply postprocessing heuristics (default: true).
+     */
     val applyHeuristics: Boolean,
+    /**
+     * Table structure recognition model.
+     *
+     * Controls which model is used for table cell detection within layout-detected
+     * table regions. Defaults to `TableModel.Tatr`.
+     */
     val tableModel: TableModel,
+    /**
+     * Hardware acceleration for ONNX models (layout detection + table structure).
+     *
+     * When set, controls which execution provider (CPU, CUDA, CoreML, TensorRT)
+     * is used for inference. Defaults to `null` (auto-select per platform).
+     */
     val acceleration: AccelerationConfig?,
 )

@@ -29,20 +29,32 @@ sealed class AnnotationKind {
         val title: String?,
     ) : AnnotationKind()
 
+    /**
+     * Highlighted text (PDF highlights, HTML `<mark>`).
+     */
     object Highlight : AnnotationKind()
 
+    /**
+     * Text color (CSS-compatible value, e.g. "#ff0000", "red").
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Color(
         val value: String,
     ) : AnnotationKind()
 
+    /**
+     * Font size with units (e.g. "12pt", "1.2em", "16px").
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class FontSize(
         val value: String,
     ) : AnnotationKind()
 
+    /**
+     * Extensible annotation for format-specific styling.
+     */
     @com.fasterxml.jackson.databind.annotation.JsonDeserialize
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     data class Custom(

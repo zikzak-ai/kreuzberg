@@ -15,7 +15,6 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use std::borrow::Cow;
 #[cfg_attr(alef, alef(skip))]
-
 /// Extractor for Hangul Word Processor (.hwp) files.
 ///
 /// Supports HWP 5.0 format, the standard document format in South Korea.

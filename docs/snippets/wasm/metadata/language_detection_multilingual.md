@@ -19,12 +19,12 @@ const result = await extractBytes(fileBuffer, mimeType, config);
 
 if (result.detected_languages && result.detected_languages.length > 0) {
   console.log("Document languages:", result.detected_languages.join(", "));
-  
+
   // Process multi-language content
   result.detected_languages.forEach((lang) => {
     console.log(`Language detected: ${lang}`);
   });
-  
+
   // Access metadata for language info
   if (result.metadata && result.metadata.language) {
     console.log(`Primary metadata language: ${result.metadata.language}`);

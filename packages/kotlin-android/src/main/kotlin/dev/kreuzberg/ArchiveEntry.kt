@@ -9,7 +9,16 @@ package dev.kreuzberg
  * enabled, each processable file produces its own full `ExtractionResult`.
  */
 data class ArchiveEntry(
+    /**
+     * Archive-relative file path (e.g. "folder/document.pdf").
+     */
     val path: String,
+    /**
+     * Detected MIME type of the file.
+     */
     val mimeType: String,
+    /**
+     * Full extraction result for this file.
+     */
     val result: ExtractionResult,
 )

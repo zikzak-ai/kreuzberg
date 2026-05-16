@@ -6,13 +6,53 @@ package dev.kreuzberg
  * Metadata about a chunk's position in the original document.
  */
 data class ChunkMetadata(
+    /**
+     * Byte offset where this chunk starts in the original text (UTF-8 valid boundary).
+     */
     val byteStart: Long,
+    /**
+     * Byte offset where this chunk ends in the original text (UTF-8 valid boundary).
+     */
     val byteEnd: Long,
+    /**
+     * Number of tokens in this chunk (if available).
+     *
+     * This is calculated by the embedding model's tokenizer if embeddings are enabled.
+     */
     val tokenCount: Long?,
+    /**
+     * Zero-based index of this chunk in the document.
+     */
     val chunkIndex: Long,
+    /**
+     * Total number of chunks in the document.
+     */
     val totalChunks: Long,
+    /**
+     * First page number this chunk spans (1-indexed).
+     *
+     * Only populated when page tracking is enabled in extraction configuration.
+     */
     val firstPage: Int?,
+    /**
+     * Last page number this chunk spans (1-indexed, equal to first_page for single-page chunks).
+     *
+     * Only populated when page tracking is enabled in extraction configuration.
+     */
     val lastPage: Int?,
+    /**
+     * Heading context when using Markdown chunker.
+     *
+     * Contains the heading hierarchy this chunk falls under.
+     * Only populated when `ChunkerType.Markdown` is used.
+     */
     val headingContext: HeadingContext?,
+    /**
+     * Indices into `ExtractionResult.images` for images on pages covered by this chunk.
+     *
+     * Contains zero-based indices into the top-level `images` collection for every
+     * image whose `page_number` falls within `[first_page, last_page]`.
+     * Empty when image extraction is disabled or the chunk spans no pages with images.
+     */
     val imageIndices: List<Int>,
 )

@@ -6,10 +6,33 @@ package dev.kreuzberg
  * Link type classification.
  */
 enum class LinkType {
+    /**
+     * Anchor link (#section)
+     */
     ANCHOR,
+
+    /**
+     * Internal link (same domain)
+     */
     INTERNAL,
+
+    /**
+     * External link (different domain)
+     */
     EXTERNAL,
+
+    /**
+     * Email link (mailto:)
+     */
     EMAIL,
+
+    /**
+     * Phone link (tel:)
+     */
     PHONE,
+
+    /**
+     * Other link type
+     */
     OTHER,
 }

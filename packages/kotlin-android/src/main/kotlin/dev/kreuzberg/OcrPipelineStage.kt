@@ -6,11 +6,43 @@ package dev.kreuzberg
  * A single backend stage in the OCR pipeline.
  */
 data class OcrPipelineStage(
+    /**
+     * Backend name: "tesseract", "paddleocr", "easyocr", or a custom registered name.
+     */
     val backend: String,
+    /**
+     * Priority weight (higher = tried first). Stages are sorted by priority descending.
+     */
     val priority: Int,
+    /**
+     * Language override for this stage (None = use parent OcrConfig.language).
+     */
     val language: String?,
+    /**
+     * Tesseract-specific config override for this stage.
+     */
     val tesseractConfig: TesseractConfig?,
+    /**
+     * PaddleOCR-specific config for this stage.
+     */
     val paddleOcrConfig: String?,
+    /**
+     * VLM config override for this pipeline stage.
+     */
     val vlmConfig: LlmConfig?,
+    /**
+     * Arbitrary per-call options passed through to the backend unchanged.
+     *
+     * Backends that support runtime tuning (mode switching, preprocessing
+     * flags, inference parameters, etc.) read this value and deserialize
+     * the keys they care about. Keys unknown to the backend are silently
+     * ignored, so options from different backends can coexist in the same
+     * config without conflict.
+     *
+     * Example (custom backend):
+     * ```json
+     * { "mode": "fast", "enable_layout": true }
+     * ```
+     */
     val backendOptions: String?,
 )

@@ -12,9 +12,9 @@ function createStatefulProcessor() {
   const state = {
     extractionCount: 0,
     totalChars: 0,
-    lastResult: null
+    lastResult: null,
   };
-  
+
   return {
     processingStage: () => "post-extraction",
     process: (extractionResult) => {
@@ -22,7 +22,7 @@ function createStatefulProcessor() {
       state.extractionCount++;
       state.totalChars += extractionResult.text?.length || 0;
       state.lastResult = extractionResult;
-      
+
       // Enrich result with statistics
       const enriched = {
         ...extractionResult,
@@ -30,17 +30,19 @@ function createStatefulProcessor() {
           ...extractionResult.metadata,
           extractionIndex: state.extractionCount,
           cumulativeChars: state.totalChars,
-          averageDocLength: Math.round(state.totalChars / state.extractionCount)
-        }
+          averageDocLength: Math.round(state.totalChars / state.extractionCount),
+        },
       };
-      
-      console.log(`[Extraction ${state.extractionCount}] ${enriched.text?.length || 0} chars, cumulative: ${state.totalChars}`);
-      
+
+      console.log(
+        `[Extraction ${state.extractionCount}] ${enriched.text?.length || 0} chars, cumulative: ${state.totalChars}`,
+      );
+
       return enriched;
     },
-    
+
     // Optional: expose state for inspection
-    getState: () => state
+    getState: () => state,
   };
 }
 
@@ -51,17 +53,23 @@ registerPostProcessor(statefulProcessor);
 // Multiple extractions use the same state
 async function processMultipleDocs() {
   const docs = [
-    new Uint8Array([/* Doc 1 */]),
-    new Uint8Array([/* Doc 2 */]),
-    new Uint8Array([/* Doc 3 */])
+    new Uint8Array([
+      /* Doc 1 */
+    ]),
+    new Uint8Array([
+      /* Doc 2 */
+    ]),
+    new Uint8Array([
+      /* Doc 3 */
+    ]),
   ];
-  
+
   const results = [];
   for (const docBytes of docs) {
     const result = await extractBytes(docBytes, "application/pdf", {});
     results.push(result);
   }
-  
+
   return results;
 }
 

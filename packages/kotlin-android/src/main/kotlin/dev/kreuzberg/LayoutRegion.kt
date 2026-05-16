@@ -10,8 +10,20 @@ package dev.kreuzberg
  * with confidence scores and spatial positions.
  */
 data class LayoutRegion(
+    /**
+     * Layout class name (e.g. "picture", "table", "text", "section_header").
+     */
     val className: String,
+    /**
+     * Confidence score from the layout detection model (0.0 to 1.0).
+     */
     val confidence: Double,
+    /**
+     * Bounding box in document coordinate space.
+     */
     val boundingBox: String,
+    /**
+     * Fraction of the page area covered by this region (0.0 to 1.0).
+     */
     val areaFraction: Double,
 )

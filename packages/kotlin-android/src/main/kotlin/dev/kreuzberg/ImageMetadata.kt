@@ -8,8 +8,20 @@ package dev.kreuzberg
  * Includes dimensions, format, and EXIF data.
  */
 data class ImageMetadata(
+    /**
+     * Image width in pixels
+     */
     val width: Int,
+    /**
+     * Image height in pixels
+     */
     val height: Int,
+    /**
+     * Image format (e.g., "PNG", "JPEG", "TIFF")
+     */
     val format: String,
+    /**
+     * EXIF metadata tags
+     */
     val exif: Map<String, String>,
 )

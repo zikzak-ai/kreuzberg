@@ -8,7 +8,16 @@ package dev.kreuzberg
  * Stores row/column dimensions and a flat list of cells with position info.
  */
 data class TableGrid(
+    /**
+     * Number of rows in the table.
+     */
     val rows: Int,
+    /**
+     * Number of columns in the table.
+     */
     val cols: Int,
+    /**
+     * All cells in row-major order.
+     */
     val cells: List<GridCell>,
 )

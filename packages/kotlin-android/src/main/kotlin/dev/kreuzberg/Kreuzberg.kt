@@ -358,7 +358,22 @@ object Kreuzberg {
      *
      * A vector of file extensions (without leading dot) for the MIME type.
      */
-    fun getExtensionsForMime(mimeType: String): String = KreuzbergBridge.nativeGetExtensionsForMime(mimeType)
+    fun getExtensionsForMime(mimeType: String): List<String> {
+        val resultJson = KreuzbergBridge.nativeGetExtensionsForMime(mimeType)
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * Get file extensions for a given MIME type.
+     *
+     * Returns all known file extensions that map to the specified MIME type.
+     *
+     * **Returns:**
+     *
+     * A vector of file extensions (without leading dot) for the MIME type.
+     */
+    suspend fun getExtensionsForMimeAsync(mimeType: String): List<String> =
+        withContext(Dispatchers.IO) { getExtensionsForMime(mimeType) }
 
     /**
      * List the names of all registered embedding backends.
@@ -366,12 +381,33 @@ object Kreuzberg {
      * Used by `kreuzberg-cli` and the api/mcp endpoints; excluded from the
      * language bindings via `alef.toml [exclude].functions`.
      */
-    fun listEmbeddingBackends(): String = KreuzbergBridge.nativeListEmbeddingBackends()
+    fun listEmbeddingBackends(): List<String> {
+        val resultJson = KreuzbergBridge.nativeListEmbeddingBackends()
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * List the names of all registered embedding backends.
+     *
+     * Used by `kreuzberg-cli` and the api/mcp endpoints; excluded from the
+     * language bindings via `alef.toml [exclude].functions`.
+     */
+    suspend fun listEmbeddingBackendsAsync(): List<String> =
+        withContext(Dispatchers.IO) { listEmbeddingBackends() }
 
     /**
      * List names of all registered document extractors.
      */
-    fun listDocumentExtractors(): String = KreuzbergBridge.nativeListDocumentExtractors()
+    fun listDocumentExtractors(): List<String> {
+        val resultJson = KreuzbergBridge.nativeListDocumentExtractors()
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * List names of all registered document extractors.
+     */
+    suspend fun listDocumentExtractorsAsync(): List<String> =
+        withContext(Dispatchers.IO) { listDocumentExtractors() }
 
     /**
      * List all registered OCR backends.
@@ -382,7 +418,22 @@ object Kreuzberg {
      *
      * A vector of OCR backend names.
      */
-    fun listOcrBackends(): String = KreuzbergBridge.nativeListOcrBackends()
+    fun listOcrBackends(): List<String> {
+        val resultJson = KreuzbergBridge.nativeListOcrBackends()
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * List all registered OCR backends.
+     *
+     * Returns the names of all OCR backends currently registered in the global registry.
+     *
+     * **Returns:**
+     *
+     * A vector of OCR backend names.
+     */
+    suspend fun listOcrBackendsAsync(): List<String> =
+        withContext(Dispatchers.IO) { listOcrBackends() }
 
     /**
      * List all registered post-processor names.
@@ -395,7 +446,24 @@ object Kreuzberg {
      * - `Ok(Vec<String>)` - Vector of post-processor names
      * - `Err(...)` if the registry lock is poisoned
      */
-    fun listPostProcessors(): String = KreuzbergBridge.nativeListPostProcessors()
+    fun listPostProcessors(): List<String> {
+        val resultJson = KreuzbergBridge.nativeListPostProcessors()
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * List all registered post-processor names.
+     *
+     * Returns a vector of all post-processor names currently registered in the
+     * global registry.
+     *
+     * **Returns:**
+     *
+     * - `Ok(Vec<String>)` - Vector of post-processor names
+     * - `Err(...)` if the registry lock is poisoned
+     */
+    suspend fun listPostProcessorsAsync(): List<String> =
+        withContext(Dispatchers.IO) { listPostProcessors() }
 
     /**
      * List names of all registered renderers.
@@ -404,12 +472,34 @@ object Kreuzberg {
      *
      * Returns an error if the registry lock is poisoned.
      */
-    fun listRenderers(): String = KreuzbergBridge.nativeListRenderers()
+    fun listRenderers(): List<String> {
+        val resultJson = KreuzbergBridge.nativeListRenderers()
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * List names of all registered renderers.
+     *
+     * **Errors:**
+     *
+     * Returns an error if the registry lock is poisoned.
+     */
+    suspend fun listRenderersAsync(): List<String> =
+        withContext(Dispatchers.IO) { listRenderers() }
 
     /**
      * List names of all registered validators.
      */
-    fun listValidators(): String = KreuzbergBridge.nativeListValidators()
+    fun listValidators(): List<String> {
+        val resultJson = KreuzbergBridge.nativeListValidators()
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * List names of all registered validators.
+     */
+    suspend fun listValidatorsAsync(): List<String> =
+        withContext(Dispatchers.IO) { listValidators() }
 
     /**
      * Generate embeddings asynchronously for a list of text strings.
@@ -426,10 +516,28 @@ object Kreuzberg {
      * - `KreuzbergError.Embedding` if the preset name is unknown, model download fails,
      *   or the blocking inference task panics
      */
-    fun embedTextsAsync(
-        texts: String,
-        config: EmbeddingConfig,
-    ): String = KreuzbergBridge.nativeEmbedTextsAsync(texts, mapper.writeValueAsString(config))
+    fun embedTextsAsync(texts: List<String>, config: EmbeddingConfig): List<List<Float>> {
+        val resultJson = KreuzbergBridge.nativeEmbedTextsAsync(mapper.writeValueAsString(texts), mapper.writeValueAsString(config))
+        return mapper.readValue(resultJson, object : TypeReference<List<List<Float>>>() {})
+    }
+
+    /**
+     * Generate embeddings asynchronously for a list of text strings.
+     *
+     * This is the async counterpart to `embed_texts`. It offloads the blocking
+     * ONNX inference work to a dedicated blocking thread pool via Tokio's
+     * `spawn_blocking`, keeping the async executor free.
+     *
+     * Returns one embedding vector per input text in the same order.
+     *
+     * **Errors:**
+     *
+     * - `KreuzbergError.MissingDependency` if ONNX Runtime is not installed
+     * - `KreuzbergError.Embedding` if the preset name is unknown, model download fails,
+     *   or the blocking inference task panics
+     */
+    suspend fun embedTextsAsyncAsync(texts: List<String>, config: EmbeddingConfig): List<List<Float>> =
+        withContext(Dispatchers.IO) { embedTextsAsync(texts, config) }
 
     /**
      * Render a single PDF page to PNG bytes.
@@ -463,10 +571,18 @@ object Kreuzberg {
      *
      * Returns a 2D vector where each inner vector is the embedding for the corresponding text.
      */
-    fun embedTexts(
-        texts: String,
-        config: EmbeddingConfig,
-    ): String = KreuzbergBridge.nativeEmbedTexts(texts, mapper.writeValueAsString(config))
+    fun embedTexts(texts: List<String>, config: EmbeddingConfig): List<List<Float>> {
+        val resultJson = KreuzbergBridge.nativeEmbedTexts(mapper.writeValueAsString(texts), mapper.writeValueAsString(config))
+        return mapper.readValue(resultJson, object : TypeReference<List<List<Float>>>() {})
+    }
+
+    /**
+     * Embed a list of texts using the configured embedding model.
+     *
+     * Returns a 2D vector where each inner vector is the embedding for the corresponding text.
+     */
+    suspend fun embedTextsAsync(texts: List<String>, config: EmbeddingConfig): List<List<Float>> =
+        withContext(Dispatchers.IO) { embedTexts(texts, config) }
 
     /**
      * Get an embedding preset by name.
@@ -481,5 +597,16 @@ object Kreuzberg {
      *
      * Returns owned `String`s so the values are safe to pass across FFI boundaries.
      */
-    fun listEmbeddingPresets(): String = KreuzbergBridge.nativeListEmbeddingPresets()
+    fun listEmbeddingPresets(): List<String> {
+        val resultJson = KreuzbergBridge.nativeListEmbeddingPresets()
+        return mapper.readValue(resultJson, object : TypeReference<List<String>>() {})
+    }
+
+    /**
+     * List the names of all available embedding presets.
+     *
+     * Returns owned `String`s so the values are safe to pass across FFI boundaries.
+     */
+    suspend fun listEmbeddingPresetsAsync(): List<String> =
+        withContext(Dispatchers.IO) { listEmbeddingPresets() }
 }

@@ -141,18 +141,18 @@ Docling, MarkItDown, Pandoc, Unstructured, Tika, PyMuPDF4LLM, PDFPlumber, MinerU
 
 The `compare` and `pipeline-benchmark` commands support these extraction paths:
 
-| Pipeline           | Description                                       |
-| ------------------ | ------------------------------------------------- |
+| Pipeline           | Description                                    |
+| ------------------ | ---------------------------------------------- |
 | `baseline`         | Native PDF text extraction (no OCR, no layout) |
 | `layout`           | Native PDF with layout detection               |
-| `tesseract`        | Tesseract OCR with force_ocr                      |
-| `tesseract+layout` | Tesseract OCR with layout detection               |
-| `paddle`           | PaddleOCR mobile tier with force_ocr              |
-| `paddle+layout`    | PaddleOCR mobile tier with layout detection       |
-| `paddle-server`    | PaddleOCR server tier                             |
-| `docling`          | Vendored Docling reference extraction             |
-| `paddleocr-python` | Vendored PaddleOCR Python extraction              |
-| `rapidocr`         | Vendored RapidOCR extraction                      |
+| `tesseract`        | Tesseract OCR with force_ocr                   |
+| `tesseract+layout` | Tesseract OCR with layout detection            |
+| `paddle`           | PaddleOCR mobile tier with force_ocr           |
+| `paddle+layout`    | PaddleOCR mobile tier with layout detection    |
+| `paddle-server`    | PaddleOCR server tier                          |
+| `docling`          | Vendored Docling reference extraction          |
+| `paddleocr-python` | Vendored PaddleOCR Python extraction           |
+| `rapidocr`         | Vendored RapidOCR extraction                   |
 
 ## CLI Reference
 

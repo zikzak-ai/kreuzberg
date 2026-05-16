@@ -220,7 +220,6 @@ const V2_DOC_ORI_MODEL: SharedModelDefinition = SharedModelDefinition {
     sha256_checksum: "6b742aebce6f0f7f71f747931ac7becfc7c96c51641e14943b291eeb334e7947",
 };
 #[cfg_attr(alef, alef(skip))]
-
 /// Resolved recognition model with engine pool key for sharing.
 #[derive(Debug, Clone)]
 pub struct ResolvedRecModel {
@@ -267,7 +266,6 @@ pub struct ModelPaths {
     pub dict_file: PathBuf,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// A single model file entry in the cache manifest.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct ModelManifestEntry {
@@ -281,7 +279,6 @@ pub struct ModelManifestEntry {
     pub source_url: String,
 }
 #[cfg_attr(alef, alef(skip))]
-
 /// Statistics about the PaddleOCR model cache.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CacheStats {

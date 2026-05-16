@@ -26,10 +26,10 @@ public class StatefulPostProcessor : IPostProcessor
     public void Process(ExtractionResult result, ExtractionConfig config)
     {
         _callCount++;
-        
+
         var key = $"last_mime_{_callCount}";
         _cache.TryAdd(key, result.MimeType);
-        
+
         Console.WriteLine($"Processing #{_callCount}: {result.MimeType}");
     }
 
