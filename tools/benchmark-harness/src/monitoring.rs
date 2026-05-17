@@ -690,13 +690,14 @@ mod tests {
     async fn test_resource_monitor_basic() {
         let monitor = ResourceMonitor::new();
 
-        monitor.start(Duration::from_millis(10)).await;
-        tokio::time::sleep(Duration::from_millis(100)).await;
+        // 25ms interval + 500ms sleep gives ~20 samples even on a slow CI
+        // runner; the previous 10/100ms ratio occasionally produced 0
+        // samples on macOS CI when the first tick missed the deadline.
+        monitor.start(Duration::from_millis(25)).await;
+        tokio::time::sleep(Duration::from_millis(500)).await;
         let samples = monitor.stop().await;
 
         assert!(!samples.is_empty(), "Should have collected samples");
-        // With 10ms interval and 100ms sleep, we expect at least 5-8 samples
-        // But to avoid flakiness, we allow for timing variance and require at least 2
         assert!(samples.len() >= 2, "Should have at least 2 samples");
     }
 
