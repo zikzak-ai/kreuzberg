@@ -35,25 +35,25 @@ tasks:
       - npx textlint 'docs/**/*.md'
 
   snippets:install:
-    desc: Install alef-snippets CLI from the pinned alef tag (idempotent)
+    desc: Install alef CLI (which now includes the snippets subcommand) if missing
     cmds:
       - cmd: |
-          if ! command -v alef-snippets >/dev/null 2>&1; then
-            cargo install --locked --git https://github.com/kreuzberg-dev/alef --tag {{.ALEF_SNIPPETS_TAG}} alef-snippets
+          if ! command -v alef >/dev/null 2>&1; then
+            cargo install --locked --git https://github.com/kreuzberg-dev/alef --tag {{.ALEF_SNIPPETS_TAG}} alef-cli
           fi
         ignore_error: false
 
   snippets:validate:
-    desc: Validate all docs/snippets via alef-snippets (syntax level)
+    desc: Validate all docs/snippets via `alef snippets` (syntax level)
     deps: [snippets:install]
     cmds:
-      - alef-snippets validate --snippets docs/snippets --level syntax --timeout 120 -j 4
+      - alef snippets validate --snippets docs/snippets --level syntax --timeout 120 -j 4
 
   snippets:validate:lang:
     desc: "Validate snippets for one language (set LANG=dart|kotlin|swift|...)"
     deps: [snippets:install]
     cmds:
-      - alef-snippets validate --snippets docs/snippets --level syntax --languages {{.LANG}} --timeout 120 -j 4
+      - alef snippets validate --snippets docs/snippets --level syntax --languages {{.LANG}} --timeout 120 -j 4
     requires:
       vars: [LANG]
 
@@ -61,16 +61,16 @@ tasks:
     desc: List all snippets discovered under docs/snippets
     deps: [snippets:install]
     cmds:
-      - alef-snippets list --snippets docs/snippets
+      - alef snippets list --snippets docs/snippets
 
   snippets:audit:
     desc: Audit snippet metadata and coverage
     deps: [snippets:install]
     cmds:
-      - alef-snippets audit --snippets docs/snippets
+      - alef snippets audit --snippets docs/snippets
 
   snippets:gaps:
     desc: Report missing snippet variants across languages
     deps: [snippets:install]
     cmds:
-      - alef-snippets gaps --snippets docs/snippets
+      - alef snippets gaps --snippets docs/snippets
