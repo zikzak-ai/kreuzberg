@@ -72,6 +72,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   through Rust-side caching, snapshot tests, and any internal JSON-based
   pipelines. No change to public binding API.
 
+- **Plugin registry functions now exposed in every binding**:
+  `register_ocr_backend`, `register_post_processor`, `register_validator`,
+  `register_embedding_backend`, `register_renderer`,
+  `register_document_extractor`, their `unregister_*` siblings, and
+  `clear_*` group counterparts. Bindings previously hid these because the
+  alef codegen emitted duplicate definitions; alef ≥ v0.16.65 auto-deduplicates
+  trait-bridge registrations, so the kreuzberg `alef.toml` global function
+  exclusions are dropped.
+
+- **`kreuzberg-ffi` `register_ocr_backend` / `unregister_ocr_backend` are now
+  callable from C, Go, Java, C#**. The previous `*const c_void` Send issue was
+  resolved by the alef-backend-ffi Jinja migration; the binding now compiles
+  with `unsafe impl Send + Sync` on the bridge struct.
+
+- **WASM bindings now expose `HwpxExtractor`, `process_images_with_ocr`,
+  and the canonical `CacheStats`**. alef ≥ v0.16.65 auto-excludes feature-gated
+  types, so the explicit WASM exclusions for these are redundant.
+
 ## [5.0.0-rc.1] - 2026-05-16
 
 ### Changed
