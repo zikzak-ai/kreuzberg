@@ -8075,7 +8075,7 @@ impl From<NodeContent> for kreuzberg::NodeContent {
                 text,
             },
             NodeContent::Paragraph { text } => kreuzberg::NodeContent::Paragraph { text },
-            NodeContent::List { ordered } => kreuzberg::NodeContent::List { ordered: ordered as _ },
+            NodeContent::List { ordered } => kreuzberg::NodeContent::List { ordered },
             NodeContent::ListItem { text } => kreuzberg::NodeContent::ListItem { text },
             NodeContent::Table { grid } => kreuzberg::NodeContent::Table { grid: grid.into() },
             NodeContent::Image {

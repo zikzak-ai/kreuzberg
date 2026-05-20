@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (java e2e clear_* methods)
+
+- **java e2e**: `clear_document_extractors()`, `clear_ocr_backends()`,
+  `clear_embedding_backends()`, `clear_post_processors()`,
+  `clear_renderers()`, `clear_validators()` now generate in the `Kreuzberg`
+  facade class. Root cause: `#[cfg_attr(alef, alef(skip))]` annotations on
+  these functions prevented alef from picking them up during Rust API
+  extraction. Removed the annotations from the 6 `clear_*()` functions (only;
+  `register_*/unregister_*` still skipped since they take `Arc<dyn Trait>`
+  params unsuitable for FFI). Re-generated all language bindings.
+
 ### Fixed (kotlin-android e2e parity sweep)
 
 - **kotlin-android**: now honours `#[cfg_attr(alef, alef(skip))]` annotations
