@@ -10,6 +10,7 @@
   },
   "assertions": [{ "type": "not_error" }],
   "skip": {
-    "reason": "Requires features: embeddings"
+    "languages": ["wasm"],
+    "reason": "embeddings feature depends on ONNX Runtime which is not available on the WASM target"
   }
 }

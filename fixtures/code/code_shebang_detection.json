@@ -24,8 +24,5 @@
       "field": "content",
       "values": ["build", "clean"]
     }
-  ],
-  "skip": {
-    "reason": "Requires features: tree-sitter"
-  }
+  ]
 }

@@ -34,8 +34,5 @@
       "field": "quality_score",
       "value": 1.0
     }
-  ],
-  "skip": {
-    "reason": "Requires features: quality"
-  }
+  ]
 }

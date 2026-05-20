@@ -32,8 +32,5 @@
       "field": "content",
       "value": 5
     }
-  ],
-  "skip": {
-    "reason": "Requires features: tree-sitter"
-  }
+  ]
 }

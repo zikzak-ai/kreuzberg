@@ -32,8 +32,5 @@
       "field": "keywords",
       "value": 1
     }
-  ],
-  "skip": {
-    "reason": "Requires features: keywords-yake"
-  }
+  ]
 }

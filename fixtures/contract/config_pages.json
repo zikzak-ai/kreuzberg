@@ -28,8 +28,5 @@
       "field": "content",
       "values": ["PAGE"]
     }
-  ],
-  "skip": {
-    "reason": "Requires features: pdf"
-  }
+  ]
 }

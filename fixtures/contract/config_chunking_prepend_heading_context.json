@@ -37,8 +37,5 @@
       "type": "is_true",
       "field": "first_chunk_starts_with_heading"
     }
-  ],
-  "skip": {
-    "reason": "Requires features: chunking"
-  }
+  ]
 }

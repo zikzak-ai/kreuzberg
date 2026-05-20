@@ -20,8 +20,5 @@
       "field": "elements",
       "value": 1
     }
-  ],
-  "skip": {
-    "reason": "Requires features: office"
-  }
+  ]
 }

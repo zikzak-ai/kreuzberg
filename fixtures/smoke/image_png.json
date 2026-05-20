@@ -21,8 +21,5 @@
       "field": "metadata.format",
       "value": "PNG"
     }
-  ],
-  "skip": {
-    "reason": "Skip if document missing; Image extraction requires image processing dependencies"
-  }
+  ]
 }
