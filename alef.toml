@@ -788,9 +788,7 @@ fields_method_calls = ["metadata.format.excel"]
 result_fields = [
   "content",
   "mime_type",
-  "extraction_method",
-  "tables",
-  "metadata",
+  "djot_content",
 ]
 
 [crates.e2e.call]
