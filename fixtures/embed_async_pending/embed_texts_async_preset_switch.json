@@ -8,7 +8,10 @@
       "Text"
     ],
     "config": {
-      "model": "default"
+      "model": {
+        "type": "preset",
+        "name": "default"
+      }
     }
   },
   "assertions": [
