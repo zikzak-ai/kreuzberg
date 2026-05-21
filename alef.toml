@@ -1214,6 +1214,7 @@ module = "kreuzberg"
 async = false
 returns_result = true
 skip_languages = ["wasm"]
+options_type = "EmbeddingConfig"
 args = [
   { name = "texts", field = "input.texts", type = "json_object", owned = true, element_type = "String" },
   { name = "config", field = "input.config", type = "json_object", optional = true },
@@ -2618,6 +2619,7 @@ module = "kreuzberg"
 async = true
 returns_result = true
 skip_languages = ["wasm"]
+options_type = "EmbeddingConfig"
 args = [
   { name = "texts", field = "input.texts", type = "json_object", owned = true, element_type = "String" },
   { name = "config", field = "input.config", type = "json_object", optional = true },
