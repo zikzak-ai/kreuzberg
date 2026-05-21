@@ -818,7 +818,7 @@ options_type = "ExtractionConfig"
 class = "dev.kreuzberg.Kreuzberg"
 function = "extractFile"
 options_type = "ExtractionConfig"
-enum_fields = { outputFormat = "OutputFormat" }
+enum_fields = { outputFormat = "OutputFormat", "metadata.format" = "FormatMetadata" }
 
 [crates.e2e.call.overrides.csharp]
 class = "KreuzbergLib"
@@ -1347,6 +1347,7 @@ function = ""
 module = ""
 async = false
 returns_result = false
+returns_void = true
 args = []
 
 [crates.e2e.calls.clear_ocr_backends.overrides.python]
@@ -1416,6 +1417,7 @@ function = ""
 module = ""
 async = false
 returns_result = false
+returns_void = true
 args = []
 
 [crates.e2e.calls.clear_post_processors.overrides.python]
@@ -1485,6 +1487,7 @@ function = ""
 module = ""
 async = false
 returns_result = false
+returns_void = true
 args = []
 
 [crates.e2e.calls.clear_validators.overrides.python]
@@ -2107,6 +2110,7 @@ function = ""
 module = ""
 async = false
 returns_result = false
+returns_void = true
 args = []
 
 [crates.e2e.calls.clear_embedding_backends.overrides.python]
@@ -2314,6 +2318,7 @@ function = ""
 module = ""
 async = false
 returns_result = false
+returns_void = true
 args = []
 
 [crates.e2e.calls.clear_document_extractors.overrides.python]
@@ -2521,6 +2526,7 @@ function = ""
 module = ""
 async = false
 returns_result = false
+returns_void = true
 args = []
 
 [crates.e2e.calls.clear_renderers.overrides.python]
