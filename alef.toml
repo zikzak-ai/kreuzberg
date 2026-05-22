@@ -617,7 +617,12 @@ upgrade = "cd packages/zig && zig build --fetch"
 
 [crates.test.python]
 precondition = "command -v uv >/dev/null 2>&1"
-before = "cd packages/python && maturin develop --release"
+# `uv run --no-sync` in the e2e step never refreshes the e2e venv, and `uv sync`
+# installs `kreuzberg` as a *copied* (non-editable) snapshot. A stale snapshot
+# built before the wrapper modules were generated leaves the venv with only
+# `_kreuzberg.abi3.so` + `py.typed`, breaking `from kreuzberg import ...`.
+# Force a clean rebuild of that snapshot from current source before testing.
+before = "cd packages/python && maturin develop --release && cd ../../e2e/python && uv sync --reinstall-package kreuzberg"
 e2e = "cd e2e/python && uv run --no-sync pytest tests/ -q"
 
 [crates.test.node]
@@ -2945,6 +2950,11 @@ snippets_dir = "docs/snippets"
 output_pattern = "packages/{language}/README.md"
 discord_url = "https://discord.gg/xt9WY3GnKR"
 banner_url = "https://github.com/user-attachments/assets/419fc06c-8313-4324-b159-4b4d3cfce5c0"
+
+[crates.readme.languages.rust]
+template = "root.md"
+name = "Kreuzberg"
+output_path = "README.md"
 
 [crates.readme.languages.python]
 template = "python.md"
