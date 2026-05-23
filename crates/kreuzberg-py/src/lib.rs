@@ -509,7 +509,7 @@ pub struct ExtractionConfig {
 impl ExtractionConfig {
     #[allow(clippy::too_many_arguments)]
     #[must_use]
-    #[pyo3(signature = (use_cache=Self::default().use_cache, enable_quality_processing=Self::default().enable_quality_processing, force_ocr=Self::default().force_ocr, disable_ocr=Self::default().disable_ocr, result_format=Self::default().result_format, output_format=Self::default().output_format, use_layout_for_markdown=Self::default().use_layout_for_markdown, include_document_structure=Self::default().include_document_structure, max_archive_depth=Self::default().max_archive_depth, ocr=None, force_ocr_pages=None, chunking=None, content_filter=None, images=None, token_reduction=None, language_detection=None, pages=None, postprocessor=None, extraction_timeout_secs=None, max_concurrent_extractions=None, security_limits=None, acceleration=None, cache_namespace=None, cache_ttl_secs=None, email=None, concurrency=None, structured_extraction=None, cancel_token=None))]
+    #[pyo3(signature = (use_cache=Self::default().use_cache, enable_quality_processing=Self::default().enable_quality_processing, force_ocr=Self::default().force_ocr, disable_ocr=Self::default().disable_ocr, result_format=Self::default().result_format, output_format=Self::default().output_format, use_layout_for_markdown=Self::default().use_layout_for_markdown, include_document_structure=Self::default().include_document_structure, max_archive_depth=Self::default().max_archive_depth, ocr=None, force_ocr_pages=None, chunking=None, content_filter=None, images=None, pdf_options=None, token_reduction=None, language_detection=None, pages=None, keywords=None, postprocessor=None, html_options=None, html_output=None, extraction_timeout_secs=None, max_concurrent_extractions=None, security_limits=None, layout=None, acceleration=None, cache_namespace=None, cache_ttl_secs=None, email=None, concurrency=None, tree_sitter=None, structured_extraction=None, cancel_token=None))]
     #[new]
     pub fn new(
         use_cache: bool,
@@ -526,18 +526,24 @@ impl ExtractionConfig {
         chunking: Option<ChunkingConfig>,
         content_filter: Option<ContentFilterConfig>,
         images: Option<ImageExtractionConfig>,
+        pdf_options: Option<PdfConfig>,
         token_reduction: Option<TokenReductionOptions>,
         language_detection: Option<LanguageDetectionConfig>,
         pages: Option<PageConfig>,
+        keywords: Option<KeywordConfig>,
         postprocessor: Option<PostProcessorConfig>,
+        html_options: Option<String>,
+        html_output: Option<HtmlOutputConfig>,
         extraction_timeout_secs: Option<u64>,
         max_concurrent_extractions: Option<usize>,
         security_limits: Option<SecurityLimits>,
+        layout: Option<LayoutDetectionConfig>,
         acceleration: Option<AccelerationConfig>,
         cache_namespace: Option<String>,
         cache_ttl_secs: Option<u64>,
         email: Option<EmailConfig>,
         concurrency: Option<String>,
+        tree_sitter: Option<TreeSitterConfig>,
         structured_extraction: Option<StructuredExtractionConfig>,
         cancel_token: Option<String>,
     ) -> Self {
@@ -551,20 +557,20 @@ impl ExtractionConfig {
             chunking,
             content_filter,
             images,
-            pdf_options: None,
+            pdf_options,
             token_reduction,
             language_detection,
             pages,
-            keywords: None,
+            keywords,
             postprocessor,
-            html_options: None,
-            html_output: None,
+            html_options,
+            html_output,
             extraction_timeout_secs,
             max_concurrent_extractions,
             result_format,
             security_limits,
             output_format,
-            layout: None,
+            layout,
             use_layout_for_markdown,
             include_document_structure,
             acceleration,
@@ -573,7 +579,7 @@ impl ExtractionConfig {
             email,
             concurrency,
             max_archive_depth,
-            tree_sitter: None,
+            tree_sitter,
             structured_extraction,
             cancel_token,
         }
