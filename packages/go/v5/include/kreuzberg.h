@@ -915,8 +915,8 @@ typedef struct KREUZBERGOrientationResult KREUZBERGOrientationResult;
  * Output format for extraction results.
  *
  * Controls the format of the `content` field in `ExtractionResult`.
- * When set to `Markdown`, `Djot`, or `Html`, the output will be formatted
- * accordingly. `Plain` returns the raw extracted text.
+ * When set to `Markdown`, `Djot`, or `Html`, the output uses that format.
+ * `Plain` returns the raw extracted text.
  * `Structured` returns JSON with full OCR element data including bounding
  * boxes and confidence scores.
  */
@@ -4590,6 +4590,13 @@ void kreuzberg_structured_data_result_free(KREUZBERGStructuredDataResult *ptr);
 char *kreuzberg_structured_data_result_content(const KREUZBERGStructuredDataResult *ptr);
 
 /**
+ * Get the `format` field from a `StructuredDataResult`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_structured_data_result_format(const KREUZBERGStructuredDataResult *ptr);
+
+/**
  * Get the `metadata` field from a `StructuredDataResult`.
  * # Safety
  * Pointer must be a valid handle returned by this library.
@@ -6067,6 +6074,13 @@ void kreuzberg_extraction_result_free(KREUZBERGExtractionResult *ptr);
 char *kreuzberg_extraction_result_content(const KREUZBERGExtractionResult *ptr);
 
 /**
+ * Get the `mime_type` field from a `ExtractionResult`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_extraction_result_mime_type(const KREUZBERGExtractionResult *ptr);
+
+/**
  * Get the `metadata` field from a `ExtractionResult`.
  * # Safety
  * Pointer must be a valid handle returned by this library.
@@ -6286,6 +6300,20 @@ char *kreuzberg_processing_warning_to_json(const KREUZBERGProcessingWarning *ptr
  * Pointer must have been returned by this library, or be null.
  */
 void kreuzberg_processing_warning_free(KREUZBERGProcessingWarning *ptr);
+
+/**
+ * Get the `source` field from a `ProcessingWarning`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_processing_warning_source(const KREUZBERGProcessingWarning *ptr);
+
+/**
+ * Get the `message` field from a `ProcessingWarning`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_processing_warning_message(const KREUZBERGProcessingWarning *ptr);
 
 /**
  * Create a `LlmUsage` from a JSON string. Returns null on failure.
@@ -6593,6 +6621,13 @@ void kreuzberg_extracted_image_free(KREUZBERGExtractedImage *ptr);
  */
 uint8_t *kreuzberg_extracted_image_data(const KREUZBERGExtractedImage *ptr,
                                         uintptr_t *out_len);
+
+/**
+ * Get the `format` field from a `ExtractedImage`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_extracted_image_format(const KREUZBERGExtractedImage *ptr);
 
 /**
  * Get the `image_index` field from a `ExtractedImage`.
@@ -8065,6 +8100,13 @@ char *kreuzberg_archive_metadata_to_json(const KREUZBERGArchiveMetadata *ptr);
  * Pointer must have been returned by this library, or be null.
  */
 void kreuzberg_archive_metadata_free(KREUZBERGArchiveMetadata *ptr);
+
+/**
+ * Get the `format` field from a `ArchiveMetadata`.
+ * # Safety
+ * Pointer must be a valid handle returned by this library.
+ */
+char *kreuzberg_archive_metadata_format(const KREUZBERGArchiveMetadata *ptr);
 
 /**
  * Get the `file_count` field from a `ArchiveMetadata`.

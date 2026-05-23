@@ -1763,8 +1763,8 @@ class ContentFilterConfig {
   ///
   /// Note: when a layout-detection model is active, the model may independently
   /// classify page-header / page-footer regions as furniture on a per-page basis.
-  /// To preserve those regions, set `include_headers = true` and/or
-  /// `include_footers = true` in addition to disabling this flag.
+  /// To preserve those regions, set `include_headers = true`, `include_footers = true`,
+  /// or both, in addition to disabling this flag.
   ///
   /// Primarily affects PDF extraction.
   ///
@@ -2258,7 +2258,7 @@ class DocumentNode {
 
   /// Format-specific key-value attributes.
   ///
-  /// Extensible bag for data that doesn't warrant a typed field: CSS classes,
+  /// Extensible bag for miscellaneous data without a dedicated typed field: CSS classes,
   /// LaTeX environment names, Excel cell formulas, slide layout names, etc.
   final Map<String, String>? attributes;
 
@@ -3553,7 +3553,7 @@ class ExtractionConfig {
   ///
   /// Controls maximum archive size, compression ratio, file count, and other
   /// security thresholds to prevent decompression bomb attacks. Also caps
-  /// nesting depth, iteration count, entity / token length, cumulative
+  /// nesting depth, iteration count, entity / token length, total
   /// content size, and table cell count for every extraction path that
   /// ingests user-controlled bytes.
   /// When `None`, default limits are used.
@@ -3588,7 +3588,7 @@ class ExtractionConfig {
   ///
   /// When `true` and `layout` is `Some(_)`, layout regions inform heading,
   /// table, list, and figure detection in the structure pipeline that would
-  /// otherwise rely on font-clustering heuristics alone. Substantially
+  /// otherwise rely on font-clustering heuristics alone. Significantly
   /// improves SF1 (structural F1) at the cost of inference latency
   /// (~150-300ms/page CPU, ~20-50ms/page GPU). Default: `false`.
   /// Requires the `layout-detection` feature.
@@ -3932,7 +3932,7 @@ class ExtractionResult {
   /// LLM token usage and cost data for all LLM calls made during this extraction.
   ///
   /// Contains one entry per LLM call. Multiple entries are produced when
-  /// VLM OCR, structured extraction, and/or LLM embeddings all run during
+  /// VLM OCR, structured extraction, or LLM embeddings run during
   /// the same extraction.
   ///
   /// `None` when no LLM was used.
@@ -8008,7 +8008,7 @@ class SecurityLimits {
   final PlatformInt64 maxNestingDepth;
 
   /// Maximum length of any single XML entity / attribute / token (1 MiB).
-  /// This is a per-token cap, NOT a cumulative cap — billion-laughs class
+  /// This is a per-token cap, NOT a total cap — billion-laughs class
   /// attacks where a single entity expands to hundreds of MB are caught
   /// here, while normal long text content (a paragraph, a CDATA block) is
   /// caught by `max_content_size` instead.

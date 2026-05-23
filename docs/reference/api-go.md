@@ -865,7 +865,7 @@ is configured), and metadata about its position in the document.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `Content` | `string` | — | The text content of this chunk. |
-| `ChunkType` | `ChunkType` | — | Semantic structural classification of this chunk. Assigned by the heuristic classifier based on content patterns and heading context. Defaults to `ChunkType.Unknown` when no rule matches. |
+| `ChunkType` | `ChunkType` | `/* serde(default) */` | Semantic structural classification of this chunk. Assigned by the heuristic classifier based on content patterns and heading context. Defaults to `ChunkType.Unknown` when no rule matches. |
 | `Embedding` | `*[]float32` | `nil` | Optional embedding vector for this chunk. Only populated when `EmbeddingConfig` is provided in chunking configuration. The dimensionality depends on the chosen embedding model. |
 | `Metadata` | `ChunkMetadata` | — | Metadata about this chunk's position and properties. |
 
@@ -886,8 +886,8 @@ Metadata about a chunk's position in the original document.
 | `TotalChunks` | `int` | — | Total number of chunks in the document. |
 | `FirstPage` | `*uint32` | `nil` | First page number this chunk spans (1-indexed). Only populated when page tracking is enabled in extraction configuration. |
 | `LastPage` | `*uint32` | `nil` | Last page number this chunk spans (1-indexed, equal to first_page for single-page chunks). Only populated when page tracking is enabled in extraction configuration. |
-| `HeadingContext` | `*HeadingContext` | `nil` | Heading context when using Markdown chunker. Contains the heading hierarchy this chunk falls under. Only populated when `ChunkerType.Markdown` is used. |
-| `ImageIndices` | `[]uint32` | — | Indices into `ExtractionResult.images` for images on pages covered by this chunk. Contains zero-based indices into the top-level `images` collection for every image whose `page_number` falls within `[first_page, last_page]`. Empty when image extraction is disabled or the chunk spans no pages with images. |
+| `HeadingContext` | `*HeadingContext` | `/* serde(default) */` | Heading context when using Markdown chunker. Contains the heading hierarchy this chunk falls under. Only populated when `ChunkerType.Markdown` is used. |
+| `ImageIndices` | `[]uint32` | `/* serde(default) */` | Indices into `ExtractionResult.images` for images on pages covered by this chunk. Contains zero-based indices into the top-level `images` collection for every image whose `page_number` falls within `[first_page, last_page]`. Empty when image extraction is disabled or the chunk spans no pages with images. |
 
 
 ---
@@ -961,7 +961,7 @@ default behavior unchanged.
 |-------|------|---------|-------------|
 | `IncludeHeaders` | `bool` | `false` | Include running headers in extraction output. - PDF: Disables top-margin furniture stripping and prevents the layout model from treating `PageHeader`-classified regions as furniture. - DOCX: Includes document headers in text output. - RTF/ODT: Headers already included; this is a no-op when true. - HTML/EPUB: Keeps `<header>` element content. Default: `false` (headers are stripped or excluded). |
 | `IncludeFooters` | `bool` | `false` | Include running footers in extraction output. - PDF: Disables bottom-margin furniture stripping and prevents the layout model from treating `PageFooter`-classified regions as furniture. - DOCX: Includes document footers in text output. - RTF/ODT: Footers already included; this is a no-op when true. - HTML/EPUB: Keeps `<footer>` element content. Default: `false` (footers are stripped or excluded). |
-| `StripRepeatingText` | `bool` | `true` | Enable the heuristic cross-page repeating text detector. When `true` (default), text that repeats verbatim across a supermajority of pages is classified as furniture and stripped.  Disable this if brand names or repeated headings are being incorrectly removed by the heuristic. Note: when a layout-detection model is active, the model may independently classify page-header / page-footer regions as furniture on a per-page basis. To preserve those regions, set `include_headers = true` and/or `include_footers = true` in addition to disabling this flag. Primarily affects PDF extraction. Default: `true`. |
+| `StripRepeatingText` | `bool` | `true` | Enable the heuristic cross-page repeating text detector. When `true` (default), text that repeats verbatim across a supermajority of pages is classified as furniture and stripped.  Disable this if brand names or repeated headings are being incorrectly removed by the heuristic. Note: when a layout-detection model is active, the model may independently classify page-header / page-footer regions as furniture on a per-page basis. To preserve those regions, set `include_headers = true`, `include_footers = true`, or both, in addition to disabling this flag. Primarily affects PDF extraction. Default: `true`. |
 | `IncludeWatermarks` | `bool` | `false` | Include watermark text in extraction output. - PDF: Keeps watermark artifacts and arXiv identifiers. - Other formats: No effect currently. Default: `false` (watermarks are stripped). |
 
 ### Methods
@@ -1113,7 +1113,7 @@ Available when the `djot` feature is enabled.
 | `Images` | `[]DjotImage` | — | Extracted images with metadata |
 | `Links` | `[]DjotLink` | — | Extracted links with URLs |
 | `Footnotes` | `[]Footnote` | — | Footnote definitions |
-| `Attributes` | `[]string` | — | Attributes mapped by element identifier (if present) |
+| `Attributes` | `[]string` | `/* serde(default) */` | Attributes mapped by element identifier (if present) |
 
 
 ---
@@ -1311,13 +1311,13 @@ for tree structure, and metadata like page number, bounding box, and content lay
 | `Id` | `string` | — | Deterministic identifier (hash of content + position). |
 | `Content` | `NodeContent` | — | Node content — tagged enum, type-specific data only. |
 | `Parent` | `*uint32` | `nil` | Parent node index (`nil` = root-level node). |
-| `Children` | `[]uint32` | — | Child node indices in reading order. |
-| `ContentLayer` | `ContentLayer` | — | Content layer classification. |
+| `Children` | `[]uint32` | `/* serde(default) */` | Child node indices in reading order. |
+| `ContentLayer` | `ContentLayer` | `/* serde(default) */` | Content layer classification. |
 | `Page` | `*uint32` | `nil` | Page number where this node starts (1-indexed). |
 | `PageEnd` | `*uint32` | `nil` | Page number where this node ends (for multi-page tables/sections). |
 | `Bbox` | `*string` | `nil` | Bounding box in document coordinates. |
-| `Annotations` | `[]TextAnnotation` | — | Inline annotations (formatting, links) on this node's text content. Only meaningful for text-carrying nodes; empty for containers. |
-| `Attributes` | `*map[string]string` | `nil` | Format-specific key-value attributes. Extensible bag for data that doesn't warrant a typed field: CSS classes, LaTeX environment names, Excel cell formulas, slide layout names, etc. |
+| `Annotations` | `[]TextAnnotation` | `/* serde(default) */` | Inline annotations (formatting, links) on this node's text content. Only meaningful for text-carrying nodes; empty for containers. |
+| `Attributes` | `*map[string]string` | `nil` | Format-specific key-value attributes. Extensible bag for miscellaneous data without a dedicated typed field: CSS classes, LaTeX environment names, Excel cell formulas, slide layout names, etc. |
 
 
 ---
@@ -1801,14 +1801,14 @@ PIL.Image (Python), Sharp (Node.js), or other formats as needed.
 | `Height` | `*uint32` | `nil` | Image height in pixels |
 | `Colorspace` | `*string` | `nil` | Colorspace information (e.g., "RGB", "CMYK", "Gray") |
 | `BitsPerComponent` | `*uint32` | `nil` | Bits per color component (e.g., 8, 16) |
-| `IsMask` | `bool` | — | Whether this image is a mask image |
+| `IsMask` | `bool` | `/* serde(default) */` | Whether this image is a mask image |
 | `Description` | `*string` | `nil` | Optional description of the image |
 | `OcrResult` | `*ExtractionResult` | `nil` | Nested OCR extraction result (if image was OCRed) When OCR is performed on this image, the result is embedded here rather than in a separate collection, making the relationship explicit. |
-| `BoundingBox` | `*string` | `nil` | Bounding box of the image on the page (PDF coordinates: x0=left, y0=bottom, x1=right, y1=top). Only populated for PDF-extracted images when position data is available from the PDF extractor. |
-| `SourcePath` | `*string` | `nil` | Original source path of the image within the document archive (e.g., "media/image1.png" in DOCX). Used for rendering image references when the binary data is not extracted. |
-| `ImageKind` | `*ImageKind` | `nil` | Heuristic classification of what this image likely depicts. `nil` if classification was disabled or inconclusive. |
-| `KindConfidence` | `*float32` | `nil` | Confidence score for `image_kind`, in the range 0.0 to 1.0. |
-| `ClusterId` | `*uint32` | `nil` | Identifier shared across images that form a single logical figure (e.g. all raster tiles of one technical drawing). `nil` for singletons. |
+| `BoundingBox` | `*string` | `/* serde(default) */` | Bounding box of the image on the page (PDF coordinates: x0=left, y0=bottom, x1=right, y1=top). Only populated for PDF-extracted images when position data is available from the PDF extractor. |
+| `SourcePath` | `*string` | `/* serde(default) */` | Original source path of the image within the document archive (e.g., "media/image1.png" in DOCX). Used for rendering image references when the binary data is not extracted. |
+| `ImageKind` | `*ImageKind` | `/* serde(default) */` | Heuristic classification of what this image likely depicts. `nil` if classification was disabled or inconclusive. |
+| `KindConfidence` | `*float32` | `/* serde(default) */` | Confidence score for `image_kind`, in the range 0.0 to 1.0. |
+| `ClusterId` | `*uint32` | `/* serde(default) */` | Identifier shared across images that form a single logical figure (e.g. all raster tiles of one technical drawing). `nil` for singletons. |
 
 
 ---
@@ -1858,10 +1858,10 @@ It can be loaded from TOML, YAML, or JSON files, or created programmatically.
 | `ExtractionTimeoutSecs` | `*uint64` | `nil` | Default per-file timeout in seconds for batch extraction. When set, each file in a batch will be canceled after this duration unless overridden by `FileExtractionConfig.timeout_secs`. `nil` means no timeout (unbounded extraction time). |
 | `MaxConcurrentExtractions` | `*int` | `nil` | Maximum concurrent extractions in batch operations (None = (num_cpus × 1.5).ceil()). Limits parallelism to prevent resource exhaustion when processing large batches. Defaults to (num_cpus × 1.5).ceil() when not set. |
 | `ResultFormat` | `ResultFormat` | `ResultFormat.Unified` | Result structure format Controls whether results are returned in unified format (default) with all content in the `content` field, or element-based format with semantic elements (for Unstructured-compatible output). |
-| `SecurityLimits` | `*SecurityLimits` | `nil` | Security limits for archive extraction. Controls maximum archive size, compression ratio, file count, and other security thresholds to prevent decompression bomb attacks. Also caps nesting depth, iteration count, entity / token length, cumulative content size, and table cell count for every extraction path that ingests user-controlled bytes. When `nil`, default limits are used. |
+| `SecurityLimits` | `*SecurityLimits` | `nil` | Security limits for archive extraction. Controls maximum archive size, compression ratio, file count, and other security thresholds to prevent decompression bomb attacks. Also caps nesting depth, iteration count, entity / token length, total content size, and table cell count for every extraction path that ingests user-controlled bytes. When `nil`, default limits are used. |
 | `OutputFormat` | `OutputFormat` | `OutputFormat.Plain` | Content text format (default: Plain). Controls the format of the extracted content: - `Plain`: Raw extracted text (default) - `Markdown`: Markdown formatted output - `Djot`: Djot markup format (requires djot feature) - `Html`: HTML formatted output When set to a structured format, extraction results will include formatted output. The `formatted_content` field may be populated when format conversion is applied. |
 | `Layout` | `*LayoutDetectionConfig` | `nil` | Layout detection configuration (None = layout detection disabled). When set, PDF pages and images are analyzed for document structure (headings, code, formulas, tables, figures, etc.) using RT-DETR models via ONNX Runtime. For PDFs, layout hints override paragraph classification in the markdown pipeline. For images, per-region OCR is performed with markdown formatting based on detected layout classes. Requires the `layout-detection` feature to run inference; the field is present whenever the `layout-types` feature is active (which includes `layout-detection` as well as the no-ORT target groups). |
-| `UseLayoutForMarkdown` | `bool` | `false` | Run layout detection on the non-OCR PDF markdown path. When `true` and `layout` is `Some(_)`, layout regions inform heading, table, list, and figure detection in the structure pipeline that would otherwise rely on font-clustering heuristics alone. Substantially improves SF1 (structural F1) at the cost of inference latency (~150-300ms/page CPU, ~20-50ms/page GPU). Default: `false`. Requires the `layout-detection` feature. |
+| `UseLayoutForMarkdown` | `bool` | `false` | Run layout detection on the non-OCR PDF markdown path. When `true` and `layout` is `Some(_)`, layout regions inform heading, table, list, and figure detection in the structure pipeline that would otherwise rely on font-clustering heuristics alone. Significantly improves SF1 (structural F1) at the cost of inference latency (~150-300ms/page CPU, ~20-50ms/page GPU). Default: `false`. Requires the `layout-detection` feature. |
 | `IncludeDocumentStructure` | `bool` | `false` | Enable structured document tree output. When true, populates the `document` field on `ExtractionResult` with a hierarchical `DocumentStructure` containing heading-driven section nesting, table grids, content layer classification, and inline annotations. Independent of `result_format` — can be combined with Unified or ElementBased. |
 | `Acceleration` | `*AccelerationConfig` | `nil` | Hardware acceleration configuration for ONNX Runtime models. Controls execution provider selection for layout detection and embedding models. When `nil`, uses platform defaults (CoreML on macOS, CUDA on Linux, CPU on Windows). |
 | `CacheNamespace` | `*string` | `nil` | Cache namespace for tenant isolation. When set, cache entries are stored under `{cache_dir}/{namespace}/`. Must be alphanumeric, hyphens, or underscores only (max 64 chars). Different namespaces have isolated cache spaces on the same filesystem. |
@@ -1936,7 +1936,7 @@ This is the main result type returned by all extraction functions.
 | `Uris` | `*[]Uri` | `nil` | URIs/links discovered during document extraction. Contains hyperlinks, image references, citations, email addresses, and other URI-like references found in the document. Always extracted when present in the source document. |
 | `StructuredOutput` | `*interface{}` | `nil` | Structured extraction output from LLM-based JSON schema extraction. When `structured_extraction` is configured in `ExtractionConfig`, the extracted document content is sent to a VLM with the provided JSON schema. The response is parsed and stored here as a JSON value matching the schema. |
 | `CodeIntelligence` | `*interface{}` | `nil` | Code intelligence results from tree-sitter analysis. Populated when extracting source code files with the `tree-sitter` feature. Contains metrics, structural analysis, imports/exports, comments, docstrings, symbols, diagnostics, and optionally chunked code segments. Stored as an opaque JSON value so that all language bindings (Go, Java, C#, …) can deserialize it as a raw JSON object rather than a typed struct. The underlying type is `tree_sitter_language_pack.ProcessResult`. |
-| `LlmUsage` | `*[]LlmUsage` | `nil` | LLM token usage and cost data for all LLM calls made during this extraction. Contains one entry per LLM call. Multiple entries are produced when VLM OCR, structured extraction, and/or LLM embeddings all run during the same extraction. `nil` when no LLM was used. |
+| `LlmUsage` | `*[]LlmUsage` | `nil` | LLM token usage and cost data for all LLM calls made during this extraction. Contains one entry per LLM call. Multiple entries are produced when VLM OCR, structured extraction, or LLM embeddings run during the same extraction. `nil` when no LLM was used. |
 | `FormattedContent` | `*string` | `nil` | Pre-rendered content in the requested output format. Populated during `derive_extraction_result` before tree derivation consumes element data. `apply_output_format` swaps this into `content` at the end of the pipeline, after post-processors have operated on plain text. |
 | `OcrInternalDocument` | `*string` | `nil` | Structured hOCR document for the OCR+layout pipeline. When tesseract produces hOCR output, the parsed `InternalDocument` carries paragraph structure with bounding boxes and confidence scores. The layout classification step enriches these elements before final rendering. |
 
@@ -2044,7 +2044,7 @@ Represents structural elements like headings, paragraphs, lists, code blocks, et
 | `Attributes` | `*string` | `nil` | Element attributes (classes, IDs, key-value pairs) |
 | `Language` | `*string` | `nil` | Language identifier for code blocks |
 | `Code` | `*string` | `nil` | Raw code content for code blocks |
-| `Children` | `[]FormattedBlock` | — | Nested blocks for containers (blockquotes, list items, divs) |
+| `Children` | `[]FormattedBlock` | `/* serde(default) */` | Nested blocks for containers (blockquotes, list items, divs) |
 
 
 ---
@@ -2061,7 +2061,7 @@ Individual grid cell with position and span metadata.
 | `Col` | `uint32` | — | Zero-indexed column position. |
 | `RowSpan` | `uint32` | — | Number of rows this cell spans. |
 | `ColSpan` | `uint32` | — | Number of columns this cell spans. |
-| `IsHeader` | `bool` | — | Whether this is a header cell. |
+| `IsHeader` | `bool` | `/* serde(default) */` | Whether this is a header cell. |
 | `Bbox` | `*string` | `nil` | Bounding box for this cell (if available). |
 
 
@@ -2877,7 +2877,7 @@ including recognized text and detected tables.
 | `MimeType` | `string` | — | Original MIME type of the processed image |
 | `Metadata` | `map[string]interface{}` | — | OCR processing metadata (confidence scores, language, etc.) |
 | `Tables` | `[]OcrTable` | — | Tables detected and extracted via OCR |
-| `OcrElements` | `*[]OcrElement` | `nil` | Structured OCR elements with bounding boxes and confidence scores. Available when TSV output is requested or table detection is enabled. |
+| `OcrElements` | `*[]OcrElement` | `/* serde(default) */` | Structured OCR elements with bounding boxes and confidence scores. Available when TSV output is requested or table detection is enabled. |
 | `InternalDocument` | `*string` | `nil` | Structured document produced from hOCR parsing. Carries paragraph structure, bounding boxes, and confidence scores that the flattened `content` string discards. |
 
 
@@ -2914,7 +2914,7 @@ the result is accepted. Otherwise the next backend is tried.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `Stages` | `[]OcrPipelineStage` | — | Ordered list of backends to try. Sorted by priority (descending) at runtime. |
-| `QualityThresholds` | `OcrQualityThresholds` | — | Quality thresholds for deciding whether to accept a result or try the next backend. |
+| `QualityThresholds` | `OcrQualityThresholds` | `/* serde(default) */` | Quality thresholds for deciding whether to accept a result or try the next backend. |
 
 
 ---
@@ -2928,11 +2928,11 @@ A single backend stage in the OCR pipeline.
 |-------|------|---------|-------------|
 | `Backend` | `string` | — | Backend name: "tesseract", "paddleocr", "easyocr", or a custom registered name. |
 | `Priority` | `uint32` | — | Priority weight (higher = tried first). Stages are sorted by priority descending. |
-| `Language` | `*string` | `nil` | Language override for this stage (None = use parent OcrConfig.language). |
-| `TesseractConfig` | `*TesseractConfig` | `nil` | Tesseract-specific config override for this stage. |
-| `PaddleOcrConfig` | `*interface{}` | `nil` | PaddleOCR-specific config for this stage. |
-| `VlmConfig` | `*LlmConfig` | `nil` | VLM config override for this pipeline stage. |
-| `BackendOptions` | `*interface{}` | `nil` | Arbitrary per-call options passed through to the backend unchanged. Backends that support runtime tuning (mode switching, preprocessing flags, inference parameters, etc.) read this value and deserialize the keys they care about. Keys unknown to the backend are silently ignored, so options from different backends can coexist in the same config without conflict. Example (custom backend): ```json { "mode": "fast", "enable_layout": true } ``` |
+| `Language` | `*string` | `/* serde(default) */` | Language override for this stage (None = use parent OcrConfig.language). |
+| `TesseractConfig` | `*TesseractConfig` | `/* serde(default) */` | Tesseract-specific config override for this stage. |
+| `PaddleOcrConfig` | `*interface{}` | `/* serde(default) */` | PaddleOCR-specific config for this stage. |
+| `VlmConfig` | `*LlmConfig` | `/* serde(default) */` | VLM config override for this pipeline stage. |
+| `BackendOptions` | `*interface{}` | `/* serde(default) */` | Arbitrary per-call options passed through to the backend unchanged. Backends that support runtime tuning (mode switching, preprocessing flags, inference parameters, etc.) read this value and deserialize the keys they care about. Keys unknown to the backend are silently ignored, so options from different backends can coexist in the same config without conflict. Example (custom backend): ```json { "mode": "fast", "enable_layout": true } ``` |
 
 
 ---
@@ -3002,7 +3002,7 @@ Represents a table structure recognized during OCR processing.
 | `Cells` | `[][]string` | — | Table cells as a 2D vector (rows × columns) |
 | `Markdown` | `string` | — | Markdown representation of the table |
 | `PageNumber` | `uint32` | — | Page number where the table was found (1-indexed) |
-| `BoundingBox` | `*OcrTableBoundingBox` | `nil` | Bounding box of the table in pixel coordinates (from OCR word positions). |
+| `BoundingBox` | `*OcrTableBoundingBox` | `/* serde(default) */` | Bounding box of the table in pixel coordinates (from OCR word positions). |
 
 
 ---
@@ -3257,8 +3257,8 @@ by avoiding redundant copies during serialization.
 |-------|------|---------|-------------|
 | `PageNumber` | `uint32` | — | Page number (1-indexed) |
 | `Content` | `string` | — | Text content for this page |
-| `Tables` | `[]Table` | — | Tables found on this page (uses Arc for memory efficiency) Serializes as Vec<Table> for JSON compatibility while maintaining Arc semantics in-memory for zero-copy sharing. |
-| `ImageIndices` | `[]uint32` | — | Indices into `ExtractionResult.images` for images found on this page. Each value is a zero-based index into the top-level `images` collection. Only populated when `extract_images = true` in the extraction config. |
+| `Tables` | `[]Table` | `/* serde(default) */` | Tables found on this page (uses Arc for memory efficiency) Serializes as Vec<Table> for JSON compatibility while maintaining Arc semantics in-memory for zero-copy sharing. |
+| `ImageIndices` | `[]uint32` | `/* serde(default) */` | Indices into `ExtractionResult.images` for images found on this page. Each value is a zero-based index into the top-level `images` collection. Only populated when `extract_images = true` in the extraction config. |
 | `Hierarchy` | `*PageHierarchy` | `nil` | Hierarchy information for the page (when hierarchy extraction is enabled) Contains text hierarchy levels (H1-H6) extracted from the page content. |
 | `IsBlank` | `*bool` | `nil` | Whether this page is blank (no meaningful text content) Determined during extraction based on text content analysis. A page is blank if it has fewer than 3 non-whitespace characters and contains no tables or images. |
 | `LayoutRegions` | `*[]LayoutRegion` | `nil` | Layout detection regions for this page (when layout detection is enabled). Contains detected layout regions with class, confidence, bounding box, and area fraction. Only populated when layout detection is configured. |
@@ -3277,7 +3277,7 @@ blocks with heading levels (H1-H6) for semantic document structure.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `BlockCount` | `uint32` | — | Number of hierarchy blocks on this page |
-| `Blocks` | `[]HierarchicalBlock` | — | Hierarchical blocks with heading levels |
+| `Blocks` | `[]HierarchicalBlock` | `/* serde(default) */` | Hierarchical blocks with heading levels |
 
 
 ---
@@ -3299,7 +3299,7 @@ and visibility state (for presentations).
 | `TableCount` | `*uint32` | `nil` | Number of tables on this page |
 | `Hidden` | `*bool` | `nil` | Whether this page is hidden (e.g., in presentations) |
 | `IsBlank` | `*bool` | `nil` | Whether this page is blank (no meaningful text, no images, no tables) A page is considered blank if it has fewer than 3 non-whitespace characters and contains no tables or images. This is useful for filtering out empty pages in scanned documents or PDFs with blank separator pages. |
-| `HasVectorGraphics` | `bool` | — | Whether this page contains non-trivial vector graphics (paths, shapes, curves) Indicates the presence of vector-drawn content such as charts, diagrams, or geometric shapes (e.g., from Adobe InDesign, LaTeX TikZ). These are invisible to `ExtractionResult.images` since they are not embedded as raster XObjects. Set to `true` when path count exceeds a heuristic threshold, signaling that downstream consumers may want to rasterize the page to capture this content. Only populated for PDFs; `nil` for other document types. |
+| `HasVectorGraphics` | `bool` | `/* serde(default) */` | Whether this page contains non-trivial vector graphics (paths, shapes, curves) Indicates the presence of vector-drawn content such as charts, diagrams, or geometric shapes (e.g., from Adobe InDesign, LaTeX TikZ). These are invisible to `ExtractionResult.images` since they are not embedded as raster XObjects. Set to `true` when path count exceeds a heuristic threshold, signaling that downstream consumers may want to rasterize the page to capture this content. Only populated for PDFs; `nil` for other document types. |
 
 
 ---
@@ -3733,8 +3733,8 @@ Contains extracted slide content, metadata, and embedded images/tables.
 | `PageStructure` | `*PageStructure` | `nil` | Slide structure with boundaries (when page tracking is enabled) |
 | `PageContents` | `*[]PageContent` | `nil` | Per-slide content (when page tracking is enabled) |
 | `Document` | `*DocumentStructure` | `nil` | Structured document representation |
-| `Hyperlinks` | `[]string` | — | Hyperlinks discovered in slides as (url, optional_label) pairs. |
-| `OfficeMetadata` | `map[string]string` | — | Office metadata extracted from docProps/core.xml and docProps/app.xml. Contains keys like "title", "author", "created_by", "subject", "keywords", "modified_by", "created_at", "modified_at", etc. |
+| `Hyperlinks` | `[]string` | `/* serde(default) */` | Hyperlinks discovered in slides as (url, optional_label) pairs. |
+| `OfficeMetadata` | `map[string]string` | `/* serde(default) */` | Office metadata extracted from docProps/core.xml and docProps/app.xml. Contains keys like "title", "author", "created_by", "subject", "keywords", "modified_by", "created_at", "modified_at", etc. |
 
 
 ---
@@ -3881,7 +3881,7 @@ while still supporting legitimate documents.
 | `MaxCompressionRatio` | `int` | `100` | Maximum compression ratio before flagging as potential bomb (100:1) |
 | `MaxFilesInArchive` | `int` | `10000` | Maximum number of files in archive (10,000) |
 | `MaxNestingDepth` | `int` | `1024` | Maximum nesting depth for structures (100) |
-| `MaxEntityLength` | `int` | `1048576` | Maximum length of any single XML entity / attribute / token (1 MiB). This is a per-token cap, NOT a cumulative cap — billion-laughs class attacks where a single entity expands to hundreds of MB are caught here, while normal long text content (a paragraph, a CDATA block) is caught by `max_content_size` instead. |
+| `MaxEntityLength` | `int` | `1048576` | Maximum length of any single XML entity / attribute / token (1 MiB). This is a per-token cap, NOT a total cap — billion-laughs class attacks where a single entity expands to hundreds of MB are caught here, while normal long text content (a paragraph, a CDATA block) is caught by `max_content_size` instead. |
 | `MaxContentSize` | `int` | `104857600` | Maximum string growth per document (100 MB) |
 | `MaxIterations` | `int` | `10000000` | Maximum iterations per operation |
 | `MaxXmlDepth` | `int` | `1024` | Maximum XML depth (100 levels) |
@@ -4033,9 +4033,9 @@ returning structured data that conforms to the schema.
 |-------|------|---------|-------------|
 | `Schema` | `interface{}` | — | JSON Schema defining the desired output structure. |
 | `SchemaName` | `string` | — | Schema name passed to the LLM's structured output mode. |
-| `SchemaDescription` | `*string` | `nil` | Optional schema description for the LLM. |
-| `Strict` | `bool` | — | Enable strict mode — output must exactly match the schema. |
-| `Prompt` | `*string` | `nil` | Custom Jinja2 extraction prompt template. When `nil`, a default template is used. Available template variables: - `{{ content }}` — The extracted document text. - `{{ schema }}` — The JSON schema as a formatted string. - `{{ schema_name }}` — The schema name. - `{{ schema_description }}` — The schema description (may be empty). |
+| `SchemaDescription` | `*string` | `/* serde(default) */` | Optional schema description for the LLM. |
+| `Strict` | `bool` | `/* serde(default) */` | Enable strict mode — output must exactly match the schema. |
+| `Prompt` | `*string` | `/* serde(default) */` | Custom Jinja2 extraction prompt template. When `nil`, a default template is used. Available template variables: - `{{ content }}` — The extracted document text. - `{{ schema }}` — The JSON schema as a formatted string. - `{{ schema_name }}` — The schema name. - `{{ schema_description }}` — The schema description (may be empty). |
 | `Llm` | `LlmConfig` | — | LLM configuration for the extraction. |
 
 
@@ -4599,7 +4599,7 @@ Year range for bibliographic metadata.
 |-------|------|---------|-------------|
 | `Min` | `*uint32` | `nil` | Min |
 | `Max` | `*uint32` | `nil` | Max |
-| `Years` | `[]uint32` | — | Years |
+| `Years` | `[]uint32` | `/* serde(default) */` | Years |
 
 
 ---
@@ -4629,8 +4629,8 @@ Determines which hardware backend is used for model inference.
 Output format for extraction results.
 
 Controls the format of the `content` field in `ExtractionResult`.
-When set to `Markdown`, `Djot`, or `Html`, the output will be formatted
-accordingly. `Plain` returns the raw extracted text.
+When set to `Markdown`, `Djot`, or `Html`, the output uses that format.
+`Plain` returns the raw extracted text.
 `Structured` returns JSON with full OCR element data including bounding
 boxes and confidence scores.
 
@@ -4686,7 +4686,7 @@ YAML).
 
 Type of text chunker to use.
 
-# Variants
+### Variants
 
 * `Text` - Generic text splitter, splits on whitespace and punctuation
 * `Markdown` - Markdown-aware splitter, preserves formatting and structure
@@ -5340,7 +5340,7 @@ Main error type for all Kreuzberg operations.
 All errors in Kreuzberg use this enum, which preserves error chains
 and provides context for debugging.
 
-# Variants
+### Variants
 
 - `Io` - File system and I/O errors (always bubble up)
 - `Parsing` - Document parsing errors (corrupt files, unsupported features)

@@ -39,7 +39,7 @@ data class SecurityLimits(
     val maxNestingDepth: Long = 1024L,
     /**
      * Maximum length of any single XML entity / attribute / token (1 MiB).
-     * This is a per-token cap, NOT a cumulative cap — billion-laughs class
+     * This is a per-token cap, NOT a total cap — billion-laughs class
      * attacks where a single entity expands to hundreds of MB are caught
      * here, while normal long text content (a paragraph, a CDATA block) is
      * caught by `max_content_size` instead.

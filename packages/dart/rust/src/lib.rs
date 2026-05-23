@@ -82,8 +82,8 @@ pub struct ContentFilterConfig {
     ///
     /// Note: when a layout-detection model is active, the model may independently
     /// classify page-header / page-footer regions as furniture on a per-page basis.
-    /// To preserve those regions, set `include_headers = true` and/or
-    /// `include_footers = true` in addition to disabling this flag.
+    /// To preserve those regions, set `include_headers = true`, `include_footers = true`,
+    /// or both, in addition to disabling this flag.
     ///
     /// Primarily affects PDF extraction.
     ///
@@ -222,7 +222,7 @@ pub struct ExtractionConfig {
     ///
     /// Controls maximum archive size, compression ratio, file count, and other
     /// security thresholds to prevent decompression bomb attacks. Also caps
-    /// nesting depth, iteration count, entity / token length, cumulative
+    /// nesting depth, iteration count, entity / token length, total
     /// content size, and table cell count for every extraction path that
     /// ingests user-controlled bytes.
     /// When `None`, default limits are used.
@@ -254,7 +254,7 @@ pub struct ExtractionConfig {
     ///
     /// When `true` and `layout` is `Some(_)`, layout regions inform heading,
     /// table, list, and figure detection in the structure pipeline that would
-    /// otherwise rely on font-clustering heuristics alone. Substantially
+    /// otherwise rely on font-clustering heuristics alone. Significantly
     /// improves SF1 (structural F1) at the cost of inference latency
     /// (~150-300ms/page CPU, ~20-50ms/page GPU). Default: `false`.
     /// Requires the `layout-detection` feature.
@@ -1273,7 +1273,7 @@ pub struct SecurityLimits {
     /// Maximum nesting depth for structures (100)
     pub max_nesting_depth: i64,
     /// Maximum length of any single XML entity / attribute / token (1 MiB).
-    /// This is a per-token cap, NOT a cumulative cap — billion-laughs class
+    /// This is a per-token cap, NOT a total cap — billion-laughs class
     /// attacks where a single entity expands to hundreds of MB are caught
     /// here, while normal long text content (a paragraph, a CDATA block) is
     /// caught by `max_content_size` instead.
@@ -1492,7 +1492,7 @@ pub struct DocumentNode {
     pub annotations: Vec<TextAnnotation>,
     /// Format-specific key-value attributes.
     ///
-    /// Extensible bag for data that doesn't warrant a typed field: CSS classes,
+    /// Extensible bag for miscellaneous data without a dedicated typed field: CSS classes,
     /// LaTeX environment names, Excel cell formulas, slide layout names, etc.
     pub attributes: Option<std::collections::HashMap<String, String>>,
 }
@@ -1676,7 +1676,7 @@ pub struct ExtractionResult {
     /// LLM token usage and cost data for all LLM calls made during this extraction.
     ///
     /// Contains one entry per LLM call. Multiple entries are produced when
-    /// VLM OCR, structured extraction, and/or LLM embeddings all run during
+    /// VLM OCR, structured extraction, or LLM embeddings run during
     /// the same extraction.
     ///
     /// `None` when no LLM was used.
@@ -3226,8 +3226,8 @@ pub enum ExecutionProviderType {
 /// Output format for extraction results.
 ///
 /// Controls the format of the `content` field in `ExtractionResult`.
-/// When set to `Markdown`, `Djot`, or `Html`, the output will be formatted
-/// accordingly. `Plain` returns the raw extracted text.
+/// When set to `Markdown`, `Djot`, or `Html`, the output uses that format.
+/// `Plain` returns the raw extracted text.
 /// `Structured` returns JSON with full OCR element data including bounding
 /// boxes and confidence scores.
 #[frb(mirror(OutputFormat))]
@@ -4472,7 +4472,7 @@ impl From<kreuzberg::extraction::structured::StructuredDataResult> for Structure
     fn from(v: kreuzberg::extraction::structured::StructuredDataResult) -> Self {
         StructuredDataResult {
             content: v.content.into(),
-            format: v.format.into_owned(),
+            format: v.format.into(),
             metadata: v.metadata.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
             text_fields: v.text_fields.into_iter().map(|s| s.into()).collect(),
         }
@@ -4771,7 +4771,7 @@ impl From<kreuzberg::ExtractionResult> for ExtractionResult {
     fn from(v: kreuzberg::ExtractionResult) -> Self {
         ExtractionResult {
             content: v.content.into(),
-            mime_type: v.mime_type.into_owned(),
+            mime_type: v.mime_type.into(),
             metadata: Metadata::from(v.metadata),
             extraction_method: v.extraction_method.map(ExtractionMethod::from),
             tables: v.tables.into_iter().map(Table::from).collect(),
@@ -4823,8 +4823,8 @@ impl From<kreuzberg::ArchiveEntry> for ArchiveEntry {
 impl From<kreuzberg::ProcessingWarning> for ProcessingWarning {
     fn from(v: kreuzberg::ProcessingWarning) -> Self {
         ProcessingWarning {
-            source: v.source.into_owned(),
-            message: v.message.into_owned(),
+            source: v.source.into(),
+            message: v.message.into(),
         }
     }
 }
@@ -4891,7 +4891,7 @@ impl From<kreuzberg::ExtractedImage> for ExtractedImage {
     fn from(v: kreuzberg::ExtractedImage) -> Self {
         ExtractedImage {
             data: v.data.into(),
-            format: v.format.into_owned(),
+            format: v.format.into(),
             image_index: v.image_index as _,
             page_number: v.page_number.map(|x| x as _),
             width: v.width.map(|x| x as _),
@@ -5196,7 +5196,7 @@ impl From<kreuzberg::EmailMetadata> for EmailMetadata {
 impl From<kreuzberg::ArchiveMetadata> for ArchiveMetadata {
     fn from(v: kreuzberg::ArchiveMetadata) -> Self {
         ArchiveMetadata {
-            format: v.format.into_owned(),
+            format: v.format.into(),
             file_count: v.file_count as _,
             file_list: v.file_list.into_iter().map(|s| s.into()).collect(),
             total_size: v.total_size as _,
