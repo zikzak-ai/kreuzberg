@@ -1934,6 +1934,7 @@ jobs:
           output-path: packages/elixir/checksum-Elixir.Kreuzberg.Native.exs
 
       - name: Build Elixir Hex tarball with dependency rewrite
+        id: build-hex
         uses: kreuzberg-dev/actions/build-elixir-hex@v1
         with:
           package-dir: packages/elixir
@@ -1944,6 +1945,7 @@ jobs:
       - uses: kreuzberg-dev/actions/publish-hex@v1
         with:
           package-dir: packages/elixir
+          tarball-path: ${{ steps.build-hex.outputs.archive-path }}
           dry-run: ${{ needs.prepare.outputs.dry_run }}
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
