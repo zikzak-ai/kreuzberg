@@ -46,3 +46,22 @@ jobs:
           cp "target/${{ matrix.target }}/release/${{ matrix.lib }}" "$STAGE/"
           tar -czf "${STAGE}.tar.gz" "$STAGE"
           gh release upload ${{ inputs.tag }} "${STAGE}.tar.gz" --clobber
+
+  finalize:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure release exists and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          if gh release view "$TAG" --json isDraft &>/dev/null; then
+            echo "Release exists, publishing..."
+            gh release edit "$TAG" --draft=false --prerelease=false
+          else
+            echo "Creating release..."
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi
+          echo "Release $TAG is now public."
