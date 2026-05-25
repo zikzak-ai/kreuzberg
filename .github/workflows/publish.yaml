@@ -1258,6 +1258,12 @@ jobs:
               lib: libkreuzberg_dart.dylib,
             }
           - {
+              os: macos-15-intel,
+              target: x86_64-apple-darwin,
+              blob: macos-x86_64,
+              lib: libkreuzberg_dart.dylib,
+            }
+          - {
               os: windows-latest,
               target: x86_64-pc-windows-msvc,
               blob: windows-x86_64,
@@ -2000,6 +2006,12 @@ jobs:
           name: dart-server-macos-arm64
           path: dart-server-artifacts/macos-arm64
 
+      - name: Download server natives (macos-x86_64)
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: dart-server-macos-x86_64
+          path: dart-server-artifacts/macos-x86_64
+
       - name: Download server natives (windows-x86_64)
         uses: actions/download-artifact@v8.0.1
         with:
@@ -2023,7 +2035,7 @@ jobs:
             [[ -d "$xcf" ]] && cp -r "$xcf" packages/dart/ios/Frameworks/
           done
           # Server blobs
-          for entry in "linux-x86_64:libkreuzberg_dart.so" "linux-aarch64:libkreuzberg_dart.so" "macos-arm64:libkreuzberg_dart.dylib" "windows-x86_64:kreuzberg_dart.dll"; do
+          for entry in "linux-x86_64:libkreuzberg_dart.so" "linux-aarch64:libkreuzberg_dart.so" "macos-arm64:libkreuzberg_dart.dylib" "macos-x86_64:libkreuzberg_dart.dylib" "windows-x86_64:kreuzberg_dart.dll"; do
             blob="${entry%%:*}"
             lib="${entry##*:}"
             dest="packages/dart/blobs/${blob}"
