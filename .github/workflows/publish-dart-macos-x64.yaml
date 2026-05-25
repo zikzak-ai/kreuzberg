@@ -1,4 +1,4 @@
-name: Publish Dart macOS x64
+name: Publish Dart Native Binaries
 
 on:
   workflow_dispatch:
@@ -13,8 +13,16 @@ permissions:
 
 jobs:
   build:
-    name: Build Dart macOS x86_64 native
-    runs-on: macos-15-intel
+    name: Build Dart (${{ matrix.blob }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15-intel, target: x86_64-apple-darwin, blob: macos-x86_64, lib: libkreuzberg_dart.dylib }
+          - { os: macos-latest, target: aarch64-apple-darwin, blob: macos-arm64, lib: libkreuzberg_dart.dylib }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu, blob: linux-x86_64, lib: libkreuzberg_dart.so }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu, blob: linux-aarch64, lib: libkreuzberg_dart.so }
     steps:
       - uses: actions/checkout@v6.0.2
         with:
@@ -24,17 +32,17 @@ jobs:
 
       - uses: kreuzberg-dev/actions/setup-rust@v1
         with:
-          target: x86_64-apple-darwin
+          target: ${{ matrix.target }}
 
       - name: Build
-        run: cargo build -p kreuzberg-dart --release --target x86_64-apple-darwin
+        run: cargo build -p kreuzberg-dart --release --target ${{ matrix.target }}
 
       - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          STAGE="kreuzberg-dart-macos-x86_64"
+          STAGE="kreuzberg-dart-${{ matrix.blob }}"
           mkdir -p "$STAGE"
-          cp "target/x86_64-apple-darwin/release/libkreuzberg_dart.dylib" "$STAGE/"
+          cp "target/${{ matrix.target }}/release/${{ matrix.lib }}" "$STAGE/"
           tar -czf "${STAGE}.tar.gz" "$STAGE"
           gh release upload ${{ inputs.tag }} "${STAGE}.tar.gz" --clobber
