@@ -6327,193 +6327,6 @@ public func extractFile(
 , config
 )
 }
-// MARK: - E2e Test Convenience Wrappers
-// JSON-config and file-loading wrappers used exclusively by the generated e2e tests.
-
-public func extractionConfigFromJson<GenericIntoRustString: IntoRustString>(
-    _ json: GenericIntoRustString
-) throws -> ExtractionConfig {
-    try RustBridge.extractionConfigFromJson(json)
-}
-
-public func batchBytesItemFromJson<GenericIntoRustString: IntoRustString>(
-    _ json: GenericIntoRustString
-) throws -> BatchBytesItem {
-    try RustBridge.batchBytesItemFromJson(json)
-}
-
-public func batchFileItemFromJson<GenericIntoRustString: IntoRustString>(
-    _ json: GenericIntoRustString
-) throws -> BatchFileItem {
-    try RustBridge.batchFileItemFromJson(json)
-}
-
-// MARK: - ExtractionResult Property Accessors
-extension ExtractionResultRef {
-    public var mimeType: String {
-        self.mimeType().toString()
-    }
-    public var content: String {
-        self.content().toString()
-    }
-}
-
-private func resolveFixturePath(_ name: String) -> URL {
-    if let dir = ProcessInfo.processInfo.environment["FIXTURES_DIR"] {
-        return URL(fileURLWithPath: dir).appendingPathComponent(name)
-    }
-    return URL(fileURLWithPath: name)
-}
-
-/// E2e wrapper: reads `filePath` into bytes, deserialises `configJson` -> ExtractionConfig.
-public func extractBytesSync(
-    _ filePath: String,
-    _ mimeType: String,
-    _ configJson: String
-) throws -> ExtractionResult {
-    let url = resolveFixturePath(filePath)
-    let data = try Data(contentsOf: url)
-    let config = try extractionConfigFromJson(configJson)
-    return try extractBytesSync(makeByteVec(data.map { $0 }), mimeType, config)
-}
-
-/// E2e wrapper (async): reads `filePath` into bytes, deserialises `configJson` -> ExtractionConfig.
-public func extractBytes(
-    _ filePath: String,
-    _ mimeType: String,
-    _ configJson: String
-) async throws -> ExtractionResult {
-    let url = resolveFixturePath(filePath)
-    let data = try Data(contentsOf: url)
-    let config = try extractionConfigFromJson(configJson)
-    return try extractBytesSync(makeByteVec(data.map { $0 }), mimeType, config)
-}
-
-/// E2e wrapper: resolves fixture path, deserialises `configJson` -> ExtractionConfig, then calls extractFileSync.
-public func extractFileSync(
-    _ path: String,
-    _ mimeType: String?,
-    _ configJson: String
-) throws -> ExtractionResult {
-    let resolvedPath = resolveFixturePath(path).path
-    let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(resolvedPath, mimeType, config)
-}
-
-/// E2e wrapper: resolves fixture path, deserialises `configJson` -> ExtractionConfig, nil mimeType.
-public func extractFileSync(
-    _ path: String,
-    _ configJson: String
-) throws -> ExtractionResult {
-    let resolvedPath = resolveFixturePath(path).path
-    let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(resolvedPath, nil, config)
-}
-
-/// E2e wrapper (async): resolves fixture path, deserialises `configJson` -> ExtractionConfig, then calls extractFileSync.
-public func extractFile(
-    _ path: String,
-    _ mimeType: String?,
-    _ configJson: String
-) async throws -> ExtractionResult {
-    let resolvedPath = resolveFixturePath(path).path
-    let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(resolvedPath, mimeType, config)
-}
-
-/// E2e wrapper (async): resolves fixture path, deserialises `configJson` -> ExtractionConfig, nil mimeType.
-public func extractFile(
-    _ path: String,
-    _ configJson: String
-) async throws -> ExtractionResult {
-    let resolvedPath = resolveFixturePath(path).path
-    let config = try extractionConfigFromJson(configJson)
-    return try extractFileSync(resolvedPath, nil, config)
-}
-
-/// E2e wrapper: deserialises each JSON string in `jsonItems` -> BatchBytesItem.
-public func batchExtractBytesSync(
-    _ jsonItems: [String]
-) throws -> [ExtractionResult] {
-    let items = RustVec<BatchBytesItem>()
-    for json in jsonItems {
-        items.push(value: try batchBytesItemFromJson(json))
-    }
-    let config = try extractionConfigFromJson("{}")
-    let vec = try batchExtractBytesSync(items, config)
-    var owned: [ExtractionResult] = []
-    while let item = vec.pop() { owned.append(item) }
-    owned.reverse()
-    return owned
-}
-
-/// E2e wrapper (async): deserialises each JSON string in `jsonItems` -> BatchBytesItem.
-public func batchExtractBytes(
-    _ jsonItems: [String]
-) async throws -> [ExtractionResult] {
-    let items = RustVec<BatchBytesItem>()
-    for json in jsonItems {
-        items.push(value: try batchBytesItemFromJson(json))
-    }
-    let config = try extractionConfigFromJson("{}")
-    let vec = try batchExtractBytesSync(items, config)
-    var owned: [ExtractionResult] = []
-    while let item = vec.pop() { owned.append(item) }
-    owned.reverse()
-    return owned
-}
-
-/// E2e wrapper: deserialises each JSON string in `jsonItems` -> BatchFileItem.
-public func batchExtractFilesSync(
-    _ jsonItems: [String]
-) throws -> [ExtractionResult] {
-    let items = RustVec<BatchFileItem>()
-    for json in jsonItems {
-        items.push(value: try batchFileItemFromJson(json))
-    }
-    let config = try extractionConfigFromJson("{}")
-    let vec = try batchExtractFilesSync(items, config)
-    var owned: [ExtractionResult] = []
-    while let item = vec.pop() { owned.append(item) }
-    owned.reverse()
-    return owned
-}
-
-/// E2e wrapper (async): deserialises each JSON string in `jsonItems` -> BatchFileItem.
-public func batchExtractFiles(
-    _ jsonItems: [String]
-) async throws -> [ExtractionResult] {
-    let items = RustVec<BatchFileItem>()
-    for json in jsonItems {
-        items.push(value: try batchFileItemFromJson(json))
-    }
-    let config = try extractionConfigFromJson("{}")
-    let vec = try batchExtractFilesSync(items, config)
-    var owned: [ExtractionResult] = []
-    while let item = vec.pop() { owned.append(item) }
-    owned.reverse()
-    return owned
-}
-
-/// E2e wrapper: reads `filePath` into bytes and calls detectMimeTypeFromBytes.
-public func detectMimeTypeFromBytes(
-    _ filePath: String
-) throws -> String {
-    let url = resolveFixturePath(filePath)
-    let data = try Data(contentsOf: url)
-    return try detectMimeTypeFromBytes(makeByteVec(data.map { $0 })).toString()
-}
-
-/// E2e wrapper (async): embed multiple texts with an EmbeddingConfig.
-public func embedTextsAsync(
-    texts: [String],
-    config: EmbeddingConfig
-) async throws -> [[Float]] {
-    let _rb_texts: RustVec<RustString> = { let v = RustVec<RustString>(); for s in texts { v.push(value: RustString(s)) }; return v }()
-    let _rb_json = try await RustBridge.embedTextsAsync(_rb_texts, config).toString()
-    let _rb_data = _rb_json.data(using: .utf8) ?? Data()
-    return try JSONDecoder().decode([[Float]].self, from: _rb_data)
-}
 // MARK: - From-JSON Helpers
 // Public helpers that decode JSON into first-class Swift types.
 // First-class struct types (Codable) use JSONDecoder directly.
@@ -6534,8 +6347,20 @@ public func emailConfigFromJson(_ json: String) throws -> EmailConfig {
     return try JSONDecoder().decode(EmailConfig.self, from: data)
 }
 
+public func extractionConfigFromJson(_ json: String) throws -> ExtractionConfig {
+    return try RustBridge.extractionConfigFromJson(json)
+}
+
 public func fileExtractionConfigFromJson(_ json: String) throws -> FileExtractionConfig {
     return try RustBridge.fileExtractionConfigFromJson(json)
+}
+
+public func batchBytesItemFromJson(_ json: String) throws -> BatchBytesItem {
+    return try RustBridge.batchBytesItemFromJson(json)
+}
+
+public func batchFileItemFromJson(_ json: String) throws -> BatchFileItem {
+    return try RustBridge.batchFileItemFromJson(json)
 }
 
 public func imageExtractionConfigFromJson(_ json: String) throws -> ImageExtractionConfig {
@@ -7297,6 +7122,263 @@ public func layoutClassFromJson(_ json: String) throws -> LayoutClass {
 // `import RustBridge` directly. Forwarders take Swift-native parameter
 // types and convert to the swift-bridge runtime types internally.
 
+/// Synchronous wrapper for `extract_file`.
+///
+/// This is a convenience function that blocks the current thread until extraction completes.
+/// For async code, use `extract_file` directly.
+///
+/// Uses the global Tokio runtime for 100x+ performance improvement over creating
+/// a new runtime per call. Always uses the global runtime to avoid nested runtime issues.
+///
+/// This function is only available with the `tokio-runtime` feature. For WASM targets,
+/// use a truly synchronous extraction approach instead.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::extract_file_sync;
+/// use kreuzberg::core::config::ExtractionConfig;
+///
+/// let config = ExtractionConfig::default();
+/// let result = extract_file_sync("document.pdf", None, &config)?;
+/// println!("Content: {}", result.content);
+/// ```
+public func extractFileSync(path: String, mimeType: String?, config: ExtractionConfig) throws -> ExtractionResult {
+    return try RustBridge.extractFileSync(path, mimeType, config)
+}
+
+/// Synchronous wrapper for `extract_bytes`.
+///
+/// Uses the global Tokio runtime for 100x+ performance improvement over creating
+/// a new runtime per call.
+///
+/// With the `tokio-runtime` feature, this blocks the current thread using the global
+/// Tokio runtime. Without it (WASM), this calls a truly synchronous implementation.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::extract_bytes_sync;
+/// use kreuzberg::core::config::ExtractionConfig;
+///
+/// let config = ExtractionConfig::default();
+/// let bytes = b"Hello, world!";
+/// let result = extract_bytes_sync(bytes, "text/plain", &config)?;
+/// println!("Content: {}", result.content);
+/// ```
+public func extractBytesSync(content: [UInt8], mimeType: String, config: ExtractionConfig) throws -> ExtractionResult {
+    let _rb_content: RustVec<UInt8> = { let v = RustVec<UInt8>(); for b in content { v.push(value: b) }; return v }()
+    return try RustBridge.extractBytesSync(_rb_content, mimeType, config)
+}
+
+/// Synchronous wrapper for `batch_extract_files`.
+///
+/// Uses the global Tokio runtime for optimal performance.
+/// Only available with `tokio-runtime` (WASM has no filesystem).
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::batch_extract_files_sync;
+/// use kreuzberg::core::config::{ExtractionConfig, BatchFileItem, FileExtractionConfig};
+///
+/// let config = ExtractionConfig::default();
+/// let items = vec![
+///     BatchFileItem {
+///         path: "doc1.pdf".into(),
+///         config: Some(FileExtractionConfig { force_ocr: Some(true), ..Default::default() }),
+///     },
+///     BatchFileItem { path: "doc2.pdf".into(), config: None },
+/// ];
+/// let results = batch_extract_files_sync(items, &config)?;
+/// ```
+public func batchExtractFilesSync(items: [BatchFileItem], config: ExtractionConfig) throws -> [ExtractionResult] {
+    return try RustBridge.batchExtractFilesSync(items, config)
+}
+
+/// Synchronous wrapper for `batch_extract_bytes`.
+///
+/// Uses the global Tokio runtime for optimal performance.
+/// With the `tokio-runtime` feature, this blocks the current thread using the global
+/// Tokio runtime. Without it (WASM), this calls a truly synchronous implementation
+/// that iterates through items and calls `extract_bytes_sync()`.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::batch_extract_bytes_sync;
+/// use kreuzberg::core::config::{ExtractionConfig, BatchBytesItem, FileExtractionConfig};
+///
+/// let config = ExtractionConfig::default();
+/// let items = vec![
+///     BatchBytesItem { content: b"content".to_vec(), mime_type: "text/plain".to_string(), config: None },
+///     BatchBytesItem {
+///         content: b"other".to_vec(),
+///         mime_type: "text/plain".to_string(),
+///         config: Some(FileExtractionConfig { force_ocr: Some(true), ..Default::default() }),
+///     },
+/// ];
+/// let results = batch_extract_bytes_sync(items, &config)?;
+/// ```
+public func batchExtractBytesSync(items: [BatchBytesItem], config: ExtractionConfig) throws -> [ExtractionResult] {
+    return try RustBridge.batchExtractBytesSync(items, config)
+}
+
+/// Extract content from multiple files concurrently.
+///
+/// This function processes multiple files in parallel, automatically managing
+/// concurrency to prevent resource exhaustion. The concurrency limit can be
+/// configured via `ExtractionConfig::max_concurrent_extractions` or defaults
+/// to `(num_cpus * 1.5).ceil()`.
+///
+/// Each file can optionally specify a [`FileExtractionConfig`] that overrides specific
+/// fields from the batch-level `config`. Pass `None` for a file to use the batch defaults.
+/// Batch-level settings like `max_concurrent_extractions` and `use_cache` are always
+/// taken from the batch-level `config`.
+///
+/// # Arguments
+///
+/// * `items` - Vector of `BatchFileItem` structs, each containing a path and optional
+///   per-file configuration overrides.
+/// * `config` - Batch-level extraction configuration (provides defaults and batch settings)
+///
+/// # Returns
+///
+/// A vector of `ExtractionResult` in the same order as the input items.
+///
+/// # Errors
+///
+/// Individual file errors are captured in the result metadata. System errors
+/// (IO, RuntimeError equivalents) will bubble up and fail the entire batch.
+///
+/// # Examples
+///
+/// Simple usage with no per-file overrides:
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::batch_extract_files;
+/// use kreuzberg::core::config::{ExtractionConfig, BatchFileItem};
+/// use std::path::PathBuf;
+///
+/// let config = ExtractionConfig::default();
+/// let items = vec![
+///     BatchFileItem { path: "doc1.pdf".into(), config: None },
+///     BatchFileItem { path: "doc2.pdf".into(), config: None },
+/// ];
+/// let results = batch_extract_files(items, &config).await?;
+/// println!("Processed {} files", results.len());
+/// ```
+///
+/// Per-file configuration overrides:
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::batch_extract_files;
+/// use kreuzberg::core::config::{ExtractionConfig, BatchFileItem, FileExtractionConfig};
+/// use std::path::PathBuf;
+///
+/// let config = ExtractionConfig::default();
+/// let items = vec![
+///     BatchFileItem {
+///         path: "scan.pdf".into(),
+///         config: Some(FileExtractionConfig { force_ocr: Some(true), ..Default::default() }),
+///     },
+///     BatchFileItem { path: "notes.txt".into(), config: None },
+/// ];
+/// let results = batch_extract_files(items, &config).await?;
+/// ```
+public func batchExtractFiles(items: [BatchFileItem], config: ExtractionConfig) async throws -> [ExtractionResult] {
+    return try await Task.detached(priority: .userInitiated) {
+        let result = try RustBridge.batchExtractFiles(items, config)
+        return result
+    }.value
+}
+
+/// Extract content from multiple byte arrays concurrently.
+///
+/// This function processes multiple byte arrays in parallel, automatically managing
+/// concurrency to prevent resource exhaustion. The concurrency limit can be
+/// configured via `ExtractionConfig::max_concurrent_extractions` or defaults
+/// to `(num_cpus * 1.5).ceil()`.
+///
+/// Each item can optionally specify a [`FileExtractionConfig`] that overrides specific
+/// fields from the batch-level `config`. Pass `None` as the config to use
+/// the batch-level defaults for that item.
+///
+/// # Arguments
+///
+/// * `items` - Vector of `BatchBytesItem` structs, each containing content bytes,
+///   MIME type, and optional per-item configuration overrides.
+/// * `config` - Batch-level extraction configuration
+///
+/// # Returns
+///
+/// A vector of `ExtractionResult` in the same order as the input items.
+///
+/// # Examples
+///
+/// Simple usage with no per-item overrides:
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::batch_extract_bytes;
+/// use kreuzberg::core::config::{ExtractionConfig, BatchBytesItem};
+///
+/// let config = ExtractionConfig::default();
+/// let items = vec![
+///     BatchBytesItem { content: b"content 1".to_vec(), mime_type: "text/plain".to_string(), config: None },
+///     BatchBytesItem { content: b"content 2".to_vec(), mime_type: "text/plain".to_string(), config: None },
+/// ];
+/// let results = batch_extract_bytes(items, &config).await?;
+/// println!("Processed {} items", results.len());
+/// ```
+///
+/// Per-item configuration overrides:
+///
+/// ```rust,no_run
+/// use kreuzberg::core::extractor::batch_extract_bytes;
+/// use kreuzberg::core::config::{ExtractionConfig, BatchBytesItem, FileExtractionConfig};
+///
+/// let config = ExtractionConfig::default();
+/// let items = vec![
+///     BatchBytesItem { content: b"content".to_vec(), mime_type: "text/plain".to_string(), config: None },
+///     BatchBytesItem {
+///         content: b"<html>test</html>".to_vec(),
+///         mime_type: "text/html".to_string(),
+///         config: Some(FileExtractionConfig { force_ocr: Some(true), ..Default::default() }),
+///     },
+/// ];
+/// let results = batch_extract_bytes(items, &config).await?;
+/// ```
+public func batchExtractBytes(items: [BatchBytesItem], config: ExtractionConfig) async throws -> [ExtractionResult] {
+    return try await Task.detached(priority: .userInitiated) {
+        let result = try RustBridge.batchExtractBytes(items, config)
+        return result
+    }.value
+}
+
+/// Detect MIME type from raw file bytes.
+///
+/// Uses magic byte signatures to detect file type from content.
+/// Falls back to `infer` crate for comprehensive detection.
+///
+/// For ZIP-based files, inspects contents to distinguish Office Open XML
+/// formats (DOCX, XLSX, PPTX) from plain ZIP archives.
+///
+/// # Arguments
+///
+/// * `content` - Raw file bytes
+///
+/// # Returns
+///
+/// The detected MIME type string.
+///
+/// # Errors
+///
+/// Returns `KreuzbergError::UnsupportedFormat` if MIME type cannot be determined.
+public func detectMimeTypeFromBytes(content: [UInt8]) throws -> String {
+    let _rb_content: RustVec<UInt8> = { let v = RustVec<UInt8>(); for b in content { v.push(value: b) }; return v }()
+    return try RustBridge.detectMimeTypeFromBytes(_rb_content).toString()
+}
+
 /// Get file extensions for a given MIME type.
 ///
 /// Returns all known file extensions that map to the specified MIME type.
@@ -7395,6 +7477,43 @@ public func listRenderers() throws -> [String] {
 /// List names of all registered validators.
 public func listValidators() throws -> [String] {
     return try RustBridge.listValidators().map { $0.as_str().toString() }
+}
+
+/// Generate embeddings asynchronously for a list of text strings.
+///
+/// This is the async counterpart to [`embed_texts`]. It offloads the blocking
+/// ONNX inference work to a dedicated blocking thread pool via Tokio's
+/// `spawn_blocking`, keeping the async executor free.
+///
+/// Returns one embedding vector per input text in the same order.
+///
+/// # Arguments
+///
+/// * `texts` - Vec of strings to embed (owned, sent to blocking thread)
+/// * `config` - Embedding configuration specifying model, batch size, and normalization
+///
+/// # Errors
+///
+/// - `KreuzbergError::MissingDependency` if ONNX Runtime is not installed
+/// - `KreuzbergError::Embedding` if the preset name is unknown, model download fails,
+///   or the blocking inference task panics
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use kreuzberg::{embed_texts_async, EmbeddingConfig};
+///
+/// let embeddings = embed_texts_async(
+///     vec!["Hello!".to_string()],
+///     &EmbeddingConfig::default(),
+/// ).await?;
+/// ```
+public func embedTextsAsync(texts: [String], config: EmbeddingConfig) async throws -> [[Float]] {
+    let _rb_texts: RustVec<RustString> = { let v = RustVec<RustString>(); for s in texts { v.push(value: RustString(s)) }; return v }()
+    return try await Task.detached(priority: .userInitiated) {
+        let result = try RustBridge.embedTextsAsync(_rb_texts, config)
+        return result
+    }.value
 }
 
 /// Render a single PDF page to PNG bytes.
