@@ -52,6 +52,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6.0.2
+
       - name: Ensure release exists and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
