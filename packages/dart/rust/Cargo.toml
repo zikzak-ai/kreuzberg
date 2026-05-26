@@ -25,7 +25,10 @@ kreuzberg = { path = "../../../crates/kreuzberg", default-features = false, feat
 [target.'cfg(all(target_os = "ios", target_arch = "x86_64"))'.dependencies]
 kreuzberg = { path = "../../../crates/kreuzberg", default-features = false, features = ["android-target"] }
 
-[target.'cfg(not(any(all(target_os = "android", target_arch = "x86_64"), all(target_os = "ios", target_arch = "x86_64"))))'.dependencies]
+[target.'cfg(all(target_os = "macos", target_arch = "x86_64"))'.dependencies]
+kreuzberg = { path = "../../../crates/kreuzberg", default-features = false, features = ["android-target"] }
+
+[target.'cfg(not(any(all(target_os = "android", target_arch = "x86_64"), all(target_os = "ios", target_arch = "x86_64"), all(target_os = "macos", target_arch = "x86_64"))))'.dependencies]
 kreuzberg = { path = "../../../crates/kreuzberg", features = ["full"] }
 
 [lints.rust]
