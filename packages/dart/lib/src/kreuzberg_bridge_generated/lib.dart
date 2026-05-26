@@ -983,19 +983,6 @@ Future<void> unregisterRenderer({required String name}) =>
 /// Removes every plugin from `kreuzberg::plugins::registry::get_renderer_registry()` and stringifies any host error.
 Future<void> clearRenderers() => RustLib.instance.api.crateClearRenderers();
 
-/// Score extracted text quality on `[0.0, 1.0]`.
-///
-/// `1.0` is neutral for clean prose; OCR artifacts, script/style noise,
-/// and navigation chrome subtract; structural cues and metadata add.
-/// Texts shorter than the minimum length return `0.1`.
-double calculateQualityScore({
-  required String text,
-  StdHashMapStringString? metadata,
-}) => RustLib.instance.api.crateCalculateQualityScore(
-  text: text,
-  metadata: metadata,
-);
-
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Box < dyn Fn () -> DartFnFuture < OcrBackendType > + Send + Sync >>>
 abstract class BoxFnDartFnFutureOcrBackendType implements RustOpaqueInterface {}
 
@@ -1069,9 +1056,6 @@ abstract class PostProcessorDartImpl implements RustOpaqueInterface {}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RendererDartImpl>>
 abstract class RendererDartImpl implements RustOpaqueInterface {}
-
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<StdHashMap < String , String >>>
-abstract class StdHashMapStringString implements RustOpaqueInterface {}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ValidatorDartImpl>>
 abstract class ValidatorDartImpl implements RustOpaqueInterface {}

@@ -103,10 +103,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRendererDartImplPtr;
 
   CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_StdHashMapStringStringPtr => wire
-      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringStringPtr;
-
-  CrossPlatformFinalizerArg
   get rust_arc_decrement_strong_count_ValidatorDartImplPtr => wire
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValidatorDartImplPtr;
 
@@ -233,12 +229,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   RendererDartImpl
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRendererDartImpl(
-    dynamic raw,
-  );
-
-  @protected
-  StdHashMapStringString
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
     dynamic raw,
   );
 
@@ -389,12 +379,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  StdHashMapStringString
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    dynamic raw,
-  );
-
-  @protected
   ValidatorDartImpl
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValidatorDartImpl(
     dynamic raw,
@@ -435,12 +419,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BoundingBox dco_decode_bounding_box(dynamic raw);
-
-  @protected
-  StdHashMapStringString
-  dco_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    dynamic raw,
-  );
 
   @protected
   AccelerationConfig dco_decode_box_autoadd_acceleration_config(dynamic raw);
@@ -1164,12 +1142,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
-  StdHashMapStringString?
-  dco_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    dynamic raw,
-  );
-
-  @protected
   AccelerationConfig? dco_decode_opt_box_autoadd_acceleration_config(
     dynamic raw,
   );
@@ -1714,12 +1686,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  StdHashMapStringString
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   ValidatorDartImpl
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValidatorDartImpl(
     SseDeserializer deserializer,
@@ -1872,12 +1838,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  StdHashMapStringString
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   ValidatorDartImpl
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValidatorDartImpl(
     SseDeserializer deserializer,
@@ -1920,12 +1880,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BoundingBox sse_decode_bounding_box(SseDeserializer deserializer);
-
-  @protected
-  StdHashMapStringString
-  sse_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    SseDeserializer deserializer,
-  );
 
   @protected
   AccelerationConfig sse_decode_box_autoadd_acceleration_config(
@@ -2831,12 +2785,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
-  StdHashMapStringString?
-  sse_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    SseDeserializer deserializer,
-  );
-
-  @protected
   AccelerationConfig? sse_decode_opt_box_autoadd_acceleration_config(
     SseDeserializer deserializer,
   );
@@ -3525,13 +3473,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    StdHashMapStringString self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValidatorDartImpl(
     ValidatorDartImpl self,
     SseSerializer serializer,
@@ -3710,13 +3651,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    StdHashMapStringString self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValidatorDartImpl(
     ValidatorDartImpl self,
     SseSerializer serializer,
@@ -3772,13 +3706,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_bounding_box(BoundingBox self, SseSerializer serializer);
-
-  @protected
-  void
-  sse_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    StdHashMapStringString self,
-    SseSerializer serializer,
-  );
 
   @protected
   void sse_encode_box_autoadd_acceleration_config(
@@ -4952,13 +4879,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
-
-  @protected
-  void
-  sse_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    StdHashMapStringString? self,
-    SseSerializer serializer,
-  );
 
   @protected
   void sse_encode_opt_box_autoadd_acceleration_config(
@@ -6356,40 +6276,6 @@ class RustLibWire implements BaseWire {
       );
   late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRendererDartImpl =
       _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRendererDartImplPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-
-  void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-      ptr,
-    );
-  }
-
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringStringPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_kreuzberg_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString',
-      );
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringStringPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-
-  void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString(
-      ptr,
-    );
-  }
-
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringStringPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_kreuzberg_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString',
-      );
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringString =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStdHashMapStringStringPtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   void
