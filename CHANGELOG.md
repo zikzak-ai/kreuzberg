@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **publish (ruby)**: exclude `ext/*/native/target/` and `ext/*/native/tmp/` directories from gem files list. The gemspec was including the entire Rust build artifact tree (compiled `.rlib`, `.rmeta`, `.dylib` files), bloating the .gem from 33 MB to 388 MB, causing `gem spec` to reject it as invalid due to size constraints. Now filters out build directories via `reject { |f| f.include?("/native/target/") || f.include?("/native/tmp/") }`.
 - **publish (workflow ordering)**: add new `finalize-github-release-after-uploads` job that publishes the GitHub Release from draft to final state immediately after all native artifact uploads complete, but before `publish-hex` and `publish-zig` jobs run. Hex.pm and Zig package registries fetch asset URLs from the release page, which fails with 404 when the release is in DRAFT state. Now, `publish-hex` and `publish-zig` depend on the early finalize job, ensuring the release is already published before they attempt to download assets. The final `release-finalize` job runs after all publishes for post-publish validation and idempotently handles the Go module tag creation.
 - **dart (ios)**: use `wasm-target` feature set for iOS x86_64 simulator build instead of `android-target`. The x86_64-apple-ios target was pulling in Android ABI pre-built binaries (pdfium, ort) with mismatched CPU types, causing lipo failures during XCFramework assembly. `wasm-target` is ORT-free and cross-compiles cleanly for all iOS simulators.
 
