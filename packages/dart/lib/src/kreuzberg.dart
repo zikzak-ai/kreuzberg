@@ -841,7 +841,7 @@ class KreuzbergBridge {
       texts: texts,
       config: config ??
           const EmbeddingConfig(
-            model: EmbeddingModelType.balanced(),
+            model: EmbeddingModelType.preset(name: 'balanced'),
             normalize: true,
             batchSize: 32,
             showDownloadProgress: false,
@@ -904,7 +904,7 @@ class KreuzbergBridge {
       texts: texts,
       config: config ??
           const EmbeddingConfig(
-            model: EmbeddingModelType.balanced(),
+            model: EmbeddingModelType.preset(name: 'balanced'),
             normalize: true,
             batchSize: 32,
             showDownloadProgress: false,
