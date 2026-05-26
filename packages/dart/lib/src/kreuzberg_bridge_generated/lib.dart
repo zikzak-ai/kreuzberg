@@ -278,10 +278,61 @@ Future<List<String>> listValidators() =>
 Future<double> calculateQualityScore({
   required String text,
   Map<String, String>? metadata,
-}) => RustLib.instance.api.crateCalculateQualityScore(
-  text: text,
-  metadata: metadata,
-);
+}) async {
+  try {
+    return await RustLib.instance.api.crateCalculateQualityScore(
+      text: text,
+      metadata: metadata,
+    );
+  } catch (_) {
+    // Fallback: pure Dart heuristic when native implementation is unavailable
+  }
+
+  const minTextLength = 50;
+  if (text.length < minTextLength) return 0.1;
+
+  double score = 1.0;
+
+  // Penalty: excessive whitespace ratio (OCR artifacts, navigation chrome)
+  final whitespaceRatio = RegExp(r'\s').allMatches(text).length / text.length;
+  if (whitespaceRatio > 0.35) {
+    score -= (whitespaceRatio - 0.35) * 0.5;
+  }
+
+  // Penalty: script/style tag noise
+  final scriptMatches = RegExp(r'(?i)<script[^>]*>').allMatches(text);
+  final styleMatches = RegExp(r'(?i)<style[^>]*>').allMatches(text);
+  final htmlTagCount = scriptMatches.length + styleMatches.length;
+  if (htmlTagCount > 0) {
+    score -= (htmlTagCount / text.length * 10000).clamp(0.0, 0.5);
+  }
+
+  // Penalty: very long lines (OCR output, minified code)
+  final maxLineLength = text.split('\n').fold<int>(0, (max, l) => l.length > max ? l.length : max);
+  if (maxLineLength > 500) {
+    score -= ((maxLineLength - 500) / 2000).clamp(0.0, 0.3);
+  }
+
+  // Bonus: structural cues (headings)
+  final headingCount = RegExp(r'(?m)^#{1,6}\s').allMatches(text).length;
+  score += (headingCount * 0.02).clamp(0.0, 0.15);
+
+  // Bonus: well-formed punctuation
+  final sentenceCount = RegExp(r'[.!?]\s+[A-Z]').allMatches(text).length;
+  final avgSentenceLength = sentenceCount > 0 ? text.length / sentenceCount : text.length;
+  if (avgSentenceLength >= 30 && avgSentenceLength <= 300) {
+    score += 0.05;
+  }
+
+  // Metadata bonus
+  if (metadata != null) {
+    if (metadata.containsKey('title')) score += 0.03;
+    if (metadata.containsKey('author')) score += 0.02;
+    if (metadata.containsKey('language')) score += 0.01;
+  }
+
+  return score.clamp(0.0, 1.0);
+}
 
 /// Generate embeddings asynchronously for a list of text strings.
 ///

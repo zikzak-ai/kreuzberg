@@ -1,6 +1,6 @@
 name: kreuzberg
 description: High-performance document intelligence library
-version: 5.0.0-rc.2
+version: 5.0.0-rc.3
 repository: https://github.com/zikzak-ai/kreuzberg
 homepage: https://kreuzberg.dev
 publish_to: https://pub.zuzu.dev
