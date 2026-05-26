@@ -1,0 +1,69 @@
+name: Publish Dart Native Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g., v5.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Dart (${{ matrix.blob }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15-intel, target: x86_64-apple-darwin, blob: macos-x86_64, lib: libkreuzberg_dart.dylib }
+          - { os: macos-latest, target: aarch64-apple-darwin, blob: macos-arm64, lib: libkreuzberg_dart.dylib }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu, blob: linux-x86_64, lib: libkreuzberg_dart.so }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu, blob: linux-aarch64, lib: libkreuzberg_dart.so }
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - uses: kreuzberg-dev/actions/setup-rust@v1
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build -p kreuzberg-dart --release --target ${{ matrix.target }}
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STAGE="kreuzberg-dart-${{ matrix.blob }}"
+          mkdir -p "$STAGE"
+          cp "target/${{ matrix.target }}/release/${{ matrix.lib }}" "$STAGE/"
+          tar -czf "${STAGE}.tar.gz" "$STAGE"
+          gh release upload ${{ inputs.tag }} "${STAGE}.tar.gz" --clobber
+
+  finalize:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Ensure release exists and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          if gh release view "$TAG" --json isDraft &>/dev/null; then
+            echo "Release exists, publishing..."
+            gh release edit "$TAG" --draft=false --prerelease=false
+          else
+            echo "Creating release..."
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi
+          echo "Release $TAG is now public."

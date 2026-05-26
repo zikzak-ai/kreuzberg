@@ -10472,3 +10472,29 @@ pub fn clear_renderers() -> Result<(), String> {
     let mut registry = registry.write();
     registry.clear().map_err(|e| e.to_string())
 }
+
+use std::collections::HashMap as StdHashMap;
+
+use ahash::AHashMap;
+use std::borrow::Cow;
+
+/// Score extracted text quality on `[0.0, 1.0]`.
+///
+/// `1.0` is neutral for clean prose; OCR artifacts, script/style noise,
+/// and navigation chrome subtract; structural cues and metadata add.
+/// Texts shorter than the minimum length return `0.1`.
+#[flutter_rust_bridge::frb(sync)]
+pub fn calculate_quality_score(
+    text: String,
+    metadata: Option<StdHashMap<String, String>>,
+) -> f64 {
+    let cow_meta: Option<AHashMap<Cow<'static, str>, serde_json::Value>> = metadata.map(|m| {
+        m.into_iter()
+            .map(|(k, v)| {
+                (Cow::Owned(k), serde_json::Value::String(v))
+            })
+            .collect()
+    });
+
+    kreuzberg::text::quality::calculate_quality_score(&text, cow_meta.as_ref())
+}
