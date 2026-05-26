@@ -839,7 +839,13 @@ class KreuzbergBridge {
   ]) async {
     return await rust_bridge.embedTextsAsync(
       texts: texts,
-      config: config ?? EmbeddingConfig(),
+      config: config ??
+          const EmbeddingConfig(
+            model: EmbeddingModelType.balanced(),
+            normalize: true,
+            batchSize: 32,
+            showDownloadProgress: false,
+          ),
     );
   }
 
@@ -896,7 +902,13 @@ class KreuzbergBridge {
   ]) async {
     return await rust_bridge.embedTexts(
       texts: texts,
-      config: config ?? EmbeddingConfig(),
+      config: config ??
+          const EmbeddingConfig(
+            model: EmbeddingModelType.balanced(),
+            normalize: true,
+            batchSize: 32,
+            showDownloadProgress: false,
+          ),
     );
   }
 
