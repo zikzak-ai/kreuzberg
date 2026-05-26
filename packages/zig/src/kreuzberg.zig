@@ -4418,16 +4418,16 @@ pub fn list_embedding_presets() error{OutOfMemory}![]u8 {
 /// `register_ocr_backend` function to register your implementation.
 pub const IOcrBackend = extern struct {
     /// Return the plugin name into `out_name` (heap-allocated, caller frees).
-    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Return the plugin version into `out_version` (heap-allocated, caller frees).
-    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Initialise the plugin; return 0 on success, non-zero on error.
-    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Shut down the plugin; return 0 on success, non-zero on error.
-    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Process an image and extract text via OCR.
     ///
@@ -4482,7 +4482,7 @@ pub const IOcrBackend = extern struct {
     ///     })
     /// }
     /// ```
-    process_image: ?*const fn (user_data: ?*anyopaque, image_bytes_ptr: [*c]const u8, image_bytes_len: usize, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    process_image: ?*const fn (user_data: ?*anyopaque, image_bytes_ptr: [*c]const u8, image_bytes_len: usize, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Process a file and extract text via OCR.
     ///
     /// Default implementation reads the file and calls `process_image`.
@@ -4496,7 +4496,7 @@ pub const IOcrBackend = extern struct {
     /// # Errors
     ///
     /// Same as `process_image`, plus file I/O errors.
-    process_image_file: ?*const fn (user_data: ?*anyopaque, path: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    process_image_file: ?*const fn (user_data: ?*anyopaque, path: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Check if this backend supports a given language code.
     ///
     /// # Arguments
@@ -4514,7 +4514,7 @@ pub const IOcrBackend = extern struct {
     ///     self.languages.contains(&lang.to_string())
     /// }
     /// ```
-    supports_language: ?*const fn (user_data: ?*anyopaque, lang: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    supports_language: ?*const fn (user_data: ?*anyopaque, lang: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Get the backend type identifier.
     ///
     /// # Returns
@@ -4528,19 +4528,19 @@ pub const IOcrBackend = extern struct {
     ///     OcrBackendType::Tesseract
     /// }
     /// ```
-    backend_type: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 = null,
+    backend_type: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 = null,
     /// Optional: Get a list of all supported languages.
     ///
     /// Defaults to empty list. Override to provide comprehensive language support info.
-    supported_languages: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 = null,
+    supported_languages: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 = null,
     /// Optional: Check if the backend supports table detection.
     ///
     /// Defaults to `false`. Override if your backend can detect and extract tables.
-    supports_table_detection: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    supports_table_detection: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Check if the backend supports direct document-level processing (e.g. for PDFs).
     ///
     /// Defaults to `false`. Override if the backend has optimized document processing.
-    supports_document_processing: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    supports_document_processing: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Process a document file directly via OCR.
     ///
     /// Only called if `supports_document_processing` returns `true`.
@@ -4549,10 +4549,10 @@ pub const IOcrBackend = extern struct {
     ///
     /// * `path` - Path to the document file (e.g. .pdf)
     /// * `config` - OCR configuration
-    process_document: ?*const fn (user_data: ?*anyopaque, _path: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    process_document: ?*const fn (user_data: ?*anyopaque, _path: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Called by the Rust runtime when the bridge is dropped.
     /// Use this to release any Zig-side state held via `user_data`.
-    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.c) void = null,
 };
 
 /// Register a `OcrBackend` implementation with the Rust runtime.
@@ -4593,7 +4593,7 @@ pub fn clear_ocr_backends() KreuzbergError!void {
 /// Build an `IOcrBackend` vtable for a concrete Zig type `T`.
 ///
 /// `T` must implement every method of `OcrBackend` as a plain Zig function.
-/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// Each slot is wrapped in a `callconv(.c)` thunk that casts `user_data`
 /// back to `*T` and forwards the call.
 ///
 /// # Usage
@@ -4605,35 +4605,35 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
     _ = instance; // instance is passed as user_data by the caller
     return IOcrBackend{
         .name_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_name;
                 unreachable; // override .name_fn in the returned vtable
             }
         }.thunk,
         .version_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_version;
                 unreachable; // override .version_fn in the returned vtable
             }
         }.thunk,
         .initialize_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .shutdown_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .process_image = struct {
-            fn thunk(ud: ?*anyopaque, image_bytes_ptr: [*c]const u8, image_bytes_len: usize, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, image_bytes_ptr: [*c]const u8, image_bytes_len: usize, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 const image_bytes_slice = image_bytes_ptr[0..image_bytes_len];
                 if (self.process_image(image_bytes_slice, config)) |value| {
@@ -4649,7 +4649,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .process_image_file = struct {
-            fn thunk(ud: ?*anyopaque, path: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, path: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.process_image_file(path, config)) |value| {
                     _ = value;
@@ -4664,7 +4664,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .supports_language = struct {
-            fn thunk(ud: ?*anyopaque, lang: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, lang: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.supports_language(lang);
@@ -4672,7 +4672,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .backend_type = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.backend_type();
@@ -4680,7 +4680,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .supported_languages = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.supported_languages();
@@ -4688,7 +4688,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .supports_table_detection = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.supports_table_detection();
@@ -4696,7 +4696,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .supports_document_processing = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.supports_document_processing();
@@ -4704,7 +4704,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .process_document = struct {
-            fn thunk(ud: ?*anyopaque, _path: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, _path: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.process_document(_path, _config)) |value| {
                     _ = value;
@@ -4719,7 +4719,7 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
         }.thunk,
 
         .free_user_data = struct {
-            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque) callconv(.c) void {
                 _ = user_data;
             }
         }.thunk,
@@ -4731,16 +4731,16 @@ pub fn make_ocr_backend_vtable(comptime T: type, instance: *T) IOcrBackend {
 /// `register_post_processor` function to register your implementation.
 pub const IPostProcessor = extern struct {
     /// Return the plugin name into `out_name` (heap-allocated, caller frees).
-    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Return the plugin version into `out_version` (heap-allocated, caller frees).
-    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Initialise the plugin; return 0 on success, non-zero on error.
-    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Shut down the plugin; return 0 on success, non-zero on error.
-    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Process an extraction result.
     ///
@@ -4799,7 +4799,7 @@ pub const IPostProcessor = extern struct {
     ///     Ok(())
     /// }
     /// ```
-    process: ?*const fn (user_data: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    process: ?*const fn (user_data: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Get the processing stage for this post-processor.
     ///
     /// Determines when this processor runs in the pipeline.
@@ -4815,7 +4815,7 @@ pub const IPostProcessor = extern struct {
     ///     ProcessingStage::Early  // Run before other processors
     /// }
     /// ```
-    processing_stage: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 = null,
+    processing_stage: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 = null,
     /// Optional: Check if this processor should run for a given result.
     ///
     /// Allows conditional processing based on MIME type, metadata, or content.
@@ -4838,7 +4838,7 @@ pub const IPostProcessor = extern struct {
     ///     result.mime_type == "application/pdf"
     /// }
     /// ```
-    should_process: ?*const fn (user_data: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    should_process: ?*const fn (user_data: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Optional: Estimate processing time in milliseconds.
     ///
     /// Used for logging and debugging. Defaults to 0 (unknown).
@@ -4850,16 +4850,16 @@ pub const IPostProcessor = extern struct {
     /// # Returns
     ///
     /// Estimated processing time in milliseconds.
-    estimated_duration_ms: ?*const fn (user_data: ?*anyopaque, _result: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) u64 = null,
+    estimated_duration_ms: ?*const fn (user_data: ?*anyopaque, _result: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) u64 = null,
     /// Execution priority within the processing stage.
     ///
     /// Higher values run first within the same `ProcessingStage`. Defaults to 50.
     /// Use 0-49 for fallback processors, 50 for normal processors, and 51-255
     /// for high-priority processors that should run early in their stage.
-    priority: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    priority: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Called by the Rust runtime when the bridge is dropped.
     /// Use this to release any Zig-side state held via `user_data`.
-    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.c) void = null,
 };
 
 /// Register a `PostProcessor` implementation with the Rust runtime.
@@ -4900,7 +4900,7 @@ pub fn clear_post_processors() KreuzbergError!void {
 /// Build an `IPostProcessor` vtable for a concrete Zig type `T`.
 ///
 /// `T` must implement every method of `PostProcessor` as a plain Zig function.
-/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// Each slot is wrapped in a `callconv(.c)` thunk that casts `user_data`
 /// back to `*T` and forwards the call.
 ///
 /// # Usage
@@ -4912,35 +4912,35 @@ pub fn make_post_processor_vtable(comptime T: type, instance: *T) IPostProcessor
     _ = instance; // instance is passed as user_data by the caller
     return IPostProcessor{
         .name_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_name;
                 unreachable; // override .name_fn in the returned vtable
             }
         }.thunk,
         .version_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_version;
                 unreachable; // override .version_fn in the returned vtable
             }
         }.thunk,
         .initialize_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .shutdown_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .process = struct {
-            fn thunk(ud: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.process(result, config)) |value| {
                     _ = value;
@@ -4954,7 +4954,7 @@ pub fn make_post_processor_vtable(comptime T: type, instance: *T) IPostProcessor
         }.thunk,
 
         .processing_stage = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.processing_stage();
@@ -4962,7 +4962,7 @@ pub fn make_post_processor_vtable(comptime T: type, instance: *T) IPostProcessor
         }.thunk,
 
         .should_process = struct {
-            fn thunk(ud: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.should_process(_result, _config);
@@ -4970,7 +4970,7 @@ pub fn make_post_processor_vtable(comptime T: type, instance: *T) IPostProcessor
         }.thunk,
 
         .estimated_duration_ms = struct {
-            fn thunk(ud: ?*anyopaque, _result: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) u64 {
+            fn thunk(ud: ?*anyopaque, _result: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) u64 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.estimated_duration_ms(_result);
@@ -4978,7 +4978,7 @@ pub fn make_post_processor_vtable(comptime T: type, instance: *T) IPostProcessor
         }.thunk,
 
         .priority = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.priority();
@@ -4986,7 +4986,7 @@ pub fn make_post_processor_vtable(comptime T: type, instance: *T) IPostProcessor
         }.thunk,
 
         .free_user_data = struct {
-            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque) callconv(.c) void {
                 _ = user_data;
             }
         }.thunk,
@@ -4998,16 +4998,16 @@ pub fn make_post_processor_vtable(comptime T: type, instance: *T) IPostProcessor
 /// `register_validator` function to register your implementation.
 pub const IValidator = extern struct {
     /// Return the plugin name into `out_name` (heap-allocated, caller frees).
-    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Return the plugin version into `out_version` (heap-allocated, caller frees).
-    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Initialise the plugin; return 0 on success, non-zero on error.
-    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Shut down the plugin; return 0 on success, non-zero on error.
-    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Validate an extraction result.
     ///
@@ -5095,7 +5095,7 @@ pub const IValidator = extern struct {
     ///     Ok(())
     /// }
     /// ```
-    validate: ?*const fn (user_data: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    validate: ?*const fn (user_data: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Optional: Check if this validator should run for a given result.
     ///
     /// Allows conditional validation based on MIME type, metadata, or content.
@@ -5118,7 +5118,7 @@ pub const IValidator = extern struct {
     ///     result.mime_type == "application/pdf"
     /// }
     /// ```
-    should_validate: ?*const fn (user_data: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    should_validate: ?*const fn (user_data: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Optional: Get the validation priority.
     ///
     /// Higher priority validators run first. Useful for ordering validation checks
@@ -5138,10 +5138,10 @@ pub const IValidator = extern struct {
     ///     100
     /// }
     /// ```
-    priority: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    priority: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Called by the Rust runtime when the bridge is dropped.
     /// Use this to release any Zig-side state held via `user_data`.
-    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.c) void = null,
 };
 
 /// Register a `Validator` implementation with the Rust runtime.
@@ -5182,7 +5182,7 @@ pub fn clear_validators() KreuzbergError!void {
 /// Build an `IValidator` vtable for a concrete Zig type `T`.
 ///
 /// `T` must implement every method of `Validator` as a plain Zig function.
-/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// Each slot is wrapped in a `callconv(.c)` thunk that casts `user_data`
 /// back to `*T` and forwards the call.
 ///
 /// # Usage
@@ -5194,35 +5194,35 @@ pub fn make_validator_vtable(comptime T: type, instance: *T) IValidator {
     _ = instance; // instance is passed as user_data by the caller
     return IValidator{
         .name_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_name;
                 unreachable; // override .name_fn in the returned vtable
             }
         }.thunk,
         .version_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_version;
                 unreachable; // override .version_fn in the returned vtable
             }
         }.thunk,
         .initialize_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .shutdown_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .validate = struct {
-            fn thunk(ud: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, result: [*c]const u8, config: [*c]const u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.validate(result, config)) |value| {
                     _ = value;
@@ -5236,7 +5236,7 @@ pub fn make_validator_vtable(comptime T: type, instance: *T) IValidator {
         }.thunk,
 
         .should_validate = struct {
-            fn thunk(ud: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, _result: [*c]const u8, _config: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.should_validate(_result, _config);
@@ -5244,7 +5244,7 @@ pub fn make_validator_vtable(comptime T: type, instance: *T) IValidator {
         }.thunk,
 
         .priority = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.priority();
@@ -5252,7 +5252,7 @@ pub fn make_validator_vtable(comptime T: type, instance: *T) IValidator {
         }.thunk,
 
         .free_user_data = struct {
-            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque) callconv(.c) void {
                 _ = user_data;
             }
         }.thunk,
@@ -5264,20 +5264,20 @@ pub fn make_validator_vtable(comptime T: type, instance: *T) IValidator {
 /// `register_embedding_backend` function to register your implementation.
 pub const IEmbeddingBackend = extern struct {
     /// Return the plugin name into `out_name` (heap-allocated, caller frees).
-    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Return the plugin version into `out_version` (heap-allocated, caller frees).
-    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Initialise the plugin; return 0 on success, non-zero on error.
-    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Shut down the plugin; return 0 on success, non-zero on error.
-    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Embedding vector dimension. Must be `> 0` and must match the length of
     /// every vector returned by `embed`.
-    dimensions: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) usize = null,
+    dimensions: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) usize = null,
     /// Embed a batch of texts, returning one vector per input in order.
     ///
     /// # Errors
@@ -5285,10 +5285,10 @@ pub const IEmbeddingBackend = extern struct {
     /// Implementations should return `Plugin` for
     /// backend-specific failures. The dispatcher layers its own validation
     /// (length, per-vector dimension) on top.
-    embed: ?*const fn (user_data: ?*anyopaque, texts: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    embed: ?*const fn (user_data: ?*anyopaque, texts: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Called by the Rust runtime when the bridge is dropped.
     /// Use this to release any Zig-side state held via `user_data`.
-    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.c) void = null,
 };
 
 /// Register a `EmbeddingBackend` implementation with the Rust runtime.
@@ -5329,7 +5329,7 @@ pub fn clear_embedding_backends() KreuzbergError!void {
 /// Build an `IEmbeddingBackend` vtable for a concrete Zig type `T`.
 ///
 /// `T` must implement every method of `EmbeddingBackend` as a plain Zig function.
-/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// Each slot is wrapped in a `callconv(.c)` thunk that casts `user_data`
 /// back to `*T` and forwards the call.
 ///
 /// # Usage
@@ -5341,35 +5341,35 @@ pub fn make_embedding_backend_vtable(comptime T: type, instance: *T) IEmbeddingB
     _ = instance; // instance is passed as user_data by the caller
     return IEmbeddingBackend{
         .name_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_name;
                 unreachable; // override .name_fn in the returned vtable
             }
         }.thunk,
         .version_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_version;
                 unreachable; // override .version_fn in the returned vtable
             }
         }.thunk,
         .initialize_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .shutdown_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .dimensions = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) usize {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) usize {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.dimensions();
@@ -5377,7 +5377,7 @@ pub fn make_embedding_backend_vtable(comptime T: type, instance: *T) IEmbeddingB
         }.thunk,
 
         .embed = struct {
-            fn thunk(ud: ?*anyopaque, texts: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, texts: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.embed(texts)) |value| {
                     _ = value;
@@ -5392,7 +5392,7 @@ pub fn make_embedding_backend_vtable(comptime T: type, instance: *T) IEmbeddingB
         }.thunk,
 
         .free_user_data = struct {
-            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque) callconv(.c) void {
                 _ = user_data;
             }
         }.thunk,
@@ -5404,16 +5404,16 @@ pub fn make_embedding_backend_vtable(comptime T: type, instance: *T) IEmbeddingB
 /// `register_document_extractor` function to register your implementation.
 pub const IDocumentExtractor = extern struct {
     /// Return the plugin name into `out_name` (heap-allocated, caller frees).
-    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Return the plugin version into `out_version` (heap-allocated, caller frees).
-    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Initialise the plugin; return 0 on success, non-zero on error.
-    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Shut down the plugin; return 0 on success, non-zero on error.
-    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Extract content from a byte array.
     ///
@@ -5436,7 +5436,7 @@ pub const IDocumentExtractor = extern struct {
     /// - `KreuzbergError::Validation` - Invalid document structure
     /// - `KreuzbergError::Io` - I/O errors (these always bubble up)
     /// - `KreuzbergError::MissingDependency` - Required dependency not available
-    extract_bytes: ?*const fn (user_data: ?*anyopaque, content_ptr: [*c]const u8, content_len: usize, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    extract_bytes: ?*const fn (user_data: ?*anyopaque, content_ptr: [*c]const u8, content_len: usize, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Extract content from a file.
     ///
     /// Default implementation reads the file and calls `extract_bytes`.
@@ -5455,7 +5455,7 @@ pub const IDocumentExtractor = extern struct {
     /// # Errors
     ///
     /// Same as `extract_bytes`, plus file I/O errors.
-    extract_file: ?*const fn (user_data: ?*anyopaque, path: [*c]const u8, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    extract_file: ?*const fn (user_data: ?*anyopaque, path: [*c]const u8, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Get the list of MIME types supported by this extractor.
     ///
     /// Can include exact MIME types and prefix patterns:
@@ -5465,7 +5465,7 @@ pub const IDocumentExtractor = extern struct {
     /// # Returns
     ///
     /// A slice of MIME type strings.
-    supported_mime_types: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 = null,
+    supported_mime_types: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 = null,
     /// Get the priority of this extractor.
     ///
     /// Higher priority extractors are preferred when multiple extractors
@@ -5482,7 +5482,7 @@ pub const IDocumentExtractor = extern struct {
     /// # Returns
     ///
     /// Priority value (default: 50)
-    priority: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    priority: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Optional: Check if this extractor can handle a specific file.
     ///
     /// Allows for more sophisticated detection beyond MIME types.
@@ -5496,15 +5496,15 @@ pub const IDocumentExtractor = extern struct {
     /// # Returns
     ///
     /// `true` if the extractor can handle this file, `false` otherwise.
-    can_handle: ?*const fn (user_data: ?*anyopaque, _path: [*c]const u8, _mime_type: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 = null,
+    can_handle: ?*const fn (user_data: ?*anyopaque, _path: [*c]const u8, _mime_type: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Attempt to get a reference to this extractor as a SyncExtractor.
     ///
     /// Returns None if the extractor doesn't support synchronous extraction.
     /// This is used for WASM and other sync-only environments.
-    as_sync_extractor: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 = null,
+    as_sync_extractor: ?*const fn (user_data: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 = null,
     /// Called by the Rust runtime when the bridge is dropped.
     /// Use this to release any Zig-side state held via `user_data`.
-    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.c) void = null,
 };
 
 /// Register a `DocumentExtractor` implementation with the Rust runtime.
@@ -5545,7 +5545,7 @@ pub fn clear_document_extractors() KreuzbergError!void {
 /// Build an `IDocumentExtractor` vtable for a concrete Zig type `T`.
 ///
 /// `T` must implement every method of `DocumentExtractor` as a plain Zig function.
-/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// Each slot is wrapped in a `callconv(.c)` thunk that casts `user_data`
 /// back to `*T` and forwards the call.
 ///
 /// # Usage
@@ -5557,35 +5557,35 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
     _ = instance; // instance is passed as user_data by the caller
     return IDocumentExtractor{
         .name_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_name;
                 unreachable; // override .name_fn in the returned vtable
             }
         }.thunk,
         .version_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_version;
                 unreachable; // override .version_fn in the returned vtable
             }
         }.thunk,
         .initialize_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .shutdown_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .extract_bytes = struct {
-            fn thunk(ud: ?*anyopaque, content_ptr: [*c]const u8, content_len: usize, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, content_ptr: [*c]const u8, content_len: usize, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 const content_slice = content_ptr[0..content_len];
                 if (self.extract_bytes(content_slice, mime_type, config)) |value| {
@@ -5601,7 +5601,7 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
         }.thunk,
 
         .extract_file = struct {
-            fn thunk(ud: ?*anyopaque, path: [*c]const u8, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, path: [*c]const u8, mime_type: [*c]const u8, config: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.extract_file(path, mime_type, config)) |value| {
                     _ = value;
@@ -5616,7 +5616,7 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
         }.thunk,
 
         .supported_mime_types = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.supported_mime_types();
@@ -5624,7 +5624,7 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
         }.thunk,
 
         .priority = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.priority();
@@ -5632,7 +5632,7 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
         }.thunk,
 
         .can_handle = struct {
-            fn thunk(ud: ?*anyopaque, _path: [*c]const u8, _mime_type: [*c]const u8, out_result: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, _path: [*c]const u8, _mime_type: [*c]const u8, out_result: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.can_handle(_path, _mime_type);
@@ -5640,7 +5640,7 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
         }.thunk,
 
         .as_sync_extractor = struct {
-            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.C) [*c]const u8 {
+            fn thunk(ud: ?*anyopaque, out_result: ?*?[*c]u8) callconv(.c) [*c]const u8 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 _ = out_result;
                 return self.as_sync_extractor();
@@ -5648,7 +5648,7 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
         }.thunk,
 
         .free_user_data = struct {
-            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque) callconv(.c) void {
                 _ = user_data;
             }
         }.thunk,
@@ -5660,16 +5660,16 @@ pub fn make_document_extractor_vtable(comptime T: type, instance: *T) IDocumentE
 /// `register_renderer` function to register your implementation.
 pub const IRenderer = extern struct {
     /// Return the plugin name into `out_name` (heap-allocated, caller frees).
-    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void = null,
+    name_fn: ?*const fn (user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Return the plugin version into `out_version` (heap-allocated, caller frees).
-    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void = null,
+    version_fn: ?*const fn (user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void = null,
 
     /// Initialise the plugin; return 0 on success, non-zero on error.
-    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    initialize_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Shut down the plugin; return 0 on success, non-zero on error.
-    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    shutdown_fn: ?*const fn (user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
 
     /// Render an [`InternalDocument`] to the output format.
     ///
@@ -5684,10 +5684,10 @@ pub const IRenderer = extern struct {
     /// # Errors
     ///
     /// Returns an error if rendering fails.
-    render: ?*const fn (user_data: ?*anyopaque, doc: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 = null,
+    render: ?*const fn (user_data: ?*anyopaque, doc: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 = null,
     /// Called by the Rust runtime when the bridge is dropped.
     /// Use this to release any Zig-side state held via `user_data`.
-    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.C) void = null,
+    free_user_data: ?*const fn (user_data: ?*anyopaque) callconv(.c) void = null,
 };
 
 /// Register a `Renderer` implementation with the Rust runtime.
@@ -5728,7 +5728,7 @@ pub fn clear_renderers() KreuzbergError!void {
 /// Build an `IRenderer` vtable for a concrete Zig type `T`.
 ///
 /// `T` must implement every method of `Renderer` as a plain Zig function.
-/// Each slot is wrapped in a `callconv(.C)` thunk that casts `user_data`
+/// Each slot is wrapped in a `callconv(.c)` thunk that casts `user_data`
 /// back to `*T` and forwards the call.
 ///
 /// # Usage
@@ -5740,35 +5740,35 @@ pub fn make_renderer_vtable(comptime T: type, instance: *T) IRenderer {
     _ = instance; // instance is passed as user_data by the caller
     return IRenderer{
         .name_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_name: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_name;
                 unreachable; // override .name_fn in the returned vtable
             }
         }.thunk,
         .version_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque, out_version: ?*?[*c]u8) callconv(.c) void {
                 _ = user_data;
                 _ = out_version;
                 unreachable; // override .version_fn in the returned vtable
             }
         }.thunk,
         .initialize_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .shutdown_fn = struct {
-            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(user_data: ?*anyopaque, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 _ = user_data;
                 _ = out_error;
                 return 0;
             }
         }.thunk,
         .render = struct {
-            fn thunk(ud: ?*anyopaque, doc: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.C) i32 {
+            fn thunk(ud: ?*anyopaque, doc: [*c]const u8, out_result: ?*?[*c]u8, out_error: ?*?[*c]u8) callconv(.c) i32 {
                 const self: *T = @ptrCast(@alignCast(ud));
                 if (self.render(doc)) |value| {
                     _ = value;
@@ -5783,7 +5783,7 @@ pub fn make_renderer_vtable(comptime T: type, instance: *T) IRenderer {
         }.thunk,
 
         .free_user_data = struct {
-            fn thunk(user_data: ?*anyopaque) callconv(.C) void {
+            fn thunk(user_data: ?*anyopaque) callconv(.c) void {
                 _ = user_data;
             }
         }.thunk,

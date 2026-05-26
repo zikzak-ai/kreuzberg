@@ -1,6 +1,6 @@
 [package]
 name = "kreuzberg-node"
-version = "5.0.0-rc.2"
+version = "5.0.0-rc.3"
 edition = "2024"
 license = "Elastic-2.0"
 description = "High-performance document intelligence library"
@@ -21,7 +21,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 async-trait = "0.1"
-kreuzberg = { version = "5.0.0-rc.2", path = "../kreuzberg", features = [
+kreuzberg = { version = "5.0.0-rc.3", path = "../kreuzberg", features = [
   "full",
   "pdf",
   "ocr",

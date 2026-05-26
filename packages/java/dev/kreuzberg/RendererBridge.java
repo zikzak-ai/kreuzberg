@@ -192,7 +192,7 @@ public final class RendererBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
     /** Clear all registered Renderer implementations. */
-    public static void clearAllRenderer() throws Exception {
+    public static void clearRenderers() throws Exception {
         try {
             try (var arena = Arena.ofShared()) {
                 MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
@@ -202,7 +202,7 @@ public final class RendererBridge implements AutoCloseable {
                     String msg = errPtr.equals(MemorySegment.NULL)
                         ? "clear failed (rc=" + rc + ")"
                         : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
-                    throw new RuntimeException("clearAllRenderer: " + msg);
+                    throw new RuntimeException("clearRenderers: " + msg);
                 }
             }
         } catch (Throwable t) {

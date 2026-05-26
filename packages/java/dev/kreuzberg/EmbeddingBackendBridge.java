@@ -219,7 +219,7 @@ public final class EmbeddingBackendBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
     /** Clear all registered EmbeddingBackend implementations. */
-    public static void clearAllEmbeddingBackend() throws Exception {
+    public static void clearEmbeddingBackends() throws Exception {
         try {
             try (var arena = Arena.ofShared()) {
                 MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
@@ -229,7 +229,7 @@ public final class EmbeddingBackendBridge implements AutoCloseable {
                     String msg = errPtr.equals(MemorySegment.NULL)
                         ? "clear failed (rc=" + rc + ")"
                         : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
-                    throw new RuntimeException("clearAllEmbeddingBackend: " + msg);
+                    throw new RuntimeException("clearEmbeddingBackends: " + msg);
                 }
             }
         } catch (Throwable t) {

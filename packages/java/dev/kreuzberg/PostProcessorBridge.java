@@ -314,7 +314,7 @@ public final class PostProcessorBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
     /** Clear all registered PostProcessor implementations. */
-    public static void clearAllPostProcessor() throws Exception {
+    public static void clearPostProcessors() throws Exception {
         try {
             try (var arena = Arena.ofShared()) {
                 MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
@@ -324,7 +324,7 @@ public final class PostProcessorBridge implements AutoCloseable {
                     String msg = errPtr.equals(MemorySegment.NULL)
                         ? "clear failed (rc=" + rc + ")"
                         : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
-                    throw new RuntimeException("clearAllPostProcessor: " + msg);
+                    throw new RuntimeException("clearPostProcessors: " + msg);
                 }
             }
         } catch (Throwable t) {

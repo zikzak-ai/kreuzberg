@@ -256,7 +256,7 @@ public final class ValidatorBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
     /** Clear all registered Validator implementations. */
-    public static void clearAllValidator() throws Exception {
+    public static void clearValidators() throws Exception {
         try {
             try (var arena = Arena.ofShared()) {
                 MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
@@ -266,7 +266,7 @@ public final class ValidatorBridge implements AutoCloseable {
                     String msg = errPtr.equals(MemorySegment.NULL)
                         ? "clear failed (rc=" + rc + ")"
                         : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
-                    throw new RuntimeException("clearAllValidator: " + msg);
+                    throw new RuntimeException("clearValidators: " + msg);
                 }
             }
         } catch (Throwable t) {

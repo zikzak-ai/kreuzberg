@@ -9,7 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.0.0-rc.2] - 2026-05-25
+## [5.0.0-rc.3] - 2026-05-26
+
+### Changed
+
+- **deps**: bump alef pin to v0.19.14 — bundles all v0.19.12 + v0.19.13 + v0.19.14 generator fixes across every language emitter (Rust e2e unused result, Go missing `encoding/json` import, Zig undeclared types + `callconv(.c)`, Python e2e `initialize()` stub, PHP e2e interface FQN, C# `Bridge.Register(impl)`, Elixir `unregister_*` public wrappers, dart `.as_ref()` for `Option<HashMap>`, dart unit-variant default ctor parens, Swift `RustStr` typedef in placeholder, Ruby cargo-machete metadata, Java duplicate-method dedup, Kotlin Android e2e ExtractionConfig inference + `.size` for ByteArray + EmbeddingConfig model, dart RID-aware FRB native lib loader, kotlin streaming virtual fields gating, csharp per-binding exception class, go arch name mapping for FFI download, elixir always-include `:jason` dep).
+- **e2e**: add `homebrew` to `[crates.e2e].languages` — registry-mode test_app validates CLI + FFI Homebrew formulae post-publish.
+
+### Fixed
+
+- **publish (workflow)**: `release-finalize` job now declares `prepare` in its `needs:` list. The job referenced `needs.prepare.outputs.is_tag`, `dry_run`, `tag`, `is_prerelease` but did not depend on `prepare`, producing an `actionlint` failure that gated CI Lint.
+- **publish (ruby)**: exclude `ext/*/native/target/` and `ext/*/native/tmp/` directories from gem files list. The gemspec was including the entire Rust build artifact tree (compiled `.rlib`, `.rmeta`, `.dylib` files), bloating the .gem from 33 MB to 388 MB, causing `gem spec` to reject it as invalid due to size constraints. Now filters out build directories via `reject { |f| f.include?("/native/target/") || f.include?("/native/tmp/") }`.
+- **publish (workflow ordering)**: add new `finalize-github-release-after-uploads` job that publishes the GitHub Release from draft to final state immediately after all native artifact uploads complete, but before `publish-hex` and `publish-zig` jobs run. Hex.pm and Zig package registries fetch asset URLs from the release page, which fails with 404 when the release is in DRAFT state. Now, `publish-hex` and `publish-zig` depend on the early finalize job, ensuring the release is already published before they attempt to download assets. The final `release-finalize` job runs after all publishes for post-publish validation and idempotently handles the Go module tag creation.
+- **dart (ios)**: use `wasm-target` feature set for iOS x86_64 simulator build instead of `android-target`. The x86_64-apple-ios target was pulling in Android ABI pre-built binaries (pdfium, ort) with mismatched CPU types, causing lipo failures during XCFramework assembly. `wasm-target` is ORT-free and cross-compiles cleanly for all iOS simulators.
+
+## [5.0.0-rc.2] (skipped) - 2026-05-25
+
+rc.2 was tagged + partially published (5/13 registries) on 2026-05-25 then superseded by rc.3. The fixes listed below were carried forward.
 
 ### Changed
 

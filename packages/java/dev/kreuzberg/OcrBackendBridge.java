@@ -402,7 +402,7 @@ public final class OcrBackendBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
     /** Clear all registered OcrBackend implementations. */
-    public static void clearAllOcrBackend() throws Exception {
+    public static void clearOcrBackends() throws Exception {
         try {
             try (var arena = Arena.ofShared()) {
                 MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
@@ -412,7 +412,7 @@ public final class OcrBackendBridge implements AutoCloseable {
                     String msg = errPtr.equals(MemorySegment.NULL)
                         ? "clear failed (rc=" + rc + ")"
                         : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
-                    throw new RuntimeException("clearAllOcrBackend: " + msg);
+                    throw new RuntimeException("clearOcrBackends: " + msg);
                 }
             }
         } catch (Throwable t) {

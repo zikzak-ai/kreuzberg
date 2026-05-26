@@ -367,7 +367,7 @@ public final class DocumentExtractorBridge implements AutoCloseable {
         if (old != null) { old.close(); }
     }
     /** Clear all registered DocumentExtractor implementations. */
-    public static void clearAllDocumentExtractor() throws Exception {
+    public static void clearDocumentExtractors() throws Exception {
         try {
             try (var arena = Arena.ofShared()) {
                 MemorySegment outErr = arena.allocate(ValueLayout.ADDRESS);
@@ -377,7 +377,7 @@ public final class DocumentExtractorBridge implements AutoCloseable {
                     String msg = errPtr.equals(MemorySegment.NULL)
                         ? "clear failed (rc=" + rc + ")"
                         : errPtr.reinterpret(Long.MAX_VALUE).getString(0);
-                    throw new RuntimeException("clearAllDocumentExtractor: " + msg);
+                    throw new RuntimeException("clearDocumentExtractors: " + msg);
                 }
             }
         } catch (Throwable t) {
